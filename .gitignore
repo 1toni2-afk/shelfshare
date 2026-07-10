@@ -1,0 +1,28 @@
+# Node
+node_modules/
+dist/
+coverage/
+
+# Env
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Prisma
+backend/prisma/*.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Docker volumes locale (dacă apar mount-uri locale de test)
+postgres_data/

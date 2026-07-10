@@ -1,0 +1,40 @@
+// ShelfShare - Prisma Schema
+// Milestone 2: adăugăm câmpurile necesare pentru autentificare.
+// Modelele Books, UserBooks, ExchangeRequests, Messages, Reviews, Wishlist etc.
+// se adaugă la milestone-urile corespunzătoare, nu acum.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String? // null dacă userul s-a înregistrat doar prin Google
+
+  // Verificare email
+  isEmailVerified   Boolean   @default(false)
+  emailVerifyToken  String?   @unique
+  emailVerifyExpiry DateTime?
+
+  // Reset parolă
+  resetPasswordToken  String?   @unique
+  resetPasswordExpiry DateTime?
+
+  // Refresh token curent (hash-uit), pentru invalidare la logout
+  refreshTokenHash String?
+
+  // Google OAuth
+  googleId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
