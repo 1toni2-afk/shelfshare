@@ -1,5 +1,6 @@
 // ShelfShare - Prisma Schema
-// Milestone 2: adăugăm câmpurile necesare pentru autentificare.
+// Milestone 2: câmpurile necesare pentru autentificare.
+// Milestone 3: câmpurile de profil.
 // Modelele Books, UserBooks, ExchangeRequests, Messages, Reviews, Wishlist etc.
 // se adaugă la milestone-urile corespunzătoare, nu acum.
 
@@ -31,9 +32,19 @@ model User {
   // Google OAuth
   googleId String? @unique
 
+  // Profil
+  name         String?
+  city         String?
+  bio          String?
+  profileImage String? // path către poza din MinIO - se adaugă la Milestone 4
+
+  // Calculate din alte module (reviews, exchanges) - încă neimplementate.
+  // Rămân aici ca placeholder, cu valoare default, până construim acele module.
+  rating               Float @default(0)
+  booksExchangedCount  Int   @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
 }
-
