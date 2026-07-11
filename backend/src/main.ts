@@ -1,4 +1,3 @@
-import './types/express';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -8,9 +7,9 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // elimină automat câmpurile care nu sunt în DTO
-      forbidNonWhitelisted: true, // respinge request-uri cu câmpuri în plus
-      transform: true, // transformă payload-ul în instanța DTO
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
 

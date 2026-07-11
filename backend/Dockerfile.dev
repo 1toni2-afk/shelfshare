@@ -4,11 +4,13 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm exec prisma generate
+# Nu rulăm "prisma generate" aici: la build-time nu există încă DATABASE_URL
+# (variabilele din docker-compose sunt injectate doar la pornirea containerului).
+# Îl rulăm în docker-compose.yml, ca parte din "command", chiar înainte de pornirea serverului.
 
 EXPOSE 3000
 

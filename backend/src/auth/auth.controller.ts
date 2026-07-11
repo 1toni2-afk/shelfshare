@@ -18,6 +18,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import type { AuthenticatedUser } from './types/authenticated-user';
 
 @Controller('auth')
 export class AuthController {
@@ -55,15 +56,16 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(@Req() req: Request) {
-    const { userId, refreshToken } = req.user!;
-    return this.authService.refresh(userId, refreshToken);
+    const { userId, refreshToken } = req.user as AuthenticatedUser;
+    return this.authService.refresh(userId!, refreshToken!);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@Req() req: Request) {
-    return this.authService.logout(req.user!.userId);
+    const { userId } = req.user as AuthenticatedUser;
+    return this.authService.logout(userId!);
   }
 
   // ---------- Google OAuth ----------
@@ -77,7 +79,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
   googleCallback(@Req() req: Request) {
-    const { googleId, email } = req.user!;
+    const { googleId, email } = req.user as AuthenticatedUser;
     return this.authService.loginWithGoogle({ googleId: googleId!, email });
   }
 }
