@@ -19,10 +19,11 @@ import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
+import { SearchLibraryDto } from './dto/search-library.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
-const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024;
+const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024; // 8MB - suficient pentru poze de telefon, sharp le comprimă oricum după
 
 @Controller('books')
 export class BooksController {
@@ -31,6 +32,13 @@ export class BooksController {
   @Get('search')
   searchExternal(@Query() query: SearchBookDto) {
     return this.booksService.searchExternal(query.q);
+  }
+
+  // Căutare printre cărțile deja oferite de utilizatori, cu filtre.
+  // Plasată înainte de :userBookId, altfel "browse" ar fi interpretat ca ID.
+  @Get('browse')
+  searchLibrary(@Query() filters: SearchLibraryDto) {
+    return this.booksService.searchLibrary(filters);
   }
 
   @UseGuards(JwtAuthGuard)

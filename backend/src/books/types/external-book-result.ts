@@ -8,5 +8,6 @@ export interface ExternalBookResult {
   publishedYear: number | null;
   pageCount: number | null;
   language: string | null;
+  genre: string | null;
   source: 'open_library' | 'google_books';
 }

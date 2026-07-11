@@ -2,6 +2,7 @@
 // Milestone 2: câmpurile necesare pentru autentificare.
 // Milestone 3: câmpurile de profil.
 // Milestone 4: catalogul de cărți + biblioteca personală.
+// Milestone 5: genre pentru filtrarea la căutare.
 
 generator client {
   provider = "prisma-client-js"
@@ -62,6 +63,7 @@ model Book {
   publishedYear Int?
   pageCount   Int?
   language    String?
+  genre       String?
 
   source String?
 

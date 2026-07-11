@@ -4,11 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { BookLookupService } from './book-lookup.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
+import { SearchLibraryDto } from './dto/search-library.dto';
 
 @Injectable()
 export class BooksService {
@@ -22,6 +24,63 @@ export class BooksService {
     return this.lookup.searchByTitle(query);
   }
 
+  /**
+   * Caută printre cărțile deținute de utilizatori (nu în catalogul extern),
+   * cu filtrele din spec: titlu, autor, gen, limbă, oraș, stare, disponibilitate.
+   */
+  async searchLibrary(filters: SearchLibraryDto) {
+    const where: Prisma.UserBookWhereInput = {
+      // Implicit doar cărțile disponibile la schimb, exceptând cazul
+      // explicit în care cineva vrea să vadă și restul (ex: pentru admin).
+      availableForSwap: filters.availableOnly === 'false' ? undefined : true,
+      condition: filters.condition,
+      language: filters.language
+        ? { equals: filters.language, mode: 'insensitive' }
+        : undefined,
+      book: {
+        title: filters.title
+          ? { contains: filters.title, mode: 'insensitive' }
+          : undefined,
+        author: filters.author
+          ? { contains: filters.author, mode: 'insensitive' }
+          : undefined,
+        genre: filters.genre
+          ? { contains: filters.genre, mode: 'insensitive' }
+          : undefined,
+      },
+      user: filters.city ? { city: filters.city } : undefined,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.userBook.findMany({
+        where,
+        include: {
+          book: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              city: true,
+              rating: true,
+              profileImage: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: filters.limit,
+        skip: filters.offset,
+      }),
+      this.prisma.userBook.count({ where }),
+    ]);
+
+    return { items, total, limit: filters.limit, offset: filters.offset };
+  }
+
+  /**
+   * Adaugă o carte în biblioteca utilizatorului. Dacă e dat ISBN și cartea
+   * nu există încă în catalogul local, o căutăm extern și o creăm.
+   * Dacă nu e dat ISBN, se creează cartea manual din titlu + autor.
+   */
   async addToLibrary(userId: string, dto: AddBookDto) {
     const book = await this.findOrCreateBook(dto);
 
@@ -59,11 +118,14 @@ export class BooksService {
             publishedYear: external.publishedYear,
             pageCount: external.pageCount,
             language: external.language,
+            genre: external.genre,
             source: external.source,
           },
         });
       }
 
+      // ISBN dat, dar nu găsim nimic extern - creăm intrare minimă manuală,
+      // cu ce a completat utilizatorul (dacă a completat titlu/autor și ISBN).
       if (!dto.title) {
         throw new BadRequestException(
           'Nu am găsit cartea după ISBN. Completează manual titlul și autorul.',
@@ -79,6 +141,7 @@ export class BooksService {
       });
     }
 
+    // Fără ISBN - creare manuală directă
     if (!dto.title) {
       throw new BadRequestException('Titlul este obligatoriu dacă nu dai ISBN');
     }
@@ -129,7 +192,10 @@ export class BooksService {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
 
-    await Promise.all(userBook.photos.map((path) => this.storage.deleteImage(path)));
+    // Ștergem și pozele din MinIO, nu doar rândul din DB
+    await Promise.all(
+      userBook.photos.map((path) => this.storage.deleteImage(path)),
+    );
 
     await this.prisma.userBook.delete({ where: { id: userBookId } });
     return { message: 'Carte ștearsă din bibliotecă' };
@@ -152,7 +218,9 @@ export class BooksService {
 
   private assertOwnership(ownerId: string, requesterId: string) {
     if (ownerId !== requesterId) {
-      throw new ForbiddenException('Nu poți modifica o carte care nu îți aparține');
+      throw new ForbiddenException(
+        'Nu poți modifica o carte care nu îți aparține',
+      );
     }
   }
 }
