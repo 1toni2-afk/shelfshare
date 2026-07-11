@@ -1,8 +1,7 @@
 // ShelfShare - Prisma Schema
 // Milestone 2: câmpurile necesare pentru autentificare.
 // Milestone 3: câmpurile de profil.
-// Modelele Books, UserBooks, ExchangeRequests, Messages, Reviews, Wishlist etc.
-// se adaugă la milestone-urile corespunzătoare, nu acum.
+// Milestone 4: catalogul de cărți + biblioteca personală.
 
 generator client {
   provider = "prisma-client-js"
@@ -15,36 +14,84 @@ datasource db {
 model User {
   id       String  @id @default(uuid())
   email    String  @unique
-  password String? // null dacă userul s-a înregistrat doar prin Google
+  password String?
 
-  // Verificare email
   isEmailVerified   Boolean   @default(false)
   emailVerifyToken  String?   @unique
   emailVerifyExpiry DateTime?
 
-  // Reset parolă
   resetPasswordToken  String?   @unique
   resetPasswordExpiry DateTime?
 
-  // Refresh token curent (hash-uit), pentru invalidare la logout
   refreshTokenHash String?
 
-  // Google OAuth
   googleId String? @unique
 
-  // Profil
   name         String?
   city         String?
   bio          String?
-  profileImage String? // path către poza din MinIO - se adaugă la Milestone 4
+  profileImage String?
 
-  // Calculate din alte module (reviews, exchanges) - încă neimplementate.
-  // Rămân aici ca placeholder, cu valoare default, până construim acele module.
   rating               Float @default(0)
   booksExchangedCount  Int   @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  userBooks UserBook[]
+
   @@map("users")
+}
+
+enum BookCondition {
+  NOUA
+  FOARTE_BUNA
+  BUNA
+  ACCEPTABILA
+}
+
+model Book {
+  id String @id @default(uuid())
+
+  isbn        String? @unique
+  title       String
+  author      String?
+  description String?
+  coverUrl    String?
+  publisher   String?
+  publishedYear Int?
+  pageCount   Int?
+  language    String?
+
+  source String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userBooks UserBook[]
+
+  @@map("books")
+}
+
+model UserBook {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  condition        BookCondition
+  language         String?
+  edition          String?
+  isHardcover      Boolean       @default(false)
+  availableForSwap Boolean       @default(true)
+
+  photos String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_books")
 }
