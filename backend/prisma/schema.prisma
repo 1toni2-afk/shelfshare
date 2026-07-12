@@ -3,6 +3,7 @@
 // Milestone 3: câmpurile de profil.
 // Milestone 4: catalogul de cărți + biblioteca personală.
 // Milestone 5: genre pentru filtrarea la căutare.
+// Milestone 6: cererile de schimb.
 
 generator client {
   provider = "prisma-client-js"
@@ -39,7 +40,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userBooks UserBook[]
+  userBooks                UserBook[]
+  sentExchangeRequests     ExchangeRequest[] @relation("RequesterExchanges")
+  receivedExchangeRequests ExchangeRequest[] @relation("OwnerExchanges")
 
   @@map("users")
 }
@@ -95,5 +98,42 @@ model UserBook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  exchangeRequestsReceived ExchangeRequest[] @relation("RequestedBook")
+  exchangeRequestsOffered  ExchangeRequest[] @relation("OfferedBook")
+
   @@map("user_books")
+}
+
+enum ExchangeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+model ExchangeRequest {
+  id String @id @default(uuid())
+
+  requesterId String
+  requester   User   @relation("RequesterExchanges", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  ownerId String
+  owner   User   @relation("OwnerExchanges", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  requestedBookId String
+  requestedBook   UserBook @relation("RequestedBook", fields: [requestedBookId], references: [id], onDelete: Cascade)
+
+  offeredBookId String?
+  offeredBook   UserBook? @relation("OfferedBook", fields: [offeredBookId], references: [id], onDelete: SetNull)
+
+  offeredAmount Decimal? @db.Decimal(10, 2)
+
+  status  ExchangeStatus @default(PENDING)
+  message String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("exchange_requests")
 }

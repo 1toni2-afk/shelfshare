@@ -26,3 +26,6 @@ Thumbs.db
 
 # Docker volumes locale (dacă apar mount-uri locale de test)
 postgres_data/
+
+# pnpm cache local, nu trebuie versionat
+.pnpm-store/

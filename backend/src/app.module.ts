@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { StorageModule } from './storage/storage.module';
 import { BooksModule } from './books/books.module';
+import { ExchangesModule } from './exchanges/exchanges.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BooksModule } from './books/books.module';
     ProfileModule,
     StorageModule,
     BooksModule,
+    ExchangesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
