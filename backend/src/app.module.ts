@@ -9,6 +9,9 @@ import { StorageModule } from './storage/storage.module';
 import { BooksModule } from './books/books.module';
 import { ExchangesModule } from './exchanges/exchanges.module';
 import { ChatModule } from './chat/chat.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { WishlistModule } from './wishlist/wishlist.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { ChatModule } from './chat/chat.module';
     BooksModule,
     ExchangesModule,
     ChatModule,
+    NotificationsModule,
+    WishlistModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

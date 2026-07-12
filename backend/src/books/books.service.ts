@@ -7,6 +7,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { WishlistService } from '../wishlist/wishlist.service';
 import { BookLookupService } from './book-lookup.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
@@ -18,20 +19,15 @@ export class BooksService {
     private prisma: PrismaService,
     private lookup: BookLookupService,
     private storage: StorageService,
+    private wishlist: WishlistService,
   ) {}
 
   async searchExternal(query: string) {
     return this.lookup.searchByTitle(query);
   }
 
-  /**
-   * Caută printre cărțile deținute de utilizatori (nu în catalogul extern),
-   * cu filtrele din spec: titlu, autor, gen, limbă, oraș, stare, disponibilitate.
-   */
   async searchLibrary(filters: SearchLibraryDto) {
     const where: Prisma.UserBookWhereInput = {
-      // Implicit doar cărțile disponibile la schimb, exceptând cazul
-      // explicit în care cineva vrea să vadă și restul (ex: pentru admin).
       availableForSwap: filters.availableOnly === 'false' ? undefined : true,
       condition: filters.condition,
       language: filters.language
@@ -76,15 +72,10 @@ export class BooksService {
     return { items, total, limit: filters.limit, offset: filters.offset };
   }
 
-  /**
-   * Adaugă o carte în biblioteca utilizatorului. Dacă e dat ISBN și cartea
-   * nu există încă în catalogul local, o căutăm extern și o creăm.
-   * Dacă nu e dat ISBN, se creează cartea manual din titlu + autor.
-   */
   async addToLibrary(userId: string, dto: AddBookDto) {
     const book = await this.findOrCreateBook(dto);
 
-    return this.prisma.userBook.create({
+    const userBook = await this.prisma.userBook.create({
       data: {
         userId,
         bookId: book.id,
@@ -95,6 +86,10 @@ export class BooksService {
       },
       include: { book: true },
     });
+
+    this.wishlist.notifyWishlistedUsers(book.id, userId).catch(() => {});
+
+    return userBook;
   }
 
   private async findOrCreateBook(dto: AddBookDto) {
@@ -124,8 +119,6 @@ export class BooksService {
         });
       }
 
-      // ISBN dat, dar nu găsim nimic extern - creăm intrare minimă manuală,
-      // cu ce a completat utilizatorul (dacă a completat titlu/autor și ISBN).
       if (!dto.title) {
         throw new BadRequestException(
           'Nu am găsit cartea după ISBN. Completează manual titlul și autorul.',
@@ -141,7 +134,6 @@ export class BooksService {
       });
     }
 
-    // Fără ISBN - creare manuală directă
     if (!dto.title) {
       throw new BadRequestException('Titlul este obligatoriu dacă nu dai ISBN');
     }
@@ -154,7 +146,7 @@ export class BooksService {
     });
   }
 
-  async getMyLibrary(userId: string) {
+  getMyLibrary(userId: string) {
     return this.prisma.userBook.findMany({
       where: { userId },
       include: { book: true },
@@ -192,7 +184,6 @@ export class BooksService {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
 
-    // Ștergem și pozele din MinIO, nu doar rândul din DB
     await Promise.all(
       userBook.photos.map((path) => this.storage.deleteImage(path)),
     );

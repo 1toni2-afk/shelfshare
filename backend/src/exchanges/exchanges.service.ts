@@ -82,7 +82,7 @@ export class ExchangesService {
     });
   }
 
-  async getSentRequests(userId: string) {
+  getSentRequests(userId: string) {
     return this.prisma.exchangeRequest.findMany({
       where: { requesterId: userId },
       include: INCLUDE_FULL,
@@ -90,7 +90,7 @@ export class ExchangesService {
     });
   }
 
-  async getReceivedRequests(userId: string) {
+  getReceivedRequests(userId: string) {
     return this.prisma.exchangeRequest.findMany({
       where: { ownerId: userId },
       include: INCLUDE_FULL,
