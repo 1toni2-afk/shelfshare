@@ -14,7 +14,17 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:8080',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (process.env.NODE_ENV === 'production') {
+        const allowed = process.env.FRONTEND_URL ?? 'http://localhost:8080';
+        return callback(null, origin === allowed);
+      }
+
+      const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+      callback(null, isLocalhost);
+    },
     credentials: true,
   });
 
