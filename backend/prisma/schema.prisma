@@ -4,6 +4,7 @@
 // Milestone 4: catalogul de cărți + biblioteca personală.
 // Milestone 5: genre pentru filtrarea la căutare.
 // Milestone 6: cererile de schimb.
+// Milestone 7: conversații și mesaje.
 
 generator client {
   provider = "prisma-client-js"
@@ -43,6 +44,9 @@ model User {
   userBooks                UserBook[]
   sentExchangeRequests     ExchangeRequest[] @relation("RequesterExchanges")
   receivedExchangeRequests ExchangeRequest[] @relation("OwnerExchanges")
+  conversationsAsUserA     Conversation[]    @relation("ConversationUserA")
+  conversationsAsUserB     Conversation[]    @relation("ConversationUserB")
+  messagesSent             Message[]         @relation("MessageSender")
 
   @@map("users")
 }
@@ -136,4 +140,42 @@ model ExchangeRequest {
   updatedAt DateTime @updatedAt
 
   @@map("exchange_requests")
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  userAId String
+  userA   User   @relation("ConversationUserA", fields: [userAId], references: [id], onDelete: Cascade)
+
+  userBId String
+  userB   User   @relation("ConversationUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
+  @@map("conversations")
+}
+
+model Message {
+  id String @id @default(uuid())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  content  String?
+  photo    String?
+  location String?
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@map("messages")
 }

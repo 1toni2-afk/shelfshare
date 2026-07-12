@@ -8,6 +8,7 @@ import { ProfileModule } from './profile/profile.module';
 import { StorageModule } from './storage/storage.module';
 import { BooksModule } from './books/books.module';
 import { ExchangesModule } from './exchanges/exchanges.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ExchangesModule } from './exchanges/exchanges.module';
     StorageModule,
     BooksModule,
     ExchangesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
