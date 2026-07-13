@@ -14,7 +14,9 @@ import '../../features/books/presentation/my_library_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
+import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -43,6 +45,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
+      GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
+      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(
         path: '/books/:userBookId',
         builder: (context, state) => BookDetailScreen(
@@ -65,7 +69,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/search', builder: (context, state) => const BrowseScreen()),
+            GoRoute(
+              path: '/search',
+              builder: (context, state) => BrowseScreen(initialTitle: state.extra as String?),
+            ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/library', builder: (context, state) => const MyLibraryScreen()),

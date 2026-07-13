@@ -12,6 +12,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../chat/data/chat_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
+import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
 import '../data/books_repository.dart';
 
@@ -52,9 +53,23 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(bookDetailProvider(widget.userBookId));
+    final bookId = async.value?.book.id;
+    final wishlistState = ref.watch(wishlistControllerProvider);
+    final isWishlisted = bookId != null &&
+        (wishlistState.value ?? const []).any((item) => item.book.id == bookId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalii carte')),
+      appBar: AppBar(
+        title: const Text('Detalii carte'),
+        actions: [
+          if (bookId != null)
+            IconButton(
+              icon: Icon(isWishlisted ? Icons.favorite : Icons.favorite_border),
+              color: isWishlisted ? AppColors.destructive : null,
+              onPressed: () => ref.read(wishlistControllerProvider.notifier).toggle(bookId),
+            ),
+        ],
+      ),
       body: SafeArea(
         child: async.when(
           data: (book) {

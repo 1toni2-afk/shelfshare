@@ -52,4 +52,15 @@ class AppNotification {
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
+
+  AppNotification copyWith({bool? isRead}) {
+    return AppNotification(
+      id: id,
+      type: type,
+      message: message,
+      data: data,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt,
+    );
+  }
 }

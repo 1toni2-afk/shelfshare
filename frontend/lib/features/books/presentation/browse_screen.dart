@@ -9,14 +9,15 @@ import '../application/browse_controller.dart';
 import 'browse_filters_sheet.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
-  const BrowseScreen({super.key});
+  const BrowseScreen({super.key, this.initialTitle});
+  final String? initialTitle;
 
   @override
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
 }
 
 class _BrowseScreenState extends ConsumerState<BrowseScreen> {
-  final _searchController = TextEditingController();
+  late final _searchController = TextEditingController(text: widget.initialTitle);
   final _scrollController = ScrollController();
   Timer? _debounce;
   bool _sheetOpen = false;
@@ -25,6 +26,11 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => ref.read(browseControllerProvider.notifier).updateTitle(widget.initialTitle),
+      );
+    }
   }
 
   @override

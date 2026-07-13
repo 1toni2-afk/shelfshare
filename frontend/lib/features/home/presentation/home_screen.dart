@@ -7,6 +7,7 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
+import '../../notifications/application/notifications_controller.dart';
 import '../application/home_controller.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -17,11 +18,25 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final homeAsync = ref.watch(homeControllerProvider);
     final name = authState is AuthAuthenticated ? authState.user.name : null;
+    final unreadCount =
+        (ref.watch(notificationsControllerProvider).value ?? const []).where((n) => !n.isRead).length;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(name != null && name.isNotEmpty ? 'Salut, $name!' : 'Bine ai venit!'),
         actions: [
+          IconButton(
+            icon: Badge(
+              label: Text('$unreadCount'),
+              isLabelVisible: unreadCount > 0,
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            onPressed: () => context.push('/wishlist'),
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () => context.go('/search'),
