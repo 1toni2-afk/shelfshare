@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../data/models/user.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/application/auth_state.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/books/presentation/add_book_screen.dart';
+import '../../features/books/presentation/book_detail_screen.dart';
+import '../../features/books/presentation/browse_screen.dart';
 import '../../features/books/presentation/my_library_screen.dart';
+import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
@@ -37,6 +42,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
+      GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
+      GoRoute(
+        path: '/books/:userBookId',
+        builder: (context, state) => BookDetailScreen(
+          userBookId: state.pathParameters['userBookId']!,
+          fallbackOwner: state.extra as PublicUser?,
+        ),
+      ),
+      GoRoute(
+        path: '/chat/:conversationId',
+        builder: (context, state) => ConversationScreen(
+          conversationId: state.pathParameters['conversationId']!,
+          otherUser: state.extra as PublicUser?,
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             MainScaffold(navigationShell: navigationShell),
@@ -45,7 +65,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/search', builder: (context, state) => const HomeScreen()),
+            GoRoute(path: '/search', builder: (context, state) => const BrowseScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/library', builder: (context, state) => const MyLibraryScreen()),

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../data/models/user.dart';
 import '../data/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -42,6 +43,15 @@ class AuthController extends Notifier<AuthState> {
   Future<void> logout() async {
     await _repository.logout();
     state = const AuthUnauthenticated();
+  }
+
+  /// Actualizează userul din starea de auth după o editare de profil,
+  /// ca ecranele care depind de nume/oraș (Home etc.) să reflecte imediat
+  /// schimbarea, fără să aștepte un restart al aplicației.
+  void setUser(AppUser user) {
+    if (state is AuthAuthenticated) {
+      state = AuthAuthenticated(user);
+    }
   }
 
   String _extractMessage(DioException e) {
