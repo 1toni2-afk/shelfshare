@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/romanian_cities.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user.dart';
@@ -117,7 +118,16 @@ class _ProfileContent extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(user.bio!),
         ],
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.swap_horiz),
+            title: const Text('Schimburile mele'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/exchanges'),
+          ),
+        ),
+        const SizedBox(height: 24),
         OutlinedButton(
           onPressed: onEdit,
           child: const Text('Editează profilul'),

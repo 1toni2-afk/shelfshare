@@ -13,6 +13,7 @@ import '../../features/books/presentation/browse_screen.dart';
 import '../../features/books/presentation/my_library_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
+import '../../features/exchanges/presentation/exchanges_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
@@ -47,6 +48,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
       GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/exchanges', builder: (context, state) => const ExchangesScreen()),
       GoRoute(
         path: '/books/:userBookId',
         builder: (context, state) => BookDetailScreen(

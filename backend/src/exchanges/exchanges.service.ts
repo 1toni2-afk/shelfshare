@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 
 const INCLUDE_FULL = {
@@ -32,7 +33,10 @@ const INCLUDE_FULL = {
 
 @Injectable()
 export class ExchangesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   async createRequest(requesterId: string, dto: CreateExchangeRequestDto) {
     const requestedBook = await this.prisma.userBook.findUnique({
@@ -69,7 +73,7 @@ export class ExchangesService {
       }
     }
 
-    return this.prisma.exchangeRequest.create({
+    const request = await this.prisma.exchangeRequest.create({
       data: {
         requesterId,
         ownerId: requestedBook.userId,
@@ -80,6 +84,18 @@ export class ExchangesService {
       },
       include: INCLUDE_FULL,
     });
+
+    // Notificarea nu trebuie să blocheze crearea cererii dacă eșuează.
+    this.notifications
+      .create(
+        request.ownerId,
+        'EXCHANGE_REQUEST_RECEIVED',
+        `${request.requester.name ?? 'Cineva'} vrea "${request.requestedBook.book.title}" la schimb`,
+        { exchangeRequestId: request.id },
+      )
+      .catch(() => {});
+
+    return request;
   }
 
   getSentRequests(userId: string) {
@@ -112,7 +128,7 @@ export class ExchangesService {
     this.assertIsOwner(request, userId);
     this.assertStatus(request, 'PENDING');
 
-    return this.prisma.$transaction(async (tx) => {
+    const accepted = await this.prisma.$transaction(async (tx) => {
       await tx.userBook.update({
         where: { id: request.requestedBookId },
         data: { availableForSwap: false },
@@ -130,6 +146,17 @@ export class ExchangesService {
         include: INCLUDE_FULL,
       });
     });
+
+    this.notifications
+      .create(
+        accepted.requesterId,
+        'EXCHANGE_REQUEST_ACCEPTED',
+        `Cererea ta pentru "${accepted.requestedBook.book.title}" a fost acceptată`,
+        { exchangeRequestId: accepted.id },
+      )
+      .catch(() => {});
+
+    return accepted;
   }
 
   async reject(id: string, userId: string) {
@@ -137,11 +164,22 @@ export class ExchangesService {
     this.assertIsOwner(request, userId);
     this.assertStatus(request, 'PENDING');
 
-    return this.prisma.exchangeRequest.update({
+    const rejected = await this.prisma.exchangeRequest.update({
       where: { id },
       data: { status: 'REJECTED' },
       include: INCLUDE_FULL,
     });
+
+    this.notifications
+      .create(
+        rejected.requesterId,
+        'EXCHANGE_REQUEST_REJECTED',
+        `Cererea ta pentru "${rejected.requestedBook.book.title}" a fost refuzată`,
+        { exchangeRequestId: rejected.id },
+      )
+      .catch(() => {});
+
+    return rejected;
   }
 
   async cancel(id: string, userId: string) {
