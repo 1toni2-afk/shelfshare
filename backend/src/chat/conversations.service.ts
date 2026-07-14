@@ -97,9 +97,7 @@ export class ConversationsService {
 
   async sendMessage(senderId: string, dto: SendMessageDto) {
     if (!dto.content && !dto.location) {
-      throw new BadRequestException(
-        'Mesajul trebuie să aibă text sau locație',
-      );
+      throw new BadRequestException('Mesajul trebuie să aibă text sau locație');
     }
 
     await this.assertParticipant(dto.conversationId, senderId);

@@ -104,23 +104,21 @@ export class BookLookupService {
         this.http.get<{ docs?: OpenLibrarySearchDoc[] }>(url),
       );
 
-      return (data.docs ?? []).map(
-        (doc): ExternalBookResult => ({
-          isbn: doc.isbn?.[0] ?? null,
-          title: doc.title ?? 'Titlu necunoscut',
-          author: doc.author_name?.join(', ') ?? null,
-          description: null, // nu vine în search.json, doar la lookup individual
-          coverUrl: doc.cover_i
-            ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-            : null,
-          publisher: doc.publisher?.[0] ?? null,
-          publishedYear: doc.first_publish_year ?? null,
-          pageCount: doc.number_of_pages_median ?? null,
-          language: doc.language?.[0] ?? null,
-          genre: doc.subject?.[0] ?? null,
-          source: 'open_library',
-        }),
-      );
+      return (data.docs ?? []).map((doc): ExternalBookResult => ({
+        isbn: doc.isbn?.[0] ?? null,
+        title: doc.title ?? 'Titlu necunoscut',
+        author: doc.author_name?.join(', ') ?? null,
+        description: null, // nu vine în search.json, doar la lookup individual
+        coverUrl: doc.cover_i
+          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+          : null,
+        publisher: doc.publisher?.[0] ?? null,
+        publishedYear: doc.first_publish_year ?? null,
+        pageCount: doc.number_of_pages_median ?? null,
+        language: doc.language?.[0] ?? null,
+        genre: doc.subject?.[0] ?? null,
+        source: 'open_library',
+      }));
     } catch (error) {
       this.logger.warn(`Open Library search eșuat pentru "${query}": ${error}`);
       return [];

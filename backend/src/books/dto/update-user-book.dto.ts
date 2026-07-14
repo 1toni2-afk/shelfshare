@@ -1,4 +1,10 @@
-import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { BookCondition } from '@prisma/client';
 
 export class UpdateUserBookDto {
