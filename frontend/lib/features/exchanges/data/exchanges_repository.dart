@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/exchange_request.dart';
 
@@ -46,6 +47,26 @@ class ExchangesRepository {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/exchanges/$id/$action');
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ExchangeRequest> setMeeting(
+    String id, {
+    required DateTime meetingTime,
+    required String meetingLocation,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.patch('/exchanges/$id/meeting', data: {
+      'meetingTime': meetingTime.toUtc().toIso8601String(),
+      'meetingLocation': meetingLocation,
+    });
+    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Link-ul de descărcare .ics, cu token-ul JWT în query - browserul îl
+  /// deschide direct (via url_launcher) fără să poată atașa un header Authorization.
+  Future<String> calendarUrl(String id) async {
+    final token = await _ref.read(tokenStorageProvider).getAccessToken();
+    return '${ApiConfig.baseUrl}/exchanges/$id/calendar.ics?token=$token';
   }
 }
 

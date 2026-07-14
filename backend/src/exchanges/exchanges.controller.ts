@@ -2,16 +2,20 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { ExchangesService } from './exchanges.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
+import { SetMeetingDto } from './dto/set-meeting.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -70,5 +74,27 @@ export class ExchangesController {
   complete(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
     return this.exchangesService.complete(id, userId!);
+  }
+
+  @Patch(':id/meeting')
+  setMeeting(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: SetMeetingDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.setMeeting(id, userId!, dto);
+  }
+
+  @Get(':id/calendar.ics')
+  @Header('Content-Type', 'text/calendar; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="schimb-shelfshare.ics"')
+  async getCalendar(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<StreamableFile> {
+    const { userId } = req.user as AuthenticatedUser;
+    const ics = await this.exchangesService.generateIcs(id, userId!);
+    return new StreamableFile(Buffer.from(ics, 'utf-8'));
   }
 }

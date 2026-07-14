@@ -144,6 +144,9 @@ model ExchangeRequest {
   status  ExchangeStatus @default(PENDING)
   message String?
 
+  meetingTime     DateTime?
+  meetingLocation String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -208,6 +211,7 @@ enum NotificationType {
   EXCHANGE_REQUEST_RECEIVED
   EXCHANGE_REQUEST_ACCEPTED
   EXCHANGE_REQUEST_REJECTED
+  EXCHANGE_MEETING_SCHEDULED
   NEW_MESSAGE
 }
 

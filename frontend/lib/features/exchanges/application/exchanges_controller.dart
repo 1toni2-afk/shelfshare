@@ -31,6 +31,16 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
 
   Future<void> complete(String id) => _apply((r) => r.complete(id));
 
+  Future<void> setMeeting(
+    String id, {
+    required DateTime meetingTime,
+    required String meetingLocation,
+  }) =>
+      _apply((r) => r.setMeeting(id, meetingTime: meetingTime, meetingLocation: meetingLocation));
+
+  Future<String> calendarUrl(String id) =>
+      ref.read(exchangesRepositoryProvider).calendarUrl(id);
+
   Future<void> _apply(Future<ExchangeRequest> Function(ExchangesRepository) action) async {
     final updated = await action(ref.read(exchangesRepositoryProvider));
     final current = state.value;

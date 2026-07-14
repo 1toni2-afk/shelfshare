@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/exchange_request.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/exchanges_controller.dart';
+
+String _formatDateTime(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(local.day)}.${two(local.month)}.${local.year}, ${two(local.hour)}:${two(local.minute)}';
+}
 
 class ExchangesScreen extends ConsumerWidget {
   const ExchangesScreen({super.key});
@@ -89,6 +96,7 @@ class _ExchangeCard extends ConsumerStatefulWidget {
 
 class _ExchangeCardState extends ConsumerState<_ExchangeCard> {
   bool _busy = false;
+  bool _sheetOpen = false;
 
   Future<void> _run(Future<void> Function() action) async {
     if (_busy) return;
@@ -99,6 +107,38 @@ class _ExchangeCardState extends ConsumerState<_ExchangeCard> {
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Acțiunea nu a putut fi efectuată.')));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _openMeetingSheet(ExchangeRequest request) async {
+    if (_sheetOpen) return;
+    _sheetOpen = true;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _MeetingSheet(request: request),
+    );
+    _sheetOpen = false;
+  }
+
+  Future<void> _openCalendar(String id) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final notifier = ref.read(exchangesControllerProvider.notifier);
+      final url = await notifier.calendarUrl(id);
+      final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut deschide calendarul.')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut deschide calendarul.')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -175,40 +215,63 @@ class _ExchangeCardState extends ConsumerState<_ExchangeCard> {
   }
 
   List<Widget> _actionsFor(ExchangeRequest request, ExchangesController notifier) {
-    final List<Widget> buttons;
     if (request.status == ExchangeStatus.pending && widget.isReceived) {
-      buttons = [
-        OutlinedButton(
-          onPressed: _busy ? null : () => _run(() => notifier.reject(request.id)),
-          child: const Text('Refuză'),
-        ),
-        const SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: _busy ? null : () => _run(() => notifier.accept(request.id)),
-          child: const Text('Acceptă'),
-        ),
+      return [
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          OutlinedButton(
+            onPressed: _busy ? null : () => _run(() => notifier.reject(request.id)),
+            child: const Text('Refuză'),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: _busy ? null : () => _run(() => notifier.accept(request.id)),
+            child: const Text('Acceptă'),
+          ),
+        ]),
       ];
-    } else if (request.status == ExchangeStatus.pending && !widget.isReceived) {
-      buttons = [
-        OutlinedButton(
-          onPressed: _busy ? null : () => _run(() => notifier.cancel(request.id)),
-          child: const Text('Anulează cererea'),
-        ),
-      ];
-    } else if (request.status == ExchangeStatus.accepted) {
-      buttons = [
-        ElevatedButton(
-          onPressed: _busy ? null : () => _run(() => notifier.complete(request.id)),
-          child: const Text('Marchează finalizat'),
-        ),
-      ];
-    } else {
-      return const [];
     }
-    return [
-      const SizedBox(height: 12),
-      Row(mainAxisAlignment: MainAxisAlignment.end, children: buttons),
-    ];
+    if (request.status == ExchangeStatus.pending && !widget.isReceived) {
+      return [
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          OutlinedButton(
+            onPressed: _busy ? null : () => _run(() => notifier.cancel(request.id)),
+            child: const Text('Anulează cererea'),
+          ),
+        ]),
+      ];
+    }
+    if (request.status == ExchangeStatus.accepted) {
+      return [
+        const SizedBox(height: 12),
+        if (request.meetingTime != null) ...[
+          _MeetingInfo(request: request),
+          const SizedBox(height: 12),
+        ],
+        Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton(
+              onPressed: _busy ? null : () => _openMeetingSheet(request),
+              child: Text(request.meetingTime == null ? 'Programează întâlnirea' : 'Reprogramează'),
+            ),
+            if (request.meetingTime != null)
+              OutlinedButton(
+                onPressed: _busy ? null : () => _openCalendar(request.id),
+                child: const Text('Adaugă în calendar'),
+              ),
+            ElevatedButton(
+              onPressed: _busy ? null : () => _run(() => notifier.complete(request.id)),
+              child: const Text('Marchează finalizat'),
+            ),
+          ],
+        ),
+      ];
+    }
+    return const [];
   }
 }
 
@@ -235,6 +298,141 @@ class _StatusChip extends StatelessWidget {
             .textTheme
             .bodySmall
             ?.copyWith(color: color, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+class _MeetingInfo extends StatelessWidget {
+  const _MeetingInfo({required this.request});
+  final ExchangeRequest request;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.event, size: 18, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${_formatDateTime(request.meetingTime!)} • ${request.meetingLocation}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MeetingSheet extends ConsumerStatefulWidget {
+  const _MeetingSheet({required this.request});
+  final ExchangeRequest request;
+
+  @override
+  ConsumerState<_MeetingSheet> createState() => _MeetingSheetState();
+}
+
+class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
+  late DateTime? _dateTime = widget.request.meetingTime?.toLocal();
+  late final _locationController = TextEditingController(text: widget.request.meetingLocation);
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDateTime() async {
+    final now = DateTime.now();
+    final initial = _dateTime ?? now.add(const Duration(days: 1));
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial.isBefore(now) ? now : initial,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null) return;
+    setState(() {
+      _dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
+  }
+
+  Future<void> _submit() async {
+    final dateTime = _dateTime;
+    final location = _locationController.text.trim();
+    if (dateTime == null || location.isEmpty) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(exchangesControllerProvider.notifier).setMeeting(
+            widget.request.id,
+            meetingTime: dateTime,
+            meetingLocation: location,
+          );
+      if (mounted) Navigator.of(context).pop();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut salva întâlnirea.')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Programează întâlnirea', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 20),
+          OutlinedButton.icon(
+            onPressed: _pickDateTime,
+            icon: const Icon(Icons.calendar_today),
+            label: Text(_dateTime == null ? 'Alege data și ora' : _formatDateTime(_dateTime!)),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _locationController,
+            maxLength: 200,
+            decoration: const InputDecoration(labelText: 'Locație'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : _submit,
+            child: _isSubmitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Salvează'),
+          ),
+        ],
       ),
     );
   }

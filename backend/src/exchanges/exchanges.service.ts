@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
+import { SetMeetingDto } from './dto/set-meeting.dto';
 
 const INCLUDE_FULL = {
   requestedBook: { include: { book: true } },
@@ -222,6 +223,83 @@ export class ExchangesService {
         include: INCLUDE_FULL,
       });
     });
+  }
+
+  /**
+   * Oricare dintre cei doi participanți poate programa/reprograma
+   * întâlnirea, cât timp schimbul e ACCEPTED.
+   */
+  async setMeeting(id: string, userId: string, dto: SetMeetingDto) {
+    const request = await this.findRequestForAction(id);
+    if (request.requesterId !== userId && request.ownerId !== userId) {
+      throw new ForbiddenException('Nu ești parte în acest schimb');
+    }
+    this.assertStatus(request, 'ACCEPTED');
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: {
+        meetingTime: new Date(dto.meetingTime),
+        meetingLocation: dto.meetingLocation,
+      },
+      include: INCLUDE_FULL,
+    });
+
+    const otherUserId =
+      userId === updated.requesterId ? updated.ownerId : updated.requesterId;
+    this.notifications
+      .create(
+        otherUserId,
+        'EXCHANGE_MEETING_SCHEDULED',
+        `Întâlnirea pentru "${updated.requestedBook.book.title}" a fost programată`,
+        { exchangeRequestId: updated.id },
+      )
+      .catch(() => {});
+
+    return updated;
+  }
+
+  /** Generează un fișier .ics pentru întâlnirea de schimb, ca oricare parte să-l poată importa în calendar. */
+  async generateIcs(id: string, userId: string): Promise<string> {
+    const request = await this.findOwnedRequest(id, userId);
+    if (!request.meetingTime) {
+      throw new BadRequestException(
+        'Nu a fost programată încă o întâlnire pentru acest schimb',
+      );
+    }
+
+    const start = request.meetingTime;
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+    const escape = (text: string) =>
+      text
+        .replace(/\\/g, '\\\\')
+        .replace(/,/g, '\\,')
+        .replace(/;/g, '\\;')
+        .replace(/\n/g, '\\n');
+
+    const formatDate = (date: Date) =>
+      date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const summary = `Schimb de cărți: ${request.requestedBook.book.title}`;
+    const description = `Întâlnire între ${request.requester.name ?? 'Cineva'} și ${request.owner.name ?? 'Cineva'} pentru schimbul cărții „${request.requestedBook.book.title}"`;
+
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ShelfShare//Exchange//RO',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${request.id}@shelfshare`,
+      `DTSTAMP:${formatDate(new Date())}`,
+      `DTSTART:${formatDate(start)}`,
+      `DTEND:${formatDate(end)}`,
+      `SUMMARY:${escape(summary)}`,
+      `LOCATION:${escape(request.meetingLocation ?? '')}`,
+      `DESCRIPTION:${escape(description)}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
   }
 
   // ---------- Helpers ----------
