@@ -3,9 +3,9 @@ import '../../../data/models/exchange_request.dart';
 import '../data/exchanges_repository.dart';
 
 class ExchangesData {
-  const ExchangesData({required this.sent, required this.received});
-  final List<ExchangeRequest> sent;
+  const ExchangesData({required this.received, required this.sent});
   final List<ExchangeRequest> received;
+  final List<ExchangeRequest> sent;
 }
 
 class ExchangesController extends AsyncNotifier<ExchangesData> {
@@ -14,11 +14,8 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
 
   Future<ExchangesData> _load() async {
     final repository = ref.read(exchangesRepositoryProvider);
-    final results = await Future.wait([
-      repository.getSent(),
-      repository.getReceived(),
-    ]);
-    return ExchangesData(sent: results[0], received: results[1]);
+    final results = await Future.wait([repository.getReceived(), repository.getSent()]);
+    return ExchangesData(received: results[0], sent: results[1]);
   }
 
   Future<void> refresh() async {
@@ -26,56 +23,45 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
     state = await AsyncValue.guard(_load);
   }
 
+  Future<void> accept(String id) => _apply((r) => r.accept(id));
+
+  Future<void> reject(String id) => _apply((r) => r.reject(id));
+
+  Future<void> cancel(String id) => _apply((r) => r.cancel(id));
+
+  Future<void> complete(String id) => _apply((r) => r.complete(id));
+
+  Future<void> rate(String id, int value, {String? comment}) =>
+      _apply((r) => r.rate(id, value, comment: comment));
+
+  Future<void> setMeeting(
+    String id, {
+    required DateTime meetingTime,
+    required String meetingLocation,
+  }) =>
+      _apply((r) => r.setMeeting(id, meetingTime: meetingTime, meetingLocation: meetingLocation));
+
+  Future<String> calendarUrl(String id) =>
+      ref.read(exchangesRepositoryProvider).calendarUrl(id);
+
   /// Fiecare acțiune de mutație întoarce deja cererea actualizată - o
   /// înlocuim direct în lista în care se află (trimise sau primite), fără
   /// să reîncărcăm ambele liste complete de la server.
-  void _patchLocally(ExchangeRequest updated) {
+  Future<void> _apply(Future<ExchangeRequest> Function(ExchangesRepository) action) async {
+    final updated = await action(ref.read(exchangesRepositoryProvider));
     final current = state.value;
     if (current == null) return;
-    state = AsyncData(
-      ExchangesData(
-        sent: [for (final e in current.sent) if (e.id == updated.id) updated else e],
-        received: [for (final e in current.received) if (e.id == updated.id) updated else e],
-      ),
-    );
-  }
-
-  Future<void> accept(String id) async {
-    final updated = await ref.read(exchangesRepositoryProvider).accept(id);
-    _patchLocally(updated);
-  }
-
-  Future<void> reject(String id) async {
-    final updated = await ref.read(exchangesRepositoryProvider).reject(id);
-    _patchLocally(updated);
-  }
-
-  Future<void> cancel(String id) async {
-    final updated = await ref.read(exchangesRepositoryProvider).cancel(id);
-    _patchLocally(updated);
-  }
-
-  Future<void> complete(String id) async {
-    final updated = await ref.read(exchangesRepositoryProvider).complete(id);
-    _patchLocally(updated);
-  }
-
-  Future<void> rate(String id, int value, {String? comment}) async {
-    final updated = await ref.read(exchangesRepositoryProvider).rate(id, value, comment: comment);
-    _patchLocally(updated);
-  }
-
-  Future<void> setMeeting(String id, DateTime meetingAt) async {
-    final updated = await ref.read(exchangesRepositoryProvider).setMeeting(id, meetingAt);
-    _patchLocally(updated);
-  }
-
-  Future<void> downloadIcs(String id) {
-    return ref.read(exchangesRepositoryProvider).downloadIcs(id);
+    List<ExchangeRequest> replace(List<ExchangeRequest> list) => [
+          for (final request in list)
+            if (request.id == updated.id) updated else request,
+        ];
+    state = AsyncData(ExchangesData(
+      received: replace(current.received),
+      sent: replace(current.sent),
+    ));
   }
 }
 
-final exchangesControllerProvider =
-    AsyncNotifierProvider<ExchangesController, ExchangesData>(
+final exchangesControllerProvider = AsyncNotifierProvider<ExchangesController, ExchangesData>(
   ExchangesController.new,
 );

@@ -1,6 +1,11 @@
-import { IsDateString } from 'class-validator';
+import { IsISO8601, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class SetMeetingDto {
-  @IsDateString()
-  meetingAt: string;
+  @IsISO8601()
+  meetingTime: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  meetingLocation: string;
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/exchange_request.dart';
 import '../../../data/models/price_offer.dart';
@@ -12,6 +13,12 @@ import '../../auth/application/auth_state.dart';
 import '../../books/presentation/relist_book_sheet.dart';
 import '../../offers/application/offers_controller.dart';
 import '../application/exchanges_controller.dart';
+
+String _formatDateTime(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(local.day)}.${two(local.month)}.${local.year}, ${two(local.hour)}:${two(local.minute)}';
+}
 
 class ExchangesScreen extends StatefulWidget {
   const ExchangesScreen({super.key});
@@ -290,27 +297,23 @@ class _Actions extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (exchange.meetingAt != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Întâlnire: ${_formatMeeting(exchange.meetingAt!)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
+          if (exchange.meetingTime != null) ...[
+            _MeetingInfo(request: exchange),
+            const SizedBox(height: 8),
+          ],
           Wrap(
             alignment: WrapAlignment.end,
             spacing: 8,
             runSpacing: 8,
             children: [
               OutlinedButton(
-                onPressed: () => _pickMeetingTime(context, ref, exchange),
-                child: Text(exchange.meetingAt == null ? 'Stabilește întâlnirea' : 'Schimbă data'),
+                onPressed: () => _openMeetingSheet(context, exchange),
+                child: Text(exchange.meetingTime == null ? 'Programează întâlnirea' : 'Reprogramează'),
               ),
-              if (exchange.meetingAt != null) ...[
+              if (exchange.meetingTime != null) ...[
                 OutlinedButton(
-                  onPressed: () => notifier.downloadIcs(exchange.id),
-                  child: const Text('Descarcă .ics'),
+                  onPressed: () => _openCalendar(context, ref, exchange.id),
+                  child: const Text('Adaugă în calendar'),
                 ),
                 OutlinedButton(
                   onPressed: () => _showQrDialog(context, exchange.id),
@@ -375,22 +378,29 @@ class _Actions extends ConsumerWidget {
     }
   }
 
-  Future<void> _pickMeetingTime(BuildContext context, WidgetRef ref, ExchangeRequest exchange) async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
+  Future<void> _openMeetingSheet(BuildContext context, ExchangeRequest request) {
+    return showModalBottomSheet<void>(
       context: context,
-      initialDate: exchange.meetingAt ?? now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 1),
+      isScrollControlled: true,
+      builder: (context) => _MeetingSheet(request: request),
     );
-    if (date == null || !context.mounted) return;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(exchange.meetingAt ?? now),
-    );
-    if (time == null) return;
-    final meetingAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    await ref.read(exchangesControllerProvider.notifier).setMeeting(exchange.id, meetingAt);
+  }
+
+  Future<void> _openCalendar(BuildContext context, WidgetRef ref, String id) async {
+    try {
+      final notifier = ref.read(exchangesControllerProvider.notifier);
+      final url = await notifier.calendarUrl(id);
+      final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut deschide calendarul.')));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut deschide calendarul.')));
+      }
+    }
   }
 
   void _showQrDialog(BuildContext context, String exchangeId) {
@@ -401,12 +411,241 @@ class _Actions extends ConsumerWidget {
   }
 }
 
+class RatingResult {
+  const RatingResult({required this.value, this.comment});
+  final int value;
+  final String? comment;
+}
+
 class _RatingDialog extends StatefulWidget {
   const _RatingDialog({required this.exchange});
   final ExchangeRequest exchange;
 
   @override
   State<_RatingDialog> createState() => _RatingDialogState();
+}
+
+class _RatingDialogState extends State<_RatingDialog> {
+  int _selected = 5;
+  final _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Cum a fost schimbul?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 1; i <= 5; i++)
+                IconButton(
+                  icon: Icon(
+                    i <= _selected ? Icons.star : Icons.star_border,
+                    color: AppColors.accent,
+                  ),
+                  onPressed: () => setState(() => _selected = i),
+                ),
+            ],
+          ),
+          TextField(
+            controller: _commentController,
+            maxLines: 3,
+            decoration: const InputDecoration(labelText: 'Recenzie (opțional)'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Anulează'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(
+            RatingResult(
+              value: _selected,
+              comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
+            ),
+          ),
+          child: const Text('Trimite'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Codul QR încodează un link către /exchanges/:id/confirm - celălalt
+/// participant îl scanează cu orice cameră/aplicație de scanare de pe
+/// telefon și pagina se deschide direct în browser, fără nevoie de o
+/// funcție de scanare separată în aplicație.
+class _ExchangeQrDialog extends StatelessWidget {
+  const _ExchangeQrDialog({required this.exchangeId});
+  final String exchangeId;
+
+  @override
+  Widget build(BuildContext context) {
+    final link = '${Uri.base.origin}/exchanges/$exchangeId/confirm';
+    return AlertDialog(
+      title: const Text('Cod QR de confirmare'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Celălalt participant scanează acest cod la întâlnire ca să confirme schimbul.',
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          QrImageView(data: link, size: 200),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Închide')),
+      ],
+    );
+  }
+}
+
+class _MeetingInfo extends StatelessWidget {
+  const _MeetingInfo({required this.request});
+  final ExchangeRequest request;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.event, size: 18, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${_formatDateTime(request.meetingTime!)} • ${request.meetingLocation}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MeetingSheet extends ConsumerStatefulWidget {
+  const _MeetingSheet({required this.request});
+  final ExchangeRequest request;
+
+  @override
+  ConsumerState<_MeetingSheet> createState() => _MeetingSheetState();
+}
+
+class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
+  late DateTime? _dateTime = widget.request.meetingTime?.toLocal();
+  late final _locationController = TextEditingController(text: widget.request.meetingLocation);
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDateTime() async {
+    final now = DateTime.now();
+    final initial = _dateTime ?? now.add(const Duration(days: 1));
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial.isBefore(now) ? now : initial,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null) return;
+    setState(() {
+      _dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
+  }
+
+  Future<void> _submit() async {
+    final dateTime = _dateTime;
+    final location = _locationController.text.trim();
+    if (dateTime == null || location.isEmpty) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(exchangesControllerProvider.notifier).setMeeting(
+            widget.request.id,
+            meetingTime: dateTime,
+            meetingLocation: location,
+          );
+      if (mounted) Navigator.of(context).pop();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut salva întâlnirea.')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Programează întâlnirea', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 20),
+          OutlinedButton.icon(
+            onPressed: _pickDateTime,
+            icon: const Icon(Icons.calendar_today),
+            label: Text(_dateTime == null ? 'Alege data și ora' : _formatDateTime(_dateTime!)),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _locationController,
+            maxLength: 200,
+            decoration: const InputDecoration(labelText: 'Locație'),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : _submit,
+            child: _isSubmitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Salvează'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 enum _OfferListMode { received, sent }
@@ -611,107 +850,6 @@ class _OfferActions extends ConsumerWidget {
         onPressed: () => notifier.cancel(offer.id),
         child: const Text('Anulează oferta'),
       ),
-    );
-  }
-}
-
-class RatingResult {
-  const RatingResult({required this.value, this.comment});
-  final int value;
-  final String? comment;
-}
-
-class _RatingDialogState extends State<_RatingDialog> {
-  int _selected = 5;
-  final _commentController = TextEditingController();
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Cum a fost schimbul?'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 1; i <= 5; i++)
-                IconButton(
-                  icon: Icon(
-                    i <= _selected ? Icons.star : Icons.star_border,
-                    color: AppColors.accent,
-                  ),
-                  onPressed: () => setState(() => _selected = i),
-                ),
-            ],
-          ),
-          TextField(
-            controller: _commentController,
-            maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Recenzie (opțional)'),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Anulează'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(
-            RatingResult(
-              value: _selected,
-              comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
-            ),
-          ),
-          child: const Text('Trimite'),
-        ),
-      ],
-    );
-  }
-}
-
-String _formatMeeting(DateTime date) {
-  final local = date.toLocal();
-  final h = local.hour.toString().padLeft(2, '0');
-  final m = local.minute.toString().padLeft(2, '0');
-  return '${local.day}.${local.month}.${local.year}, ora $h:$m';
-}
-
-/// Codul QR încodează un link către /exchanges/:id/confirm - celălalt
-/// participant îl scanează cu orice cameră/aplicație de scanare de pe
-/// telefon și pagina se deschide direct în browser, fără nevoie de o
-/// funcție de scanare separată în aplicație.
-class _ExchangeQrDialog extends StatelessWidget {
-  const _ExchangeQrDialog({required this.exchangeId});
-  final String exchangeId;
-
-  @override
-  Widget build(BuildContext context) {
-    final link = '${Uri.base.origin}/exchanges/$exchangeId/confirm';
-    return AlertDialog(
-      title: const Text('Cod QR de confirmare'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Celălalt participant scanează acest cod la întâlnire ca să confirme schimbul.',
-            style: Theme.of(context).textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          QrImageView(data: link, size: 200),
-        ],
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Închide')),
-      ],
     );
   }
 }

@@ -12,7 +12,12 @@ export interface JwtPayload {
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // fromUrlQueryParameter e necesar pentru link-ul de descărcare .ics
+      // al calendarului (deschis direct de browser, fără header Authorization).
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        ExtractJwt.fromUrlQueryParameter('token'),
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.get<string>('JWT_ACCESS_SECRET')!,
     });

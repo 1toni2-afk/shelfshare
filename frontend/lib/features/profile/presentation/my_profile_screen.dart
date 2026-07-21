@@ -112,6 +112,15 @@ class _ProfileContent extends ConsumerWidget {
           AchievementsGrid(achievements: user.achievements!),
         ],
         const SizedBox(height: 20),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.swap_horiz),
+            title: const Text('Schimburile mele'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/exchanges'),
+          ),
+        ),
+        const SizedBox(height: 20),
         OutlinedButton.icon(
           icon: const Icon(Icons.shield_outlined),
           label: const Text('Centru de siguranță'),

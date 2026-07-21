@@ -22,6 +22,7 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationType.exchangeRequestReceived:
       case NotificationType.exchangeRequestAccepted:
       case NotificationType.exchangeRequestRejected:
+      case NotificationType.exchangeMeetingScheduled:
         context.push('/exchanges');
     }
   }
@@ -99,6 +100,8 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationType.exchangeRequestAccepted:
       case NotificationType.exchangeRequestRejected:
         return Icons.swap_horiz;
+      case NotificationType.exchangeMeetingScheduled:
+        return Icons.event;
     }
   }
 

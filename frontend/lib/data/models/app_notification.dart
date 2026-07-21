@@ -3,6 +3,7 @@ enum NotificationType {
   exchangeRequestReceived,
   exchangeRequestAccepted,
   exchangeRequestRejected,
+  exchangeMeetingScheduled,
   newMessage,
 }
 
@@ -17,6 +18,8 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.exchangeRequestAccepted;
       case 'EXCHANGE_REQUEST_REJECTED':
         return NotificationType.exchangeRequestRejected;
+      case 'EXCHANGE_MEETING_SCHEDULED':
+        return NotificationType.exchangeMeetingScheduled;
       case 'NEW_MESSAGE':
         return NotificationType.newMessage;
       default:

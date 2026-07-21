@@ -48,10 +48,11 @@ class ExchangeRequest {
   final String? message;
   final PublicUser requester;
   final PublicUser owner;
+  final DateTime? meetingTime;
+  final String? meetingLocation;
   final DateTime createdAt;
   final int? requesterRatingForOwner;
   final int? ownerRatingForRequester;
-  final DateTime? meetingAt;
 
   const ExchangeRequest({
     required this.id,
@@ -64,10 +65,11 @@ class ExchangeRequest {
     this.message,
     required this.requester,
     required this.owner,
+    this.meetingTime,
+    this.meetingLocation,
     required this.createdAt,
     this.requesterRatingForOwner,
     this.ownerRatingForRequester,
-    this.meetingAt,
   });
 
   /// Rating-ul dat de mine celuilalt participant, dacă `myUserId` a
@@ -94,10 +96,13 @@ class ExchangeRequest {
       message: json['message'] as String?,
       requester: PublicUser.fromJson(json['requester'] as Map<String, dynamic>),
       owner: PublicUser.fromJson(json['owner'] as Map<String, dynamic>),
+      meetingTime: json['meetingTime'] != null
+          ? DateTime.parse(json['meetingTime'] as String)
+          : null,
+      meetingLocation: json['meetingLocation'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       requesterRatingForOwner: json['requesterRatingForOwner'] as int?,
       ownerRatingForRequester: json['ownerRatingForRequester'] as int?,
-      meetingAt: json['meetingAt'] != null ? DateTime.parse(json['meetingAt'] as String) : null,
     );
   }
 }

@@ -2,16 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
   Patch,
   Post,
   Req,
-  Res,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import { ExchangesService } from './exchanges.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
@@ -94,19 +95,18 @@ export class ExchangesController {
     @Body() dto: SetMeetingDto,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.exchangesService.setMeeting(id, userId!, new Date(dto.meetingAt));
+    return this.exchangesService.setMeeting(id, userId!, dto);
   }
 
-  @Get(':id/ics')
-  async getIcs(
+  @Get(':id/calendar.ics')
+  @Header('Content-Type', 'text/calendar; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="schimb-shelfshare.ics"')
+  async getCalendar(
     @Req() req: Request,
     @Param('id') id: string,
-    @Res() res: Response,
-  ) {
+  ): Promise<StreamableFile> {
     const { userId } = req.user as AuthenticatedUser;
-    const content = await this.exchangesService.getIcsContent(id, userId!);
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="schimb-${id}.ics"`);
-    res.send(content);
+    const ics = await this.exchangesService.generateIcs(id, userId!);
+    return new StreamableFile(Buffer.from(ics, 'utf-8'));
   }
 }

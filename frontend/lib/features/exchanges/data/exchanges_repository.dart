@@ -1,8 +1,5 @@
-import 'dart:js_interop';
-import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web/web.dart' as web;
-import 'package:dio/dio.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/exchange_request.dart';
 
@@ -26,43 +23,29 @@ class ExchangesRepository {
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<List<ExchangeRequest>> getSent() async {
+  Future<List<ExchangeRequest>> getSent() => _getList('/exchanges/sent');
+
+  Future<List<ExchangeRequest>> getReceived() => _getList('/exchanges/received');
+
+  Future<List<ExchangeRequest>> _getList(String path) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get('/exchanges/sent');
-    return (response.data as List)
+    final response = await dio.get(path);
+    return (response.data as List<dynamic>)
         .map((e) => ExchangeRequest.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
-  Future<List<ExchangeRequest>> getReceived() async {
-    final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get('/exchanges/received');
-    return (response.data as List)
-        .map((e) => ExchangeRequest.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
+  Future<ExchangeRequest> accept(String id) => _action(id, 'accept');
 
-  Future<ExchangeRequest> accept(String id) async {
-    final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.post('/exchanges/$id/accept');
-    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
-  }
+  Future<ExchangeRequest> reject(String id) => _action(id, 'reject');
 
-  Future<ExchangeRequest> reject(String id) async {
-    final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.post('/exchanges/$id/reject');
-    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
-  }
+  Future<ExchangeRequest> cancel(String id) => _action(id, 'cancel');
 
-  Future<ExchangeRequest> cancel(String id) async {
-    final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.post('/exchanges/$id/cancel');
-    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
-  }
+  Future<ExchangeRequest> complete(String id) => _action(id, 'complete');
 
-  Future<ExchangeRequest> complete(String id) async {
+  Future<ExchangeRequest> _action(String id, String action) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.post('/exchanges/$id/complete');
+    final response = await dio.post('/exchanges/$id/$action');
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -75,35 +58,24 @@ class ExchangesRepository {
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<ExchangeRequest> setMeeting(String id, DateTime meetingAt) async {
+  Future<ExchangeRequest> setMeeting(
+    String id, {
+    required DateTime meetingTime,
+    required String meetingLocation,
+  }) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.patch(
-      '/exchanges/$id/meeting',
-      data: {'meetingAt': meetingAt.toIso8601String()},
-    );
+    final response = await dio.patch('/exchanges/$id/meeting', data: {
+      'meetingTime': meetingTime.toUtc().toIso8601String(),
+      'meetingLocation': meetingLocation,
+    });
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Descarcă fișierul .ics direct din browser - endpoint-ul cere JWT în
-  /// header, deci nu poate fi un simplu link <a href>; luăm bytes-ii prin
-  /// Dio (care atașează automat tokenul) și declanșăm descărcarea cu un
-  /// Blob + click pe un <a> temporar.
-  Future<void> downloadIcs(String id) async {
-    final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get<List<int>>(
-      '/exchanges/$id/ics',
-      options: Options(responseType: ResponseType.bytes),
-    );
-    final bytes = Uint8List.fromList(response.data!);
-    final blob = web.Blob([bytes.toJS].toJS, web.BlobPropertyBag(type: 'text/calendar'));
-    final url = web.URL.createObjectURL(blob);
-    final anchor = web.document.createElement('a') as web.HTMLAnchorElement
-      ..href = url
-      ..download = 'schimb-$id.ics';
-    web.document.body!.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    web.URL.revokeObjectURL(url);
+  /// Link-ul de descărcare .ics, cu token-ul JWT în query - browserul îl
+  /// deschide direct (via url_launcher) fără să poată atașa un header Authorization.
+  Future<String> calendarUrl(String id) async {
+    final token = await _ref.read(tokenStorageProvider).getAccessToken();
+    return '${ApiConfig.baseUrl}/exchanges/$id/calendar.ics?token=$token';
   }
 }
 

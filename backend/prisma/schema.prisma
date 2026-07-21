@@ -294,7 +294,8 @@ model ExchangeRequest {
   requesterReviewForOwner String?
   ownerReviewForRequester String?
 
-  meetingAt DateTime?
+  meetingTime     DateTime?
+  meetingLocation String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -366,6 +367,7 @@ enum NotificationType {
   EXCHANGE_REQUEST_RECEIVED
   EXCHANGE_REQUEST_ACCEPTED
   EXCHANGE_REQUEST_REJECTED
+  EXCHANGE_MEETING_SCHEDULED
   NEW_MESSAGE
   PRICE_OFFER_RECEIVED
   PRICE_OFFER_ACCEPTED
