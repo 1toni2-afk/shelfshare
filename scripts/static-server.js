@@ -30,6 +30,16 @@ http.createServer((req, res) => {
     return;
   }
 
+  // main.dart.js/flutter_service_worker.js/index.html etc. nu au niciun hash
+  // în nume - Cloudflare și browserul le-ar cache-ui agresiv altfel (am tot
+  // pățit asta la fiecare deploy: build nou pe server, dar userii tot pe
+  // versiunea veche). Doar /assets/ (fonturi, imagini) au conținut stabil
+  // per build și pot fi cache-uite normal.
+  const isVersionedAsset = reqPath.startsWith('/assets/');
+  const cacheControl = isVersionedAsset
+    ? 'public, max-age=31536000, immutable'
+    : 'no-cache, no-store, must-revalidate';
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
       fs.readFile(path.join(root, 'index.html'), (err2, indexData) => {
@@ -38,13 +48,16 @@ http.createServer((req, res) => {
           res.end('Not found');
           return;
         }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache, no-store, must-revalidate' });
         res.end(indexData);
       });
       return;
     }
     const ext = path.extname(filePath);
-    res.writeHead(200, { 'Content-Type': mime[ext] || 'application/octet-stream' });
+    res.writeHead(200, {
+      'Content-Type': mime[ext] || 'application/octet-stream',
+      'Cache-Control': cacheControl,
+    });
     res.end(data);
   });
 }).listen(port, '127.0.0.1', () => {
