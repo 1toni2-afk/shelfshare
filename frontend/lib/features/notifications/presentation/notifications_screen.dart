@@ -23,7 +23,15 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationType.exchangeRequestAccepted:
       case NotificationType.exchangeRequestRejected:
       case NotificationType.exchangeMeetingScheduled:
+      case NotificationType.priceOfferReceived:
+      case NotificationType.priceOfferAccepted:
+      case NotificationType.priceOfferRejected:
         context.push('/exchanges');
+      case NotificationType.followedUserNewBook:
+        final userId = notification.data?['userId'] as String?;
+        if (userId != null) {
+          context.push('/users/$userId');
+        }
     }
   }
 
@@ -102,6 +110,12 @@ class NotificationsScreen extends ConsumerWidget {
         return Icons.swap_horiz;
       case NotificationType.exchangeMeetingScheduled:
         return Icons.event;
+      case NotificationType.priceOfferReceived:
+      case NotificationType.priceOfferAccepted:
+      case NotificationType.priceOfferRejected:
+        return Icons.sell_outlined;
+      case NotificationType.followedUserNewBook:
+        return Icons.person_add_alt_outlined;
     }
   }
 

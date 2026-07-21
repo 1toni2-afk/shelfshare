@@ -5,6 +5,10 @@ enum NotificationType {
   exchangeRequestRejected,
   exchangeMeetingScheduled,
   newMessage,
+  priceOfferReceived,
+  priceOfferAccepted,
+  priceOfferRejected,
+  followedUserNewBook,
 }
 
 extension NotificationTypeX on NotificationType {
@@ -22,6 +26,14 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.exchangeMeetingScheduled;
       case 'NEW_MESSAGE':
         return NotificationType.newMessage;
+      case 'PRICE_OFFER_RECEIVED':
+        return NotificationType.priceOfferReceived;
+      case 'PRICE_OFFER_ACCEPTED':
+        return NotificationType.priceOfferAccepted;
+      case 'PRICE_OFFER_REJECTED':
+        return NotificationType.priceOfferRejected;
+      case 'FOLLOWED_USER_NEW_BOOK':
+        return NotificationType.followedUserNewBook;
       default:
         throw ArgumentError('Tip necunoscut: $value');
     }
