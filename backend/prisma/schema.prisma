@@ -22,7 +22,7 @@ model User {
   password String?
 
   isEmailVerified   Boolean   @default(false)
-  emailVerifyToken  String?   @unique
+  emailVerifyToken  String?
   emailVerifyExpiry DateTime?
 
   resetPasswordToken  String?   @unique

@@ -4,111 +4,128 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/auth_repository.dart';
 
-enum _VerifyStatus { loading, success, error }
+/// Secțiune de confirmare prin cod pe 6 cifre - apare direct după crearea
+/// contului, nu printr-un link separat (linkurile aveau probleme cu
+/// cache-ul browserului/service worker-ul Flutter, un cod introdus manual
+/// nu depinde de nicio navigare).
+class VerifyCodeSection extends ConsumerStatefulWidget {
+  const VerifyCodeSection({super.key, required this.email});
 
-/// Ecran la care ajunge browserul din linkul de confirmare trimis pe email -
-/// preia token-ul din query string și îl trimite la backend.
-class VerifyEmailScreen extends ConsumerStatefulWidget {
-  const VerifyEmailScreen({super.key, required this.token});
-
-  final String? token;
+  final String email;
 
   @override
-  ConsumerState<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
+  ConsumerState<VerifyCodeSection> createState() => _VerifyCodeSectionState();
 }
 
-class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
-  _VerifyStatus _status = _VerifyStatus.loading;
-  String? _errorMessage;
+class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
+  final _codeController = TextEditingController();
+  bool _isSubmitting = false;
+  bool _isResending = false;
+  String? _error;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _verify());
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
   }
 
-  Future<void> _verify() async {
-    final token = widget.token;
-    if (token == null || token.isEmpty) {
-      setState(() {
-        _status = _VerifyStatus.error;
-        _errorMessage = 'Link de confirmare invalid.';
-      });
+  Future<void> _submit() async {
+    final code = _codeController.text.trim();
+    if (code.length != 6) {
+      setState(() => _error = 'Codul trebuie să aibă 6 cifre');
       return;
     }
 
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
     try {
-      await ref.read(authRepositoryProvider).verifyEmail(token);
-      if (mounted) setState(() => _status = _VerifyStatus.success);
-    } catch (_) {
+      await ref.read(authRepositoryProvider).verifyEmail(email: widget.email, code: code);
       if (mounted) {
-        setState(() {
-          _status = _VerifyStatus.error;
-          _errorMessage = 'Linkul de confirmare este invalid sau a expirat.';
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cont confirmat cu succes!')),
+        );
+        context.go('/login');
       }
+    } catch (_) {
+      if (mounted) setState(() => _error = 'Cod invalid sau expirat.');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _resend() async {
+    setState(() => _isResending = true);
+    try {
+      await ref.read(authRepositoryProvider).resendVerificationCode(widget.email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Am retrimis codul, dacă e cazul.')),
+        );
+      }
+    } catch (_) {
+      // ignorăm - nu dezvăluim nimic în plus, doar nu blocăm UI-ul
+    } finally {
+      if (mounted) setState(() => _isResending = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  switch (_status) {
-                    _VerifyStatus.loading => const CircularProgressIndicator(),
-                    _VerifyStatus.success => const Icon(
-                        Icons.check_circle_outline,
-                        size: 64,
-                        color: AppColors.primary,
-                      ),
-                    _VerifyStatus.error => const Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: AppColors.destructive,
-                      ),
-                  },
-                  const SizedBox(height: 24),
-                  Text(
-                    switch (_status) {
-                      _VerifyStatus.loading => 'Confirmăm adresa de email...',
-                      _VerifyStatus.success => 'Email confirmat cu succes!',
-                      _VerifyStatus.error => 'Nu am putut confirma emailul',
-                    },
-                    style: Theme.of(context).textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (_status == _VerifyStatus.error && _errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      _errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.mutedForeground,
-                          ),
-                    ),
-                  ],
-                  if (_status != _VerifyStatus.loading) ...[
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.go('/login'),
-                      child: const Text('Mergi la autentificare'),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 88,
+          height: 88,
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
           ),
+          child: const Icon(Icons.mark_email_read_outlined, color: AppColors.accent, size: 40),
         ),
-      ),
+        const SizedBox(height: 24),
+        Text('Verifică-ți emailul', style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 12),
+        Text(
+          'Ți-am trimis un cod de confirmare pe ${widget.email}',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 24),
+        TextField(
+          controller: _codeController,
+          keyboardType: TextInputType.number,
+          maxLength: 6,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 8),
+          decoration: InputDecoration(
+            counterText: '',
+            hintText: '000000',
+            errorText: _error,
+          ),
+          onChanged: (_) {
+            if (_error != null) setState(() => _error = null);
+          },
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
+          onPressed: _isSubmitting ? null : _submit,
+          child: _isSubmitting
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Confirmă'),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: _isResending ? null : _resend,
+          child: Text(_isResending ? 'Se retrimite...' : 'Nu ai primit codul? Retrimite'),
+        ),
+      ],
     );
   }
 }

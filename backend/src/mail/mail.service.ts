@@ -21,18 +21,18 @@ export class MailService {
     );
   }
 
-  async sendVerificationEmail(to: string, token: string) {
-    const link = `${this.frontendUrl}/verify-email?token=${token}`;
+  async sendVerificationEmail(to: string, code: string) {
+    const formattedCode = `${code.slice(0, 3)}-${code.slice(3)}`;
 
     const { error } = await this.resend.emails.send({
       from: this.fromEmail,
       to,
-      subject: 'Confirmă-ți adresa de email - ShelfShare',
+      subject: 'Codul tău de confirmare - ShelfShare',
       html: `
         <p>Bun venit pe ShelfShare!</p>
-        <p>Apasă pe linkul de mai jos ca să îți confirmi adresa de email:</p>
-        <p><a href="${link}">${link}</a></p>
-        <p>Linkul expiră în 24 de ore.</p>
+        <p>Introdu acest cod în aplicație ca să îți confirmi adresa de email:</p>
+        <p style="font-size: 32px; font-weight: bold; letter-spacing: 4px;">${formattedCode}</p>
+        <p>Codul expiră în 24 de ore.</p>
       `,
     });
 

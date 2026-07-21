@@ -8,7 +8,6 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
-import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
 import '../../features/books/presentation/add_book_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
@@ -36,7 +35,6 @@ const _publicRoutes = {
   '/login',
   '/register',
   '/forgot-password',
-  '/verify-email',
   '/auth/google/callback',
 };
 
@@ -53,13 +51,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState is AuthAuthenticated;
       final isLoading = authState is AuthInitial || authState is AuthLoading;
       final goingToAuth = _publicRoutes.contains(state.matchedLocation);
-
-      // /verify-email trebuie să se randeze mereu, indiferent de starea de
-      // autentificare - are nevoie să apeleze backend-ul cu token-ul din
-      // link înainte de orice redirect, altfel un user deja logat (din alt
-      // cont, într-un tab vechi) e trimis spre "/" fără ca verificarea să
-      // ajungă vreodată la server.
-      if (state.matchedLocation == '/verify-email') return null;
 
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
@@ -78,12 +69,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/auth/google/callback',
         builder: (context, state) => GoogleCallbackScreen(
           code: state.uri.queryParameters['code'],
-        ),
-      ),
-      GoRoute(
-        path: '/verify-email',
-        builder: (context, state) => VerifyEmailScreen(
-          token: state.uri.queryParameters['token'],
         ),
       ),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),

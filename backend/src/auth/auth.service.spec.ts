@@ -35,7 +35,6 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             findById: jest.fn(),
             findByGoogleId: jest.fn(),
-            findByEmailVerifyToken: jest.fn(),
             findByResetPasswordToken: jest.fn(),
             create: jest.fn(),
             update: jest.fn(),
@@ -102,6 +101,109 @@ describe('AuthService', () => {
         expect.any(String),
       );
       expect(result.message).toContain('Cont creat');
+    });
+  });
+
+  describe('verifyEmail', () => {
+    it('respinge daca userul nu exista', async () => {
+      users.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        service.verifyEmail('nope@example.com', '123456'),
+      ).rejects.toThrow('Cod de verificare invalid');
+    });
+
+    it('respinge un cod care nu se potriveste', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        isEmailVerified: false,
+        emailVerifyToken: '123456',
+        emailVerifyExpiry: new Date(Date.now() + 1000 * 60 * 60),
+      } as never);
+
+      await expect(
+        service.verifyEmail(baseUser.email, '000000'),
+      ).rejects.toThrow('Cod de verificare invalid');
+    });
+
+    it('respinge un cod expirat', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        isEmailVerified: false,
+        emailVerifyToken: '123456',
+        emailVerifyExpiry: new Date(Date.now() - 1000),
+      } as never);
+
+      await expect(
+        service.verifyEmail(baseUser.email, '123456'),
+      ).rejects.toThrow('Cod de verificare expirat');
+    });
+
+    it('confirma email-ul cand codul e corect', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        isEmailVerified: false,
+        emailVerifyToken: '123456',
+        emailVerifyExpiry: new Date(Date.now() + 1000 * 60 * 60),
+      } as never);
+      users.update.mockResolvedValue(baseUser as never);
+
+      const result = await service.verifyEmail(baseUser.email, '123456');
+
+      expect(users.update).toHaveBeenCalledWith(
+        baseUser.id,
+        expect.objectContaining({
+          isEmailVerified: true,
+          emailVerifyToken: null,
+          emailVerifyExpiry: null,
+        }),
+      );
+      expect(result.message).toContain('succes');
+    });
+  });
+
+  describe('resendVerificationCode', () => {
+    it('nu dezvaluie daca emailul nu exista', async () => {
+      users.findByEmail.mockResolvedValue(null);
+
+      const result = await service.resendVerificationCode('nope@example.com');
+
+      expect(users.update).not.toHaveBeenCalled();
+      expect(result.message).toBeDefined();
+    });
+
+    it('nu retrimite daca emailul e deja confirmat', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        isEmailVerified: true,
+      } as never);
+
+      await service.resendVerificationCode(baseUser.email);
+
+      expect(users.update).not.toHaveBeenCalled();
+      expect(mail.sendVerificationEmail).not.toHaveBeenCalled();
+    });
+
+    it('regenereaza si retrimite codul pentru un cont neconfirmat', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        isEmailVerified: false,
+      } as never);
+      users.update.mockResolvedValue(baseUser as never);
+
+      await service.resendVerificationCode(baseUser.email);
+
+      expect(users.update).toHaveBeenCalledWith(
+        baseUser.id,
+        expect.objectContaining({
+          emailVerifyToken: expect.any(String) as unknown,
+          emailVerifyExpiry: expect.any(Date) as unknown,
+        }),
+      );
+      expect(mail.sendVerificationEmail).toHaveBeenCalledWith(
+        baseUser.email,
+        expect.any(String),
+      );
     });
   });
 

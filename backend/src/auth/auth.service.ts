@@ -21,6 +21,11 @@ const EMAIL_VERIFY_EXPIRY_HOURS = 24;
 const RESET_PASSWORD_EXPIRY_HOURS = 1;
 const LOGIN_CODE_EXPIRY_MS = 60_000;
 
+/** Cod de confirmare pe 6 cifre - mai simplu de introdus manual decât un link, imun la cache-ul browserului. */
+function generateVerificationCode(): string {
+  return crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
+}
+
 interface PendingLoginTokens {
   accessToken: string;
   refreshToken: string;
@@ -75,7 +80,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
-    const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    const emailVerifyToken = generateVerificationCode();
     const emailVerifyExpiry = new Date(
       Date.now() + EMAIL_VERIFY_EXPIRY_HOURS * 60 * 60 * 1000,
     );
@@ -92,7 +97,7 @@ export class AuthService {
 
     // Contul e deja creat în acest punct - dacă trimiterea emailului eșuează
     // (provider extern căzut/nesincronizat), nu vrem să întoarcem un 500 pe
-    // /auth/register: userul tot există, doar că nu are (încă) linkul de
+    // /auth/register: userul tot există, doar că nu are (încă) codul de
     // verificare. Logăm eroarea ca să fie vizibilă operațional.
     try {
       await this.mail.sendVerificationEmail(user.email, emailVerifyToken);
@@ -110,15 +115,25 @@ export class AuthService {
 
   // ---------- Verificare email ----------
 
-  async verifyEmail(token: string) {
-    const user = await this.users.findByEmailVerifyToken(token);
+  /**
+   * Verificare prin cod pe 6 cifre (nu link) - căutăm după email, nu după
+   * cod, deci codul nu trebuie să fie unic global (spre deosebire de
+   * token-urile lungi de tip link, un cod pe 6 cifre chiar s-ar putea repeta
+   * între doi useri diferiți la un volum mai mare).
+   */
+  async verifyEmail(email: string, code: string) {
+    const user = await this.users.findByEmail(email);
 
-    if (!user || !user.emailVerifyExpiry) {
-      throw new BadRequestException('Token de verificare invalid');
+    if (!user || !user.emailVerifyToken || !user.emailVerifyExpiry) {
+      throw new BadRequestException('Cod de verificare invalid');
+    }
+
+    if (user.emailVerifyToken !== code) {
+      throw new BadRequestException('Cod de verificare invalid');
     }
 
     if (user.emailVerifyExpiry < new Date()) {
-      throw new BadRequestException('Token de verificare expirat');
+      throw new BadRequestException('Cod de verificare expirat');
     }
 
     await this.users.update(user.id, {
@@ -128,6 +143,36 @@ export class AuthService {
     });
 
     return { message: 'Email confirmat cu succes' };
+  }
+
+  /** Regenerează și retrimite codul - nu dezvăluim dacă emailul există sau e deja verificat. */
+  async resendVerificationCode(email: string) {
+    const user = await this.users.findByEmail(email);
+    const genericResult = {
+      message: 'Dacă adresa există și nu e deja confirmată, am retrimis codul.',
+    };
+
+    if (!user || user.isEmailVerified) {
+      return genericResult;
+    }
+
+    const emailVerifyToken = generateVerificationCode();
+    const emailVerifyExpiry = new Date(
+      Date.now() + EMAIL_VERIFY_EXPIRY_HOURS * 60 * 60 * 1000,
+    );
+
+    await this.users.update(user.id, { emailVerifyToken, emailVerifyExpiry });
+
+    try {
+      await this.mail.sendVerificationEmail(user.email, emailVerifyToken);
+    } catch (error) {
+      this.logger.error(
+        `Nu am putut retrimite emailul de verificare către ${user.email}`,
+        error,
+      );
+    }
+
+    return genericResult;
   }
 
   // ---------- Login ----------

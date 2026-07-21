@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/google_sign_in_button.dart';
 import '../application/auth_controller.dart';
 import '../application/auth_state.dart';
+import 'verify_email_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +18,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _registered = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -61,25 +62,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.mark_email_read_outlined, size: 64, color: AppColors.primary),
-                    const SizedBox(height: 24),
-                    Text('Verifică-ți email-ul', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Ți-am trimis un link de confirmare pe ${_emailController.text}',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.go('/login'),
-                      child: const Text('Mergi la autentificare'),
-                    ),
-                  ],
-                ),
+                child: VerifyCodeSection(email: _emailController.text.trim()),
               ),
             ),
           ),
@@ -132,10 +115,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _passwordController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
                                 labelText: 'Parolă',
-                                prefixIcon: Icon(Icons.lock_outline),
+                                prefixIcon: const Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                  ),
+                                  onPressed: () =>
+                                      setState(() => _obscurePassword = !_obscurePassword),
+                                ),
                               ),
                               validator: (value) => (value == null || value.length < 8)
                                   ? 'Minim 8 caractere'

@@ -18,12 +18,6 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { googleId } });
   }
 
-  findByEmailVerifyToken(token: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { emailVerifyToken: token },
-    });
-  }
-
   findByResetPasswordToken(token: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { resetPasswordToken: token },
