@@ -58,6 +58,10 @@ class AuthRepository {
     await _apiClient.dio.post('/auth/forgot-password', data: {'email': email});
   }
 
+  Future<void> verifyEmail(String token) async {
+    await _apiClient.dio.get('/auth/verify-email', queryParameters: {'token': token});
+  }
+
   Future<void> resetPassword({
     required String token,
     required String newPassword,

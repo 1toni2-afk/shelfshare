@@ -8,6 +8,7 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
 import '../../features/books/presentation/add_book_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
@@ -35,6 +36,7 @@ const _publicRoutes = {
   '/login',
   '/register',
   '/forgot-password',
+  '/verify-email',
   '/auth/google/callback',
 };
 
@@ -69,6 +71,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/auth/google/callback',
         builder: (context, state) => GoogleCallbackScreen(
           code: state.uri.queryParameters['code'],
+        ),
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) => VerifyEmailScreen(
+          token: state.uri.queryParameters['token'],
         ),
       ),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
