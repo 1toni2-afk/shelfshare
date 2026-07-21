@@ -20,7 +20,9 @@ export class FollowService {
     if (followerId === followingId) {
       throw new BadRequestException('Nu te poți urmări pe tine însuți');
     }
-    const user = await this.prisma.user.findUnique({ where: { id: followingId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: followingId },
+    });
     if (!user) {
       throw new NotFoundException('Utilizatorul nu a fost găsit');
     }
@@ -35,7 +37,9 @@ export class FollowService {
 
   async unfollowUser(followerId: string, followingId: string) {
     await this.prisma.follow
-      .delete({ where: { followerId_followingId: { followerId, followingId } } })
+      .delete({
+        where: { followerId_followingId: { followerId, followingId } },
+      })
       .catch(() => {});
     return { message: 'Nu mai urmărești acest utilizator' };
   }
@@ -43,12 +47,21 @@ export class FollowService {
   async getFollowStatus(currentUserId: string, profileUserId: string) {
     const [isFollowing, followersCount, followingCount] = await Promise.all([
       this.prisma.follow.findUnique({
-        where: { followerId_followingId: { followerId: currentUserId, followingId: profileUserId } },
+        where: {
+          followerId_followingId: {
+            followerId: currentUserId,
+            followingId: profileUserId,
+          },
+        },
       }),
       this.prisma.follow.count({ where: { followingId: profileUserId } }),
       this.prisma.follow.count({ where: { followerId: profileUserId } }),
     ]);
-    return { isFollowing: isFollowing !== null, followersCount, followingCount };
+    return {
+      isFollowing: isFollowing !== null,
+      followersCount,
+      followingCount,
+    };
   }
 
   /**
@@ -85,7 +98,9 @@ export class FollowService {
       },
     });
     const byId = new Map(users.map((u) => [u.id, u]));
-    return orderedUserIds.map((id) => byId.get(id)).filter((u) => u !== undefined);
+    return orderedUserIds
+      .map((id) => byId.get(id))
+      .filter((u) => u !== undefined);
   }
 
   /**
@@ -98,7 +113,9 @@ export class FollowService {
         where: { followingId: userId },
         select: { followerId: true },
       });
-      const author = await this.prisma.user.findUnique({ where: { id: userId } });
+      const author = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
       await Promise.all(
         follows.map((f) =>
           this.notifications.create(
@@ -110,7 +127,9 @@ export class FollowService {
         ),
       );
     } catch (error) {
-      this.logger.warn(`Nu am putut notifica followerii lui ${userId}: ${error}`);
+      this.logger.warn(
+        `Nu am putut notifica followerii lui ${userId}: ${error}`,
+      );
     }
   }
 }

@@ -2,7 +2,10 @@ import { RomanianCity } from './romanian-cities';
 
 // Coordonate aproximative de centru oraș - suficient pentru un calcul de
 // distanță orientativ între utilizatori, nu pentru navigație precisă.
-export const ROMANIAN_CITY_COORDINATES: Record<RomanianCity, { lat: number; lng: number }> = {
+export const ROMANIAN_CITY_COORDINATES: Record<
+  RomanianCity,
+  { lat: number; lng: number }
+> = {
   'Alba Iulia': { lat: 46.0733, lng: 23.58 },
   Arad: { lat: 46.1866, lng: 21.3123 },
   Pitești: { lat: 44.8565, lng: 24.8692 },

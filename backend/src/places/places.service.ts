@@ -26,19 +26,20 @@ export class PlacesService {
     try {
       const url = 'https://nominatim.openstreetmap.org/search';
       const { data } = await firstValueFrom(
-        this.http.get<
-          { display_name: string; lat: string; lon: string }[]
-        >(url, {
-          params: {
-            q: query,
-            format: 'json',
-            limit: 8,
-            countrycodes: 'ro',
+        this.http.get<{ display_name: string; lat: string; lon: string }[]>(
+          url,
+          {
+            params: {
+              q: query,
+              format: 'json',
+              limit: 8,
+              countrycodes: 'ro',
+            },
+            headers: {
+              'User-Agent': 'ShelfShare/1.0 (aplicatie schimb de carti)',
+            },
           },
-          headers: {
-            'User-Agent': 'ShelfShare/1.0 (aplicatie schimb de carti)',
-          },
-        }),
+        ),
       );
 
       return data.map((item) => ({

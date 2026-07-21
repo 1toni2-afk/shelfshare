@@ -13,10 +13,22 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 const INCLUDE_FULL = {
   userBook: { include: { book: true } },
   buyer: {
-    select: { id: true, name: true, city: true, rating: true, profileImage: true },
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      rating: true,
+      profileImage: true,
+    },
   },
   owner: {
-    select: { id: true, name: true, city: true, rating: true, profileImage: true },
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      rating: true,
+      profileImage: true,
+    },
   },
 } as const;
 
@@ -53,7 +65,9 @@ export class OffersService {
       throw new NotFoundException('Cartea nu a fost găsită');
     }
     if (userBook.userId === buyerId) {
-      throw new BadRequestException('Nu poți face o ofertă pentru propria carte');
+      throw new BadRequestException(
+        'Nu poți face o ofertă pentru propria carte',
+      );
     }
     if (!userBook.isForSale) {
       throw new BadRequestException('Această carte nu este de vânzare');
@@ -152,7 +166,9 @@ export class OffersService {
   async cancel(id: string, userId: string) {
     const offer = await this.findForAction(id);
     if (offer.buyerId !== userId) {
-      throw new ForbiddenException('Doar cel care a făcut oferta o poate anula');
+      throw new ForbiddenException(
+        'Doar cel care a făcut oferta o poate anula',
+      );
     }
     this.assertStatus(offer, 'PENDING');
 

@@ -64,7 +64,8 @@ export class BooksService {
       ? ROMANIAN_CITY_COORDINATES[filters.fromCity as RomanianCity]
       : undefined;
     const useDistance =
-      !!fromCoords && (filters.sort === 'distance' || filters.maxDistanceKm != null);
+      !!fromCoords &&
+      (filters.sort === 'distance' || filters.maxDistanceKm != null);
 
     if (useDistance) {
       // Distanța nu se poate calcula la nivel de query SQL fără o extensie
@@ -89,7 +90,8 @@ export class BooksService {
         .filter((item) => item.distanceKm !== null)
         .filter(
           (item) =>
-            filters.maxDistanceKm == null || item.distanceKm! <= filters.maxDistanceKm,
+            filters.maxDistanceKm == null ||
+            item.distanceKm! <= filters.maxDistanceKm,
         )
         .sort((a, b) => a.distanceKm! - b.distanceKm!);
 
@@ -252,7 +254,9 @@ export class BooksService {
     return Array.from(counts.entries())
       .map(([city, count]) => {
         const coords = ROMANIAN_CITY_COORDINATES[city as RomanianCity];
-        return coords ? { city, lat: coords.lat, lng: coords.lng, count } : null;
+        return coords
+          ? { city, lat: coords.lat, lng: coords.lng, count }
+          : null;
       })
       .filter((entry) => entry !== null);
   }
@@ -260,12 +264,18 @@ export class BooksService {
   async getGenres() {
     const rows = await this.prisma.book.groupBy({
       by: ['genre'],
-      where: { genre: { not: null }, userBooks: { some: { availableForSwap: true } } },
+      where: {
+        genre: { not: null },
+        userBooks: { some: { availableForSwap: true } },
+      },
       _count: { genre: true },
       orderBy: { _count: { genre: 'desc' } },
       take: 12,
     });
-    return rows.map((r) => ({ genre: r.genre as string, count: r._count.genre }));
+    return rows.map((r) => ({
+      genre: r.genre as string,
+      count: r._count.genre,
+    }));
   }
 
   /**
@@ -283,7 +293,8 @@ export class BooksService {
 
     const orConditions: Prisma.BookWhereInput[] = [];
     if (userBook.book.genre) orConditions.push({ genre: userBook.book.genre });
-    if (userBook.book.author) orConditions.push({ author: userBook.book.author });
+    if (userBook.book.author)
+      orConditions.push({ author: userBook.book.author });
     if (orConditions.length === 0) return [];
 
     const items = await this.prisma.userBook.findMany({
@@ -295,7 +306,13 @@ export class BooksService {
       include: {
         book: true,
         user: {
-          select: { id: true, name: true, city: true, rating: true, profileImage: true },
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            rating: true,
+            profileImage: true,
+          },
         },
       },
       take: 10,
@@ -348,13 +365,20 @@ export class BooksService {
     const transfers = await Promise.all(
       chainIds.map(async (id) => {
         const [offer, exchange] = await Promise.all([
-          this.prisma.priceOffer.findFirst({ where: { userBookId: id, status: 'ACCEPTED' } }),
+          this.prisma.priceOffer.findFirst({
+            where: { userBookId: id, status: 'ACCEPTED' },
+          }),
           this.prisma.exchangeRequest.findFirst({
             where: { requestedBookId: id, status: 'COMPLETED' },
           }),
         ]);
-        if (offer) return { transferredAt: offer.updatedAt, type: 'sale' as const };
-        if (exchange) return { transferredAt: exchange.updatedAt, type: 'exchange' as const };
+        if (offer)
+          return { transferredAt: offer.updatedAt, type: 'sale' as const };
+        if (exchange)
+          return {
+            transferredAt: exchange.updatedAt,
+            type: 'exchange' as const,
+          };
         return { transferredAt: null, type: null };
       }),
     );
@@ -385,7 +409,11 @@ export class BooksService {
    * păstrează același Book din catalog, dar e o listare complet nouă (stare,
    * poze, preț - toate declarate din nou de noul proprietar).
    */
-  async relistBook(userId: string, originalUserBookId: string, dto: AddBookDto) {
+  async relistBook(
+    userId: string,
+    originalUserBookId: string,
+    dto: AddBookDto,
+  ) {
     const original = await this.prisma.userBook.findUnique({
       where: { id: originalUserBookId },
     });
@@ -395,10 +423,18 @@ export class BooksService {
 
     const [acceptedOffer, completedExchange] = await Promise.all([
       this.prisma.priceOffer.findFirst({
-        where: { userBookId: originalUserBookId, status: 'ACCEPTED', buyerId: userId },
+        where: {
+          userBookId: originalUserBookId,
+          status: 'ACCEPTED',
+          buyerId: userId,
+        },
       }),
       this.prisma.exchangeRequest.findFirst({
-        where: { requestedBookId: originalUserBookId, status: 'COMPLETED', requesterId: userId },
+        where: {
+          requestedBookId: originalUserBookId,
+          status: 'COMPLETED',
+          requesterId: userId,
+        },
       }),
     ]);
     if (!acceptedOffer && !completedExchange) {
@@ -493,7 +529,10 @@ export class BooksService {
       include: { book: true },
     });
 
-    return { ...this.toPublicPhotos(updated), photoUrl: this.storage.getPublicUrl(path) };
+    return {
+      ...this.toPublicPhotos(updated),
+      photoUrl: this.storage.getPublicUrl(path),
+    };
   }
 
   private assertOwnership(ownerId: string, requesterId: string) {
@@ -510,6 +549,9 @@ export class BooksService {
    * publice, altfel <img>/Image.network nu are ce afișa.
    */
   private toPublicPhotos<T extends { photos: string[] }>(userBook: T): T {
-    return { ...userBook, photos: userBook.photos.map((p) => this.storage.getPublicUrl(p)) };
+    return {
+      ...userBook,
+      photos: userBook.photos.map((p) => this.storage.getPublicUrl(p)),
+    };
   }
 }

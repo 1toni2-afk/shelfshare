@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { FeedbackService } from '../feedback/feedback.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -32,7 +33,11 @@ describe('AdminService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AdminService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        AdminService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: FeedbackService, useValue: { getAll: jest.fn() } },
+      ],
     }).compile();
 
     service = module.get(AdminService);

@@ -104,12 +104,16 @@ export class ProfileService {
     const [asOwner, asRequester] = await Promise.all([
       this.prisma.exchangeRequest.findMany({
         where: { ownerId: userId, requesterReviewForOwner: { not: null } },
-        include: { requester: { select: { id: true, name: true, profileImage: true } } },
+        include: {
+          requester: { select: { id: true, name: true, profileImage: true } },
+        },
         orderBy: { updatedAt: 'desc' },
       }),
       this.prisma.exchangeRequest.findMany({
         where: { requesterId: userId, ownerReviewForRequester: { not: null } },
-        include: { owner: { select: { id: true, name: true, profileImage: true } } },
+        include: {
+          owner: { select: { id: true, name: true, profileImage: true } },
+        },
         orderBy: { updatedAt: 'desc' },
       }),
     ]);
@@ -150,7 +154,10 @@ export class ProfileService {
     let totalPages = 0;
     for (const listing of listings) {
       if (listing.book.genre) {
-        genreCounts.set(listing.book.genre, (genreCounts.get(listing.book.genre) ?? 0) + 1);
+        genreCounts.set(
+          listing.book.genre,
+          (genreCounts.get(listing.book.genre) ?? 0) + 1,
+        );
       }
       if (listing.book.pageCount) {
         totalPages += listing.book.pageCount;
@@ -190,7 +197,10 @@ export class ProfileService {
   private async computeTrustScore(user: User) {
     const [ownerResponses, terminalExchanges] = await Promise.all([
       this.prisma.exchangeRequest.findMany({
-        where: { ownerId: user.id, status: { in: ['ACCEPTED', 'REJECTED', 'COMPLETED'] } },
+        where: {
+          ownerId: user.id,
+          status: { in: ['ACCEPTED', 'REJECTED', 'COMPLETED'] },
+        },
         select: { createdAt: true, updatedAt: true },
       }),
       this.prisma.exchangeRequest.findMany({
@@ -208,30 +218,46 @@ export class ProfileService {
 
     const averageResponseHours = ownerResponses.length
       ? ownerResponses.reduce(
-          (sum, r) => sum + (r.updatedAt.getTime() - r.createdAt.getTime()) / 3_600_000,
+          (sum, r) =>
+            sum + (r.updatedAt.getTime() - r.createdAt.getTime()) / 3_600_000,
           0,
         ) / ownerResponses.length
       : null;
 
-    const completedCount = terminalExchanges.filter((e) => e.status === 'COMPLETED').length;
+    const completedCount = terminalExchanges.filter(
+      (e) => e.status === 'COMPLETED',
+    ).length;
     const completedExchangeRate = terminalExchanges.length
       ? completedCount / terminalExchanges.length
       : null;
 
-    const asRequester = terminalExchanges.filter((e) => e.requesterId === user.id);
-    const cancelledByUser = asRequester.filter((e) => e.status === 'CANCELLED').length;
-    const cancellationRate = asRequester.length ? cancelledByUser / asRequester.length : null;
+    const asRequester = terminalExchanges.filter(
+      (e) => e.requesterId === user.id,
+    );
+    const cancelledByUser = asRequester.filter(
+      (e) => e.status === 'CANCELLED',
+    ).length;
+    const cancellationRate = asRequester.length
+      ? cancelledByUser / asRequester.length
+      : null;
 
     const ageScore = Math.min(accountAgeDays / 365, 1) * 15;
     const emailScore = user.isEmailVerified ? 10 : 0;
     const volumeScore = Math.min(user.booksExchangedCount / 20, 1) * 20;
-    const ratingScore = user.booksExchangedCount > 0 ? (user.rating / 5) * 20 : 10;
-    const completionScore = completedExchangeRate !== null ? completedExchangeRate * 20 : 10;
+    const ratingScore =
+      user.booksExchangedCount > 0 ? (user.rating / 5) * 20 : 10;
+    const completionScore =
+      completedExchangeRate !== null ? completedExchangeRate * 20 : 10;
     const cancellationScore =
       cancellationRate !== null ? (1 - cancellationRate) * 15 : 8;
 
     const score = Math.round(
-      ageScore + emailScore + volumeScore + ratingScore + completionScore + cancellationScore,
+      ageScore +
+        emailScore +
+        volumeScore +
+        ratingScore +
+        completionScore +
+        cancellationScore,
     );
 
     return {
@@ -281,22 +307,25 @@ export class ProfileService {
    * puncte separat, doar praguri simple pe date pe care le avem oricum.
    */
   private async getAchievements(user: User) {
-    const [listingsCount, genreRows, reviewsWritten, earlierUsersCount] = await Promise.all([
-      this.prisma.userBook.count({ where: { userId: user.id } }),
-      this.prisma.userBook.findMany({
-        where: { userId: user.id },
-        select: { book: { select: { genre: true } } },
-      }),
-      this.prisma.exchangeRequest.count({
-        where: {
-          OR: [
-            { requesterId: user.id, requesterReviewForOwner: { not: null } },
-            { ownerId: user.id, ownerReviewForRequester: { not: null } },
-          ],
-        },
-      }),
-      this.prisma.user.count({ where: { createdAt: { lt: user.createdAt } } }),
-    ]);
+    const [listingsCount, genreRows, reviewsWritten, earlierUsersCount] =
+      await Promise.all([
+        this.prisma.userBook.count({ where: { userId: user.id } }),
+        this.prisma.userBook.findMany({
+          where: { userId: user.id },
+          select: { book: { select: { genre: true } } },
+        }),
+        this.prisma.exchangeRequest.count({
+          where: {
+            OR: [
+              { requesterId: user.id, requesterReviewForOwner: { not: null } },
+              { ownerId: user.id, ownerReviewForRequester: { not: null } },
+            ],
+          },
+        }),
+        this.prisma.user.count({
+          where: { createdAt: { lt: user.createdAt } },
+        }),
+      ]);
 
     const distinctGenres = new Set(
       genreRows.map((r) => r.book.genre).filter((g): g is string => g !== null),

@@ -35,10 +35,14 @@ export class SafetyService {
   async getBlockStatus(userId: string, otherUserId: string) {
     const [blockedByMe, blockedByThem] = await Promise.all([
       this.prisma.block.findUnique({
-        where: { blockerId_blockedId: { blockerId: userId, blockedId: otherUserId } },
+        where: {
+          blockerId_blockedId: { blockerId: userId, blockedId: otherUserId },
+        },
       }),
       this.prisma.block.findUnique({
-        where: { blockerId_blockedId: { blockerId: otherUserId, blockedId: userId } },
+        where: {
+          blockerId_blockedId: { blockerId: otherUserId, blockedId: userId },
+        },
       }),
     ]);
     return {
@@ -67,7 +71,11 @@ export class SafetyService {
     }
   }
 
-  async reportUser(reporterId: string, reportedUserId: string, dto: ReportUserDto) {
+  async reportUser(
+    reporterId: string,
+    reportedUserId: string,
+    dto: ReportUserDto,
+  ) {
     if (reporterId === reportedUserId) {
       throw new BadRequestException('Nu te poți raporta pe tine însuți');
     }
