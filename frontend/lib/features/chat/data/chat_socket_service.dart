@@ -19,12 +19,17 @@ class ChatSocketService {
   }
 
   Future<io.Socket> _doConnect() async {
-    final token = await _ref.read(tokenStorageProvider).getAccessToken();
     final socket = io.io(
       '${ApiConfig.baseUrl}/chat',
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .setAuth({'token': token})
+          // Funcție, nu un Map static - se apelează din nou la fiecare
+          // (re)conectare, inclusiv reconectările automate ale socket.io.
+          // Cu un token static, dacă access token-ul expiră (15 minute)
+          // cât conversația rămâne deschisă, orice reconectare ulterioară
+          // ar retrimite același token expirat la infinit, fără nicio
+          // eroare vizibilă - mesajele pur și simplu nu ar mai ajunge.
+          .setAuthFn(_provideFreshAuth)
           .disableAutoConnect()
           .build(),
     );
@@ -32,6 +37,17 @@ class ChatSocketService {
     _socket = socket;
     _connecting = null;
     return socket;
+  }
+
+  Future<void> _provideFreshAuth(void Function(Map<String, dynamic>) callback) async {
+    // Declanșează același mecanism de refresh ca la cererile HTTP obișnuite
+    // (interceptorul din ApiClient reîmprospătează automat la un 401) -
+    // dacă token-ul curent a expirat, avem unul nou în storage după acest apel.
+    try {
+      await _ref.read(apiClientProvider).dio.get('/profile/me');
+    } catch (_) {}
+    final token = await _ref.read(tokenStorageProvider).getAccessToken();
+    callback({'token': token});
   }
 
   void joinConversation(String conversationId) {

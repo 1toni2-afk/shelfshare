@@ -303,13 +303,16 @@ class _BookDetailContent extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               itemCount: book.photos.length,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) => ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  book.photos[index],
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () => _openPhotoViewer(context, book.photos, index),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    book.photos[index],
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -413,9 +416,12 @@ class _HistoryHop extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       itemCount: entry.photos.length,
                       separatorBuilder: (_, _) => const SizedBox(width: 6),
-                      itemBuilder: (context, i) => ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.network(entry.photos[i], width: 56, height: 56, fit: BoxFit.cover),
+                      itemBuilder: (context, i) => GestureDetector(
+                        onTap: () => _openPhotoViewer(context, entry.photos, i),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(entry.photos[i], width: 56, height: 56, fit: BoxFit.cover),
+                        ),
                       ),
                     ),
                   ),
@@ -801,6 +807,60 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
                   : const Text('Trimite oferta'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+void _openPhotoViewer(BuildContext context, List<String> photos, int initialIndex) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => _PhotoViewerScreen(photos: photos, initialIndex: initialIndex),
+      fullscreenDialog: true,
+    ),
+  );
+}
+
+/// Vizualizator plin-ecran cu zoom (pinch) și navigare între poze prin swipe.
+class _PhotoViewerScreen extends StatefulWidget {
+  const _PhotoViewerScreen({required this.photos, required this.initialIndex});
+  final List<String> photos;
+  final int initialIndex;
+
+  @override
+  State<_PhotoViewerScreen> createState() => _PhotoViewerScreenState();
+}
+
+class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
+  late final _pageController = PageController(initialPage: widget.initialIndex);
+  late int _currentIndex = widget.initialIndex;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text('${_currentIndex + 1} / ${widget.photos.length}'),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.photos.length,
+        onPageChanged: (index) => setState(() => _currentIndex = index),
+        itemBuilder: (context, index) => InteractiveViewer(
+          minScale: 1,
+          maxScale: 4,
+          child: Center(
+            child: Image.network(widget.photos[index], fit: BoxFit.contain),
+          ),
         ),
       ),
     );

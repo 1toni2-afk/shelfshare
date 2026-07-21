@@ -10,6 +10,17 @@ export class BookLookupService {
   constructor(private http: HttpService) {}
 
   /**
+   * Open Library pune la un loc genuri reale ("Fiction", "Wizards") cu
+   * etichete tehnice faceted gen "series:harry_potter" sau
+   * "nyt:series_books=2011-12-18" - luând orbește primul element din
+   * `subjects`/`subject` ajungeai des cu eticheta tehnică, nu cu un gen.
+   * Acestea folosesc mereu convenția "prefix:valoare", deci le filtrăm.
+   */
+  private pickGenre(subjects: string[] | undefined): string | null {
+    return subjects?.find((s) => !s.includes(':')) ?? null;
+  }
+
+  /**
    * Caută o carte după ISBN. Încearcă Open Library întâi; dacă nu găsește
    * nimic sau eșuează, încearcă Google Books.
    */
@@ -72,7 +83,7 @@ export class BookLookupService {
         publishedYear: this.extractYear(book.publish_date),
         pageCount: book.number_of_pages ?? null,
         language: book.languages?.[0]?.key?.replace('/languages/', '') ?? null,
-        genre: book.subjects?.[0]?.name ?? null,
+        genre: this.pickGenre(book.subjects?.map((s) => s.name)),
         source: 'open_library',
       };
     } catch (error) {
@@ -116,7 +127,7 @@ export class BookLookupService {
         publishedYear: doc.first_publish_year ?? null,
         pageCount: doc.number_of_pages_median ?? null,
         language: doc.language?.[0] ?? null,
-        genre: doc.subject?.[0] ?? null,
+        genre: this.pickGenre(doc.subject),
         source: 'open_library',
       }));
     } catch (error) {
@@ -178,7 +189,7 @@ export class BookLookupService {
           publishedYear: this.extractYear(info.publishedDate),
           pageCount: info.pageCount ?? null,
           language: info.language ?? null,
-          genre: info.categories?.[0] ?? null,
+          genre: this.pickGenre(info.categories),
           source: 'google_books',
         };
       });
