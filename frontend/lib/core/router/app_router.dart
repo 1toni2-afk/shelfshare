@@ -54,6 +54,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoading = authState is AuthInitial || authState is AuthLoading;
       final goingToAuth = _publicRoutes.contains(state.matchedLocation);
 
+      // /verify-email trebuie să se randeze mereu, indiferent de starea de
+      // autentificare - are nevoie să apeleze backend-ul cu token-ul din
+      // link înainte de orice redirect, altfel un user deja logat (din alt
+      // cont, într-un tab vechi) e trimis spre "/" fără ca verificarea să
+      // ajungă vreodată la server.
+      if (state.matchedLocation == '/verify-email') return null;
+
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
       if (isAuthenticated && goingToAuth) return '/';
