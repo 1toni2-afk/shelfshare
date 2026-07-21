@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -18,15 +19,52 @@ import { User } from '@prisma/client';
 const SALT_ROUNDS = 12;
 const EMAIL_VERIFY_EXPIRY_HOURS = 24;
 const RESET_PASSWORD_EXPIRY_HOURS = 1;
+const LOGIN_CODE_EXPIRY_MS = 60_000;
+
+interface PendingLoginTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+}
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
+  // Coduri de schimb pentru fluxul OAuth (Google) - single-use, expiră rapid.
+  // Token-urile nu mai tranzitează niciodată URL-ul de redirect al browserului,
+  // doar acest cod opac; frontend-ul le ia printr-un apel API separat.
+  private readonly pendingLoginCodes = new Map<string, PendingLoginTokens>();
+
   constructor(
     private users: UsersService,
     private jwt: JwtService,
     private config: ConfigService,
     private mail: MailService,
   ) {}
+
+  createLoginCode(tokens: { accessToken: string; refreshToken: string }) {
+    const code = crypto.randomBytes(24).toString('hex');
+    this.pendingLoginCodes.set(code, {
+      ...tokens,
+      expiresAt: Date.now() + LOGIN_CODE_EXPIRY_MS,
+    });
+    return code;
+  }
+
+  exchangeLoginCode(code: string) {
+    const pending = this.pendingLoginCodes.get(code);
+    this.pendingLoginCodes.delete(code); // single-use, indiferent de rezultat
+
+    if (!pending || pending.expiresAt < Date.now()) {
+      throw new BadRequestException('Cod de autentificare invalid sau expirat');
+    }
+
+    return {
+      accessToken: pending.accessToken,
+      refreshToken: pending.refreshToken,
+    };
+  }
 
   // ---------- Register ----------
 
@@ -52,7 +90,18 @@ export class AuthService {
       emailVerifyExpiry,
     });
 
-    await this.mail.sendVerificationEmail(user.email, emailVerifyToken);
+    // Contul e deja creat în acest punct - dacă trimiterea emailului eșuează
+    // (provider extern căzut/nesincronizat), nu vrem să întoarcem un 500 pe
+    // /auth/register: userul tot există, doar că nu are (încă) linkul de
+    // verificare. Logăm eroarea ca să fie vizibilă operațional.
+    try {
+      await this.mail.sendVerificationEmail(user.email, emailVerifyToken);
+    } catch (error) {
+      this.logger.error(
+        `Nu am putut trimite emailul de verificare către ${user.email}`,
+        error,
+      );
+    }
 
     return {
       message: 'Cont creat. Verifică-ți email-ul pentru a-ți activa contul.',
@@ -175,7 +224,14 @@ export class AuthService {
       resetPasswordExpiry,
     });
 
-    await this.mail.sendPasswordResetEmail(user.email, resetPasswordToken);
+    try {
+      await this.mail.sendPasswordResetEmail(user.email, resetPasswordToken);
+    } catch (error) {
+      this.logger.error(
+        `Nu am putut trimite emailul de resetare parolă către ${user.email}`,
+        error,
+      );
+    }
 
     return {
       message:
@@ -237,6 +293,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         isEmailVerified: user.isEmailVerified,
+        isAdmin: user.isAdmin,
       },
     };
   }

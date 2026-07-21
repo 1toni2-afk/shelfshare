@@ -1,3 +1,17 @@
+class BookGenre {
+  final String genre;
+  final int count;
+
+  const BookGenre({required this.genre, required this.count});
+
+  factory BookGenre.fromJson(Map<String, dynamic> json) {
+    return BookGenre(
+      genre: json['genre'] as String,
+      count: json['count'] as int,
+    );
+  }
+}
+
 enum BookCondition { noua, foarteBuna, buna, acceptabila }
 
 extension BookConditionX on BookCondition {
@@ -56,6 +70,8 @@ class Book {
   final int? pageCount;
   final String? language;
   final String? genre;
+  final double? referencePrice;
+  final String? referencePriceCurrency;
 
   const Book({
     required this.id,
@@ -69,6 +85,8 @@ class Book {
     this.pageCount,
     this.language,
     this.genre,
+    this.referencePrice,
+    this.referencePriceCurrency,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -84,6 +102,10 @@ class Book {
       pageCount: json['pageCount'] as int?,
       language: json['language'] as String?,
       genre: json['genre'] as String?,
+      referencePrice: json['referencePrice'] != null
+          ? double.parse(json['referencePrice'].toString())
+          : null,
+      referencePriceCurrency: json['referencePriceCurrency'] as String?,
     );
   }
 }

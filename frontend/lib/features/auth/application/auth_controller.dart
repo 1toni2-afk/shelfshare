@@ -10,12 +10,13 @@ class AuthController extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.watch(authRepositoryProvider);
-    _restoreSession();
-    return const AuthInitial();
+    // Amânăm restaurarea sesiunii într-un microtask - nu modificăm `state`
+    // sincron în timpul build(), altfel valoarea e suprascrisă de return.
+    Future.microtask(_restoreSession);
+    return const AuthLoading();
   }
 
   Future<void> _restoreSession() async {
-    state = const AuthLoading();
     final user = await _repository.tryRestoreSession();
     state = user != null ? AuthAuthenticated(user) : const AuthUnauthenticated();
   }
@@ -27,6 +28,16 @@ class AuthController extends Notifier<AuthState> {
       state = AuthAuthenticated(user);
     } on DioException catch (e) {
       state = AuthError(_extractMessage(e));
+    }
+  }
+
+  Future<void> completeExternalLogin({required String code}) async {
+    state = const AuthLoading();
+    try {
+      final user = await _repository.completeExternalLogin(code: code);
+      state = AuthAuthenticated(user);
+    } catch (_) {
+      state = const AuthUnauthenticated();
     }
   }
 

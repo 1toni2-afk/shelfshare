@@ -42,6 +42,22 @@ export class SearchLibraryDto {
   availableOnly?: string;
 
   @IsOptional()
+  @IsIn(['recent', 'mostViewed', 'distance'])
+  sort?: 'recent' | 'mostViewed' | 'distance';
+
+  /** Orașul utilizatorului care caută - folosit pentru calculul de distanță. */
+  @IsOptional()
+  @IsIn(ROMANIAN_CITIES, { message: 'Orașul selectat nu este valid' })
+  fromCity?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(2000)
+  maxDistanceKm?: number;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)

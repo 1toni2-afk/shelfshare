@@ -104,6 +104,23 @@ class ChatController extends Notifier<ChatState> {
     _socketService.sendMessage(conversationId: conversationId, content: trimmed);
   }
 
+  void sendLocation(
+    String location, {
+    required double lat,
+    required double lng,
+    required DateTime meetingAt,
+  }) {
+    final trimmed = location.trim();
+    if (trimmed.isEmpty) return;
+    _socketService.sendMessage(
+      conversationId: conversationId,
+      location: trimmed,
+      locationLat: lat,
+      locationLng: lng,
+      meetingAt: meetingAt.toIso8601String(),
+    );
+  }
+
   void notifyTyping() {
     _socketService.notifyTyping(conversationId);
   }

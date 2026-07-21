@@ -1,4 +1,13 @@
-import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { BookCondition } from '@prisma/client';
 
 export class UpdateUserBookDto {
@@ -23,4 +32,18 @@ export class UpdateUserBookDto {
   @IsOptional()
   @IsBoolean()
   availableForSwap?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isForSale?: boolean;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(99999)
+  salePrice?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isNegotiable?: boolean;
 }

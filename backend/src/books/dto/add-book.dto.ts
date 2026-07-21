@@ -2,9 +2,13 @@ import {
   IsBoolean,
   IsEnum,
   IsISBN,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
+  Min,
+  ValidateIf,
 } from 'class-validator';
 import { BookCondition } from '@prisma/client';
 
@@ -39,4 +43,18 @@ export class AddBookDto {
   @IsOptional()
   @IsBoolean()
   isHardcover?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isForSale?: boolean;
+
+  @ValidateIf((o: AddBookDto) => o.isForSale === true)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(99999)
+  salePrice?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isNegotiable?: boolean;
 }

@@ -14,10 +14,18 @@ class ProfileController extends AsyncNotifier<AppUser> {
     state = await AsyncValue.guard(() => ref.read(profileRepositoryProvider).getMyProfile());
   }
 
-  Future<void> updateProfile({String? name, String? city, String? bio}) async {
-    final updated = await ref
-        .read(profileRepositoryProvider)
-        .updateProfile(name: name, city: city, bio: bio);
+  Future<void> updateProfile({
+    String? name,
+    String? city,
+    String? bio,
+    bool? showAcquisitionHistory,
+  }) async {
+    final updated = await ref.read(profileRepositoryProvider).updateProfile(
+          name: name,
+          city: city,
+          bio: bio,
+          showAcquisitionHistory: showAcquisitionHistory,
+        );
     state = AsyncData(updated);
     ref.read(authControllerProvider.notifier).setUser(updated);
   }

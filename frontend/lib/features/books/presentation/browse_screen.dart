@@ -8,9 +8,18 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/browse_controller.dart';
 import 'browse_filters_sheet.dart';
 
+/// Argumente opționale trimise ecranului de căutare din alte ecrane (ex.
+/// wishlist trimite un titlu, Home trimite un gen din secțiunea Categorii).
+class SearchScreenArgs {
+  const SearchScreenArgs({this.title, this.genre});
+  final String? title;
+  final String? genre;
+}
+
 class BrowseScreen extends ConsumerStatefulWidget {
-  const BrowseScreen({super.key, this.initialTitle});
+  const BrowseScreen({super.key, this.initialTitle, this.initialGenre});
   final String? initialTitle;
+  final String? initialGenre;
 
   @override
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
@@ -29,6 +38,12 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => ref.read(browseControllerProvider.notifier).updateTitle(widget.initialTitle),
+      );
+    } else if (widget.initialGenre != null && widget.initialGenre!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => ref.read(browseControllerProvider.notifier).applyFilters(
+              BrowseFilters(genre: widget.initialGenre),
+            ),
       );
     }
   }
@@ -72,7 +87,16 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     final state = ref.watch(browseControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Caută cărți')),
+      appBar: AppBar(
+        title: const Text('Caută cărți'),
+        actions: [
+          IconButton(
+            onPressed: () => context.push('/map'),
+            icon: const Icon(Icons.map_outlined),
+            tooltip: 'Hartă cărți din apropiere',
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [

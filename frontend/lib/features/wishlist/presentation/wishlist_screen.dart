@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/wishlist_item.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../books/presentation/browse_screen.dart';
 import '../application/wishlist_controller.dart';
 
 class WishlistScreen extends ConsumerWidget {
@@ -75,7 +76,7 @@ class _WishlistCard extends ConsumerWidget {
           Stack(
             children: [
               GestureDetector(
-                onTap: () => context.push('/search', extra: item.book.title),
+                onTap: () => context.push('/search', extra: SearchScreenArgs(title: item.book.title)),
                 child: BookCover(url: item.book.coverUrl, width: 160, height: 224),
               ),
               Positioned(

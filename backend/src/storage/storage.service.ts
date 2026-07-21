@@ -32,7 +32,9 @@ export class StorageService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const exists = await this.client.bucketExists(this.bucket).catch(() => false);
+    const exists = await this.client
+      .bucketExists(this.bucket)
+      .catch(() => false);
     if (!exists) {
       await this.client.makeBucket(this.bucket);
       this.logger.log(`Bucket "${this.bucket}" creat`);
@@ -67,9 +69,15 @@ export class StorageService implements OnModuleInit {
 
     const filename = `${folder}/${randomUUID()}.webp`;
 
-    await this.client.putObject(this.bucket, filename, resized, resized.length, {
-      'Content-Type': 'image/webp',
-    });
+    await this.client.putObject(
+      this.bucket,
+      filename,
+      resized,
+      resized.length,
+      {
+        'Content-Type': 'image/webp',
+      },
+    );
 
     return filename;
   }

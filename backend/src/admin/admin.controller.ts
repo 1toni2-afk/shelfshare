@@ -58,4 +58,14 @@ export class AdminController {
   getInactiveListingsReport() {
     return this.adminService.getInactiveListingsReport();
   }
+
+  @Get('reports/users')
+  getUserReports() {
+    return this.adminService.getUserReports();
+  }
+
+  @Get('feedback')
+  getFeedback() {
+    return this.adminService.getFeedback();
+  }
 }

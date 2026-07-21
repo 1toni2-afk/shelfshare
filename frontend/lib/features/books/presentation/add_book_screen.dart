@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../../../shared/widgets/book_cover.dart';
@@ -21,6 +24,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   final _authorController = TextEditingController();
   final _languageController = TextEditingController();
   final _editionController = TextEditingController();
+  final _priceController = TextEditingController();
 
   bool _isSearching = false;
   bool _isSubmitting = false;
@@ -30,17 +34,52 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   bool _manualEntry = false;
   BookCondition _condition = BookCondition.buna;
   bool _isHardcover = false;
+  bool _isForSale = false;
+  bool _isNegotiable = true;
+  Timer? _searchDebounce;
+  final List<XFile> _photos = [];
+
+  static const _maxPhotos = 2;
+
+  Future<void> _pickPhotos() async {
+    final remaining = _maxPhotos - _photos.length;
+    if (remaining <= 0) return;
+    final picked = await ImagePicker().pickMultiImage(limit: remaining);
+    if (picked.isEmpty) return;
+    setState(() => _photos.addAll(picked.take(remaining)));
+  }
+
+  void _removePhoto(int index) {
+    setState(() => _photos.removeAt(index));
+  }
 
   bool get _showDetailsForm => _selected != null || _manualEntry;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     _titleController.dispose();
     _authorController.dispose();
     _languageController.dispose();
     _editionController.dispose();
+    _priceController.dispose();
     super.dispose();
+  }
+
+  /// Căutare live pe măsură ce userul tastează, cu un mic debounce - ca
+  /// alegerea unei cărți din sugestii (cu autor completat automat) să nu mai
+  /// ceară un pas explicit de "Caută".
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    if (value.trim().length < 2) {
+      setState(() {
+        _results = null;
+        _searchError = null;
+      });
+      return;
+    }
+    _searchDebounce = Timer(const Duration(milliseconds: 400), _search);
   }
 
   Future<void> _search() async {
@@ -89,9 +128,22 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       return;
     }
 
+    final salePrice = double.tryParse(_priceController.text.trim().replaceAll(',', '.'));
+    if (_isForSale && salePrice == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Introdu un preț valid')));
+      return;
+    }
+    if (_isForSale && _photos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Adaugă cel puțin o poză cu cartea înainte de a o pune la vânzare')),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(booksRepositoryProvider).addToLibrary(
+      final userBook = await ref.read(booksRepositoryProvider).addToLibrary(
             isbn: _selected?.isbn,
             title: title,
             author: _selected?.author ??
@@ -100,7 +152,17 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             language: _languageController.text.trim().isEmpty ? null : _languageController.text.trim(),
             edition: _editionController.text.trim().isEmpty ? null : _editionController.text.trim(),
             isHardcover: _isHardcover,
+            isForSale: _isForSale,
+            salePrice: _isForSale ? salePrice : null,
+            isNegotiable: _isNegotiable,
           );
+      for (final photo in _photos) {
+        await ref.read(booksRepositoryProvider).addPhoto(
+              userBook.id,
+              bytes: await photo.readAsBytes(),
+              filename: photo.name,
+            );
+      }
       ref.invalidate(myLibraryControllerProvider);
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -140,6 +202,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               Expanded(
                 child: TextField(
                   controller: _searchController,
+                  onChanged: _onSearchChanged,
                   onSubmitted: (_) => _search(),
                   decoration: const InputDecoration(hintText: 'Titlu sau ISBN'),
                 ),
@@ -276,6 +339,70 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           value: _isHardcover,
           onChanged: (value) => setState(() => _isHardcover = value),
         ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('De vânzare'),
+          subtitle: const Text('Pe lângă schimb, poți vinde cartea la un preț fix'),
+          value: _isForSale,
+          onChanged: (value) => setState(() => _isForSale = value),
+        ),
+        if (_isForSale) ...[
+          const SizedBox(height: 8),
+          TextField(
+            controller: _priceController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Preț (lei)', suffixText: 'lei'),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('NENEGOCIABIL'),
+            subtitle: const Text('Cumpărătorii nu vor putea face oferte de preț'),
+            value: !_isNegotiable,
+            onChanged: (value) => setState(() => _isNegotiable = !value),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Poze cu cartea (obligatoriu, cel puțin 1)',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (var i = 0; i < _photos.length; i++)
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(_photos[i].path, width: 90, height: 90, fit: BoxFit.cover),
+                    ),
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: GestureDetector(
+                        onTap: () => _removePhoto(i),
+                        child: const CircleAvatar(
+                          radius: 10,
+                          backgroundColor: Colors.black54,
+                          child: Icon(Icons.close, size: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              if (_photos.length < _maxPhotos)
+                OutlinedButton(
+                  onPressed: _pickPhotos,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(90, 90),
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Icon(Icons.add_a_photo_outlined),
+                ),
+            ],
+          ),
+        ],
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,

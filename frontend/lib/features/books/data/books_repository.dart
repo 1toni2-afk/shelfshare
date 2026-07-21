@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
+import '../../../data/models/map_city.dart';
+import '../../../data/models/price_offer.dart';
 import '../../../data/models/user_book.dart';
 
 class BrowseResult {
@@ -22,6 +25,9 @@ class BooksRepository {
     String? language,
     String? city,
     String? condition,
+    String? sort,
+    String? fromCity,
+    int? maxDistanceKm,
     int limit = 20,
     int offset = 0,
   }) async {
@@ -33,6 +39,9 @@ class BooksRepository {
       if (language != null && language.isNotEmpty) 'language': language,
       if (city != null && city.isNotEmpty) 'city': city,
       if (condition != null && condition.isNotEmpty) 'condition': condition,
+      if (sort != null && sort.isNotEmpty) 'sort': sort,
+      if (fromCity != null && fromCity.isNotEmpty) 'fromCity': fromCity,
+      'maxDistanceKm': ?maxDistanceKm,
       'limit': limit,
       'offset': offset,
     });
@@ -48,6 +57,38 @@ class BooksRepository {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/books/$id');
     return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<ListingHistoryEntry>> getListingHistory(String id) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/$id/history');
+    return (response.data as List)
+        .map((e) => ListingHistoryEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<UserBook>> getSimilarBooks(String id) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/$id/similar');
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<BookGenre>> getGenres() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/genres');
+    return (response.data as List)
+        .map((e) => BookGenre.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<MapCity>> getMapCities() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/map-cities');
+    return (response.data as List)
+        .map((e) => MapCity.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<UserBook>> getMyLibrary() async {
@@ -88,6 +129,9 @@ class BooksRepository {
     String? language,
     String? edition,
     bool isHardcover = false,
+    bool isForSale = false,
+    double? salePrice,
+    bool isNegotiable = true,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books', data: {
@@ -98,8 +142,42 @@ class BooksRepository {
       if (language != null && language.isNotEmpty) 'language': language,
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
+      'isForSale': isForSale,
+      if (isForSale && salePrice != null) 'salePrice': salePrice,
+      if (isForSale) 'isNegotiable': isNegotiable,
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<UserBook> relistBook(
+    String originalUserBookId, {
+    required BookCondition condition,
+    String? language,
+    String? edition,
+    bool isHardcover = false,
+    bool isForSale = false,
+    double? salePrice,
+    bool isNegotiable = true,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/books/$originalUserBookId/relist', data: {
+      'condition': condition.toJson(),
+      if (language != null && language.isNotEmpty) 'language': language,
+      if (edition != null && edition.isNotEmpty) 'edition': edition,
+      'isHardcover': isHardcover,
+      'isForSale': isForSale,
+      if (isForSale && salePrice != null) 'salePrice': salePrice,
+      if (isForSale) 'isNegotiable': isNegotiable,
+    });
+    return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> addPhoto(String userBookId, {required List<int> bytes, required String filename}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final formData = FormData.fromMap({
+      'photo': MultipartFile.fromBytes(bytes, filename: filename.isEmpty ? 'photo.jpg' : filename),
+    });
+    await dio.post('/books/$userBookId/photos', data: formData);
   }
 }
 

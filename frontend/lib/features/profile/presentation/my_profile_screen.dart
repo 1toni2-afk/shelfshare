@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/romanian_cities.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/profile_header.dart';
+import '../../../shared/widgets/achievements_grid.dart';
+import '../../../shared/widgets/trust_score_card.dart';
+import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../application/profile_controller.dart';
+import '../data/feedback_repository.dart';
 
 class MyProfileScreen extends ConsumerStatefulWidget {
   const MyProfileScreen({super.key});
@@ -33,7 +39,19 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
     final state = ref.watch(profileControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profilul meu')),
+      appBar: AppBar(
+        title: const Text('Profilul meu'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Copiază linkul',
+            onPressed: () {
+              final userId = state.value?.id;
+              if (userId != null) copyShareLink(context, '/users/$userId');
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(profileControllerProvider.notifier).refresh(),
@@ -74,54 +92,62 @@ class _ProfileContent extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(24),
       children: [
-        Center(
-          child: CircleAvatar(
-            radius: 48,
-            backgroundImage: user.profileImage != null ? NetworkImage(user.profileImage!) : null,
-            child: user.profileImage == null
-                ? const Icon(Icons.person, size: 48)
-                : null,
-          ),
+        ProfileHeader(
+          profileImage: user.profileImage,
+          name: user.name,
+          subtitleLines: [user.email, if (user.city != null) user.city!],
+          rating: user.rating,
+          booksExchangedCount: user.booksExchangedCount,
+          bio: user.bio,
+          bioTitle: 'Despre mine',
         ),
-        const SizedBox(height: 16),
-        Text(
-          user.name ?? 'Utilizator',
-          style: Theme.of(context).textTheme.headlineSmall,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          user.email,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
-          textAlign: TextAlign.center,
-        ),
-        if (user.city != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            user.city!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
-            textAlign: TextAlign.center,
-          ),
+        if (user.trustScore != null) ...[
+          const SizedBox(height: 20),
+          TrustScoreCard(trustScore: user.trustScore!),
         ],
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _StatTile(icon: Icons.star, value: user.rating.toStringAsFixed(1), label: 'Rating'),
-            _StatTile(value: '${user.booksExchangedCount}', label: 'Cărți schimbate'),
-          ],
-        ),
-        if (user.bio != null && user.bio!.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          Text('Despre mine', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(user.bio!),
+        if (user.achievements != null && user.achievements!.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text('Insigne', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          AchievementsGrid(achievements: user.achievements!),
         ],
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.shield_outlined),
+          label: const Text('Centru de siguranță'),
+          onPressed: () => context.push('/safety-center'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.help_outline),
+          label: const Text('Întrebări frecvente'),
+          onPressed: () => context.push('/help-center'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.leaderboard_outlined),
+          label: const Text('Clasament pe orașe'),
+          onPressed: () => context.push('/leaderboard'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.feedback_outlined),
+          label: const Text('Trimite feedback'),
+          onPressed: () => _showFeedbackDialog(context, ref),
+        ),
+        const SizedBox(height: 12),
         OutlinedButton(
           onPressed: onEdit,
           child: const Text('Editează profilul'),
         ),
+        if (user.isAdmin) ...[
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.shield_outlined),
+            label: const Text('Panou de administrare'),
+            onPressed: () => context.push('/admin'),
+          ),
+        ],
         const SizedBox(height: 12),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.destructive),
@@ -131,32 +157,42 @@ class _ProfileContent extends ConsumerWidget {
       ],
     );
   }
-}
 
-class _StatTile extends StatelessWidget {
-  const _StatTile({required this.label, required this.value, this.icon});
-  final String label;
-  final String value;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 18, color: AppColors.accent),
-              const SizedBox(width: 4),
-            ],
-            Text(value, style: Theme.of(context).textTheme.titleLarge),
-          ],
+  Future<void> _showFeedbackDialog(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final message = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Trimite feedback'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          decoration: const InputDecoration(hintText: 'Ce ai vrea să ne spui?'),
         ),
-        const SizedBox(height: 4),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Anulează')),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('Trimite'),
+          ),
+        ],
+      ),
     );
+    if (message != null && message.trim().length >= 3) {
+      try {
+        await ref.read(feedbackRepositoryProvider).submit(message.trim());
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Mulțumim pentru feedback!')));
+        }
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Nu am putut trimite feedback-ul')));
+        }
+      }
+    }
   }
 }
 
@@ -172,6 +208,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   late final _nameController = TextEditingController(text: widget.user.name);
   late final _bioController = TextEditingController(text: widget.user.bio);
   late String? _city = widget.user.city;
+  late bool _showAcquisitionHistory = widget.user.showAcquisitionHistory;
   bool _isSubmitting = false;
 
   @override
@@ -188,6 +225,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
             name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
             city: _city,
             bio: _bioController.text.trim(),
+            showAcquisitionHistory: _showAcquisitionHistory,
           );
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
@@ -236,6 +274,13 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               maxLines: 3,
               maxLength: 500,
               decoration: const InputDecoration(labelText: 'Despre mine'),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Arată istoricul de achiziții pe profil'),
+              subtitle: const Text('Cărțile pe care le-ai primit prin schimburi sau cumpărături din aplicație'),
+              value: _showAcquisitionHistory,
+              onChanged: (value) => setState(() => _showAcquisitionHistory = value),
             ),
             const SizedBox(height: 8),
             ElevatedButton(

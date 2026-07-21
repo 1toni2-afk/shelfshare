@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "flutter-web",
-      "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "cd /Users/toni/Downloads/shelfshare/frontend && exec flutter run -d chrome --web-port 5959"],
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend && C:\\src\\flutter\\bin\\flutter.bat build web && cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend\\build\\web && node C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\scripts\\static-server.js"],
       "port": 5959
     }
   ]

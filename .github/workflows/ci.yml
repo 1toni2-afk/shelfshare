@@ -40,5 +40,32 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      - name: Teste
+        run: pnpm test
+
       - name: Build
         run: pnpm run build
+
+  frontend-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout cod
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Instalează dependențe
+        run: flutter pub get
+
+      - name: Analiză statică
+        run: flutter analyze
+
+      - name: Teste
+        run: flutter test

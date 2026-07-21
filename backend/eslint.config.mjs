@@ -32,4 +32,12 @@ export default tseslint.config(
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
+  {
+    // In testele Jest, `expect(mock.metodă)` e un fals-pozitiv clasic pentru
+    // unbound-method - mock-urile nu au niciodată nevoie de binding pe `this`.
+    files: ['**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
 );

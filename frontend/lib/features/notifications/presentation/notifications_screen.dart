@@ -22,7 +22,7 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationType.exchangeRequestReceived:
       case NotificationType.exchangeRequestAccepted:
       case NotificationType.exchangeRequestRejected:
-        break;
+        context.push('/exchanges');
     }
   }
 

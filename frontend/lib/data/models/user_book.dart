@@ -13,6 +13,11 @@ class UserBook {
   final String? edition;
   final bool isHardcover;
   final bool availableForSwap;
+  final bool isForSale;
+  final double? salePrice;
+  final bool isNegotiable;
+  final int viewCount;
+  final double? distanceKm;
   final List<String> photos;
   final DateTime createdAt;
 
@@ -26,6 +31,11 @@ class UserBook {
     this.edition,
     this.isHardcover = false,
     this.availableForSwap = true,
+    this.isForSale = false,
+    this.salePrice,
+    this.isNegotiable = true,
+    this.viewCount = 0,
+    this.distanceKm,
     this.photos = const [],
     required this.createdAt,
   });
@@ -43,6 +53,13 @@ class UserBook {
       edition: json['edition'] as String?,
       isHardcover: json['isHardcover'] as bool? ?? false,
       availableForSwap: json['availableForSwap'] as bool? ?? true,
+      isForSale: json['isForSale'] as bool? ?? false,
+      salePrice: json['salePrice'] != null
+          ? double.parse(json['salePrice'].toString())
+          : null,
+      isNegotiable: json['isNegotiable'] as bool? ?? true,
+      viewCount: json['viewCount'] as int? ?? 0,
+      distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       photos: (json['photos'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??

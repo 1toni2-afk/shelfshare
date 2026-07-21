@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/application/auth_state.dart';
 import '../data/books_repository.dart';
 
 class BrowseFilters {
@@ -11,6 +13,7 @@ class BrowseFilters {
     this.language,
     this.city,
     this.condition,
+    this.maxDistanceKm,
   });
 
   final String? title;
@@ -19,9 +22,15 @@ class BrowseFilters {
   final String? language;
   final String? city;
   final BookCondition? condition;
+  final int? maxDistanceKm;
 
   bool get hasActiveFilters =>
-      author != null || genre != null || language != null || city != null || condition != null;
+      author != null ||
+      genre != null ||
+      language != null ||
+      city != null ||
+      condition != null ||
+      maxDistanceKm != null;
 
   BrowseFilters withTitle(String? title) {
     return BrowseFilters(
@@ -31,6 +40,7 @@ class BrowseFilters {
       language: language,
       city: city,
       condition: condition,
+      maxDistanceKm: maxDistanceKm,
     );
   }
 }
@@ -95,6 +105,10 @@ class BrowseController extends Notifier<BrowseState> {
 
   Future<BrowseResult> _fetch(BrowseFilters f, {required int offset}) {
     final repository = ref.read(booksRepositoryProvider);
+    final authState = ref.read(authControllerProvider);
+    final myCity = authState is AuthAuthenticated ? authState.user.city : null;
+    final sortingByDistance = f.maxDistanceKm != null && myCity != null && myCity.isNotEmpty;
+
     return repository.browse(
       title: f.title,
       author: f.author,
@@ -102,6 +116,9 @@ class BrowseController extends Notifier<BrowseState> {
       language: f.language,
       city: f.city,
       condition: f.condition?.toJson(),
+      sort: sortingByDistance ? 'distance' : null,
+      fromCity: sortingByDistance ? myCity : null,
+      maxDistanceKm: sortingByDistance ? f.maxDistanceKm : null,
       limit: _pageSize,
       offset: offset,
     );

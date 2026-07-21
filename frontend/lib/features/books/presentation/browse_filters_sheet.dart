@@ -30,6 +30,7 @@ class _BrowseFiltersSheetState extends State<_BrowseFiltersSheet> {
   late final _languageController = TextEditingController(text: widget.initial.language);
   late String? _city = widget.initial.city;
   late BookCondition? _condition = widget.initial.condition;
+  late int? _maxDistanceKm = widget.initial.maxDistanceKm;
 
   @override
   void dispose() {
@@ -46,6 +47,7 @@ class _BrowseFiltersSheetState extends State<_BrowseFiltersSheet> {
       _languageController.clear();
       _city = null;
       _condition = null;
+      _maxDistanceKm = null;
     });
   }
 
@@ -58,6 +60,7 @@ class _BrowseFiltersSheetState extends State<_BrowseFiltersSheet> {
         language: _languageController.text.trim().isEmpty ? null : _languageController.text.trim(),
         city: _city,
         condition: _condition,
+        maxDistanceKm: _maxDistanceKm,
       ),
     );
   }
@@ -114,6 +117,27 @@ class _BrowseFiltersSheetState extends State<_BrowseFiltersSheet> {
               ],
               onChanged: (value) => setState(() => _condition = value),
             ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Doar din apropiere'),
+              subtitle: Text(
+                _maxDistanceKm == null
+                    ? 'Ordonează și filtrează după distanța reală față de orașul tău'
+                    : 'Până la $_maxDistanceKm km de orașul tău',
+              ),
+              value: _maxDistanceKm != null,
+              onChanged: (value) => setState(() => _maxDistanceKm = value ? 100 : null),
+            ),
+            if (_maxDistanceKm != null)
+              Slider(
+                value: _maxDistanceKm!.toDouble(),
+                min: 10,
+                max: 500,
+                divisions: 49,
+                label: '$_maxDistanceKm km',
+                onChanged: (value) => setState(() => _maxDistanceKm = value.round()),
+              ),
             const SizedBox(height: 24),
             Row(
               children: [

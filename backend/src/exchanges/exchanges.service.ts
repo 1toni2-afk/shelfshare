@@ -2,9 +2,12 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 
 const INCLUDE_FULL = {
@@ -32,11 +35,38 @@ const INCLUDE_FULL = {
 
 @Injectable()
 export class ExchangesService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ExchangesService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
+
+  /**
+   * Notificarea e un efect secundar, nu partea esențială a acțiunii -
+   * schimbul deja s-a salvat în DB când ajungem aici. Dacă notificarea
+   * eșuează, nu vrem ca clientul să vadă un 500 pentru o acțiune care
+   * de fapt a reușit (și posibil s-o reîncerce, creând un duplicat).
+   */
+  private async notifySafe(
+    userId: string,
+    type: NotificationType,
+    message: string,
+    data: Record<string, unknown>,
+  ) {
+    try {
+      await this.notifications.create(userId, type, message, data);
+    } catch (error) {
+      this.logger.warn(
+        `Nu am putut trimite notificarea "${type}" către ${userId}: ${error}`,
+      );
+    }
+  }
 
   async createRequest(requesterId: string, dto: CreateExchangeRequestDto) {
     const requestedBook = await this.prisma.userBook.findUnique({
       where: { id: dto.requestedBookId },
+      include: { book: true },
     });
     if (!requestedBook) {
       throw new NotFoundException('Cartea cerută nu a fost găsită');
@@ -69,7 +99,7 @@ export class ExchangesService {
       }
     }
 
-    return this.prisma.exchangeRequest.create({
+    const created = await this.prisma.exchangeRequest.create({
       data: {
         requesterId,
         ownerId: requestedBook.userId,
@@ -80,6 +110,15 @@ export class ExchangesService {
       },
       include: INCLUDE_FULL,
     });
+
+    await this.notifySafe(
+      requestedBook.userId,
+      'EXCHANGE_REQUEST_RECEIVED',
+      `Ai primit o cerere de schimb pentru "${requestedBook.book.title}"`,
+      { exchangeRequestId: created.id },
+    );
+
+    return created;
   }
 
   getSentRequests(userId: string) {
@@ -112,7 +151,7 @@ export class ExchangesService {
     this.assertIsOwner(request, userId);
     this.assertStatus(request, 'PENDING');
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       await tx.userBook.update({
         where: { id: request.requestedBookId },
         data: { availableForSwap: false },
@@ -130,6 +169,15 @@ export class ExchangesService {
         include: INCLUDE_FULL,
       });
     });
+
+    await this.notifySafe(
+      request.requesterId,
+      'EXCHANGE_REQUEST_ACCEPTED',
+      `Cererea ta de schimb pentru "${updated.requestedBook.book.title}" a fost acceptată`,
+      { exchangeRequestId: id },
+    );
+
+    return updated;
   }
 
   async reject(id: string, userId: string) {
@@ -137,11 +185,20 @@ export class ExchangesService {
     this.assertIsOwner(request, userId);
     this.assertStatus(request, 'PENDING');
 
-    return this.prisma.exchangeRequest.update({
+    const updated = await this.prisma.exchangeRequest.update({
       where: { id },
       data: { status: 'REJECTED' },
       include: INCLUDE_FULL,
     });
+
+    await this.notifySafe(
+      request.requesterId,
+      'EXCHANGE_REQUEST_REJECTED',
+      `Cererea ta de schimb pentru "${updated.requestedBook.book.title}" a fost refuzată`,
+      { exchangeRequestId: id },
+    );
+
+    return updated;
   }
 
   async cancel(id: string, userId: string) {
@@ -184,6 +241,109 @@ export class ExchangesService {
         include: INCLUDE_FULL,
       });
     });
+  }
+
+  /**
+   * Oricare dintre cei doi participanți poate evalua cealaltă parte,
+   * o singură dată, după ce schimbul e COMPLETED. Rating-ul de profil
+   * e media tuturor evaluărilor primite din toate schimburile.
+   */
+  async rate(id: string, userId: string, value: number, comment?: string) {
+    const request = await this.findRequestForAction(id);
+    if (request.requesterId !== userId && request.ownerId !== userId) {
+      throw new ForbiddenException('Nu ești parte în acest schimb');
+    }
+    this.assertStatus(request, 'COMPLETED');
+
+    const isRequester = request.requesterId === userId;
+    const ratedUserId = isRequester ? request.ownerId : request.requesterId;
+
+    if (isRequester && request.requesterRatingForOwner !== null) {
+      throw new BadRequestException('Ai evaluat deja acest schimb');
+    }
+    if (!isRequester && request.ownerRatingForRequester !== null) {
+      throw new BadRequestException('Ai evaluat deja acest schimb');
+    }
+
+    await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: isRequester
+        ? { requesterRatingForOwner: value, requesterReviewForOwner: comment }
+        : { ownerRatingForRequester: value, ownerReviewForRequester: comment },
+    });
+
+    await this.recomputeRating(ratedUserId);
+
+    return this.findOwnedRequest(id, userId);
+  }
+
+  /**
+   * Setează data/ora întâlnirii pentru un schimb acceptat - oricare dintre
+   * cei doi participanți o poate seta sau modifica, folosită apoi pentru
+   * generarea fișierului .ics.
+   */
+  async setMeeting(id: string, userId: string, meetingAt: Date) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+
+    return this.prisma.exchangeRequest.update({
+      where: { id },
+      data: { meetingAt },
+      include: INCLUDE_FULL,
+    });
+  }
+
+  async getIcsContent(id: string, userId: string): Promise<string> {
+    const request = await this.findOwnedRequest(id, userId);
+    if (!request.meetingAt) {
+      throw new BadRequestException('Setează mai întâi data întâlnirii');
+    }
+
+    const otherUser =
+      request.requesterId === userId ? request.owner : request.requester;
+    const start = request.meetingAt;
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const formatIcsDate = (date: Date) =>
+      date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ShelfShare//Exchange//RO',
+      'BEGIN:VEVENT',
+      `UID:${request.id}@shelfshare.demo`,
+      `DTSTAMP:${formatIcsDate(new Date())}`,
+      `DTSTART:${formatIcsDate(start)}`,
+      `DTEND:${formatIcsDate(end)}`,
+      `SUMMARY:Schimb de carte - ${request.requestedBook.book.title}`,
+      `DESCRIPTION:Întâlnire pentru schimbul de cărți cu ${otherUser.name ?? 'un utilizator ShelfShare'}.`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+  }
+
+  private async recomputeRating(userId: string) {
+    const ratedExchanges = await this.prisma.exchangeRequest.findMany({
+      where: {
+        OR: [
+          { ownerId: userId, requesterRatingForOwner: { not: null } },
+          { requesterId: userId, ownerRatingForRequester: { not: null } },
+        ],
+      },
+      select: { requesterRatingForOwner: true, ownerRatingForRequester: true },
+    });
+
+    const values = ratedExchanges
+      .map((r) => r.requesterRatingForOwner ?? r.ownerRatingForRequester)
+      .filter((v): v is number => v !== null);
+
+    const rating =
+      values.length === 0
+        ? 0
+        : Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) /
+          10;
+
+    await this.prisma.user.update({ where: { id: userId }, data: { rating } });
   }
 
   // ---------- Helpers ----------

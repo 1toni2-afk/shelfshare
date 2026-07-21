@@ -5,31 +5,52 @@ import '../../data/models/user.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/application/auth_state.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/admin/presentation/admin_screen.dart';
 import '../../features/books/presentation/add_book_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
+import '../../features/books/presentation/books_map_screen.dart';
 import '../../features/books/presentation/browse_screen.dart';
 import '../../features/books/presentation/my_library_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
+import '../../features/exchanges/presentation/exchange_confirm_screen.dart';
+import '../../features/exchanges/presentation/exchanges_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
+import '../../features/profile/presentation/leaderboard_screen.dart';
+import '../../features/profile/presentation/public_profile_screen.dart';
+import '../../features/safety/presentation/help_center_screen.dart';
+import '../../features/safety/presentation/safety_center_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
-final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authControllerProvider);
+/// Rute accesibile fără autentificare - adaugă aici orice rută nouă care nu
+/// trebuie să redirecteze spre /login (ex. un alt provider OAuth, un link
+/// de verificare email etc.), fără să atingi logica de redirect de mai jos.
+const _publicRoutes = {
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/auth/google/callback',
+};
 
+final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
+      // Citim starea curentă la fiecare evaluare (nu o captăm o singură
+      // dată la construirea routerului) - altfel router-ul s-ar recrea la
+      // fiecare schimbare de AuthState și ar folosi o închidere "stale",
+      // ceea ce ducea la efectul de "văd pagina principală o clipă, apoi
+      // sunt trimis înapoi la login" imediat după autentificare.
+      final authState = ref.read(authControllerProvider);
       final isAuthenticated = authState is AuthAuthenticated;
       final isLoading = authState is AuthInitial || authState is AuthLoading;
-      final goingToAuth = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register' ||
-          state.matchedLocation == '/forgot-password';
+      final goingToAuth = _publicRoutes.contains(state.matchedLocation);
 
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
@@ -44,8 +65,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
+      GoRoute(
+        path: '/auth/google/callback',
+        builder: (context, state) => GoogleCallbackScreen(
+          code: state.uri.queryParameters['code'],
+        ),
+      ),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
       GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
+      GoRoute(path: '/map', builder: (context, state) => const BooksMapScreen()),
+      GoRoute(path: '/exchanges', builder: (context, state) => const ExchangesScreen()),
+      GoRoute(
+        path: '/exchanges/:id/confirm',
+        builder: (context, state) => ExchangeConfirmScreen(exchangeId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
+      GoRoute(path: '/safety-center', builder: (context, state) => const SafetyCenterScreen()),
+      GoRoute(path: '/help-center', builder: (context, state) => const HelpCenterScreen()),
+      GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
+      GoRoute(
+        path: '/users/:userId',
+        builder: (context, state) => PublicProfileScreen(
+          userId: state.pathParameters['userId']!,
+          fallback: state.extra as PublicUser?,
+        ),
+      ),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(
         path: '/books/:userBookId',
@@ -71,7 +115,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/search',
-              builder: (context, state) => BrowseScreen(initialTitle: state.extra as String?),
+              builder: (context, state) {
+                final args = state.extra as SearchScreenArgs?;
+                return BrowseScreen(initialTitle: args?.title, initialGenre: args?.genre);
+              },
             ),
           ]),
           StatefulShellBranch(routes: [

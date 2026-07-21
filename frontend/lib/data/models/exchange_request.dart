@@ -49,6 +49,9 @@ class ExchangeRequest {
   final PublicUser requester;
   final PublicUser owner;
   final DateTime createdAt;
+  final int? requesterRatingForOwner;
+  final int? ownerRatingForRequester;
+  final DateTime? meetingAt;
 
   const ExchangeRequest({
     required this.id,
@@ -62,7 +65,19 @@ class ExchangeRequest {
     required this.requester,
     required this.owner,
     required this.createdAt,
+    this.requesterRatingForOwner,
+    this.ownerRatingForRequester,
+    this.meetingAt,
   });
+
+  /// Rating-ul dat de mine celuilalt participant, dacă `myUserId` a
+  /// evaluat deja acest schimb - folosit ca să știm dacă mai arătăm
+  /// butonul de evaluare sau nu.
+  bool myRatingGiven(String myUserId) {
+    if (myUserId == requesterId) return requesterRatingForOwner != null;
+    if (myUserId == ownerId) return ownerRatingForRequester != null;
+    return false;
+  }
 
   factory ExchangeRequest.fromJson(Map<String, dynamic> json) {
     return ExchangeRequest(
@@ -80,6 +95,9 @@ class ExchangeRequest {
       requester: PublicUser.fromJson(json['requester'] as Map<String, dynamic>),
       owner: PublicUser.fromJson(json['owner'] as Map<String, dynamic>),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      requesterRatingForOwner: json['requesterRatingForOwner'] as int?,
+      ownerRatingForRequester: json['ownerRatingForRequester'] as int?,
+      meetingAt: json['meetingAt'] != null ? DateTime.parse(json['meetingAt'] as String) : null,
     );
   }
 }

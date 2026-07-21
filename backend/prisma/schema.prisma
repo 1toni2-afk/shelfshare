@@ -43,6 +43,8 @@ model User {
   isAdmin  Boolean @default(false)
   isBanned Boolean @default(false)
 
+  showAcquisitionHistory Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -54,8 +56,104 @@ model User {
   messagesSent             Message[]         @relation("MessageSender")
   wishlistItems            WishlistItem[]
   notifications            Notification[]
+  blocksMade               Block[]           @relation("BlockBlocker")
+  blocksReceived           Block[]           @relation("BlockBlocked")
+  reportsMade              Report[]          @relation("ReportReporter")
+  reportsReceived          Report[]          @relation("ReportReported")
+  offersMade               PriceOffer[]      @relation("OfferBuyer")
+  offersReceived           PriceOffer[]      @relation("OfferOwner")
+  following                Follow[]          @relation("FollowFollower")
+  followers                Follow[]          @relation("FollowFollowing")
+  feedback                 Feedback[]
 
   @@map("users")
+}
+
+model Feedback {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  message String
+
+  createdAt DateTime @default(now())
+
+  @@map("feedback")
+}
+
+model Follow {
+  id String @id @default(uuid())
+
+  followerId String
+  follower   User   @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String
+  following   User   @relation("FollowFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Block {
+  id String @id @default(uuid())
+
+  blockerId String
+  blocker   User   @relation("BlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  blockedId String
+  blocked   User   @relation("BlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@map("blocks")
+}
+
+enum ReportReason {
+  SPAM
+  SCAM
+  INAPPROPRIATE
+  HARASSMENT
+  OTHER
+}
+
+model Report {
+  id String @id @default(uuid())
+
+  reporterId String
+  reporter   User   @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reportedUserId String
+  reportedUser   User   @relation("ReportReported", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  reason  ReportReason
+  details String?
+
+  userBookId String?
+  userBook   UserBook? @relation(fields: [userBookId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@map("reports")
+}
+
+model UpcomingRelease {
+  id String @id @default(uuid())
+
+  title       String
+  author      String?
+  coverUrl    String?
+  description String?
+  isbn        String?
+  releaseDate DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("upcoming_releases")
 }
 
 enum BookCondition {
@@ -78,6 +176,9 @@ model Book {
   pageCount   Int?
   language    String?
   genre       String?
+
+  referencePrice         Decimal? @db.Decimal(10, 2)
+  referencePriceCurrency String?
 
   source String?
 
@@ -105,6 +206,12 @@ model UserBook {
   isHardcover      Boolean       @default(false)
   availableForSwap Boolean       @default(true)
 
+  isForSale    Boolean  @default(false)
+  salePrice    Decimal? @db.Decimal(10, 2)
+  isNegotiable Boolean  @default(true)
+
+  viewCount Int @default(0)
+
   photos String[]
 
   createdAt DateTime @default(now())
@@ -112,8 +219,46 @@ model UserBook {
 
   exchangeRequestsReceived ExchangeRequest[] @relation("RequestedBook")
   exchangeRequestsOffered  ExchangeRequest[] @relation("OfferedBook")
+  priceOffers              PriceOffer[]
+  reports                  Report[]
+
+  // Lanțul de proveniență - dacă userul care a primit cartea (schimb/vânzare)
+  // decide să o re-listeze, noul anunț ține minte anunțul din care provine,
+  // ca istoricul să poată fi urmărit pe mai multe schimburi succesive.
+  previousListingId String?
+  previousListing   UserBook?  @relation("ListingChain", fields: [previousListingId], references: [id], onDelete: SetNull)
+  nextListings      UserBook[] @relation("ListingChain")
 
   @@map("user_books")
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model PriceOffer {
+  id String @id @default(uuid())
+
+  buyerId String
+  buyer   User   @relation("OfferBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  ownerId String
+  owner   User   @relation("OfferOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  userBookId String
+  userBook   UserBook @relation(fields: [userBookId], references: [id], onDelete: Cascade)
+
+  amount  Decimal     @db.Decimal(10, 2)
+  message String?
+  status  OfferStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("price_offers")
 }
 
 enum ExchangeStatus {
@@ -143,6 +288,13 @@ model ExchangeRequest {
 
   status  ExchangeStatus @default(PENDING)
   message String?
+
+  requesterRatingForOwner Int?
+  ownerRatingForRequester Int?
+  requesterReviewForOwner String?
+  ownerReviewForRequester String?
+
+  meetingAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,6 +333,12 @@ model Message {
   photo    String?
   location String?
 
+  // Coordonate + oră propusă pentru întâlnire - setate doar pe mesajele de
+  // locație (vezi "Trimite locația întâlnirii" din chat).
+  locationLat Float?
+  locationLng Float?
+  meetingAt   DateTime?
+
   isRead Boolean @default(false)
 
   createdAt DateTime @default(now())
@@ -209,6 +367,10 @@ enum NotificationType {
   EXCHANGE_REQUEST_ACCEPTED
   EXCHANGE_REQUEST_REJECTED
   NEW_MESSAGE
+  PRICE_OFFER_RECEIVED
+  PRICE_OFFER_ACCEPTED
+  PRICE_OFFER_REJECTED
+  FOLLOWED_USER_NEW_BOOK
 }
 
 model Notification {

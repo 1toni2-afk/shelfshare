@@ -1,11 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:web/web.dart' as web;
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/browser_download.dart';
 import '../../../data/models/message.dart';
 import '../../../data/models/user.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
+import '../../../shared/widgets/report_reason_dialog.dart';
+import '../../safety/data/safety_repository.dart';
 import '../application/chat_controller.dart';
+import '../data/places_repository.dart';
 
 class ConversationScreen extends ConsumerStatefulWidget {
   const ConversationScreen({super.key, required this.conversationId, this.otherUser});
@@ -19,6 +27,14 @@ class ConversationScreen extends ConsumerStatefulWidget {
 class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  bool _safetyBannerDismissed = false;
+  BlockStatus? _blockStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBlockStatus();
+  }
 
   @override
   void dispose() {
@@ -27,11 +43,85 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     super.dispose();
   }
 
+  Future<void> _loadBlockStatus() async {
+    final otherUser = widget.otherUser;
+    if (otherUser == null) return;
+    try {
+      final status = await ref.read(safetyRepositoryProvider).getBlockStatus(otherUser.id);
+      if (mounted) setState(() => _blockStatus = status);
+    } catch (_) {
+      // Nesemnificativ dacă eșuează - banner-ul de blocare rămâne ascuns.
+    }
+  }
+
+  Future<void> _toggleBlock() async {
+    final otherUser = widget.otherUser;
+    if (otherUser == null) return;
+    final repository = ref.read(safetyRepositoryProvider);
+    final isBlocked = _blockStatus?.blockedByMe ?? false;
+    try {
+      if (isBlocked) {
+        await repository.unblockUser(otherUser.id);
+      } else {
+        await repository.blockUser(otherUser.id);
+      }
+      await _loadBlockStatus();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isBlocked ? 'Utilizator deblocat' : 'Utilizator blocat')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut actualiza blocarea')));
+      }
+    }
+  }
+
+  Future<void> _reportUser() async {
+    final otherUser = widget.otherUser;
+    if (otherUser == null) return;
+    final result = await showDialog<ReportReason>(
+      context: context,
+      builder: (context) => const ReportReasonDialog(),
+    );
+    if (result == null) return;
+    try {
+      await ref.read(safetyRepositoryProvider).reportUser(otherUser.id, reason: result);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Raport trimis. Mulțumim!')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut trimite raportul')));
+      }
+    }
+  }
+
   void _send() {
     final text = _messageController.text;
     if (text.trim().isEmpty) return;
     ref.read(chatControllerProvider(widget.conversationId).notifier).sendMessage(text);
     _messageController.clear();
+  }
+
+  Future<void> _shareLocation() async {
+    final result = await showModalBottomSheet<_LocationShareResult>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const _ShareLocationSheet(),
+    );
+    if (result != null) {
+      ref.read(chatControllerProvider(widget.conversationId).notifier).sendLocation(
+            result.place.displayName,
+            lat: result.place.lat,
+            lng: result.place.lng,
+            meetingAt: result.meetingAt,
+          );
+    }
   }
 
   void _scrollToBottom() {
@@ -57,11 +147,32 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       }
     });
 
+    final isBlocked = (_blockStatus?.blockedByMe ?? false) || (_blockStatus?.blockedByThem ?? false);
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.otherUser?.name ?? 'Conversație')),
+      appBar: AppBar(
+        title: Text(widget.otherUser?.name ?? 'Conversație'),
+        actions: [
+          if (widget.otherUser != null)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'block') _toggleBlock();
+                if (value == 'report') _reportUser();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'block',
+                  child: Text((_blockStatus?.blockedByMe ?? false) ? 'Deblochează' : 'Blochează'),
+                ),
+                const PopupMenuItem(value: 'report', child: Text('Raportează')),
+              ],
+            ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
+            if (!_safetyBannerDismissed) _SafetyBanner(onDismiss: () => setState(() => _safetyBannerDismissed = true)),
             Expanded(
               child: state.isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -91,26 +202,94 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   ),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      onChanged: (_) =>
-                          ref.read(chatControllerProvider(widget.conversationId).notifier).notifyTyping(),
-                      decoration: const InputDecoration(hintText: 'Scrie un mesaj...'),
-                      onSubmitted: (_) => _send(),
+            if (isBlocked)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Nu poți trimite mesaje acestui utilizator - conversația este blocată.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.location_on_outlined),
+                      tooltip: 'Trimite locația întâlnirii',
+                      onPressed: _shareLocation,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(onPressed: _send, icon: const Icon(Icons.send)),
-                ],
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        onChanged: (_) =>
+                            ref.read(chatControllerProvider(widget.conversationId).notifier).notifyTyping(),
+                        decoration: const InputDecoration(hintText: 'Scrie un mesaj...'),
+                        onSubmitted: (_) => _send(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filled(onPressed: _send, icon: const Icon(Icons.send)),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SafetyBanner extends StatelessWidget {
+  const _SafetyBanner({required this.onDismiss});
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.shield_outlined, color: AppColors.accent, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Nu trimite bani în avans și întâlnește-te într-un loc public pentru schimb. '
+                  'Dacă ceva pare suspect, raportează sau blochează utilizatorul din meniul de sus.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                GestureDetector(
+                  onTap: () => context.push('/safety-center'),
+                  child: Text(
+                    'Află mai multe',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: onDismiss,
+          ),
+        ],
       ),
     );
   }
@@ -193,15 +372,279 @@ class _MessageContent extends StatelessWidget {
       );
     }
     if (message.location != null) {
-      return Row(
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.location_on, size: 16, color: textColor),
-          const SizedBox(width: 4),
-          Flexible(child: Text(message.location!, style: TextStyle(color: textColor))),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.location_on, size: 16, color: textColor),
+              const SizedBox(width: 4),
+              Flexible(child: Text(message.location!, style: TextStyle(color: textColor))),
+            ],
+          ),
+          if (message.meetingAt != null) ...[
+            const SizedBox(height: 4),
+            Text(_formatMeetingDate(message.meetingAt!), style: TextStyle(color: textColor, fontSize: 13)),
+          ],
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            children: [
+              if (message.locationLat != null && message.locationLng != null)
+                _MessageActionButton(
+                  icon: Icons.map_outlined,
+                  label: 'Hartă',
+                  textColor: textColor,
+                  onTap: () => web.window.open(
+                    'https://www.openstreetmap.org/?mlat=${message.locationLat}&mlon=${message.locationLng}#map=17/${message.locationLat}/${message.locationLng}',
+                    '_blank',
+                  ),
+                ),
+              if (message.meetingAt != null)
+                _MessageActionButton(
+                  icon: Icons.calendar_month_outlined,
+                  label: 'Calendar',
+                  textColor: textColor,
+                  onTap: () => _downloadMeetingIcs(message),
+                ),
+            ],
+          ),
         ],
       );
     }
     return Text(message.content ?? '', style: TextStyle(color: textColor));
+  }
+
+  String _formatMeetingDate(DateTime date) {
+    final local = date.toLocal();
+    final h = local.hour.toString().padLeft(2, '0');
+    final m = local.minute.toString().padLeft(2, '0');
+    return '${local.day}.${local.month}.${local.year}, ora $h:$m';
+  }
+
+  void _downloadMeetingIcs(ChatMessage message) {
+    final start = message.meetingAt!.toUtc();
+    final end = start.add(const Duration(hours: 1));
+    String formatIcs(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}${d.month.toString().padLeft(2, '0')}${d.day.toString().padLeft(2, '0')}'
+        'T${d.hour.toString().padLeft(2, '0')}${d.minute.toString().padLeft(2, '0')}${d.second.toString().padLeft(2, '0')}Z';
+
+    final ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ShelfShare//Chat//RO',
+      'BEGIN:VEVENT',
+      'UID:${message.id}@shelfshare.demo',
+      'DTSTAMP:${formatIcs(DateTime.now().toUtc())}',
+      'DTSTART:${formatIcs(start)}',
+      'DTEND:${formatIcs(end)}',
+      'SUMMARY:Întâlnire ShelfShare',
+      'LOCATION:${message.location}',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    downloadTextFile(filename: 'intalnire-shelfshare.ics', content: ics, mimeType: 'text/calendar');
+  }
+}
+
+class _MessageActionButton extends StatelessWidget {
+  const _MessageActionButton({
+    required this.icon,
+    required this.label,
+    required this.textColor,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: textColor.withValues(alpha: 0.4)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: textColor),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(color: textColor, fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LocationShareResult {
+  const _LocationShareResult({required this.place, required this.meetingAt});
+  final PlaceResult place;
+  final DateTime meetingAt;
+}
+
+class _ShareLocationSheet extends ConsumerStatefulWidget {
+  const _ShareLocationSheet();
+
+  @override
+  ConsumerState<_ShareLocationSheet> createState() => _ShareLocationSheetState();
+}
+
+class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
+  final _searchController = TextEditingController();
+  Timer? _debounce;
+  bool _isSearching = false;
+  List<PlaceResult>? _results;
+  PlaceResult? _selected;
+  DateTime? _date;
+  TimeOfDay? _time;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    if (value.trim().length < 3) {
+      setState(() => _results = null);
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 400), () async {
+      setState(() => _isSearching = true);
+      try {
+        final results = await ref.read(placesRepositoryProvider).search(value.trim());
+        if (mounted) setState(() => _results = results);
+      } finally {
+        if (mounted) setState(() => _isSearching = false);
+      }
+    });
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _date ?? now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 1),
+    );
+    if (date != null) setState(() => _date = date);
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(context: context, initialTime: _time ?? TimeOfDay.now());
+    if (time != null) setState(() => _time = time);
+  }
+
+  void _submit() {
+    if (_selected == null || _date == null || _time == null) return;
+    final meetingAt = DateTime(_date!.year, _date!.month, _date!.day, _time!.hour, _time!.minute);
+    Navigator.of(context).pop(_LocationShareResult(place: _selected!, meetingAt: meetingAt));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Trimite locația întâlnirii', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 16),
+            if (_selected == null) ...[
+              TextField(
+                controller: _searchController,
+                autofocus: true,
+                onChanged: _onSearchChanged,
+                decoration: const InputDecoration(
+                  hintText: 'Caută o adresă sau un loc (ex: Cafeneaua X, Cluj)',
+                  prefixIcon: Icon(Icons.search),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (_isSearching)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_results != null)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 260),
+                  child: _results!.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Text('Niciun rezultat.'),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: _results!.length,
+                          separatorBuilder: (_, _) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final place = _results![index];
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.place_outlined),
+                              title: Text(place.displayName, maxLines: 2, overflow: TextOverflow.ellipsis),
+                              onTap: () => setState(() => _selected = place),
+                            );
+                          },
+                        ),
+                ),
+            ] else ...[
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.place, color: AppColors.accent),
+                title: Text(_selected!.displayName),
+                trailing: TextButton(
+                  onPressed: () => setState(() => _selected = null),
+                  child: const Text('Schimbă'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _pickDate,
+                      child: Text(_date == null ? 'Alege data' : '${_date!.day}.${_date!.month}.${_date!.year}'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _pickTime,
+                      child: Text(_time == null ? 'Alege ora' : _time!.format(context)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: (_date != null && _time != null) ? _submit : null,
+                child: const Text('Trimite'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

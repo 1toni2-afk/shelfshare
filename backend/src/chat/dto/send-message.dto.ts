@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsLatitude,
+  IsLongitude,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 
 export class SendMessageDto {
   @IsUUID()
@@ -12,4 +20,16 @@ export class SendMessageDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  @IsOptional()
+  @IsLatitude()
+  locationLat?: number;
+
+  @IsOptional()
+  @IsLongitude()
+  locationLng?: number;
+
+  @IsOptional()
+  @IsDateString()
+  meetingAt?: string;
 }

@@ -12,6 +12,12 @@ import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { AdminModule } from './admin/admin.module';
+import { UpcomingReleasesModule } from './upcoming-releases/upcoming-releases.module';
+import { SafetyModule } from './safety/safety.module';
+import { OffersModule } from './offers/offers.module';
+import { PlacesModule } from './places/places.module';
+import { FollowModule } from './follow/follow.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -26,6 +32,12 @@ import { AdminModule } from './admin/admin.module';
     NotificationsModule,
     WishlistModule,
     AdminModule,
+    UpcomingReleasesModule,
+    SafetyModule,
+    OffersModule,
+    PlacesModule,
+    FollowModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService],

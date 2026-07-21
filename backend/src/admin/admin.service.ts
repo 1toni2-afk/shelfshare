@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { FeedbackService } from '../feedback/feedback.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private feedback: FeedbackService,
+  ) {}
 
   async getStats() {
     const [
@@ -35,29 +39,28 @@ export class AdminService {
     };
   }
 
+  // Numărul total de utilizatori vine deja din getStats() - nu-l mai
+  // numărăm o a doua oară aici doar ca să-l afișăm într-un titlu.
   async getUsers(limit = 50, offset = 0) {
-    const [items, total] = await Promise.all([
-      this.prisma.user.findMany({
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          city: true,
-          isEmailVerified: true,
-          isBanned: true,
-          isAdmin: true,
-          rating: true,
-          booksExchangedCount: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
-      }),
-      this.prisma.user.count(),
-    ]);
+    const items = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        city: true,
+        isEmailVerified: true,
+        isBanned: true,
+        isAdmin: true,
+        rating: true,
+        booksExchangedCount: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    });
 
-    return { items, total, limit, offset };
+    return { items, limit, offset };
   }
 
   async banUser(userId: string) {
@@ -130,5 +133,21 @@ export class AdminService {
       orderBy: { createdAt: 'asc' },
       take: 100,
     });
+  }
+
+  getUserReports() {
+    return this.prisma.report.findMany({
+      include: {
+        reporter: { select: { id: true, email: true, name: true } },
+        reportedUser: { select: { id: true, email: true, name: true } },
+        userBook: { include: { book: { select: { title: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  getFeedback() {
+    return this.feedback.getAll();
   }
 }

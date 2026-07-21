@@ -29,6 +29,22 @@ class AuthRepository {
     return AppUser.fromJson(response.data['user'] as Map<String, dynamic>);
   }
 
+  /// Schimbă codul primit din fluxul Google OAuth (redirect din backend) pe
+  /// token-uri reale printr-un apel API separat - token-urile nu tranzitează
+  /// niciodată URL-ul de redirect al browserului, doar acest cod opac.
+  Future<AppUser> completeExternalLogin({required String code}) async {
+    final exchangeResponse = await _apiClient.dio.post(
+      '/auth/google/exchange',
+      data: {'code': code},
+    );
+    await _tokenStorage.saveTokens(
+      accessToken: exchangeResponse.data['accessToken'] as String,
+      refreshToken: exchangeResponse.data['refreshToken'] as String,
+    );
+    final response = await _apiClient.dio.get('/profile/me');
+    return AppUser.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> logout() async {
     try {
       await _apiClient.dio.post('/auth/logout');

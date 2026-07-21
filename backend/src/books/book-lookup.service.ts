@@ -104,23 +104,21 @@ export class BookLookupService {
         this.http.get<{ docs?: OpenLibrarySearchDoc[] }>(url),
       );
 
-      return (data.docs ?? []).map(
-        (doc): ExternalBookResult => ({
-          isbn: doc.isbn?.[0] ?? null,
-          title: doc.title ?? 'Titlu necunoscut',
-          author: doc.author_name?.join(', ') ?? null,
-          description: null, // nu vine în search.json, doar la lookup individual
-          coverUrl: doc.cover_i
-            ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-            : null,
-          publisher: doc.publisher?.[0] ?? null,
-          publishedYear: doc.first_publish_year ?? null,
-          pageCount: doc.number_of_pages_median ?? null,
-          language: doc.language?.[0] ?? null,
-          genre: doc.subject?.[0] ?? null,
-          source: 'open_library',
-        }),
-      );
+      return (data.docs ?? []).map((doc): ExternalBookResult => ({
+        isbn: doc.isbn?.[0] ?? null,
+        title: doc.title ?? 'Titlu necunoscut',
+        author: doc.author_name?.join(', ') ?? null,
+        description: null, // nu vine în search.json, doar la lookup individual
+        coverUrl: doc.cover_i
+          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+          : null,
+        publisher: doc.publisher?.[0] ?? null,
+        publishedYear: doc.first_publish_year ?? null,
+        pageCount: doc.number_of_pages_median ?? null,
+        language: doc.language?.[0] ?? null,
+        genre: doc.subject?.[0] ?? null,
+        source: 'open_library',
+      }));
     } catch (error) {
       this.logger.warn(`Open Library search eșuat pentru "${query}": ${error}`);
       return [];
@@ -187,6 +185,36 @@ export class BookLookupService {
     } catch (error) {
       this.logger.warn(`Google Books search eșuat pentru "${query}": ${error}`);
       return [];
+    }
+  }
+
+  /**
+   * Prețul de listă al cărții (saleInfo.listPrice de la Google Books), folosit
+   * ca preț de referință "din librării". Acoperire parțială - multe cărți nu
+   * au preț listat acolo.
+   */
+  async lookupPrice(
+    isbn: string,
+  ): Promise<{ price: number; currency: string } | null> {
+    try {
+      type GoogleVolume = {
+        saleInfo?: {
+          listPrice?: { amount?: number; currencyCode?: string };
+        };
+      };
+
+      const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+      const { data } = await firstValueFrom(
+        this.http.get<{ items?: GoogleVolume[] }>(url),
+      );
+      const listPrice = data.items?.[0]?.saleInfo?.listPrice;
+      if (listPrice?.amount != null && listPrice?.currencyCode) {
+        return { price: listPrice.amount, currency: listPrice.currencyCode };
+      }
+      return null;
+    } catch (error) {
+      this.logger.warn(`Google Books preț eșuat pentru ISBN ${isbn}: ${error}`);
+      return null;
     }
   }
 

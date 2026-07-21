@@ -38,10 +38,21 @@ class ChatSocketService {
     _socket?.emit('join_conversation', conversationId);
   }
 
-  void sendMessage({required String conversationId, String? content}) {
+  void sendMessage({
+    required String conversationId,
+    String? content,
+    String? location,
+    double? locationLat,
+    double? locationLng,
+    String? meetingAt,
+  }) {
     _socket?.emit('send_message', {
       'conversationId': conversationId,
       'content': ?content,
+      'location': ?location,
+      'locationLat': ?locationLat,
+      'locationLng': ?locationLng,
+      'meetingAt': ?meetingAt,
     });
   }
 

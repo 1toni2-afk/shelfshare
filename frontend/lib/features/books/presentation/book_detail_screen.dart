@@ -6,12 +6,18 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
+import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../data/models/price_offer.dart';
+import '../../../shared/widgets/report_reason_dialog.dart';
+import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../chat/data/chat_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
+import '../../offers/data/offers_repository.dart';
+import '../../safety/data/safety_repository.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
 import '../data/books_repository.dart';
@@ -50,6 +56,42 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     }
   }
 
+  Future<void> _makeOffer(UserBook book) async {
+    if (_sheetOpen) return;
+    _sheetOpen = true;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _MakeOfferSheet(book: book),
+    );
+    _sheetOpen = false;
+  }
+
+  Future<void> _reportListing(UserBook book, PublicUser owner) async {
+    final result = await showDialog<ReportReason>(
+      context: context,
+      builder: (context) => const ReportReasonDialog(),
+    );
+    if (result == null) return;
+    try {
+      await ref.read(safetyRepositoryProvider).reportUser(
+            owner.id,
+            reason: result,
+            userBookId: book.id,
+            details: 'Raportat de pe anunțul "${book.book.title}"',
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Raport trimis. Mulțumim!')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Nu am putut trimite raportul')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(bookDetailProvider(widget.userBookId));
@@ -57,11 +99,28 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final wishlistState = ref.watch(wishlistControllerProvider);
     final isWishlisted = bookId != null &&
         (wishlistState.value ?? const []).any((item) => item.book.id == bookId);
+    final currentBook = async.value;
+    final currentOwner = currentBook?.owner ?? widget.fallbackOwner;
+    final authState = ref.watch(authControllerProvider);
+    final isOwnBook = currentBook != null &&
+        authState is AuthAuthenticated &&
+        authState.user.id == currentBook.userId;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalii carte'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Copiază linkul',
+            onPressed: () => copyShareLink(context, '/books/${widget.userBookId}'),
+          ),
+          if (currentBook != null && currentOwner != null && !isOwnBook)
+            IconButton(
+              icon: const Icon(Icons.flag_outlined),
+              tooltip: 'Raportează anunțul',
+              onPressed: () => _reportListing(currentBook, currentOwner),
+            ),
           if (bookId != null)
             IconButton(
               icon: Icon(isWishlisted ? Icons.favorite : Icons.favorite_border),
@@ -79,6 +138,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
               owner: owner,
               onRequestExchange: () => _requestExchange(book),
               onMessageOwner: owner == null ? null : () => _messageOwner(owner),
+              onMakeOffer: () => _makeOffer(book),
             );
           },
           loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
@@ -107,11 +167,13 @@ class _BookDetailContent extends ConsumerWidget {
     required this.owner,
     required this.onRequestExchange,
     required this.onMessageOwner,
+    required this.onMakeOffer,
   });
   final UserBook book;
   final PublicUser? owner;
   final VoidCallback onRequestExchange;
   final VoidCallback? onMessageOwner;
+  final VoidCallback onMakeOffer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -150,13 +212,37 @@ class _BookDetailContent extends ConsumerWidget {
             Chip(label: Text(book.condition.label)),
             if (book.language != null) Chip(label: Text(book.language!)),
             if (book.isHardcover) const Chip(label: Text('Cartonată')),
+            if (owner?.city != null)
+              Chip(
+                avatar: const Icon(Icons.location_on_outlined, size: 16),
+                label: Text(owner!.city!),
+              ),
             Chip(
               label: Text(book.availableForSwap ? 'Disponibilă la schimb' : 'Indisponibilă'),
               backgroundColor:
                   book.availableForSwap ? AppColors.accent.withValues(alpha: 0.15) : AppColors.muted,
             ),
+            if (book.isForSale && !book.isNegotiable) const Chip(label: Text('NENEGOCIABIL')),
           ],
         ),
+        const SizedBox(height: 8),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.visibility_outlined, size: 14, color: AppColors.mutedForeground),
+              const SizedBox(width: 4),
+              Text(
+                '${book.viewCount} vizualizări',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+              ),
+            ],
+          ),
+        ),
+        if (book.isForSale && book.salePrice != null) ...[
+          const SizedBox(height: 16),
+          Center(child: _PriceBlock(book: book)),
+        ],
         if (book.book.description != null && book.book.description!.isNotEmpty) ...[
           const SizedBox(height: 24),
           Text('Descriere', style: Theme.of(context).textTheme.titleMedium),
@@ -183,6 +269,7 @@ class _BookDetailContent extends ConsumerWidget {
           const SizedBox(height: 8),
           ListTile(
             contentPadding: EdgeInsets.zero,
+            onTap: () => context.push('/users/${owner!.id}', extra: owner),
             leading: CircleAvatar(
               backgroundImage: owner!.profileImage != null ? NetworkImage(owner!.profileImage!) : null,
               child: owner!.profileImage == null ? const Icon(Icons.person) : null,
@@ -229,12 +316,192 @@ class _BookDetailContent extends ConsumerWidget {
             ),
           ),
         ],
+        const SizedBox(height: 24),
+        _HistorySection(userBookId: book.id),
+        const SizedBox(height: 24),
+        _SimilarBooksSection(userBookId: book.id),
         const SizedBox(height: 32),
-        if (!isOwnBook)
-          ElevatedButton(
-            onPressed: book.availableForSwap ? onRequestExchange : null,
-            child: Text(book.availableForSwap ? 'Cere la schimb' : 'Indisponibilă la schimb'),
+        if (!isOwnBook) ...[
+          if (book.availableForSwap)
+            ElevatedButton(
+              onPressed: onRequestExchange,
+              child: const Text('Cere la schimb'),
+            )
+          else
+            const ElevatedButton(onPressed: null, child: Text('Indisponibilă la schimb')),
+          if (book.isForSale && book.isNegotiable) ...[
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: onMakeOffer,
+              child: const Text('Fă o ofertă'),
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+class _HistorySection extends ConsumerWidget {
+  const _HistorySection({required this.userBookId});
+  final String userBookId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(listingHistoryProvider(userBookId));
+    return async.when(
+      data: (history) {
+        if (history.length <= 1) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Istoricul acestei cărți', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              'Cum a circulat cartea prin aplicație, cu poze puse de fiecare proprietar.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+            ),
+            const SizedBox(height: 12),
+            for (final entry in history) _HistoryHop(entry: entry),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _HistoryHop extends StatelessWidget {
+  const _HistoryHop({required this.entry});
+  final ListingHistoryEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              CircleAvatar(
+                radius: 6,
+                backgroundColor: entry.isCurrent ? AppColors.accent : AppColors.mutedForeground,
+              ),
+              Container(width: 2, height: entry.photos.isEmpty ? 24 : 70, color: AppColors.border),
+            ],
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.ownerName ?? 'Utilizator',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  '${entry.condition.label} · listată pe ${_formatDate(entry.listedAt)}'
+                  '${entry.transferredAt != null ? ' · ${entry.transferType == 'sale' ? 'vândută' : 'dată la schimb'} pe ${_formatDate(entry.transferredAt!)}' : entry.isCurrent ? ' · deținută în prezent' : ''}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                ),
+                if (entry.photos.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 56,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: entry.photos.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 6),
+                      itemBuilder: (context, i) => ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.network(entry.photos[i], width: 56, height: 56, fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) => '${date.day}.${date.month}.${date.year}';
+}
+
+class _SimilarBooksSection extends ConsumerWidget {
+  const _SimilarBooksSection({required this.userBookId});
+  final String userBookId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(similarBooksProvider(userBookId));
+    return async.when(
+      data: (similar) {
+        if (similar.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Cărți similare', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 220,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: similar.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (context, index) => BookCard(
+                  userBook: similar[index],
+                  width: 130,
+                  onTap: () => context.pushReplacement(
+                    '/books/${similar[index].id}',
+                    extra: similar[index].owner,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _PriceBlock extends StatelessWidget {
+  const _PriceBlock({required this.book});
+  final UserBook book;
+
+  @override
+  Widget build(BuildContext context) {
+    final salePrice = book.salePrice!;
+    final referencePrice = book.book.referencePrice;
+    final referenceCurrency = book.book.referencePriceCurrency ?? '';
+    final showSaving = referencePrice != null && referencePrice > salePrice;
+
+    return Column(
+      children: [
+        Text(
+          '${salePrice.toStringAsFixed(0)} lei',
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall
+              ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
+        ),
+        if (showSaving) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Preț în librării: ${referencePrice.toStringAsFixed(0)} $referenceCurrency',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  decoration: TextDecoration.lineThrough,
+                  color: AppColors.mutedForeground,
+                ),
+          ),
+        ],
       ],
     );
   }
@@ -304,7 +571,42 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
     }
   }
 
+  /// Dacă userul n-a mai trimis nicio cerere de schimb, arată un reminder
+  /// de siguranță o singură dată înainte de a-l lăsa să continue.
+  Future<bool> _confirmSafetyIfFirstExchange() async {
+    try {
+      final sent = await ref.read(exchangesRepositoryProvider).getSent();
+      if (sent.isNotEmpty) return true;
+    } catch (_) {
+      return true; // nu blocăm userul dacă verificarea eșuează
+    }
+    if (!mounted) return false;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Primul tău schimb'),
+        content: const Text(
+          'Câteva sfaturi înainte de primul schimb: întâlnește-te ziua, într-un loc public, '
+          'și verifică starea cărții înainte să confirmi schimbul ca finalizat.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Renunță'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Am înțeles, continuă'),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
   Future<void> _submit() async {
+    if (!await _confirmSafetyIfFirstExchange()) return;
+
     setState(() => _isSubmitting = true);
     try {
       await ref.read(exchangesRepositoryProvider).createRequest(
@@ -389,6 +691,115 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text('Trimite cererea'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MakeOfferSheet extends ConsumerStatefulWidget {
+  const _MakeOfferSheet({required this.book});
+  final UserBook book;
+
+  @override
+  ConsumerState<_MakeOfferSheet> createState() => _MakeOfferSheetState();
+}
+
+class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
+  late final _amountController =
+      TextEditingController(text: widget.book.salePrice?.toStringAsFixed(0));
+  final _messageController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final amount = double.tryParse(_amountController.text.trim().replaceAll(',', '.'));
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Introdu o sumă validă')));
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(offersRepositoryProvider).createOffer(
+            widget.book.id,
+            amount: amount,
+            message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),
+          );
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Ofertă trimisă')));
+      }
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map && data['message'] != null
+          ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+          : 'Nu am putut trimite oferta.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Fă o ofertă pentru „${widget.book.book.title}"',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            if (widget.book.salePrice != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Preț cerut: ${widget.book.salePrice!.toStringAsFixed(0)} lei',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(labelText: 'Suma oferită', suffixText: 'lei'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _messageController,
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Mesaj (opțional)'),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isSubmitting ? null : _submit,
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Trimite oferta'),
             ),
           ],
         ),

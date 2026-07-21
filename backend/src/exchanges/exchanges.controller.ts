@@ -5,13 +5,17 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { ExchangesService } from './exchanges.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
+import { RateExchangeDto } from './dto/rate-exchange.dto';
+import { SetMeetingDto } from './dto/set-meeting.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -70,5 +74,39 @@ export class ExchangesController {
   complete(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
     return this.exchangesService.complete(id, userId!);
+  }
+
+  @Post(':id/rate')
+  @HttpCode(HttpStatus.OK)
+  rate(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: RateExchangeDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.rate(id, userId!, dto.value, dto.comment);
+  }
+
+  @Patch(':id/meeting')
+  setMeeting(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: SetMeetingDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.setMeeting(id, userId!, new Date(dto.meetingAt));
+  }
+
+  @Get(':id/ics')
+  async getIcs(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    const content = await this.exchangesService.getIcsContent(id, userId!);
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="schimb-${id}.ics"`);
+    res.send(content);
   }
 }

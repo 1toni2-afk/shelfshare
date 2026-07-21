@@ -5,6 +5,9 @@ class ChatMessage {
   final String? content;
   final String? photo;
   final String? location;
+  final double? locationLat;
+  final double? locationLng;
+  final DateTime? meetingAt;
   final bool isRead;
   final DateTime createdAt;
 
@@ -15,6 +18,9 @@ class ChatMessage {
     this.content,
     this.photo,
     this.location,
+    this.locationLat,
+    this.locationLng,
+    this.meetingAt,
     this.isRead = false,
     required this.createdAt,
   });
@@ -27,6 +33,9 @@ class ChatMessage {
       content: json['content'] as String?,
       photo: json['photo'] as String?,
       location: json['location'] as String?,
+      locationLat: (json['locationLat'] as num?)?.toDouble(),
+      locationLng: (json['locationLng'] as num?)?.toDouble(),
+      meetingAt: json['meetingAt'] != null ? DateTime.parse(json['meetingAt'] as String) : null,
       isRead: json['isRead'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );

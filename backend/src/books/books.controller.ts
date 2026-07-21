@@ -41,11 +41,34 @@ export class BooksController {
     return this.booksService.searchLibrary(filters);
   }
 
+  // Tot înainte de :userBookId, din același motiv ca 'browse'.
+  @Get('genres')
+  getGenres() {
+    return this.booksService.getGenres();
+  }
+
+  // Tot înainte de :userBookId, din același motiv ca 'browse'.
+  @Get('map-cities')
+  getMapCities() {
+    return this.booksService.getMapCities();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   addToLibrary(@Req() req: Request, @Body() dto: AddBookDto) {
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.addToLibrary(userId!, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userBookId/relist')
+  relistBook(
+    @Req() req: Request,
+    @Param('userBookId') userBookId: string,
+    @Body() dto: AddBookDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.relistBook(userId!, userBookId, dto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -57,7 +80,17 @@ export class BooksController {
 
   @Get(':userBookId')
   getUserBook(@Param('userBookId') userBookId: string) {
-    return this.booksService.getUserBook(userBookId);
+    return this.booksService.viewUserBook(userBookId);
+  }
+
+  @Get(':userBookId/history')
+  getListingHistory(@Param('userBookId') userBookId: string) {
+    return this.booksService.getListingHistory(userBookId);
+  }
+
+  @Get(':userBookId/similar')
+  getSimilarBooks(@Param('userBookId') userBookId: string) {
+    return this.booksService.getSimilarBooks(userBookId);
   }
 
   @UseGuards(JwtAuthGuard)

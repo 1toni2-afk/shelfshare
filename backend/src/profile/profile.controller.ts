@@ -31,6 +31,12 @@ export class ProfileController {
     return this.profileService.updateMyProfile(userId!, dto);
   }
 
+  // Înainte de ':userId', altfel ar fi interpretat ca id de utilizator.
+  @Get('leaderboard/cities')
+  getCityLeaderboard() {
+    return this.profileService.getCityLeaderboard();
+  }
+
   @Get(':userId')
   getPublicProfile(@Param('userId') userId: string) {
     return this.profileService.getPublicProfile(userId);

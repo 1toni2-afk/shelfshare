@@ -2,10 +2,13 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { SafetyService } from '../safety/safety.service';
 import { SendMessageDto } from './dto/send-message.dto';
 
 const PARTICIPANT_SELECT = {
@@ -17,9 +20,13 @@ const PARTICIPANT_SELECT = {
 
 @Injectable()
 export class ConversationsService {
+  private readonly logger = new Logger(ConversationsService.name);
+
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private notifications: NotificationsService,
+    private safety: SafetyService,
   ) {}
 
   /**
@@ -32,6 +39,7 @@ export class ConversationsService {
         'Nu poți începe o conversație cu tine însuți',
       );
     }
+    await this.safety.assertNotBlocked(userId, otherUserId);
 
     const [userAId, userBId] = [userId, otherUserId].sort();
 
@@ -42,15 +50,28 @@ export class ConversationsService {
         userB: { select: PARTICIPANT_SELECT },
       },
     });
-    if (existing) return existing;
 
-    return this.prisma.conversation.create({
-      data: { userAId, userBId },
-      include: {
-        userA: { select: PARTICIPANT_SELECT },
-        userB: { select: PARTICIPANT_SELECT },
-      },
-    });
+    const conversation =
+      existing ??
+      (await this.prisma.conversation.create({
+        data: { userAId, userBId },
+        include: {
+          userA: { select: PARTICIPANT_SELECT },
+          userB: { select: PARTICIPANT_SELECT },
+        },
+      }));
+
+    // Aceeași formă ca getMyConversations() - frontend-ul așteaptă
+    // "otherUser", nu userA/userB brute.
+    return {
+      id: conversation.id,
+      otherUser:
+        conversation.userAId === userId
+          ? conversation.userB
+          : conversation.userA,
+      lastMessage: null,
+      updatedAt: conversation.updatedAt,
+    };
   }
 
   async getMyConversations(userId: string) {
@@ -97,12 +118,14 @@ export class ConversationsService {
 
   async sendMessage(senderId: string, dto: SendMessageDto) {
     if (!dto.content && !dto.location) {
-      throw new BadRequestException(
-        'Mesajul trebuie să aibă text sau locație',
-      );
+      throw new BadRequestException('Mesajul trebuie să aibă text sau locație');
     }
 
-    await this.assertParticipant(dto.conversationId, senderId);
+    const conversation = await this.assertParticipant(
+      dto.conversationId,
+      senderId,
+    );
+    await this.assertNotBlockedInConversation(conversation, senderId);
 
     const [message] = await this.prisma.$transaction([
       this.prisma.message.create({
@@ -111,6 +134,9 @@ export class ConversationsService {
           senderId,
           content: dto.content,
           location: dto.location,
+          locationLat: dto.locationLat,
+          locationLng: dto.locationLng,
+          meetingAt: dto.meetingAt ? new Date(dto.meetingAt) : undefined,
         },
       }),
       this.prisma.conversation.update({
@@ -118,6 +144,8 @@ export class ConversationsService {
         data: { updatedAt: new Date() },
       }),
     ]);
+
+    await this.notifyNewMessage(conversation, senderId, dto.conversationId);
 
     return message;
   }
@@ -127,7 +155,8 @@ export class ConversationsService {
     conversationId: string,
     fileBuffer: Buffer,
   ) {
-    await this.assertParticipant(conversationId, senderId);
+    const conversation = await this.assertParticipant(conversationId, senderId);
+    await this.assertNotBlockedInConversation(conversation, senderId);
 
     const path = await this.storage.uploadImage(fileBuffer, 'chat');
 
@@ -141,7 +170,35 @@ export class ConversationsService {
       }),
     ]);
 
+    await this.notifyNewMessage(conversation, senderId, conversationId);
+
     return { ...message, photoUrl: this.storage.getPublicUrl(path) };
+  }
+
+  private async notifyNewMessage(
+    conversation: { userAId: string; userBId: string },
+    senderId: string,
+    conversationId: string,
+  ) {
+    const recipientId =
+      conversation.userAId === senderId
+        ? conversation.userBId
+        : conversation.userAId;
+
+    // Mesajul deja s-a salvat cât timp ajungem aici - o eroare la
+    // notificare nu trebuie să facă send-ul să pară eșuat pentru client.
+    try {
+      await this.notifications.create(
+        recipientId,
+        'NEW_MESSAGE',
+        'Ai un mesaj nou într-o conversație',
+        { conversationId },
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Nu am putut notifica mesajul nou către ${recipientId}: ${error}`,
+      );
+    }
   }
 
   async markAsRead(conversationId: string, userId: string) {
@@ -163,6 +220,17 @@ export class ConversationsService {
       throw new NotFoundException('Conversația nu a fost găsită');
     }
     return [conversation.userAId, conversation.userBId];
+  }
+
+  private async assertNotBlockedInConversation(
+    conversation: { userAId: string; userBId: string },
+    senderId: string,
+  ) {
+    const recipientId =
+      conversation.userAId === senderId
+        ? conversation.userBId
+        : conversation.userAId;
+    await this.safety.assertNotBlocked(senderId, recipientId);
   }
 
   private async assertParticipant(conversationId: string, userId: string) {

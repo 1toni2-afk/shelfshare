@@ -1,4 +1,11 @@
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { ROMANIAN_CITIES } from '../../common/constants/romanian-cities';
 
 export class UpdateProfileDto {
@@ -16,4 +23,8 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(500, { message: 'Bio poate avea maxim 500 de caractere' })
   bio?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  showAcquisitionHistory?: boolean;
 }
