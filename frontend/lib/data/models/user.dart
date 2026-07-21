@@ -4,6 +4,8 @@ class AppUser {
   final String id;
   final String email;
   final String? name;
+  final String? username;
+  final bool nameVisible;
   final String? city;
   final String? bio;
   final String? profileImage;
@@ -19,6 +21,8 @@ class AppUser {
     required this.id,
     required this.email,
     this.name,
+    this.username,
+    this.nameVisible = true,
     this.city,
     this.bio,
     this.profileImage,
@@ -36,6 +40,8 @@ class AppUser {
       id: json['id'] as String,
       email: json['email'] as String,
       name: json['name'] as String?,
+      username: json['username'] as String?,
+      nameVisible: json['nameVisible'] as bool? ?? true,
       city: json['city'] as String?,
       bio: json['bio'] as String?,
       profileImage: json['profileImage'] as String?,
@@ -147,6 +153,7 @@ class Review {
 class CityLeaderboardEntry {
   final String id;
   final String? name;
+  final String? username;
   final String? city;
   final String? profileImage;
   final double rating;
@@ -155,6 +162,7 @@ class CityLeaderboardEntry {
   const CityLeaderboardEntry({
     required this.id,
     this.name,
+    this.username,
     this.city,
     this.profileImage,
     required this.rating,
@@ -165,6 +173,7 @@ class CityLeaderboardEntry {
     return CityLeaderboardEntry(
       id: json['id'] as String,
       name: json['name'] as String?,
+      username: json['username'] as String?,
       city: json['city'] as String?,
       profileImage: json['profileImage'] as String?,
       rating: (json['rating'] as num).toDouble(),
@@ -219,6 +228,7 @@ class ReadingStats {
 class PublicUser {
   final String id;
   final String? name;
+  final String? username;
   final String? city;
   final String? profileImage;
   final double rating;
@@ -236,6 +246,7 @@ class PublicUser {
   const PublicUser({
     required this.id,
     this.name,
+    this.username,
     this.city,
     this.profileImage,
     this.rating = 0,
@@ -255,6 +266,7 @@ class PublicUser {
     return PublicUser(
       id: json['id'] as String,
       name: json['name'] as String?,
+      username: json['username'] as String?,
       city: json['city'] as String?,
       profileImage: json['profileImage'] as String?,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,

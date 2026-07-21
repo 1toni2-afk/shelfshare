@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { publicName } from '../common/utils/user-visibility';
 
 @Injectable()
 export class ProfileService {
@@ -21,6 +26,8 @@ export class ProfileService {
       id: user.id,
       email: user.email,
       name: user.name,
+      username: user.username,
+      nameVisible: user.nameVisible,
       city: user.city,
       bio: user.bio,
       profileImage: user.profileImage,
@@ -36,12 +43,26 @@ export class ProfileService {
   }
 
   async updateMyProfile(userId: string, dto: UpdateProfileDto) {
-    const user = await this.users.update(userId, dto);
+    let user: User;
+    try {
+      user = await this.users.update(userId, dto);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002' &&
+        (error.meta?.target as string[] | undefined)?.includes('username')
+      ) {
+        throw new ConflictException('Acest username este deja folosit');
+      }
+      throw error;
+    }
 
     return {
       id: user.id,
       email: user.email,
       name: user.name,
+      username: user.username,
+      nameVisible: user.nameVisible,
       city: user.city,
       bio: user.bio,
       profileImage: user.profileImage,
@@ -79,7 +100,8 @@ export class ProfileService {
 
     return {
       id: user.id,
-      name: user.name,
+      name: publicName(user),
+      username: user.username,
       city: user.city,
       bio: user.bio,
       profileImage: user.profileImage,
@@ -282,6 +304,8 @@ export class ProfileService {
       select: {
         id: true,
         name: true,
+        username: true,
+        nameVisible: true,
         city: true,
         profileImage: true,
         rating: true,
@@ -299,7 +323,8 @@ export class ProfileService {
 
     return Array.from(byCity.values())
       .sort((a, b) => b.booksExchangedCount - a.booksExchangedCount)
-      .slice(0, 15);
+      .slice(0, 15)
+      .map((user) => ({ ...user, name: publicName(user) }));
   }
 
   /**

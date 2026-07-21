@@ -28,6 +28,8 @@ describe('ExchangesService', () => {
     requestedBookId: 'ub-requested',
     offeredBookId: null,
     status: 'PENDING',
+    requester: { name: 'Requester Nume', nameVisible: true },
+    owner: { name: 'Owner Nume', nameVisible: true },
   };
 
   beforeEach(async () => {
@@ -85,15 +87,21 @@ describe('ExchangesService', () => {
       ).rejects.toThrow('nu mai este disponibilă');
     });
 
+    const createdRequest = {
+      id: 'ex-new',
+      requester: { name: 'Requester Nume', nameVisible: true },
+      owner: { name: 'Owner Nume', nameVisible: true },
+    };
+
     it('creeaza cererea si notifica proprietarul', async () => {
       prisma.userBook.findUnique.mockResolvedValue(requestedUserBook);
-      prisma.exchangeRequest.create.mockResolvedValue({ id: 'ex-new' });
+      prisma.exchangeRequest.create.mockResolvedValue(createdRequest);
 
       const result = await service.createRequest('requester-1', {
         requestedBookId: 'ub-requested',
       });
 
-      expect(result).toEqual({ id: 'ex-new' });
+      expect(result).toEqual(createdRequest);
       expect(notifications.create).toHaveBeenCalledWith(
         'owner-1',
         'EXCHANGE_REQUEST_RECEIVED',
@@ -104,14 +112,14 @@ describe('ExchangesService', () => {
 
     it('nu esueaza daca trimiterea notificarii pica - cererea deja s-a salvat', async () => {
       prisma.userBook.findUnique.mockResolvedValue(requestedUserBook);
-      prisma.exchangeRequest.create.mockResolvedValue({ id: 'ex-new' });
+      prisma.exchangeRequest.create.mockResolvedValue(createdRequest);
       notifications.create.mockRejectedValue(new Error('notif service down'));
 
       const result = await service.createRequest('requester-1', {
         requestedBookId: 'ub-requested',
       });
 
-      expect(result).toEqual({ id: 'ex-new' });
+      expect(result).toEqual(createdRequest);
     });
   });
 

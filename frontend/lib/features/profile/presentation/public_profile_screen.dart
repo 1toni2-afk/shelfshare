@@ -175,6 +175,7 @@ class _Content extends StatelessWidget {
         ProfileHeader(
           profileImage: user.profileImage,
           name: user.name,
+          username: user.username,
           subtitleLines: [
             if (user.city != null) user.city!,
             if (user.memberSince != null) 'Membru din ${user.memberSince!.year}',

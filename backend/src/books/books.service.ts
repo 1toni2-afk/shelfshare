@@ -16,10 +16,13 @@ import { SearchLibraryDto } from './dto/search-library.dto';
 import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 import { RomanianCity } from '../common/constants/romanian-cities';
 import { haversineDistanceKm } from '../common/utils/geo';
+import { publicName } from '../common/utils/user-visibility';
 
 const OWNER_SELECT = {
   id: true,
   name: true,
+  username: true,
+  nameVisible: true,
   city: true,
   rating: true,
   profileImage: true,
@@ -98,7 +101,7 @@ export class BooksService {
       const total = withDistance.length;
       const items = withDistance
         .slice(filters.offset, filters.offset! + filters.limit!)
-        .map((i) => this.toPublicPhotos(i));
+        .map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
       return { items, total, limit: filters.limit, offset: filters.offset };
     }
 
@@ -119,7 +122,7 @@ export class BooksService {
     ]);
 
     return {
-      items: items.map((i) => this.toPublicPhotos(i)),
+      items: items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i))),
       total,
       limit: filters.limit,
       offset: filters.offset,
@@ -229,7 +232,7 @@ export class BooksService {
     if (!userBook) {
       throw new NotFoundException('Cartea nu a fost găsită în bibliotecă');
     }
-    return userBook;
+    return this.sanitizeOwner(userBook);
   }
 
   /**
@@ -472,7 +475,7 @@ export class BooksService {
   // Folosit doar de endpointul public de detalii - crește viewCount pentru
   // secțiunea "Cele mai vizualizate" de pe home. Fire-and-forget: un view
   // pierdut ocazional nu contează, dar nu trebuie să blocheze afișarea cărții.
-  async viewUserBook(userBookId: string) {
+  async viewUserBook(userBookId: string, viewerId?: string) {
     const userBook = await this.getUserBook(userBookId);
     this.prisma.userBook
       .update({
@@ -480,7 +483,31 @@ export class BooksService {
         data: { viewCount: { increment: 1 } },
       })
       .catch(() => {});
+    if (viewerId) {
+      this.prisma.bookView
+        .upsert({
+          where: { userBookId_userId: { userBookId, userId: viewerId } },
+          create: { userBookId, userId: viewerId },
+          update: {},
+        })
+        .catch(() => {});
+    }
     return this.toPublicPhotos(userBook);
+  }
+
+  // Distinct de viewUserBook (care doar incrementează) - folosit de UI-ul
+  // "X vizualizări" ca să arate atât totalul brut (cu refresh-uri), cât și
+  // numărul de useri autentificați unici care au deschis anunțul.
+  async getViewStats(userBookId: string) {
+    const userBook = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+      select: { viewCount: true },
+    });
+    if (!userBook) {
+      throw new NotFoundException('Cartea nu a fost găsită în bibliotecă');
+    }
+    const unique = await this.prisma.bookView.count({ where: { userBookId } });
+    return { total: userBook.viewCount, unique };
   }
 
   async updateUserBook(
@@ -552,6 +579,15 @@ export class BooksService {
     return {
       ...userBook,
       photos: userBook.photos.map((p) => this.storage.getPublicUrl(p)),
+    };
+  }
+
+  private sanitizeOwner<
+    T extends { user: { name: string | null; nameVisible: boolean } },
+  >(userBook: T): T {
+    return {
+      ...userBook,
+      user: { ...userBook.user, name: publicName(userBook.user) },
     };
   }
 }

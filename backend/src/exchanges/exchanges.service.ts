@@ -10,6 +10,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
+import { publicName } from '../common/utils/user-visibility';
 
 const INCLUDE_FULL = {
   requestedBook: { include: { book: true } },
@@ -18,6 +19,8 @@ const INCLUDE_FULL = {
     select: {
       id: true,
       name: true,
+      username: true,
+      nameVisible: true,
       city: true,
       rating: true,
       profileImage: true,
@@ -27,6 +30,8 @@ const INCLUDE_FULL = {
     select: {
       id: true,
       name: true,
+      username: true,
+      nameVisible: true,
       city: true,
       rating: true,
       profileImage: true,
@@ -62,6 +67,19 @@ export class ExchangesService {
         `Nu am putut trimite notificarea "${type}" către ${userId}: ${error}`,
       );
     }
+  }
+
+  private sanitizeParties<
+    T extends {
+      requester: { name: string | null; nameVisible: boolean };
+      owner: { name: string | null; nameVisible: boolean };
+    },
+  >(request: T): T {
+    return {
+      ...request,
+      requester: { ...request.requester, name: publicName(request.requester) },
+      owner: { ...request.owner, name: publicName(request.owner) },
+    };
   }
 
   async createRequest(requesterId: string, dto: CreateExchangeRequestDto) {
@@ -119,23 +137,25 @@ export class ExchangesService {
       { exchangeRequestId: created.id },
     );
 
-    return created;
+    return this.sanitizeParties(created);
   }
 
-  getSentRequests(userId: string) {
-    return this.prisma.exchangeRequest.findMany({
+  async getSentRequests(userId: string) {
+    const requests = await this.prisma.exchangeRequest.findMany({
       where: { requesterId: userId },
       include: INCLUDE_FULL,
       orderBy: { createdAt: 'desc' },
     });
+    return requests.map((r) => this.sanitizeParties(r));
   }
 
-  getReceivedRequests(userId: string) {
-    return this.prisma.exchangeRequest.findMany({
+  async getReceivedRequests(userId: string) {
+    const requests = await this.prisma.exchangeRequest.findMany({
       where: { ownerId: userId },
       include: INCLUDE_FULL,
       orderBy: { createdAt: 'desc' },
     });
+    return requests.map((r) => this.sanitizeParties(r));
   }
 
   async getRequest(id: string, userId: string) {
@@ -178,7 +198,7 @@ export class ExchangesService {
       { exchangeRequestId: id },
     );
 
-    return updated;
+    return this.sanitizeParties(updated);
   }
 
   async reject(id: string, userId: string) {
@@ -199,7 +219,7 @@ export class ExchangesService {
       { exchangeRequestId: id },
     );
 
-    return updated;
+    return this.sanitizeParties(updated);
   }
 
   async cancel(id: string, userId: string) {
@@ -207,11 +227,12 @@ export class ExchangesService {
     this.assertIsRequester(request, userId);
     this.assertStatus(request, 'PENDING');
 
-    return this.prisma.exchangeRequest.update({
+    const updated = await this.prisma.exchangeRequest.update({
       where: { id },
       data: { status: 'CANCELLED' },
       include: INCLUDE_FULL,
     });
+    return this.sanitizeParties(updated);
   }
 
   /**
@@ -226,7 +247,7 @@ export class ExchangesService {
     }
     this.assertStatus(request, 'ACCEPTED');
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: request.requesterId },
         data: { booksExchangedCount: { increment: 1 } },
@@ -242,6 +263,7 @@ export class ExchangesService {
         include: INCLUDE_FULL,
       });
     });
+    return this.sanitizeParties(updated);
   }
 
   /**
@@ -304,7 +326,7 @@ export class ExchangesService {
       { exchangeRequestId: updated.id },
     );
 
-    return updated;
+    return this.sanitizeParties(updated);
   }
 
   /** Generează un fișier .ics pentru întâlnirea de schimb, ca oricare parte să-l poată importa în calendar. */
@@ -397,7 +419,7 @@ export class ExchangesService {
     if (request.requesterId !== userId && request.ownerId !== userId) {
       throw new ForbiddenException('Nu ești parte în acest schimb');
     }
-    return request;
+    return this.sanitizeParties(request);
   }
 
   private assertIsOwner(request: { ownerId: string }, userId: string) {

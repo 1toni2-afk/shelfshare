@@ -11,6 +11,7 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../books/presentation/relist_book_sheet.dart';
+import '../../chat/data/chat_repository.dart';
 import '../../offers/application/offers_controller.dart';
 import '../application/exchanges_controller.dart';
 
@@ -788,6 +789,23 @@ class _OfferCard extends ConsumerWidget {
                     bookTitle: offer.userBook.book.title,
                   ),
                   child: const Text('Adaugă în biblioteca ta'),
+                ),
+              ),
+            ],
+            if (offer.status == OfferStatus.accepted && isReceived) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                  onPressed: () async {
+                    final conversation =
+                        await ref.read(chatRepositoryProvider).startConversation(counterpart.id);
+                    if (context.mounted) {
+                      context.push('/chat/${conversation.id}', extra: counterpart);
+                    }
+                  },
+                  label: const Text('Trimite mesaj'),
                 ),
               ),
             ],

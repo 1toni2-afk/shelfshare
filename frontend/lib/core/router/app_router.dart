@@ -22,6 +22,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
 import '../../features/profile/presentation/leaderboard_screen.dart';
+import '../../features/profile/presentation/onboarding_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
 import '../../features/safety/presentation/safety_center_screen.dart';
@@ -51,10 +52,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState is AuthAuthenticated;
       final isLoading = authState is AuthInitial || authState is AuthLoading;
       final goingToAuth = _publicRoutes.contains(state.matchedLocation);
+      final goingToOnboarding = state.matchedLocation == '/onboarding';
 
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
       if (isAuthenticated && goingToAuth) return '/';
+      // Primul login - userul nu și-a ales încă username-ul. Nu blocăm
+      // autentificarea, doar restul aplicației până completează.
+      if (isAuthenticated &&
+          authState.user.username == null &&
+          !goingToOnboarding) {
+        return '/onboarding';
+      }
+      if (isAuthenticated &&
+          authState.user.username != null &&
+          goingToOnboarding) {
+        return '/';
+      }
       return null;
     },
     refreshListenable: _AuthStateListenable(ref),
@@ -71,6 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           code: state.uri.queryParameters['code'],
         ),
       ),
+      GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
       GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
       GoRoute(path: '/map', builder: (context, state) => const BooksMapScreen()),

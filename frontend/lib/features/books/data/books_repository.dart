@@ -14,6 +14,17 @@ class BrowseResult {
   const BrowseResult({required this.items, required this.total});
 }
 
+class ViewStats {
+  final int total;
+  final int unique;
+
+  const ViewStats({required this.total, required this.unique});
+
+  factory ViewStats.fromJson(Map<String, dynamic> json) {
+    return ViewStats(total: json['total'] as int, unique: json['unique'] as int);
+  }
+}
+
 class BooksRepository {
   BooksRepository(this._ref);
   final Ref _ref;
@@ -57,6 +68,12 @@ class BooksRepository {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/books/$id');
     return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ViewStats> getViewStats(String id) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/$id/views');
+    return ViewStats.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<List<ListingHistoryEntry>> getListingHistory(String id) async {

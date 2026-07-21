@@ -16,12 +16,16 @@ class ProfileController extends AsyncNotifier<AppUser> {
 
   Future<void> updateProfile({
     String? name,
+    String? username,
+    bool? nameVisible,
     String? city,
     String? bio,
     bool? showAcquisitionHistory,
   }) async {
     final updated = await ref.read(profileRepositoryProvider).updateProfile(
           name: name,
+          username: username,
+          nameVisible: nameVisible,
           city: city,
           bio: bio,
           showAcquisitionHistory: showAcquisitionHistory,

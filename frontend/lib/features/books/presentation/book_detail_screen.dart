@@ -160,6 +160,48 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   }
 }
 
+Future<void> _showViewStats(BuildContext context, WidgetRef ref, String userBookId) async {
+  showDialog<void>(
+    context: context,
+    builder: (context) => FutureBuilder(
+      future: ref.read(booksRepositoryProvider).getViewStats(userBookId),
+      builder: (context, snapshot) {
+        return AlertDialog(
+          title: const Text('Vizualizări'),
+          content: switch (snapshot.connectionState) {
+            ConnectionState.waiting => const SizedBox(
+                height: 60,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            _ when snapshot.hasError => const Text('Nu am putut încărca vizualizările.'),
+            _ => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${snapshot.data!.unique} vizualizări unice'),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${snapshot.data!.total} vizualizări în total, inclusiv reîncărcări de pagină',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.mutedForeground),
+                  ),
+                ],
+              ),
+          },
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Închide'),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
 class _BookDetailContent extends ConsumerWidget {
   const _BookDetailContent({
     required this.book,
@@ -226,16 +268,23 @@ class _BookDetailContent extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.visibility_outlined, size: 14, color: AppColors.mutedForeground),
-              const SizedBox(width: 4),
-              Text(
-                '${book.viewCount} vizualizări',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-              ),
-            ],
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showViewStats(context, ref, book.id),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.visibility_outlined, size: 14, color: AppColors.mutedForeground),
+                const SizedBox(width: 4),
+                Text(
+                  '${book.viewCount} vizualizări',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.mutedForeground,
+                        decoration: TextDecoration.underline,
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
         if (book.isForSale && book.salePrice != null) ...[

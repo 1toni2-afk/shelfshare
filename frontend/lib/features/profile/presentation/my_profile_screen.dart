@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -95,6 +96,7 @@ class _ProfileContent extends ConsumerWidget {
         ProfileHeader(
           profileImage: user.profileImage,
           name: user.name,
+          username: user.username,
           subtitleLines: [user.email, if (user.city != null) user.city!],
           rating: user.rating,
           booksExchangedCount: user.booksExchangedCount,
@@ -215,14 +217,17 @@ class _EditProfileSheet extends ConsumerStatefulWidget {
 
 class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   late final _nameController = TextEditingController(text: widget.user.name);
+  late final _usernameController = TextEditingController(text: widget.user.username);
   late final _bioController = TextEditingController(text: widget.user.bio);
   late String? _city = widget.user.city;
+  late bool _nameVisible = widget.user.nameVisible;
   late bool _showAcquisitionHistory = widget.user.showAcquisitionHistory;
   bool _isSubmitting = false;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
   }
@@ -232,11 +237,23 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     try {
       await ref.read(profileControllerProvider.notifier).updateProfile(
             name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+            username: _usernameController.text.trim().isEmpty
+                ? null
+                : _usernameController.text.trim(),
+            nameVisible: _nameVisible,
             city: _city,
             bio: _bioController.text.trim(),
             showAcquisitionHistory: _showAcquisitionHistory,
           );
       if (mounted) Navigator.of(context).pop();
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = (data is Map && data['message'] != null)
+          ? data['message'].toString()
+          : 'Nu am putut salva profilul.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -266,6 +283,18 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Nume'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _usernameController,
+              decoration: const InputDecoration(labelText: 'Username', prefixIcon: Icon(Icons.alternate_email)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Fă numele vizibil public'),
+              subtitle: const Text('Username-ul rămâne mereu vizibil'),
+              value: _nameVisible,
+              onChanged: (value) => setState(() => _nameVisible = value),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String?>(

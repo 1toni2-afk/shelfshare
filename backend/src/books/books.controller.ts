@@ -21,6 +21,7 @@ import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
 import { SearchLibraryDto } from './dto/search-library.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
 const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024; // 8MB - suficient pentru poze de telefon, sharp le comprimă oricum după
@@ -78,9 +79,16 @@ export class BooksController {
     return this.booksService.getMyLibrary(userId!);
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':userBookId')
-  getUserBook(@Param('userBookId') userBookId: string) {
-    return this.booksService.viewUserBook(userBookId);
+  getUserBook(@Req() req: Request, @Param('userBookId') userBookId: string) {
+    const user = req.user as AuthenticatedUser | undefined;
+    return this.booksService.viewUserBook(userBookId, user?.userId);
+  }
+
+  @Get(':userBookId/views')
+  getViewStats(@Param('userBookId') userBookId: string) {
+    return this.booksService.getViewStats(userBookId);
   }
 
   @Get(':userBookId/history')

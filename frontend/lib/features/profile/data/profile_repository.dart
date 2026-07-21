@@ -22,6 +22,8 @@ class ProfileRepository {
   /// nu include toate câmpurile (ex. isEmailVerified) - vezi AppUser.fromJson.
   Future<AppUser> updateProfile({
     String? name,
+    String? username,
+    bool? nameVisible,
     String? city,
     String? bio,
     bool? showAcquisitionHistory,
@@ -29,6 +31,8 @@ class ProfileRepository {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.patch('/profile/me', data: {
       'name': ?name,
+      'username': ?username,
+      'nameVisible': ?nameVisible,
       'city': ?city,
       'bio': ?bio,
       'showAcquisitionHistory': ?showAcquisitionHistory,

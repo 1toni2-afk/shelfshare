@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
+import { publicName } from '../common/utils/user-visibility';
 
 const INCLUDE_FULL = {
   userBook: { include: { book: true } },
@@ -16,6 +17,8 @@ const INCLUDE_FULL = {
     select: {
       id: true,
       name: true,
+      username: true,
+      nameVisible: true,
       city: true,
       rating: true,
       profileImage: true,
@@ -25,6 +28,8 @@ const INCLUDE_FULL = {
     select: {
       id: true,
       name: true,
+      username: true,
+      nameVisible: true,
       city: true,
       rating: true,
       profileImage: true,
@@ -54,6 +59,19 @@ export class OffersService {
         `Nu am putut trimite notificarea "${type}" către ${userId}: ${error}`,
       );
     }
+  }
+
+  private sanitizeParties<
+    T extends {
+      buyer: { name: string | null; nameVisible: boolean };
+      owner: { name: string | null; nameVisible: boolean };
+    },
+  >(offer: T): T {
+    return {
+      ...offer,
+      buyer: { ...offer.buyer, name: publicName(offer.buyer) },
+      owner: { ...offer.owner, name: publicName(offer.owner) },
+    };
   }
 
   async createOffer(buyerId: string, userBookId: string, dto: CreateOfferDto) {
@@ -95,23 +113,25 @@ export class OffersService {
       { offerId: created.id },
     );
 
-    return created;
+    return this.sanitizeParties(created);
   }
 
-  getSentOffers(userId: string) {
-    return this.prisma.priceOffer.findMany({
+  async getSentOffers(userId: string) {
+    const offers = await this.prisma.priceOffer.findMany({
       where: { buyerId: userId },
       include: INCLUDE_FULL,
       orderBy: { createdAt: 'desc' },
     });
+    return offers.map((o) => this.sanitizeParties(o));
   }
 
-  getReceivedOffers(userId: string) {
-    return this.prisma.priceOffer.findMany({
+  async getReceivedOffers(userId: string) {
+    const offers = await this.prisma.priceOffer.findMany({
       where: { ownerId: userId },
       include: INCLUDE_FULL,
       orderBy: { createdAt: 'desc' },
     });
+    return offers.map((o) => this.sanitizeParties(o));
   }
 
   async accept(id: string, userId: string) {
@@ -139,7 +159,7 @@ export class OffersService {
       { offerId: id },
     );
 
-    return updated;
+    return this.sanitizeParties(updated);
   }
 
   async reject(id: string, userId: string) {
@@ -160,7 +180,7 @@ export class OffersService {
       { offerId: id },
     );
 
-    return updated;
+    return this.sanitizeParties(updated);
   }
 
   async cancel(id: string, userId: string) {
@@ -172,11 +192,12 @@ export class OffersService {
     }
     this.assertStatus(offer, 'PENDING');
 
-    return this.prisma.priceOffer.update({
+    const updated = await this.prisma.priceOffer.update({
       where: { id },
       data: { status: 'CANCELLED' },
       include: INCLUDE_FULL,
     });
+    return this.sanitizeParties(updated);
   }
 
   private async findForAction(id: string) {

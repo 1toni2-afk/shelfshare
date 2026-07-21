@@ -10,6 +10,7 @@ class ProfileHeader extends StatelessWidget {
     super.key,
     required this.profileImage,
     required this.name,
+    this.username,
     required this.subtitleLines,
     required this.rating,
     required this.booksExchangedCount,
@@ -19,6 +20,7 @@ class ProfileHeader extends StatelessWidget {
 
   final String? profileImage;
   final String? name;
+  final String? username;
   final List<String> subtitleLines;
   final double rating;
   final int booksExchangedCount;
@@ -27,6 +29,7 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usernameLabel = username != null ? '@$username' : null;
     return Column(
       children: [
         Center(
@@ -38,10 +41,21 @@ class ProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          name ?? 'Utilizator',
+          name ?? usernameLabel ?? 'Utilizator',
           style: Theme.of(context).textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
+        if (name != null && usernameLabel != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            usernameLabel,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: AppColors.mutedForeground),
+            textAlign: TextAlign.center,
+          ),
+        ],
         for (final line in subtitleLines) ...[
           const SizedBox(height: 4),
           Text(
