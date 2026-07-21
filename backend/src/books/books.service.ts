@@ -17,6 +17,14 @@ import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coo
 import { RomanianCity } from '../common/constants/romanian-cities';
 import { haversineDistanceKm } from '../common/utils/geo';
 
+const OWNER_SELECT = {
+  id: true,
+  name: true,
+  city: true,
+  rating: true,
+  profileImage: true,
+} as const;
+
 @Injectable()
 export class BooksService {
   constructor(
@@ -52,14 +60,6 @@ export class BooksService {
       user: filters.city ? { city: filters.city } : undefined,
     };
 
-    const userSelect = {
-      id: true,
-      name: true,
-      city: true,
-      rating: true,
-      profileImage: true,
-    } as const;
-
     const fromCoords = filters.fromCity
       ? ROMANIAN_CITY_COORDINATES[filters.fromCity as RomanianCity]
       : undefined;
@@ -74,7 +74,7 @@ export class BooksService {
       // dar nu se scalează la un catalog foarte mare.
       const candidates = await this.prisma.userBook.findMany({
         where,
-        include: { book: true, user: { select: userSelect } },
+        include: { book: true, user: { select: OWNER_SELECT } },
         take: 500,
       });
 
@@ -110,7 +110,7 @@ export class BooksService {
     const [items, total] = await Promise.all([
       this.prisma.userBook.findMany({
         where,
-        include: { book: true, user: { select: userSelect } },
+        include: { book: true, user: { select: OWNER_SELECT } },
         orderBy,
         take: filters.limit,
         skip: filters.offset,
@@ -224,7 +224,7 @@ export class BooksService {
   async getUserBook(userBookId: string) {
     const userBook = await this.prisma.userBook.findUnique({
       where: { id: userBookId },
-      include: { book: true },
+      include: { book: true, user: { select: OWNER_SELECT } },
     });
     if (!userBook) {
       throw new NotFoundException('Cartea nu a fost găsită în bibliotecă');

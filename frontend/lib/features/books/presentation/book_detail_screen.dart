@@ -26,9 +26,8 @@ class BookDetailScreen extends ConsumerStatefulWidget {
   const BookDetailScreen({super.key, required this.userBookId, this.fallbackOwner});
   final String userBookId;
 
-  /// Owner deja cunoscut din ecranul de proveniență (Home/Browse), folosit
-  /// când endpoint-ul de detalii nu include relația de owner - vezi
-  /// project-book-detail-missing-owner în memorie.
+  /// Owner deja cunoscut din ecranul de proveniență (Home/Browse) - afișat
+  /// instant, înainte ca fetch-ul de detalii să se termine.
   final PublicUser? fallbackOwner;
 
   @override
