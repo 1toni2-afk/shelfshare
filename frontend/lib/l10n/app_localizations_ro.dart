@@ -563,6 +563,24 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookshelfLoadError => 'Nu am putut încărca raftul.';
 
   @override
+  String get bookshelfImportTooltip => 'Importă din Goodreads sau StoryGraph';
+
+  @override
+  String get bookshelfImportGoodreads => 'Importă din Goodreads (CSV)';
+
+  @override
+  String get bookshelfImportStoryGraph => 'Importă din StoryGraph (CSV)';
+
+  @override
+  String bookshelfImportSummary(int imported, int skipped) {
+    return '$imported cărți importate, $skipped sărite';
+  }
+
+  @override
+  String get bookshelfImportError =>
+      'Nu am putut importa fișierul. Verifică dacă e un export CSV valid.';
+
+  @override
   String get bookDetailShelfSectionTitle => 'Adaugă în raftul tău';
 
   @override

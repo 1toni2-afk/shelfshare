@@ -216,6 +216,14 @@
   "bookshelfTabShared": "Împărtășite",
   "bookshelfEmpty": "Nicio carte aici încă.",
   "bookshelfLoadError": "Nu am putut încărca raftul.",
+  "bookshelfImportTooltip": "Importă din Goodreads sau StoryGraph",
+  "bookshelfImportGoodreads": "Importă din Goodreads (CSV)",
+  "bookshelfImportStoryGraph": "Importă din StoryGraph (CSV)",
+  "bookshelfImportSummary": "{imported} cărți importate, {skipped} sărite",
+  "@bookshelfImportSummary": {
+    "placeholders": { "imported": { "type": "int" }, "skipped": { "type": "int" } }
+  },
+  "bookshelfImportError": "Nu am putut importa fișierul. Verifică dacă e un export CSV valid.",
   "bookDetailShelfSectionTitle": "Adaugă în raftul tău",
   "gamificationLevel": "Nivel {level}",
   "@gamificationLevel": { "placeholders": { "level": { "type": "int" } } },

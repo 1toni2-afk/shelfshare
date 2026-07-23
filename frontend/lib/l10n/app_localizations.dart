@@ -1092,6 +1092,36 @@ abstract class AppLocalizations {
   /// **'Nu am putut încărca raftul.'**
   String get bookshelfLoadError;
 
+  /// No description provided for @bookshelfImportTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă din Goodreads sau StoryGraph'**
+  String get bookshelfImportTooltip;
+
+  /// No description provided for @bookshelfImportGoodreads.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă din Goodreads (CSV)'**
+  String get bookshelfImportGoodreads;
+
+  /// No description provided for @bookshelfImportStoryGraph.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă din StoryGraph (CSV)'**
+  String get bookshelfImportStoryGraph;
+
+  /// No description provided for @bookshelfImportSummary.
+  ///
+  /// In ro, this message translates to:
+  /// **'{imported} cărți importate, {skipped} sărite'**
+  String bookshelfImportSummary(int imported, int skipped);
+
+  /// No description provided for @bookshelfImportError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut importa fișierul. Verifică dacă e un export CSV valid.'**
+  String get bookshelfImportError;
+
   /// No description provided for @bookDetailShelfSectionTitle.
   ///
   /// In ro, this message translates to:

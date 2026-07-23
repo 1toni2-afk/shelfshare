@@ -566,6 +566,25 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookshelfLoadError => 'Nem sikerült betölteni a polcot.';
 
   @override
+  String get bookshelfImportTooltip =>
+      'Importálás Goodreads-ből vagy StoryGraph-ból';
+
+  @override
+  String get bookshelfImportGoodreads => 'Importálás Goodreads-ből (CSV)';
+
+  @override
+  String get bookshelfImportStoryGraph => 'Importálás StoryGraph-ból (CSV)';
+
+  @override
+  String bookshelfImportSummary(int imported, int skipped) {
+    return '$imported könyv importálva, $skipped kihagyva';
+  }
+
+  @override
+  String get bookshelfImportError =>
+      'Nem sikerült importálni a fájlt. Ellenőrizd, hogy érvényes CSV export-e.';
+
+  @override
   String get bookDetailShelfSectionTitle => 'Add hozzá a polcodhoz';
 
   @override

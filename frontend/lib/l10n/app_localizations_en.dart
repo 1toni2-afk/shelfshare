@@ -562,6 +562,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookshelfLoadError => 'Couldn\'t load the bookshelf.';
 
   @override
+  String get bookshelfImportTooltip => 'Import from Goodreads or StoryGraph';
+
+  @override
+  String get bookshelfImportGoodreads => 'Import from Goodreads (CSV)';
+
+  @override
+  String get bookshelfImportStoryGraph => 'Import from StoryGraph (CSV)';
+
+  @override
+  String bookshelfImportSummary(int imported, int skipped) {
+    return '$imported books imported, $skipped skipped';
+  }
+
+  @override
+  String get bookshelfImportError =>
+      'Couldn\'t import the file. Check that it\'s a valid CSV export.';
+
+  @override
   String get bookDetailShelfSectionTitle => 'Add to your bookshelf';
 
   @override
