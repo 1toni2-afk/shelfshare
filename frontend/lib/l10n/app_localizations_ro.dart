@@ -51,6 +51,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get commonRetry => 'Încearcă din nou';
 
   @override
+  String get commonDone => 'Gata';
+
+  @override
   String get commonClose => 'Închide';
 
   @override
@@ -888,6 +891,21 @@ class AppLocalizationsRo extends AppLocalizations {
   String get libraryExportCsv => 'Exportă în CSV';
 
   @override
+  String get libraryBulkAdd => 'Adaugă mai multe cărți (scanare)';
+
+  @override
+  String get libraryImportCsv => 'Importă anunțuri din CSV';
+
+  @override
+  String libraryImportSummary(int created, int failed) {
+    return '$created anunțuri create, $failed eșuate';
+  }
+
+  @override
+  String get libraryImportError =>
+      'Nu am putut importa fișierul. Verifică dacă e un CSV valid.';
+
+  @override
   String get libraryEmpty => 'Nu ai nicio carte în bibliotecă încă.';
 
   @override
@@ -1691,6 +1709,33 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminStatsTitle => 'Statistici';
 
   @override
+  String get adminMarketplaceStatsTitle => 'Statistici marketplace';
+
+  @override
+  String get adminMarketplaceGmv => 'Volum total tranzacționat';
+
+  @override
+  String get adminMarketplaceCompletedSales => 'Vânzări finalizate';
+
+  @override
+  String get adminMarketplaceCompletedAuctions => 'Licitații finalizate';
+
+  @override
+  String get adminMarketplaceAvgPrice => 'Preț mediu vânzare';
+
+  @override
+  String get adminMarketplaceTopGenres => 'Top genuri (anunțuri active)';
+
+  @override
+  String get adminActiveZonesTitle => 'Zone active';
+
+  @override
+  String get adminActiveZonesDesc => 'Densitatea anunțurilor active pe oraș';
+
+  @override
+  String get adminActiveZonesEmpty => 'Niciun anunț activ încă.';
+
+  @override
   String adminUsersCount(int count) {
     return 'Utilizatori ($count)';
   }
@@ -1877,4 +1922,64 @@ class AppLocalizationsRo extends AppLocalizations {
   String auctionEndsInMinutes(int minutes) {
     return 'se încheie în $minutes min';
   }
+
+  @override
+  String get bulkAddTitle => 'Adaugă mai multe cărți';
+
+  @override
+  String get bulkAddScanTooltip => 'Scanează cod de bare';
+
+  @override
+  String get bulkAddManualEntry => 'Introducere manuală';
+
+  @override
+  String get bulkAddManualHint =>
+      'Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)';
+
+  @override
+  String get bulkAddManualPlaceholder => '9780439023481\n9780441172719';
+
+  @override
+  String get bulkAddAddIsbns => 'Adaugă în listă';
+
+  @override
+  String get bulkAddQueueEmpty =>
+      'Nicio carte adăugată încă - scanează sau introdu un ISBN.';
+
+  @override
+  String bulkAddSubmit(int count) {
+    return 'Adaugă $count cărți';
+  }
+
+  @override
+  String bulkAddResultSummary(int created, int failed) {
+    return '$created cărți adăugate, $failed eșuate';
+  }
+
+  @override
+  String inventorySelectedCount(int count) {
+    return '$count selectate';
+  }
+
+  @override
+  String get inventoryMarkUnavailable => 'Marchează indisponibile';
+
+  @override
+  String get inventoryChangePriceTitle => 'Schimbă prețul';
+
+  @override
+  String inventoryPriceChangedCount(int count) {
+    return 'Preț schimbat la $count anunțuri';
+  }
+
+  @override
+  String get inventoryDeleteConfirmTitle => 'Ștergi anunțurile selectate?';
+
+  @override
+  String inventoryDeleteConfirmBody(int count) {
+    return 'Se șterg definitiv $count anunțuri. Nu se poate anula.';
+  }
+
+  @override
+  String get inventoryBulkDone => 'Acțiune aplicată';
 }

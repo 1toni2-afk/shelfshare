@@ -186,6 +186,12 @@ abstract class AppLocalizations {
   /// **'Încearcă din nou'**
   String get commonRetry;
 
+  /// No description provided for @commonDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gata'**
+  String get commonDone;
+
   /// No description provided for @commonClose.
   ///
   /// In ro, this message translates to:
@@ -1662,6 +1668,30 @@ abstract class AppLocalizations {
   /// **'Exportă în CSV'**
   String get libraryExportCsv;
 
+  /// No description provided for @libraryBulkAdd.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă mai multe cărți (scanare)'**
+  String get libraryBulkAdd;
+
+  /// No description provided for @libraryImportCsv.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă anunțuri din CSV'**
+  String get libraryImportCsv;
+
+  /// No description provided for @libraryImportSummary.
+  ///
+  /// In ro, this message translates to:
+  /// **'{created} anunțuri create, {failed} eșuate'**
+  String libraryImportSummary(int created, int failed);
+
+  /// No description provided for @libraryImportError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut importa fișierul. Verifică dacă e un CSV valid.'**
+  String get libraryImportError;
+
   /// No description provided for @libraryEmpty.
   ///
   /// In ro, this message translates to:
@@ -3078,6 +3108,60 @@ abstract class AppLocalizations {
   /// **'Statistici'**
   String get adminStatsTitle;
 
+  /// No description provided for @adminMarketplaceStatsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici marketplace'**
+  String get adminMarketplaceStatsTitle;
+
+  /// No description provided for @adminMarketplaceGmv.
+  ///
+  /// In ro, this message translates to:
+  /// **'Volum total tranzacționat'**
+  String get adminMarketplaceGmv;
+
+  /// No description provided for @adminMarketplaceCompletedSales.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vânzări finalizate'**
+  String get adminMarketplaceCompletedSales;
+
+  /// No description provided for @adminMarketplaceCompletedAuctions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitații finalizate'**
+  String get adminMarketplaceCompletedAuctions;
+
+  /// No description provided for @adminMarketplaceAvgPrice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț mediu vânzare'**
+  String get adminMarketplaceAvgPrice;
+
+  /// No description provided for @adminMarketplaceTopGenres.
+  ///
+  /// In ro, this message translates to:
+  /// **'Top genuri (anunțuri active)'**
+  String get adminMarketplaceTopGenres;
+
+  /// No description provided for @adminActiveZonesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Zone active'**
+  String get adminActiveZonesTitle;
+
+  /// No description provided for @adminActiveZonesDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Densitatea anunțurilor active pe oraș'**
+  String get adminActiveZonesDesc;
+
+  /// No description provided for @adminActiveZonesEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun anunț activ încă.'**
+  String get adminActiveZonesEmpty;
+
   /// No description provided for @adminUsersCount.
   ///
   /// In ro, this message translates to:
@@ -3377,6 +3461,102 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'se încheie în {minutes} min'**
   String auctionEndsInMinutes(int minutes);
+
+  /// No description provided for @bulkAddTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă mai multe cărți'**
+  String get bulkAddTitle;
+
+  /// No description provided for @bulkAddScanTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scanează cod de bare'**
+  String get bulkAddScanTooltip;
+
+  /// No description provided for @bulkAddManualEntry.
+  ///
+  /// In ro, this message translates to:
+  /// **'Introducere manuală'**
+  String get bulkAddManualEntry;
+
+  /// No description provided for @bulkAddManualHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)'**
+  String get bulkAddManualHint;
+
+  /// No description provided for @bulkAddManualPlaceholder.
+  ///
+  /// In ro, this message translates to:
+  /// **'9780439023481\n9780441172719'**
+  String get bulkAddManualPlaceholder;
+
+  /// No description provided for @bulkAddAddIsbns.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă în listă'**
+  String get bulkAddAddIsbns;
+
+  /// No description provided for @bulkAddQueueEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio carte adăugată încă - scanează sau introdu un ISBN.'**
+  String get bulkAddQueueEmpty;
+
+  /// No description provided for @bulkAddSubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă {count} cărți'**
+  String bulkAddSubmit(int count);
+
+  /// No description provided for @bulkAddResultSummary.
+  ///
+  /// In ro, this message translates to:
+  /// **'{created} cărți adăugate, {failed} eșuate'**
+  String bulkAddResultSummary(int created, int failed);
+
+  /// No description provided for @inventorySelectedCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} selectate'**
+  String inventorySelectedCount(int count);
+
+  /// No description provided for @inventoryMarkUnavailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Marchează indisponibile'**
+  String get inventoryMarkUnavailable;
+
+  /// No description provided for @inventoryChangePriceTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbă prețul'**
+  String get inventoryChangePriceTitle;
+
+  /// No description provided for @inventoryPriceChangedCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț schimbat la {count} anunțuri'**
+  String inventoryPriceChangedCount(int count);
+
+  /// No description provided for @inventoryDeleteConfirmTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi anunțurile selectate?'**
+  String get inventoryDeleteConfirmTitle;
+
+  /// No description provided for @inventoryDeleteConfirmBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se șterg definitiv {count} anunțuri. Nu se poate anula.'**
+  String inventoryDeleteConfirmBody(int count);
+
+  /// No description provided for @inventoryBulkDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acțiune aplicată'**
+  String get inventoryBulkDone;
 }
 
 class _AppLocalizationsDelegate

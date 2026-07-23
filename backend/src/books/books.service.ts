@@ -4,7 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { BookCondition, Prisma } from '@prisma/client';
+import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { WishlistService } from '../wishlist/wishlist.service';
@@ -19,6 +20,9 @@ import { RomanianCity } from '../common/constants/romanian-cities';
 import { haversineDistanceKm } from '../common/utils/geo';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_BOOK_LISTED } from '../common/utils/xp';
+
+const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
+const MAX_LISTING_IMPORT_ROWS = 500;
 
 const OWNER_SELECT = {
   id: true,
@@ -177,6 +181,103 @@ export class BooksService {
     awardXp(this.prisma, userId, XP_BOOK_LISTED);
 
     return userBook;
+  }
+
+  /**
+   * Adăugare în masă (Bulk ISBN Scan / Bulk Listing, Milestone 5) - aceeași
+   * stare/limbă pentru toate, câte un userBook per ISBN, procesate secvențial
+   * ca să reutilizeze exact logica de la addToLibrary (deduplicare pe ISBN,
+   * XP, notificări). Un ISBN care eșuează nu oprește restul listei.
+   */
+  async bulkAddToLibrary(userId: string, isbns: string[], condition: BookCondition, language?: string) {
+    const created: { isbn: string; userBookId: string; title: string }[] = [];
+    const failed: { isbn: string; reason: string }[] = [];
+
+    for (const isbn of isbns) {
+      try {
+        const userBook = await this.addToLibrary(userId, { isbn, condition, language });
+        created.push({ isbn, userBookId: userBook.id, title: userBook.book.title });
+      } catch (error) {
+        failed.push({
+          isbn,
+          reason: error instanceof BadRequestException ? error.message : 'Eroare necunoscută',
+        });
+      }
+    }
+
+    return { created, failed };
+  }
+
+  /** Previzualizare titlu/autor/copertă pentru un ISBN scanat, fără să creeze nimic - vezi Bulk ISBN Scan. */
+  async lookupIsbnPreview(isbn: string) {
+    const cleanIsbn = isbn.replace(/[-\s]/g, '');
+    return this.lookup.lookupByIsbn(cleanIsbn);
+  }
+
+  /**
+   * Import CSV de anunțuri (Seller Tools, Milestone 5) - distinct de
+   * importul Goodreads/StoryGraph (acela populează statusul de citit,
+   * nu creează anunțuri). Coloane așteptate: title, author, isbn,
+   * condition, language. Anunțurile create sunt mereu doar pentru schimb
+   * (availableForSwap, isForSale: false) - vânzarea cere cel puțin o poză
+   * deja urcată (vezi updateUserBook), imposibil de satisfăcut dintr-un CSV,
+   * deci userul trece la vânzare separat, per anunț, după ce urcă poze.
+   */
+  async importListingsCsv(userId: string, buffer: Buffer) {
+    let rows: Record<string, string>[];
+    try {
+      rows = parse(buffer.toString('utf-8'), {
+        columns: true,
+        skip_empty_lines: true,
+        relax_quotes: true,
+        relax_column_count: true,
+        bom: true,
+        trim: true,
+      });
+    } catch {
+      throw new BadRequestException('Fișierul nu a putut fi citit ca CSV');
+    }
+
+    if (rows.length === 0) {
+      throw new BadRequestException('Fișierul CSV este gol');
+    }
+    if (rows.length > MAX_LISTING_IMPORT_ROWS) {
+      throw new BadRequestException(`Fișierul are prea multe rânduri (maxim ${MAX_LISTING_IMPORT_ROWS})`);
+    }
+
+    const created: { title: string; userBookId: string }[] = [];
+    const failed: { title: string; reason: string }[] = [];
+
+    for (const row of rows) {
+      const title = row['title']?.trim();
+      if (!title) {
+        failed.push({ title: '(fără titlu)', reason: 'Lipsește titlul' });
+        continue;
+      }
+      const conditionRaw = row['condition']?.trim().toUpperCase();
+      const condition: BookCondition =
+        conditionRaw && (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
+          ? (conditionRaw as BookCondition)
+          : 'BUNA';
+
+      try {
+        const userBook = await this.addToLibrary(userId, {
+          title,
+          author: row['author']?.trim() || undefined,
+          isbn: row['isbn']?.trim().replace(/[-\s]/g, '') || undefined,
+          condition,
+          language: row['language']?.trim() || undefined,
+        });
+        created.push({ title, userBookId: userBook.id });
+      } catch (error) {
+        failed.push({
+          title,
+          reason: error instanceof BadRequestException ? error.message : 'Eroare necunoscută',
+        });
+      }
+    }
+
+    return { created, failed };
   }
 
   /**

@@ -21,6 +21,16 @@ export class AdminController {
     return this.adminService.getStats();
   }
 
+  @Get('stats/marketplace')
+  getMarketplaceStats() {
+    return this.adminService.getMarketplaceStats();
+  }
+
+  @Get('stats/active-zones')
+  getActiveZones() {
+    return this.adminService.getActiveZones();
+  }
+
   @Get('users')
   getUsers(@Query('limit') limit?: string, @Query('offset') offset?: string) {
     return this.adminService.getUsers(

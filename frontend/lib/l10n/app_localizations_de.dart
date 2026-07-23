@@ -51,6 +51,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonRetry => 'Erneut versuchen';
 
   @override
+  String get commonDone => 'Fertig';
+
+  @override
   String get commonClose => 'Schließen';
 
   @override
@@ -897,6 +900,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get libraryExportCsv => 'Als CSV exportieren';
 
   @override
+  String get libraryBulkAdd => 'Mehrere Bücher hinzufügen (Scan)';
+
+  @override
+  String get libraryImportCsv => 'Anzeigen aus CSV importieren';
+
+  @override
+  String libraryImportSummary(int created, int failed) {
+    return '$created Anzeigen erstellt, $failed fehlgeschlagen';
+  }
+
+  @override
+  String get libraryImportError =>
+      'Datei konnte nicht importiert werden. Prüfe, ob es eine gültige CSV-Datei ist.';
+
+  @override
   String get libraryEmpty => 'Du hast noch keine Bücher in deiner Bibliothek.';
 
   @override
@@ -1719,6 +1737,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get adminStatsTitle => 'Statistiken';
 
   @override
+  String get adminMarketplaceStatsTitle => 'Marktplatz-Statistiken';
+
+  @override
+  String get adminMarketplaceGmv => 'Gesamtes Transaktionsvolumen';
+
+  @override
+  String get adminMarketplaceCompletedSales => 'Abgeschlossene Verkäufe';
+
+  @override
+  String get adminMarketplaceCompletedAuctions => 'Abgeschlossene Auktionen';
+
+  @override
+  String get adminMarketplaceAvgPrice => 'Durchschnittlicher Verkaufspreis';
+
+  @override
+  String get adminMarketplaceTopGenres => 'Top-Genres (aktive Anzeigen)';
+
+  @override
+  String get adminActiveZonesTitle => 'Aktive Zonen';
+
+  @override
+  String get adminActiveZonesDesc => 'Dichte aktiver Anzeigen nach Stadt';
+
+  @override
+  String get adminActiveZonesEmpty => 'Noch keine aktiven Anzeigen.';
+
+  @override
   String adminUsersCount(int count) {
     return 'Nutzer ($count)';
   }
@@ -1909,4 +1954,64 @@ class AppLocalizationsDe extends AppLocalizations {
   String auctionEndsInMinutes(int minutes) {
     return 'endet in $minutes Min';
   }
+
+  @override
+  String get bulkAddTitle => 'Mehrere Bücher hinzufügen';
+
+  @override
+  String get bulkAddScanTooltip => 'Barcode scannen';
+
+  @override
+  String get bulkAddManualEntry => 'Manuelle Eingabe';
+
+  @override
+  String get bulkAddManualHint =>
+      'Füge mehrere ISBNs ein, eine pro Zeile (oder durch Komma getrennt)';
+
+  @override
+  String get bulkAddManualPlaceholder => '9780439023481\n9780441172719';
+
+  @override
+  String get bulkAddAddIsbns => 'Zur Liste hinzufügen';
+
+  @override
+  String get bulkAddQueueEmpty =>
+      'Noch keine Bücher hinzugefügt - scanne oder gib eine ISBN ein.';
+
+  @override
+  String bulkAddSubmit(int count) {
+    return '$count Bücher hinzufügen';
+  }
+
+  @override
+  String bulkAddResultSummary(int created, int failed) {
+    return '$created Bücher hinzugefügt, $failed fehlgeschlagen';
+  }
+
+  @override
+  String inventorySelectedCount(int count) {
+    return '$count ausgewählt';
+  }
+
+  @override
+  String get inventoryMarkUnavailable => 'Als nicht verfügbar markieren';
+
+  @override
+  String get inventoryChangePriceTitle => 'Preis ändern';
+
+  @override
+  String inventoryPriceChangedCount(int count) {
+    return 'Preis bei $count Anzeigen geändert';
+  }
+
+  @override
+  String get inventoryDeleteConfirmTitle => 'Ausgewählte Anzeigen löschen?';
+
+  @override
+  String inventoryDeleteConfirmBody(int count) {
+    return 'Dies löscht $count Anzeigen dauerhaft. Kann nicht rückgängig gemacht werden.';
+  }
+
+  @override
+  String get inventoryBulkDone => 'Aktion angewendet';
 }

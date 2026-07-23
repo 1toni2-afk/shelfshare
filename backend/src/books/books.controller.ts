@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
+import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
 import { SearchLibraryDto } from './dto/search-library.dto';
@@ -25,6 +26,7 @@ import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
 const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024; // 8MB - suficient pentru poze de telefon, sharp le comprimă oricum după
+const MAX_IMPORT_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB - suficient pentru câteva sute de rânduri CSV
 
 @Controller('books')
 export class BooksController {
@@ -130,6 +132,34 @@ export class BooksController {
   addToLibrary(@Req() req: Request, @Body() dto: AddBookDto) {
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.addToLibrary(userId!, dto);
+  }
+
+  // Tot înainte de :userBookId, din același motiv ca 'browse'.
+  @UseGuards(JwtAuthGuard)
+  @Get('lookup-isbn')
+  lookupIsbnPreview(@Query('isbn') isbn: string) {
+    return this.booksService.lookupIsbnPreview(isbn);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('bulk')
+  bulkAddToLibrary(@Req() req: Request, @Body() dto: BulkAddBooksDto) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.bulkAddToLibrary(userId!, dto.isbns, dto.condition, dto.language);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('import-listings')
+  @UseInterceptors(FileInterceptor('file'))
+  importListingsCsv(@Req() req: Request, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Niciun fișier primit');
+    }
+    if (file.size > MAX_IMPORT_FILE_SIZE_BYTES) {
+      throw new BadRequestException('Fișierul este prea mare (maxim 10MB)');
+    }
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.importListingsCsv(userId!, file.buffer);
   }
 
   @UseGuards(JwtAuthGuard)

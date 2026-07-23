@@ -51,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Try again';
 
   @override
+  String get commonDone => 'Done';
+
+  @override
   String get commonClose => 'Close';
 
   @override
@@ -887,6 +890,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryExportCsv => 'Export to CSV';
 
   @override
+  String get libraryBulkAdd => 'Add multiple books (scan)';
+
+  @override
+  String get libraryImportCsv => 'Import listings from CSV';
+
+  @override
+  String libraryImportSummary(int created, int failed) {
+    return '$created listings created, $failed failed';
+  }
+
+  @override
+  String get libraryImportError =>
+      'Couldn\'t import the file. Check that it\'s a valid CSV.';
+
+  @override
   String get libraryEmpty => 'You don\'t have any books in your library yet.';
 
   @override
@@ -1692,6 +1710,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminStatsTitle => 'Statistics';
 
   @override
+  String get adminMarketplaceStatsTitle => 'Marketplace statistics';
+
+  @override
+  String get adminMarketplaceGmv => 'Total transacted volume';
+
+  @override
+  String get adminMarketplaceCompletedSales => 'Completed sales';
+
+  @override
+  String get adminMarketplaceCompletedAuctions => 'Completed auctions';
+
+  @override
+  String get adminMarketplaceAvgPrice => 'Average sale price';
+
+  @override
+  String get adminMarketplaceTopGenres => 'Top genres (active listings)';
+
+  @override
+  String get adminActiveZonesTitle => 'Active zones';
+
+  @override
+  String get adminActiveZonesDesc => 'Density of active listings by city';
+
+  @override
+  String get adminActiveZonesEmpty => 'No active listings yet.';
+
+  @override
   String adminUsersCount(int count) {
     return 'Users ($count)';
   }
@@ -1876,4 +1921,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String auctionEndsInMinutes(int minutes) {
     return 'ends in $minutes min';
   }
+
+  @override
+  String get bulkAddTitle => 'Add multiple books';
+
+  @override
+  String get bulkAddScanTooltip => 'Scan barcode';
+
+  @override
+  String get bulkAddManualEntry => 'Manual entry';
+
+  @override
+  String get bulkAddManualHint =>
+      'Paste multiple ISBNs, one per line (or comma-separated)';
+
+  @override
+  String get bulkAddManualPlaceholder => '9780439023481\n9780441172719';
+
+  @override
+  String get bulkAddAddIsbns => 'Add to list';
+
+  @override
+  String get bulkAddQueueEmpty => 'No books added yet - scan or enter an ISBN.';
+
+  @override
+  String bulkAddSubmit(int count) {
+    return 'Add $count books';
+  }
+
+  @override
+  String bulkAddResultSummary(int created, int failed) {
+    return '$created books added, $failed failed';
+  }
+
+  @override
+  String inventorySelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get inventoryMarkUnavailable => 'Mark unavailable';
+
+  @override
+  String get inventoryChangePriceTitle => 'Change price';
+
+  @override
+  String inventoryPriceChangedCount(int count) {
+    return 'Price changed on $count listings';
+  }
+
+  @override
+  String get inventoryDeleteConfirmTitle => 'Delete the selected listings?';
+
+  @override
+  String inventoryDeleteConfirmBody(int count) {
+    return 'This permanently deletes $count listings. This cannot be undone.';
+  }
+
+  @override
+  String get inventoryBulkDone => 'Action applied';
 }

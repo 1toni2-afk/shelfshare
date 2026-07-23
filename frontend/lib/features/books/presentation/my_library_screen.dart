@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/my_library_controller.dart';
+import '../data/books_repository.dart';
 
 class MyLibraryScreen extends ConsumerStatefulWidget {
   const MyLibraryScreen({super.key});
@@ -23,6 +25,114 @@ class MyLibraryScreen extends ConsumerStatefulWidget {
 class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   bool _sheetOpen = false;
   bool _isGridView = true;
+  final Set<String> _selectedIds = {};
+
+  bool get _selectionMode => _selectedIds.isNotEmpty;
+
+  void _toggleSelected(String userBookId) {
+    setState(() {
+      if (_selectedIds.contains(userBookId)) {
+        _selectedIds.remove(userBookId);
+      } else {
+        _selectedIds.add(userBookId);
+      }
+    });
+  }
+
+  void _handleTap(UserBook userBook) {
+    if (_selectionMode) {
+      _toggleSelected(userBook.id);
+    } else {
+      _openActions(userBook);
+    }
+  }
+
+  Future<void> _bulkMarkUnavailable(List<UserBook> books) async {
+    final notifier = ref.read(myLibraryControllerProvider.notifier);
+    for (final id in _selectedIds.toList()) {
+      await notifier.setAvailability(id, availableForSwap: false);
+    }
+    if (mounted) {
+      setState(() => _selectedIds.clear());
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.inventoryBulkDone)));
+    }
+  }
+
+  Future<void> _bulkChangePrice(List<UserBook> books) async {
+    final l10n = context.l10n;
+    final priceController = TextEditingController();
+    final newPrice = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.inventoryChangePriceTitle),
+        content: TextField(
+          controller: priceController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonGiveUp)),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context).pop(double.tryParse(priceController.text.trim().replaceAll(',', '.'))),
+            child: Text(l10n.commonSubmit),
+          ),
+        ],
+      ),
+    );
+    if (newPrice == null) return;
+
+    final notifier = ref.read(myLibraryControllerProvider.notifier);
+    var changed = 0;
+    for (final id in _selectedIds.toList()) {
+      UserBook? book;
+      for (final b in books) {
+        if (b.id == id) book = b;
+      }
+      if (book == null || !book.isForSale) continue;
+      await notifier.editListing(
+        id,
+        condition: book.condition,
+        language: book.language,
+        edition: book.edition,
+        isHardcover: book.isHardcover,
+        isForSale: true,
+        salePrice: newPrice,
+        isNegotiable: book.isNegotiable,
+      );
+      changed++;
+    }
+    if (mounted) {
+      setState(() => _selectedIds.clear());
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.inventoryPriceChangedCount(changed))));
+    }
+  }
+
+  Future<void> _bulkDelete() async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.inventoryDeleteConfirmTitle),
+        content: Text(l10n.inventoryDeleteConfirmBody(_selectedIds.length)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonGiveUp)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonDelete)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final notifier = ref.read(myLibraryControllerProvider.notifier);
+    for (final id in _selectedIds.toList()) {
+      await notifier.deleteBook(id);
+    }
+    if (mounted) {
+      setState(() => _selectedIds.clear());
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.inventoryBulkDone)));
+    }
+  }
 
   Future<void> _openActions(UserBook userBook) async {
     if (_sheetOpen) return;
@@ -70,31 +180,117 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     return value;
   }
 
+  Future<void> _importListingsCsv() async {
+    final l10n = context.l10n;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+      withData: true,
+    );
+    final file = result?.files.firstOrNull;
+    if (file?.bytes == null) return;
+    if (!mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final summary = await ref
+          .read(booksRepositoryProvider)
+          .importListingsCsv(bytes: file!.bytes!, filename: file.name);
+      ref.invalidate(myLibraryControllerProvider);
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.libraryImportSummary(summary.created.length, summary.failed.length))),
+        );
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : l10n.libraryImportError;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(myLibraryControllerProvider);
     final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.libraryTitle),
-        actions: [
-          IconButton(
-            icon: Icon(_isGridView ? Icons.view_list_outlined : Icons.grid_view_outlined),
-            tooltip: _isGridView ? l10n.libraryViewAsList : l10n.libraryViewAsGrid,
-            onPressed: () => setState(() => _isGridView = !_isGridView),
-          ),
-          IconButton(
-            icon: const Icon(Icons.download_outlined),
-            tooltip: l10n.libraryExportCsv,
-            onPressed: () => _exportCsv(l10n, state.value ?? const []),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/library/add'),
-        child: const Icon(Icons.add),
-      ),
+      appBar: _selectionMode
+          ? AppBar(
+              title: Text(l10n.inventorySelectedCount(_selectedIds.length)),
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => setState(() => _selectedIds.clear()),
+              ),
+            )
+          : AppBar(
+              title: Text(l10n.libraryTitle),
+              actions: [
+                IconButton(
+                  icon: Icon(_isGridView ? Icons.view_list_outlined : Icons.grid_view_outlined),
+                  tooltip: _isGridView ? l10n.libraryViewAsList : l10n.libraryViewAsGrid,
+                  onPressed: () => setState(() => _isGridView = !_isGridView),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'export':
+                        _exportCsv(l10n, state.value ?? const []);
+                      case 'import':
+                        _importListingsCsv();
+                      case 'bulk-add':
+                        context.push('/library/bulk-add');
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: 'export', child: Text(l10n.libraryExportCsv)),
+                    PopupMenuItem(value: 'import', child: Text(l10n.libraryImportCsv)),
+                    PopupMenuItem(value: 'bulk-add', child: Text(l10n.libraryBulkAdd)),
+                  ],
+                ),
+              ],
+            ),
+      floatingActionButton: _selectionMode
+          ? null
+          : FloatingActionButton(
+              onPressed: () => context.push('/library/add'),
+              child: const Icon(Icons.add),
+            ),
+      bottomNavigationBar: _selectionMode
+          ? BottomAppBar(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.visibility_off_outlined),
+                    tooltip: l10n.inventoryMarkUnavailable,
+                    onPressed: () => _bulkMarkUnavailable(state.value ?? const []),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.sell_outlined),
+                    tooltip: l10n.inventoryChangePriceTitle,
+                    onPressed: () => _bulkChangePrice(state.value ?? const []),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: l10n.commonDelete,
+                    onPressed: _bulkDelete,
+                  ),
+                ],
+              ),
+            )
+          : null,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(myLibraryControllerProvider.notifier).refresh(),
@@ -113,7 +309,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (context, index) => _MyLibraryListRow(
                     userBook: books[index],
-                    onTap: () => _openActions(books[index]),
+                    selected: _selectedIds.contains(books[index].id),
+                    onTap: () => _handleTap(books[index]),
+                    onLongPress: () => _toggleSelected(books[index].id),
                   ),
                 );
               }
@@ -128,7 +326,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                       for (final userBook in books)
                         _MyLibraryCard(
                           userBook: userBook,
-                          onTap: () => _openActions(userBook),
+                          selected: _selectedIds.contains(userBook.id),
+                          onTap: () => _handleTap(userBook),
+                          onLongPress: () => _toggleSelected(userBook.id),
                         ),
                     ],
                   ),
@@ -157,17 +357,28 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
 }
 
 class _MyLibraryListRow extends StatelessWidget {
-  const _MyLibraryListRow({required this.userBook, required this.onTap});
+  const _MyLibraryListRow({
+    required this.userBook,
+    required this.onTap,
+    required this.onLongPress,
+    this.selected = false,
+  });
   final UserBook userBook;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
+      color: selected ? AppColors.accent.withValues(alpha: 0.1) : null,
       child: ListTile(
         onTap: onTap,
-        leading: BookCover(url: userBook.book.coverUrl, width: 44, height: 62),
+        onLongPress: onLongPress,
+        leading: selected
+            ? const Icon(Icons.check_circle, color: AppColors.accent)
+            : BookCover(url: userBook.book.coverUrl, width: 44, height: 62),
         title: Text(userBook.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(
           [
@@ -201,9 +412,16 @@ class _MyLibraryListRow extends StatelessWidget {
 }
 
 class _MyLibraryCard extends StatelessWidget {
-  const _MyLibraryCard({required this.userBook, required this.onTap});
+  const _MyLibraryCard({
+    required this.userBook,
+    required this.onTap,
+    required this.onLongPress,
+    this.selected = false,
+  });
   final UserBook userBook;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +430,20 @@ class _MyLibraryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BookCard(userBook: userBook, onTap: onTap, width: 160),
+          GestureDetector(
+            onLongPress: onLongPress,
+            child: Stack(
+              children: [
+                BookCard(userBook: userBook, onTap: onTap, width: 160),
+                if (selected)
+                  const Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Icon(Icons.check_circle, color: AppColors.accent),
+                  ),
+              ],
+            ),
+          ),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

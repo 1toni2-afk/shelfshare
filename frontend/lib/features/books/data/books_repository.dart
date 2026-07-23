@@ -15,6 +15,84 @@ class BrowseResult {
   const BrowseResult({required this.items, required this.total});
 }
 
+class BulkAddCreated {
+  final String isbn;
+  final String userBookId;
+  final String title;
+
+  const BulkAddCreated({required this.isbn, required this.userBookId, required this.title});
+
+  factory BulkAddCreated.fromJson(Map<String, dynamic> json) {
+    return BulkAddCreated(
+      isbn: json['isbn'] as String,
+      userBookId: json['userBookId'] as String,
+      title: json['title'] as String,
+    );
+  }
+}
+
+class BulkAddFailed {
+  final String isbn;
+  final String reason;
+
+  const BulkAddFailed({required this.isbn, required this.reason});
+
+  factory BulkAddFailed.fromJson(Map<String, dynamic> json) {
+    return BulkAddFailed(isbn: json['isbn'] as String, reason: json['reason'] as String);
+  }
+}
+
+class BulkAddResult {
+  final List<BulkAddCreated> created;
+  final List<BulkAddFailed> failed;
+
+  const BulkAddResult({required this.created, required this.failed});
+
+  factory BulkAddResult.fromJson(Map<String, dynamic> json) {
+    return BulkAddResult(
+      created: (json['created'] as List).map((e) => BulkAddCreated.fromJson(e as Map<String, dynamic>)).toList(),
+      failed: (json['failed'] as List).map((e) => BulkAddFailed.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+}
+
+class ListingImportCreated {
+  final String title;
+  final String userBookId;
+
+  const ListingImportCreated({required this.title, required this.userBookId});
+
+  factory ListingImportCreated.fromJson(Map<String, dynamic> json) {
+    return ListingImportCreated(title: json['title'] as String, userBookId: json['userBookId'] as String);
+  }
+}
+
+class ListingImportFailed {
+  final String title;
+  final String reason;
+
+  const ListingImportFailed({required this.title, required this.reason});
+
+  factory ListingImportFailed.fromJson(Map<String, dynamic> json) {
+    return ListingImportFailed(title: json['title'] as String, reason: json['reason'] as String);
+  }
+}
+
+class ListingImportResult {
+  final List<ListingImportCreated> created;
+  final List<ListingImportFailed> failed;
+
+  const ListingImportResult({required this.created, required this.failed});
+
+  factory ListingImportResult.fromJson(Map<String, dynamic> json) {
+    return ListingImportResult(
+      created:
+          (json['created'] as List).map((e) => ListingImportCreated.fromJson(e as Map<String, dynamic>)).toList(),
+      failed: (json['failed'] as List).map((e) => ListingImportFailed.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+}
+
 class ViewStats {
   final int total;
   final int unique;
@@ -259,6 +337,53 @@ class BooksRepository {
       'isHardcover': isHardcover,
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Previzualizare (fără să creeze nimic) pentru un ISBN scanat - vezi Bulk ISBN Scan.
+  Future<ExternalBookResult?> lookupIsbn(String isbn) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/lookup-isbn', queryParameters: {'isbn': isbn});
+    return response.data == null
+        ? null
+        : ExternalBookResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Adăugare în masă - maxim 50 ISBN-uri odată (vezi BulkAddBooksDto), pot
+  /// declanșa căutări externe secvențiale pentru fiecare, deci mărim
+  /// timeout-ul peste cel implicit de 10s al clientului Dio.
+  Future<BulkAddResult> bulkAdd(
+    List<String> isbns, {
+    required BookCondition condition,
+    String? language,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post(
+      '/books/bulk',
+      data: {
+        'isbns': isbns,
+        'condition': condition.toJson(),
+        if (language != null && language.isNotEmpty) 'language': language,
+      },
+      options: Options(sendTimeout: const Duration(seconds: 60), receiveTimeout: const Duration(seconds: 60)),
+    );
+    return BulkAddResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Import CSV de anunțuri (title,author,isbn,condition,language) - anunțuri
+  /// noi de schimb (fără vânzare, care cere poze urcate separat - vezi
+  /// backend). Distinct de importCsv() al BookshelfRepository, care
+  /// populează statusul de citit, nu creează anunțuri.
+  Future<ListingImportResult> importListingsCsv({required List<int> bytes, required String filename}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename.isEmpty ? 'import.csv' : filename),
+    });
+    final response = await dio.post(
+      '/books/import-listings',
+      data: formData,
+      options: Options(sendTimeout: const Duration(seconds: 60), receiveTimeout: const Duration(seconds: 60)),
+    );
+    return ListingImportResult.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<UserBook> relistBook(

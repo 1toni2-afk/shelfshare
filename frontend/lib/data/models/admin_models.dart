@@ -33,6 +33,63 @@ class AdminStats {
   }
 }
 
+class GenreListingCount {
+  final String genre;
+  final int count;
+
+  const GenreListingCount({required this.genre, required this.count});
+
+  factory GenreListingCount.fromJson(Map<String, dynamic> json) {
+    return GenreListingCount(genre: json['genre'] as String, count: json['count'] as int);
+  }
+}
+
+class MarketplaceStats {
+  final double gmv;
+  final int completedSalesCount;
+  final int completedAuctionsCount;
+  final double averageSalePrice;
+  final List<GenreListingCount> topGenresByListings;
+
+  const MarketplaceStats({
+    required this.gmv,
+    required this.completedSalesCount,
+    required this.completedAuctionsCount,
+    required this.averageSalePrice,
+    required this.topGenresByListings,
+  });
+
+  factory MarketplaceStats.fromJson(Map<String, dynamic> json) {
+    return MarketplaceStats(
+      gmv: (json['gmv'] as num).toDouble(),
+      completedSalesCount: json['completedSalesCount'] as int,
+      completedAuctionsCount: json['completedAuctionsCount'] as int,
+      averageSalePrice: (json['averageSalePrice'] as num).toDouble(),
+      topGenresByListings: (json['topGenresByListings'] as List)
+          .map((e) => GenreListingCount.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class ActiveZone {
+  final String city;
+  final int count;
+  final double lat;
+  final double lng;
+
+  const ActiveZone({required this.city, required this.count, required this.lat, required this.lng});
+
+  factory ActiveZone.fromJson(Map<String, dynamic> json) {
+    return ActiveZone(
+      city: json['city'] as String,
+      count: json['count'] as int,
+      lat: (json['lat'] as num).toDouble(),
+      lng: (json['lng'] as num).toDouble(),
+    );
+  }
+}
+
 class AdminUser {
   final String id;
   final String email;

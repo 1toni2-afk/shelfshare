@@ -6,6 +6,8 @@ import '../data/admin_repository.dart';
 class AdminData {
   const AdminData({
     required this.stats,
+    required this.marketplaceStats,
+    required this.activeZones,
     required this.users,
     required this.inactiveListings,
     required this.userReports,
@@ -14,12 +16,32 @@ class AdminData {
     required this.supportRequests,
   });
   final AdminStats stats;
+  final MarketplaceStats marketplaceStats;
+  final List<ActiveZone> activeZones;
   final AdminUsersPage users;
   final List<InactiveListing> inactiveListings;
   final List<UserReport> userReports;
   final List<UpcomingRelease> upcomingReleases;
   final List<FeedbackItem> feedback;
   final List<SupportRequestItem> supportRequests;
+
+  AdminData copyWith({
+    AdminUsersPage? users,
+    List<InactiveListing>? inactiveListings,
+    List<UpcomingRelease>? upcomingReleases,
+  }) {
+    return AdminData(
+      stats: stats,
+      marketplaceStats: marketplaceStats,
+      activeZones: activeZones,
+      users: users ?? this.users,
+      inactiveListings: inactiveListings ?? this.inactiveListings,
+      userReports: userReports,
+      upcomingReleases: upcomingReleases ?? this.upcomingReleases,
+      feedback: feedback,
+      supportRequests: supportRequests,
+    );
+  }
 }
 
 class AdminController extends AsyncNotifier<AdminData> {
@@ -30,6 +52,8 @@ class AdminController extends AsyncNotifier<AdminData> {
     final repository = ref.read(adminRepositoryProvider);
     final results = await Future.wait([
       repository.getStats(),
+      repository.getMarketplaceStats(),
+      repository.getActiveZones(),
       repository.getUsers(),
       repository.getInactiveListings(),
       repository.getUserReports(),
@@ -39,12 +63,14 @@ class AdminController extends AsyncNotifier<AdminData> {
     ]);
     return AdminData(
       stats: results[0] as AdminStats,
-      users: results[1] as AdminUsersPage,
-      inactiveListings: results[2] as List<InactiveListing>,
-      userReports: results[3] as List<UserReport>,
-      upcomingReleases: results[4] as List<UpcomingRelease>,
-      feedback: results[5] as List<FeedbackItem>,
-      supportRequests: results[6] as List<SupportRequestItem>,
+      marketplaceStats: results[1] as MarketplaceStats,
+      activeZones: results[2] as List<ActiveZone>,
+      users: results[3] as AdminUsersPage,
+      inactiveListings: results[4] as List<InactiveListing>,
+      userReports: results[5] as List<UserReport>,
+      upcomingReleases: results[6] as List<UpcomingRelease>,
+      feedback: results[7] as List<FeedbackItem>,
+      supportRequests: results[8] as List<SupportRequestItem>,
     );
   }
 
@@ -70,15 +96,7 @@ class AdminController extends AsyncNotifier<AdminData> {
     final current = state.value;
     if (current == null) return;
     state = AsyncData(
-      AdminData(
-        stats: current.stats,
-        users: current.users,
-        inactiveListings: current.inactiveListings,
-        userReports: current.userReports,
-        upcomingReleases: current.upcomingReleases.where((r) => r.id != id).toList(),
-        feedback: current.feedback,
-        supportRequests: current.supportRequests,
-      ),
+      current.copyWith(upcomingReleases: current.upcomingReleases.where((r) => r.id != id).toList()),
     );
   }
 
@@ -107,16 +125,7 @@ class AdminController extends AsyncNotifier<AdminData> {
     final current = state.value;
     if (current == null) return;
     state = AsyncData(
-      AdminData(
-        stats: current.stats,
-        users: current.users,
-        inactiveListings:
-            current.inactiveListings.where((l) => l.id != userBookId).toList(),
-        userReports: current.userReports,
-        upcomingReleases: current.upcomingReleases,
-        feedback: current.feedback,
-        supportRequests: current.supportRequests,
-      ),
+      current.copyWith(inactiveListings: current.inactiveListings.where((l) => l.id != userBookId).toList()),
     );
   }
 
@@ -128,18 +137,8 @@ class AdminController extends AsyncNotifier<AdminData> {
         if (u.id == userId) u.copyWith(isBanned: isBanned) else u,
     ];
     state = AsyncData(
-      AdminData(
-        stats: current.stats,
-        users: AdminUsersPage(
-          items: updatedItems,
-          limit: current.users.limit,
-          offset: current.users.offset,
-        ),
-        inactiveListings: current.inactiveListings,
-        userReports: current.userReports,
-        upcomingReleases: current.upcomingReleases,
-        feedback: current.feedback,
-        supportRequests: current.supportRequests,
+      current.copyWith(
+        users: AdminUsersPage(items: updatedItems, limit: current.users.limit, offset: current.users.offset),
       ),
     );
   }

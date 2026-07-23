@@ -51,6 +51,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get commonRetry => 'Próbáld újra';
 
   @override
+  String get commonDone => 'Kész';
+
+  @override
   String get commonClose => 'Bezárás';
 
   @override
@@ -892,6 +895,21 @@ class AppLocalizationsHu extends AppLocalizations {
   String get libraryExportCsv => 'Exportálás CSV-be';
 
   @override
+  String get libraryBulkAdd => 'Több könyv hozzáadása (szkennelés)';
+
+  @override
+  String get libraryImportCsv => 'Hirdetések importálása CSV-ből';
+
+  @override
+  String libraryImportSummary(int created, int failed) {
+    return '$created hirdetés létrehozva, $failed sikertelen';
+  }
+
+  @override
+  String get libraryImportError =>
+      'Nem sikerült importálni a fájlt. Ellenőrizd, hogy érvényes CSV-e.';
+
+  @override
   String get libraryEmpty => 'Még nincs könyved a könyvtáradban.';
 
   @override
@@ -1701,6 +1719,33 @@ class AppLocalizationsHu extends AppLocalizations {
   String get adminStatsTitle => 'Statisztikák';
 
   @override
+  String get adminMarketplaceStatsTitle => 'Piactér statisztikák';
+
+  @override
+  String get adminMarketplaceGmv => 'Teljes forgalmazott érték';
+
+  @override
+  String get adminMarketplaceCompletedSales => 'Befejezett eladások';
+
+  @override
+  String get adminMarketplaceCompletedAuctions => 'Befejezett árverések';
+
+  @override
+  String get adminMarketplaceAvgPrice => 'Átlagos eladási ár';
+
+  @override
+  String get adminMarketplaceTopGenres => 'Top műfajok (aktív hirdetések)';
+
+  @override
+  String get adminActiveZonesTitle => 'Aktív zónák';
+
+  @override
+  String get adminActiveZonesDesc => 'Aktív hirdetések sűrűsége városonként';
+
+  @override
+  String get adminActiveZonesEmpty => 'Még nincs aktív hirdetés.';
+
+  @override
   String adminUsersCount(int count) {
     return 'Felhasználók ($count)';
   }
@@ -1886,4 +1931,65 @@ class AppLocalizationsHu extends AppLocalizations {
   String auctionEndsInMinutes(int minutes) {
     return '$minutes perc múlva zárul';
   }
+
+  @override
+  String get bulkAddTitle => 'Több könyv hozzáadása';
+
+  @override
+  String get bulkAddScanTooltip => 'Vonalkód szkennelése';
+
+  @override
+  String get bulkAddManualEntry => 'Manuális bevitel';
+
+  @override
+  String get bulkAddManualHint =>
+      'Illessz be több ISBN-t, soronként egyet (vagy vesszővel elválasztva)';
+
+  @override
+  String get bulkAddManualPlaceholder => '9780439023481\n9780441172719';
+
+  @override
+  String get bulkAddAddIsbns => 'Hozzáadás a listához';
+
+  @override
+  String get bulkAddQueueEmpty =>
+      'Még nincs hozzáadott könyv - szkennelj vagy adj meg egy ISBN-t.';
+
+  @override
+  String bulkAddSubmit(int count) {
+    return '$count könyv hozzáadása';
+  }
+
+  @override
+  String bulkAddResultSummary(int created, int failed) {
+    return '$created könyv hozzáadva, $failed sikertelen';
+  }
+
+  @override
+  String inventorySelectedCount(int count) {
+    return '$count kiválasztva';
+  }
+
+  @override
+  String get inventoryMarkUnavailable => 'Megjelölés nem elérhetőként';
+
+  @override
+  String get inventoryChangePriceTitle => 'Ár módosítása';
+
+  @override
+  String inventoryPriceChangedCount(int count) {
+    return 'Ár módosítva $count hirdetésen';
+  }
+
+  @override
+  String get inventoryDeleteConfirmTitle =>
+      'Törlöd a kiválasztott hirdetéseket?';
+
+  @override
+  String inventoryDeleteConfirmBody(int count) {
+    return 'Ez véglegesen törli $count hirdetést. Nem vonható vissza.';
+  }
+
+  @override
+  String get inventoryBulkDone => 'Művelet alkalmazva';
 }

@@ -16,6 +16,7 @@
   "commonRating": "Rating",
   "commonBooksExchanged": "Cărți schimbate",
   "commonRetry": "Încearcă din nou",
+  "commonDone": "Gata",
   "commonClose": "Închide",
   "commonDelete": "Șterge",
   "commonConfirm": "Confirmă",
@@ -337,6 +338,13 @@
   "libraryViewAsList": "Vezi ca listă",
   "libraryViewAsGrid": "Vezi ca grilă",
   "libraryExportCsv": "Exportă în CSV",
+  "libraryBulkAdd": "Adaugă mai multe cărți (scanare)",
+  "libraryImportCsv": "Importă anunțuri din CSV",
+  "libraryImportSummary": "{created} anunțuri create, {failed} eșuate",
+  "@libraryImportSummary": {
+    "placeholders": { "created": { "type": "int" }, "failed": { "type": "int" } }
+  },
+  "libraryImportError": "Nu am putut importa fișierul. Verifică dacă e un CSV valid.",
   "libraryEmpty": "Nu ai nicio carte în bibliotecă încă.",
   "libraryLoadError": "Nu am putut încărca biblioteca.",
   "libraryAvailable": "Disponibilă",
@@ -619,6 +627,15 @@
 
   "adminLoadError": "Nu am putut încărca datele de admin.",
   "adminStatsTitle": "Statistici",
+  "adminMarketplaceStatsTitle": "Statistici marketplace",
+  "adminMarketplaceGmv": "Volum total tranzacționat",
+  "adminMarketplaceCompletedSales": "Vânzări finalizate",
+  "adminMarketplaceCompletedAuctions": "Licitații finalizate",
+  "adminMarketplaceAvgPrice": "Preț mediu vânzare",
+  "adminMarketplaceTopGenres": "Top genuri (anunțuri active)",
+  "adminActiveZonesTitle": "Zone active",
+  "adminActiveZonesDesc": "Densitatea anunțurilor active pe oraș",
+  "adminActiveZonesEmpty": "Niciun anunț activ încă.",
   "adminUsersCount": "Utilizatori ({count})",
   "@adminUsersCount": { "placeholders": { "count": { "type": "int" } } },
   "adminInactiveListingsCount": "Anunțuri fără nicio cerere ({count})",
@@ -688,5 +705,30 @@
   "auctionEndsInHours": "se încheie în {hours} h",
   "@auctionEndsInHours": { "placeholders": { "hours": { "type": "int" } } },
   "auctionEndsInMinutes": "se încheie în {minutes} min",
-  "@auctionEndsInMinutes": { "placeholders": { "minutes": { "type": "int" } } }
+  "@auctionEndsInMinutes": { "placeholders": { "minutes": { "type": "int" } } },
+
+  "bulkAddTitle": "Adaugă mai multe cărți",
+  "bulkAddScanTooltip": "Scanează cod de bare",
+  "bulkAddManualEntry": "Introducere manuală",
+  "bulkAddManualHint": "Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)",
+  "bulkAddManualPlaceholder": "9780439023481\n9780441172719",
+  "bulkAddAddIsbns": "Adaugă în listă",
+  "bulkAddQueueEmpty": "Nicio carte adăugată încă - scanează sau introdu un ISBN.",
+  "bulkAddSubmit": "Adaugă {count} cărți",
+  "@bulkAddSubmit": { "placeholders": { "count": { "type": "int" } } },
+  "bulkAddResultSummary": "{created} cărți adăugate, {failed} eșuate",
+  "@bulkAddResultSummary": {
+    "placeholders": { "created": { "type": "int" }, "failed": { "type": "int" } }
+  },
+
+  "inventorySelectedCount": "{count} selectate",
+  "@inventorySelectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "inventoryMarkUnavailable": "Marchează indisponibile",
+  "inventoryChangePriceTitle": "Schimbă prețul",
+  "inventoryPriceChangedCount": "Preț schimbat la {count} anunțuri",
+  "@inventoryPriceChangedCount": { "placeholders": { "count": { "type": "int" } } },
+  "inventoryDeleteConfirmTitle": "Ștergi anunțurile selectate?",
+  "inventoryDeleteConfirmBody": "Se șterg definitiv {count} anunțuri. Nu se poate anula.",
+  "@inventoryDeleteConfirmBody": { "placeholders": { "count": { "type": "int" } } },
+  "inventoryBulkDone": "Acțiune aplicată"
 }

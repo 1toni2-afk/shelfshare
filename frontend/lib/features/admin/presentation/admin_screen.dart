@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/admin_models.dart';
@@ -58,6 +60,19 @@ class _AdminContent extends StatelessWidget {
         Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _StatsGrid(stats: data.stats),
+        const SizedBox(height: 28),
+        Text(l10n.adminMarketplaceStatsTitle, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        _MarketplaceStatsGrid(stats: data.marketplaceStats),
+        const SizedBox(height: 28),
+        Text(l10n.adminActiveZonesTitle, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 4),
+        Text(
+          l10n.adminActiveZonesDesc,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+        ),
+        const SizedBox(height: 12),
+        _ActiveZonesMap(zones: data.activeZones),
         const SizedBox(height: 28),
         Text(l10n.adminUsersCount(data.stats.totalUsers), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
@@ -357,6 +372,109 @@ class _StatsGrid extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _MarketplaceStatsGrid extends StatelessWidget {
+  const _MarketplaceStatsGrid({required this.stats});
+  final MarketplaceStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final tiles = [
+      (l10n.adminMarketplaceGmv, l10n.priceLei(stats.gmv.toStringAsFixed(0)), ''),
+      (l10n.adminMarketplaceCompletedSales, '${stats.completedSalesCount}', ''),
+      (l10n.adminMarketplaceCompletedAuctions, '${stats.completedAuctionsCount}', ''),
+      (l10n.adminMarketplaceAvgPrice, l10n.priceLei(stats.averageSalePrice.toStringAsFixed(0)), ''),
+    ];
+    return Column(
+      children: [
+        for (final t in tiles)
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(t.$1, style: Theme.of(context).textTheme.bodyMedium),
+                  Text(t.$2, style: Theme.of(context).textTheme.headlineSmall),
+                ],
+              ),
+            ),
+          ),
+        if (stats.topGenresByListings.isNotEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.adminMarketplaceTopGenres, style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final g in stats.topGenresByListings)
+                        Chip(label: Text('${g.genre} (${g.count})')),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+const _romaniaCenterAdmin = LatLng(45.9432, 24.9668);
+
+/// "Heatmap" simplificat - cercuri semi-transparente pe hartă, raza/opacitatea
+/// scalate relativ la cel mai activ oraș, fără o dependință nouă de heatmap
+/// (flutter_map_heatmap etc.) - suficient ca semnal vizual la scara aplicației.
+class _ActiveZonesMap extends StatelessWidget {
+  const _ActiveZonesMap({required this.zones});
+  final List<ActiveZone> zones;
+
+  @override
+  Widget build(BuildContext context) {
+    if (zones.isEmpty) {
+      return Text(context.l10n.adminActiveZonesEmpty);
+    }
+    final maxCount = zones.map((z) => z.count).reduce((a, b) => a > b ? a : b);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        height: 320,
+        child: FlutterMap(
+          options: const MapOptions(initialCenter: _romaniaCenterAdmin, initialZoom: 6.0),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+              subdomains: const ['a', 'b', 'c', 'd'],
+              userAgentPackageName: 'com.shelfshare.app',
+              maxZoom: 20,
+            ),
+            CircleLayer(
+              circles: [
+                for (final zone in zones)
+                  CircleMarker(
+                    point: LatLng(zone.lat, zone.lng),
+                    radius: 10 + (zone.count / maxCount) * 40,
+                    color: AppColors.accent.withValues(alpha: 0.35),
+                    borderColor: AppColors.accent,
+                    borderStrokeWidth: 1.5,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
