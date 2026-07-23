@@ -635,5 +635,26 @@
   "collectionsEmptyItems": "No books in this collection yet.",
   "collectionsDeleteConfirmTitle": "Delete this collection?",
   "collectionsAddToTitle": "Add to collection",
-  "collectionsNewInline": "New collection..."
+  "collectionsNewInline": "New collection...",
+
+  "groupsTitle": "Groups",
+  "groupsTabDiscover": "Discover",
+  "groupsTabMine": "Mine",
+  "groupsEmpty": "No groups yet.",
+  "groupsLoadError": "Couldn't load the group.",
+  "groupsCreateTitle": "New group",
+  "groupsNameLabel": "Name",
+  "groupsDescriptionLabel": "Description (optional)",
+  "groupsMemberCount": "{count} members",
+  "groupsJoin": "Join",
+  "groupsLeave": "Leave group",
+  "groupsDeleteConfirmTitle": "Delete this group?",
+  "groupsEventsTitle": "Events",
+  "groupsNoEvents": "No events scheduled.",
+  "groupsAddEventTitle": "Add event",
+  "groupsEventTitleLabel": "Title",
+  "groupsEventLocationLabel": "Location (optional)",
+  "groupsDiscussionTitle": "Discussion",
+  "groupsPostHint": "Write a message...",
+  "groupsNoPosts": "No messages yet."
 }

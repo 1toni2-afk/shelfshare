@@ -635,5 +635,26 @@
   "collectionsEmptyItems": "Még nincs könyv ebben a gyűjteményben.",
   "collectionsDeleteConfirmTitle": "Törlöd ezt a gyűjteményt?",
   "collectionsAddToTitle": "Hozzáadás gyűjteményhez",
-  "collectionsNewInline": "Új gyűjtemény..."
+  "collectionsNewInline": "Új gyűjtemény...",
+
+  "groupsTitle": "Csoportok",
+  "groupsTabDiscover": "Felfedezés",
+  "groupsTabMine": "Sajátjaim",
+  "groupsEmpty": "Még nincs csoport.",
+  "groupsLoadError": "Nem sikerült betölteni a csoportot.",
+  "groupsCreateTitle": "Új csoport",
+  "groupsNameLabel": "Név",
+  "groupsDescriptionLabel": "Leírás (opcionális)",
+  "groupsMemberCount": "{count} tag",
+  "groupsJoin": "Csatlakozás",
+  "groupsLeave": "Kilépés a csoportból",
+  "groupsDeleteConfirmTitle": "Törlöd ezt a csoportot?",
+  "groupsEventsTitle": "Események",
+  "groupsNoEvents": "Nincs ütemezett esemény.",
+  "groupsAddEventTitle": "Esemény hozzáadása",
+  "groupsEventTitleLabel": "Cím",
+  "groupsEventLocationLabel": "Helyszín (opcionális)",
+  "groupsDiscussionTitle": "Beszélgetés",
+  "groupsPostHint": "Írj egy üzenetet...",
+  "groupsNoPosts": "Még nincs üzenet."
 }

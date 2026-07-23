@@ -2017,4 +2017,66 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get collectionsNewInline => 'Colecție nouă...';
+
+  @override
+  String get groupsTitle => 'Grupuri';
+
+  @override
+  String get groupsTabDiscover => 'Descoperă';
+
+  @override
+  String get groupsTabMine => 'Ale mele';
+
+  @override
+  String get groupsEmpty => 'Niciun grup încă.';
+
+  @override
+  String get groupsLoadError => 'Nu am putut încărca grupul.';
+
+  @override
+  String get groupsCreateTitle => 'Grup nou';
+
+  @override
+  String get groupsNameLabel => 'Nume';
+
+  @override
+  String get groupsDescriptionLabel => 'Descriere (opțional)';
+
+  @override
+  String groupsMemberCount(int count) {
+    return '$count membri';
+  }
+
+  @override
+  String get groupsJoin => 'Alătură-te';
+
+  @override
+  String get groupsLeave => 'Părăsește grupul';
+
+  @override
+  String get groupsDeleteConfirmTitle => 'Ștergi acest grup?';
+
+  @override
+  String get groupsEventsTitle => 'Evenimente';
+
+  @override
+  String get groupsNoEvents => 'Niciun eveniment programat.';
+
+  @override
+  String get groupsAddEventTitle => 'Adaugă eveniment';
+
+  @override
+  String get groupsEventTitleLabel => 'Titlu';
+
+  @override
+  String get groupsEventLocationLabel => 'Locație (opțional)';
+
+  @override
+  String get groupsDiscussionTitle => 'Discuții';
+
+  @override
+  String get groupsPostHint => 'Scrie un mesaj...';
+
+  @override
+  String get groupsNoPosts => 'Niciun mesaj încă.';
 }

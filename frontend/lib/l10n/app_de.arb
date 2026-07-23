@@ -635,5 +635,26 @@
   "collectionsEmptyItems": "Noch keine Bücher in dieser Sammlung.",
   "collectionsDeleteConfirmTitle": "Diese Sammlung löschen?",
   "collectionsAddToTitle": "Zur Sammlung hinzufügen",
-  "collectionsNewInline": "Neue Sammlung..."
+  "collectionsNewInline": "Neue Sammlung...",
+
+  "groupsTitle": "Gruppen",
+  "groupsTabDiscover": "Entdecken",
+  "groupsTabMine": "Meine",
+  "groupsEmpty": "Noch keine Gruppen.",
+  "groupsLoadError": "Gruppe konnte nicht geladen werden.",
+  "groupsCreateTitle": "Neue Gruppe",
+  "groupsNameLabel": "Name",
+  "groupsDescriptionLabel": "Beschreibung (optional)",
+  "groupsMemberCount": "{count} Mitglieder",
+  "groupsJoin": "Beitreten",
+  "groupsLeave": "Gruppe verlassen",
+  "groupsDeleteConfirmTitle": "Diese Gruppe löschen?",
+  "groupsEventsTitle": "Veranstaltungen",
+  "groupsNoEvents": "Keine geplanten Veranstaltungen.",
+  "groupsAddEventTitle": "Veranstaltung hinzufügen",
+  "groupsEventTitleLabel": "Titel",
+  "groupsEventLocationLabel": "Ort (optional)",
+  "groupsDiscussionTitle": "Diskussion",
+  "groupsPostHint": "Schreibe eine Nachricht...",
+  "groupsNoPosts": "Noch keine Nachrichten."
 }

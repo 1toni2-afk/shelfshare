@@ -265,6 +265,12 @@ class _ProfileContent extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
+          icon: const Icon(Icons.groups_outlined),
+          label: Text(l10n.groupsTitle),
+          onPressed: () => context.push('/groups'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
           icon: const Icon(Icons.dynamic_feed_outlined),
           label: Text(l10n.profileActivityFeed),
           onPressed: () => context.push('/activity-feed'),

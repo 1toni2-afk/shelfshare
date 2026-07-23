@@ -2027,4 +2027,66 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get collectionsNewInline => 'Új gyűjtemény...';
+
+  @override
+  String get groupsTitle => 'Csoportok';
+
+  @override
+  String get groupsTabDiscover => 'Felfedezés';
+
+  @override
+  String get groupsTabMine => 'Sajátjaim';
+
+  @override
+  String get groupsEmpty => 'Még nincs csoport.';
+
+  @override
+  String get groupsLoadError => 'Nem sikerült betölteni a csoportot.';
+
+  @override
+  String get groupsCreateTitle => 'Új csoport';
+
+  @override
+  String get groupsNameLabel => 'Név';
+
+  @override
+  String get groupsDescriptionLabel => 'Leírás (opcionális)';
+
+  @override
+  String groupsMemberCount(int count) {
+    return '$count tag';
+  }
+
+  @override
+  String get groupsJoin => 'Csatlakozás';
+
+  @override
+  String get groupsLeave => 'Kilépés a csoportból';
+
+  @override
+  String get groupsDeleteConfirmTitle => 'Törlöd ezt a csoportot?';
+
+  @override
+  String get groupsEventsTitle => 'Események';
+
+  @override
+  String get groupsNoEvents => 'Nincs ütemezett esemény.';
+
+  @override
+  String get groupsAddEventTitle => 'Esemény hozzáadása';
+
+  @override
+  String get groupsEventTitleLabel => 'Cím';
+
+  @override
+  String get groupsEventLocationLabel => 'Helyszín (opcionális)';
+
+  @override
+  String get groupsDiscussionTitle => 'Beszélgetés';
+
+  @override
+  String get groupsPostHint => 'Írj egy üzenetet...';
+
+  @override
+  String get groupsNoPosts => 'Még nincs üzenet.';
 }

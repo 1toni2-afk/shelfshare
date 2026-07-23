@@ -3623,6 +3623,126 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Colecție nouă...'**
   String get collectionsNewInline;
+
+  /// No description provided for @groupsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Grupuri'**
+  String get groupsTitle;
+
+  /// No description provided for @groupsTabDiscover.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descoperă'**
+  String get groupsTabDiscover;
+
+  /// No description provided for @groupsTabMine.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ale mele'**
+  String get groupsTabMine;
+
+  /// No description provided for @groupsEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun grup încă.'**
+  String get groupsEmpty;
+
+  /// No description provided for @groupsLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca grupul.'**
+  String get groupsLoadError;
+
+  /// No description provided for @groupsCreateTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Grup nou'**
+  String get groupsCreateTitle;
+
+  /// No description provided for @groupsNameLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nume'**
+  String get groupsNameLabel;
+
+  /// No description provided for @groupsDescriptionLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descriere (opțional)'**
+  String get groupsDescriptionLabel;
+
+  /// No description provided for @groupsMemberCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} membri'**
+  String groupsMemberCount(int count);
+
+  /// No description provided for @groupsJoin.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alătură-te'**
+  String get groupsJoin;
+
+  /// No description provided for @groupsLeave.
+  ///
+  /// In ro, this message translates to:
+  /// **'Părăsește grupul'**
+  String get groupsLeave;
+
+  /// No description provided for @groupsDeleteConfirmTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi acest grup?'**
+  String get groupsDeleteConfirmTitle;
+
+  /// No description provided for @groupsEventsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Evenimente'**
+  String get groupsEventsTitle;
+
+  /// No description provided for @groupsNoEvents.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun eveniment programat.'**
+  String get groupsNoEvents;
+
+  /// No description provided for @groupsAddEventTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă eveniment'**
+  String get groupsAddEventTitle;
+
+  /// No description provided for @groupsEventTitleLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Titlu'**
+  String get groupsEventTitleLabel;
+
+  /// No description provided for @groupsEventLocationLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locație (opțional)'**
+  String get groupsEventLocationLabel;
+
+  /// No description provided for @groupsDiscussionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Discuții'**
+  String get groupsDiscussionTitle;
+
+  /// No description provided for @groupsPostHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrie un mesaj...'**
+  String get groupsPostHint;
+
+  /// No description provided for @groupsNoPosts.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun mesaj încă.'**
+  String get groupsNoPosts;
 }
 
 class _AppLocalizationsDelegate

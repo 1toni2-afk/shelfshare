@@ -2015,4 +2015,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get collectionsNewInline => 'New collection...';
+
+  @override
+  String get groupsTitle => 'Groups';
+
+  @override
+  String get groupsTabDiscover => 'Discover';
+
+  @override
+  String get groupsTabMine => 'Mine';
+
+  @override
+  String get groupsEmpty => 'No groups yet.';
+
+  @override
+  String get groupsLoadError => 'Couldn\'t load the group.';
+
+  @override
+  String get groupsCreateTitle => 'New group';
+
+  @override
+  String get groupsNameLabel => 'Name';
+
+  @override
+  String get groupsDescriptionLabel => 'Description (optional)';
+
+  @override
+  String groupsMemberCount(int count) {
+    return '$count members';
+  }
+
+  @override
+  String get groupsJoin => 'Join';
+
+  @override
+  String get groupsLeave => 'Leave group';
+
+  @override
+  String get groupsDeleteConfirmTitle => 'Delete this group?';
+
+  @override
+  String get groupsEventsTitle => 'Events';
+
+  @override
+  String get groupsNoEvents => 'No events scheduled.';
+
+  @override
+  String get groupsAddEventTitle => 'Add event';
+
+  @override
+  String get groupsEventTitleLabel => 'Title';
+
+  @override
+  String get groupsEventLocationLabel => 'Location (optional)';
+
+  @override
+  String get groupsDiscussionTitle => 'Discussion';
+
+  @override
+  String get groupsPostHint => 'Write a message...';
+
+  @override
+  String get groupsNoPosts => 'No messages yet.';
 }

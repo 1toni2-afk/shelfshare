@@ -743,5 +743,27 @@
   "collectionsEmptyItems": "Nicio carte în această colecție încă.",
   "collectionsDeleteConfirmTitle": "Ștergi această colecție?",
   "collectionsAddToTitle": "Adaugă în colecție",
-  "collectionsNewInline": "Colecție nouă..."
+  "collectionsNewInline": "Colecție nouă...",
+
+  "groupsTitle": "Grupuri",
+  "groupsTabDiscover": "Descoperă",
+  "groupsTabMine": "Ale mele",
+  "groupsEmpty": "Niciun grup încă.",
+  "groupsLoadError": "Nu am putut încărca grupul.",
+  "groupsCreateTitle": "Grup nou",
+  "groupsNameLabel": "Nume",
+  "groupsDescriptionLabel": "Descriere (opțional)",
+  "groupsMemberCount": "{count} membri",
+  "@groupsMemberCount": { "placeholders": { "count": { "type": "int" } } },
+  "groupsJoin": "Alătură-te",
+  "groupsLeave": "Părăsește grupul",
+  "groupsDeleteConfirmTitle": "Ștergi acest grup?",
+  "groupsEventsTitle": "Evenimente",
+  "groupsNoEvents": "Niciun eveniment programat.",
+  "groupsAddEventTitle": "Adaugă eveniment",
+  "groupsEventTitleLabel": "Titlu",
+  "groupsEventLocationLabel": "Locație (opțional)",
+  "groupsDiscussionTitle": "Discuții",
+  "groupsPostHint": "Scrie un mesaj...",
+  "groupsNoPosts": "Niciun mesaj încă."
 }

@@ -2049,4 +2049,66 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get collectionsNewInline => 'Neue Sammlung...';
+
+  @override
+  String get groupsTitle => 'Gruppen';
+
+  @override
+  String get groupsTabDiscover => 'Entdecken';
+
+  @override
+  String get groupsTabMine => 'Meine';
+
+  @override
+  String get groupsEmpty => 'Noch keine Gruppen.';
+
+  @override
+  String get groupsLoadError => 'Gruppe konnte nicht geladen werden.';
+
+  @override
+  String get groupsCreateTitle => 'Neue Gruppe';
+
+  @override
+  String get groupsNameLabel => 'Name';
+
+  @override
+  String get groupsDescriptionLabel => 'Beschreibung (optional)';
+
+  @override
+  String groupsMemberCount(int count) {
+    return '$count Mitglieder';
+  }
+
+  @override
+  String get groupsJoin => 'Beitreten';
+
+  @override
+  String get groupsLeave => 'Gruppe verlassen';
+
+  @override
+  String get groupsDeleteConfirmTitle => 'Diese Gruppe löschen?';
+
+  @override
+  String get groupsEventsTitle => 'Veranstaltungen';
+
+  @override
+  String get groupsNoEvents => 'Keine geplanten Veranstaltungen.';
+
+  @override
+  String get groupsAddEventTitle => 'Veranstaltung hinzufügen';
+
+  @override
+  String get groupsEventTitleLabel => 'Titel';
+
+  @override
+  String get groupsEventLocationLabel => 'Ort (optional)';
+
+  @override
+  String get groupsDiscussionTitle => 'Diskussion';
+
+  @override
+  String get groupsPostHint => 'Schreibe eine Nachricht...';
+
+  @override
+  String get groupsNoPosts => 'Noch keine Nachrichten.';
 }
