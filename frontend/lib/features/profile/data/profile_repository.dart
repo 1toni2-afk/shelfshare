@@ -91,6 +91,12 @@ class ProfileRepository {
         .map((e) => ActivityEvent.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  Future<SellerAnalytics> getSellerAnalytics() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/seller-analytics');
+    return SellerAnalytics.fromJson(response.data as Map<String, dynamic>);
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {

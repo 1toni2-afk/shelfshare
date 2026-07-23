@@ -530,6 +530,11 @@ class _UserTile extends ConsumerWidget {
                 padding: EdgeInsets.only(left: 4),
                 child: Icon(Icons.block, size: 16, color: AppColors.destructive),
               ),
+            if (user.isPremium)
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Icon(Icons.workspace_premium, size: 16, color: Colors.amber),
+              ),
           ],
         ),
         subtitle: Text(
@@ -544,6 +549,8 @@ class _UserTile extends ConsumerWidget {
                 notifier.banUser(user.id);
               case 'unban':
                 notifier.unbanUser(user.id);
+              case 'toggle-premium':
+                notifier.togglePremium(user.id, currentValue: user.isPremium);
               case 'delete':
                 _confirmAndDelete(context, ref);
             }
@@ -553,6 +560,10 @@ class _UserTile extends ConsumerWidget {
               PopupMenuItem(value: 'unban', child: Text(l10n.chatUnblock))
             else
               PopupMenuItem(value: 'ban', child: Text(l10n.chatBlock)),
+            PopupMenuItem(
+              value: 'toggle-premium',
+              child: Text(user.isPremium ? l10n.adminRemovePremium : l10n.adminGrantPremium),
+            ),
             PopupMenuItem(
               value: 'delete',
               child: Text(l10n.commonDelete, style: const TextStyle(color: AppColors.destructive)),

@@ -76,6 +76,13 @@ export class ProfileController {
     return this.profileService.getActivityFeed(userId!);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('seller-analytics')
+  getSellerAnalytics(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.getSellerAnalytics(userId!);
+  }
+
   @Get(':userId')
   getPublicProfile(@Param('userId') userId: string) {
     return this.profileService.getPublicProfile(userId);

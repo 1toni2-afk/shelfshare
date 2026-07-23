@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -211,6 +213,14 @@ export class BooksController {
   ) {
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.updateUserBook(userId!, userBookId, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userBookId/toggle-promoted')
+  @HttpCode(HttpStatus.OK)
+  togglePromoted(@Req() req: Request, @Param('userBookId') userBookId: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.togglePromoted(userId!, userBookId);
   }
 
   @UseGuards(JwtAuthGuard)

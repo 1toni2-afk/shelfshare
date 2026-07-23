@@ -44,6 +44,11 @@ class AdminRepository {
     await dio.post('/admin/users/$userId/unban');
   }
 
+  Future<void> togglePremium(String userId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.post('/admin/users/$userId/toggle-premium');
+  }
+
   Future<void> deleteUser(String userId) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.delete('/admin/users/$userId');

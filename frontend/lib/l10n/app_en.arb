@@ -656,5 +656,20 @@
   "groupsEventLocationLabel": "Location (optional)",
   "groupsDiscussionTitle": "Discussion",
   "groupsPostHint": "Write a message...",
-  "groupsNoPosts": "No messages yet."
+  "groupsNoPosts": "No messages yet.",
+
+  "premiumBadgeTooltip": "Premium member",
+  "adminGrantPremium": "Grant Premium",
+  "adminRemovePremium": "Remove Premium",
+  "premiumPromoteListing": "Promote listing",
+  "premiumUnpromoteListing": "Unpromote",
+  "premiumAnalyticsTitle": "Advanced analytics",
+  "premiumAnalyticsTotalListings": "Active listings",
+  "premiumAnalyticsTotalViews": "Total views",
+  "premiumAnalyticsOffersReceived": "Offers received",
+  "premiumAnalyticsConversionRate": "Conversion rate",
+  "premiumAnalyticsRevenue": "Total revenue",
+  "premiumAnalyticsTopListings": "Most viewed listings",
+  "premiumAnalyticsLocked": "Advanced analytics is a Premium feature.",
+  "premiumAnalyticsLoadError": "Couldn't load the stats."
 }

@@ -16,6 +16,7 @@ class AppUser {
   final int booksReceivedCount;
   final bool isEmailVerified;
   final bool isAdmin;
+  final bool isPremium;
   final bool showAcquisitionHistory;
   final String? referralCode;
   final int referralCount;
@@ -39,6 +40,7 @@ class AppUser {
     this.booksReceivedCount = 0,
     this.isEmailVerified = false,
     this.isAdmin = false,
+    this.isPremium = false,
     this.showAcquisitionHistory = false,
     this.referralCode,
     this.referralCount = 0,
@@ -64,6 +66,7 @@ class AppUser {
       booksReceivedCount: json['booksReceivedCount'] as int? ?? 0,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isAdmin: json['isAdmin'] as bool? ?? false,
+      isPremium: json['isPremium'] as bool? ?? false,
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
       referralCode: json['referralCode'] as String?,
       referralCount: json['referralCount'] as int? ?? 0,
@@ -141,6 +144,52 @@ class TrustScore {
 
 /// XP & Levels + Reading Streak - vezi getGamificationStats în
 /// backend/src/profile/profile.service.ts pentru formula de nivel.
+class TopListingViews {
+  final String title;
+  final int views;
+
+  const TopListingViews({required this.title, required this.views});
+
+  factory TopListingViews.fromJson(Map<String, dynamic> json) {
+    return TopListingViews(title: json['title'] as String, views: json['views'] as int);
+  }
+}
+
+/// "Advanced Analytics" (Premium) - statistici de vânzător calculate din date deja existente.
+class SellerAnalytics {
+  final int totalListings;
+  final int totalViews;
+  final int totalOffersReceived;
+  final int acceptedOffersCount;
+  final double conversionRate;
+  final double totalRevenue;
+  final List<TopListingViews> topListingsByViews;
+
+  const SellerAnalytics({
+    required this.totalListings,
+    required this.totalViews,
+    required this.totalOffersReceived,
+    required this.acceptedOffersCount,
+    required this.conversionRate,
+    required this.totalRevenue,
+    required this.topListingsByViews,
+  });
+
+  factory SellerAnalytics.fromJson(Map<String, dynamic> json) {
+    return SellerAnalytics(
+      totalListings: json['totalListings'] as int,
+      totalViews: json['totalViews'] as int,
+      totalOffersReceived: json['totalOffersReceived'] as int,
+      acceptedOffersCount: json['acceptedOffersCount'] as int,
+      conversionRate: (json['conversionRate'] as num).toDouble(),
+      totalRevenue: (json['totalRevenue'] as num).toDouble(),
+      topListingsByViews: (json['topListingsByViews'] as List)
+          .map((e) => TopListingViews.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class GamificationStats {
   final int xp;
   final int level;
@@ -524,6 +573,7 @@ class PublicUser {
   final String? username;
   final String? city;
   final String? profileImage;
+  final bool isPremium;
   final double rating;
   final String? bio;
   final int? booksExchangedCount;
@@ -547,6 +597,7 @@ class PublicUser {
     this.username,
     this.city,
     this.profileImage,
+    this.isPremium = false,
     this.rating = 0,
     this.bio,
     this.booksExchangedCount,
@@ -572,6 +623,7 @@ class PublicUser {
       username: json['username'] as String?,
       city: json['city'] as String?,
       profileImage: json['profileImage'] as String?,
+      isPremium: json['isPremium'] as bool? ?? false,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       bio: json['bio'] as String?,
       booksExchangedCount: json['booksExchangedCount'] as int?,

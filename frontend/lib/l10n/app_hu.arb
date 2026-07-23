@@ -656,5 +656,20 @@
   "groupsEventLocationLabel": "Helyszín (opcionális)",
   "groupsDiscussionTitle": "Beszélgetés",
   "groupsPostHint": "Írj egy üzenetet...",
-  "groupsNoPosts": "Még nincs üzenet."
+  "groupsNoPosts": "Még nincs üzenet.",
+
+  "premiumBadgeTooltip": "Premium tag",
+  "adminGrantPremium": "Premium megadása",
+  "adminRemovePremium": "Premium eltávolítása",
+  "premiumPromoteListing": "Hirdetés kiemelése",
+  "premiumUnpromoteListing": "Kiemelés visszavonása",
+  "premiumAnalyticsTitle": "Speciális statisztikák",
+  "premiumAnalyticsTotalListings": "Aktív hirdetések",
+  "premiumAnalyticsTotalViews": "Összes megtekintés",
+  "premiumAnalyticsOffersReceived": "Kapott ajánlatok",
+  "premiumAnalyticsConversionRate": "Konverziós arány",
+  "premiumAnalyticsRevenue": "Összes bevétel",
+  "premiumAnalyticsTopListings": "Legnézettebb hirdetések",
+  "premiumAnalyticsLocked": "A speciális statisztikák Premium funkció.",
+  "premiumAnalyticsLoadError": "Nem sikerült betölteni a statisztikákat."
 }

@@ -33,6 +33,7 @@ import '../../features/collections/presentation/my_collections_screen.dart';
 import '../../features/collections/presentation/collection_detail_screen.dart';
 import '../../features/groups/presentation/groups_screen.dart';
 import '../../features/groups/presentation/group_detail_screen.dart';
+import '../../features/profile/presentation/seller_analytics_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
@@ -121,6 +122,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/collections', builder: (context, state) => const MyCollectionsScreen()),
       GoRoute(path: '/groups', builder: (context, state) => const GroupsScreen()),
+      GoRoute(path: '/seller-analytics', builder: (context, state) => const SellerAnalyticsScreen()),
       GoRoute(
         path: '/groups/:id',
         builder: (context, state) => GroupDetailScreen(groupId: state.pathParameters['id']!),

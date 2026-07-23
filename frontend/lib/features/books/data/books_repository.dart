@@ -304,6 +304,13 @@ class BooksRepository {
     return UserBook.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// "Promoted Listings" - doar Premium; anunțurile promovate apar primele la browse.
+  Future<UserBook> togglePromoted(String userBookId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/books/$userBookId/toggle-promoted');
+    return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> deleteUserBook(String userBookId) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.delete('/books/$userBookId');

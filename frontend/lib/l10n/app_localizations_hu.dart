@@ -2089,4 +2089,48 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get groupsNoPosts => 'Még nincs üzenet.';
+
+  @override
+  String get premiumBadgeTooltip => 'Premium tag';
+
+  @override
+  String get adminGrantPremium => 'Premium megadása';
+
+  @override
+  String get adminRemovePremium => 'Premium eltávolítása';
+
+  @override
+  String get premiumPromoteListing => 'Hirdetés kiemelése';
+
+  @override
+  String get premiumUnpromoteListing => 'Kiemelés visszavonása';
+
+  @override
+  String get premiumAnalyticsTitle => 'Speciális statisztikák';
+
+  @override
+  String get premiumAnalyticsTotalListings => 'Aktív hirdetések';
+
+  @override
+  String get premiumAnalyticsTotalViews => 'Összes megtekintés';
+
+  @override
+  String get premiumAnalyticsOffersReceived => 'Kapott ajánlatok';
+
+  @override
+  String get premiumAnalyticsConversionRate => 'Konverziós arány';
+
+  @override
+  String get premiumAnalyticsRevenue => 'Összes bevétel';
+
+  @override
+  String get premiumAnalyticsTopListings => 'Legnézettebb hirdetések';
+
+  @override
+  String get premiumAnalyticsLocked =>
+      'A speciális statisztikák Premium funkció.';
+
+  @override
+  String get premiumAnalyticsLoadError =>
+      'Nem sikerült betölteni a statisztikákat.';
 }

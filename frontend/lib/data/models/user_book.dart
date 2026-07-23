@@ -18,6 +18,7 @@ class UserBook {
   final bool isNegotiable;
   final bool isAuction;
   final AuctionCardSummary? auction;
+  final bool isPromoted;
   final int viewCount;
   final double? distanceKm;
   final List<String> photos;
@@ -38,6 +39,7 @@ class UserBook {
     this.isNegotiable = true,
     this.isAuction = false,
     this.auction,
+    this.isPromoted = false,
     this.viewCount = 0,
     this.distanceKm,
     this.photos = const [],
@@ -66,6 +68,7 @@ class UserBook {
       auction: json['auction'] != null
           ? AuctionCardSummary.fromJson(json['auction'] as Map<String, dynamic>)
           : null,
+      isPromoted: json['isPromoted'] as bool? ?? false,
       viewCount: json['viewCount'] as int? ?? 0,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       photos: (json['photos'] as List<dynamic>?)

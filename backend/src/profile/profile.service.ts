@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -43,6 +44,7 @@ export class ProfileService {
       booksReceivedCount: user.booksReceivedCount,
       isEmailVerified: user.isEmailVerified,
       isAdmin: user.isAdmin,
+      isPremium: user.isPremium,
       showAcquisitionHistory: user.showAcquisitionHistory,
       referralCode: user.referralCode,
       referralCount,
@@ -119,6 +121,7 @@ export class ProfileService {
       city: user.city,
       bio: user.bio,
       profileImage: user.profileImage,
+      isPremium: user.isPremium,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
       booksSharedCount: user.booksSharedCount,
@@ -311,6 +314,44 @@ export class ProfileService {
         Math.round(
           (user?.booksReceivedCount ?? 0) * ProfileService.CO2_KG_PER_BOOK * 10,
         ) / 10,
+    };
+  }
+
+  /**
+   * "Advanced Analytics" (Premium, Milestone 5) - statistici de vânzător
+   * calculate din date deja existente (UserBook.viewCount, PriceOffer),
+   * fără infrastructură nouă de tracking.
+   */
+  async getSellerAnalytics(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { isPremium: true } });
+    if (!user?.isPremium) {
+      throw new ForbiddenException('Statisticile avansate sunt o funcție Premium');
+    }
+
+    const [listings, offersReceived, acceptedOffers] = await Promise.all([
+      this.prisma.userBook.findMany({
+        where: { userId },
+        select: { viewCount: true, book: { select: { title: true } } },
+        orderBy: { viewCount: 'desc' },
+      }),
+      this.prisma.priceOffer.count({ where: { ownerId: userId } }),
+      this.prisma.priceOffer.findMany({
+        where: { ownerId: userId, status: 'ACCEPTED' },
+        select: { amount: true },
+      }),
+    ]);
+
+    const totalViews = listings.reduce((sum, l) => sum + l.viewCount, 0);
+    const totalRevenue = acceptedOffers.reduce((sum, o) => sum + o.amount.toNumber(), 0);
+
+    return {
+      totalListings: listings.length,
+      totalViews,
+      totalOffersReceived: offersReceived,
+      acceptedOffersCount: acceptedOffers.length,
+      conversionRate: offersReceived > 0 ? acceptedOffers.length / offersReceived : 0,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      topListingsByViews: listings.slice(0, 5).map((l) => ({ title: l.book.title, views: l.viewCount })),
     };
   }
 

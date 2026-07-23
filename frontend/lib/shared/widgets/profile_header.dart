@@ -17,6 +17,7 @@ class ProfileHeader extends StatelessWidget {
     required this.booksExchangedCount,
     this.bio,
     this.bioTitle,
+    this.isPremium = false,
   });
 
   final String? profileImage;
@@ -27,6 +28,7 @@ class ProfileHeader extends StatelessWidget {
   final int booksExchangedCount;
   final String? bio;
   final String? bioTitle;
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +44,25 @@ class ProfileHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Text(
-          name ?? usernameLabel ?? l10n.commonUnknownUser,
-          style: Theme.of(context).textTheme.headlineSmall,
-          textAlign: TextAlign.center,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                name ?? usernameLabel ?? l10n.commonUnknownUser,
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (isPremium) ...[
+              const SizedBox(width: 6),
+              Tooltip(
+                message: l10n.premiumBadgeTooltip,
+                child: const Icon(Icons.workspace_premium, color: Colors.amber, size: 22),
+              ),
+            ],
+          ],
         ),
         if (name != null && usernameLabel != null) ...[
           const SizedBox(height: 2),

@@ -375,6 +375,7 @@ export class AuthService {
         email: user.email,
         isEmailVerified: user.isEmailVerified,
         isAdmin: user.isAdmin,
+        isPremium: user.isPremium,
       },
     };
   }

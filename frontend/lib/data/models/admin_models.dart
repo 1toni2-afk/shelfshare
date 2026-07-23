@@ -98,6 +98,7 @@ class AdminUser {
   final bool isEmailVerified;
   final bool isBanned;
   final bool isAdmin;
+  final bool isPremium;
   final double rating;
   final int booksExchangedCount;
   final DateTime createdAt;
@@ -110,12 +111,13 @@ class AdminUser {
     required this.isEmailVerified,
     required this.isBanned,
     required this.isAdmin,
+    this.isPremium = false,
     required this.rating,
     required this.booksExchangedCount,
     required this.createdAt,
   });
 
-  AdminUser copyWith({bool? isBanned}) {
+  AdminUser copyWith({bool? isBanned, bool? isPremium}) {
     return AdminUser(
       id: id,
       email: email,
@@ -124,6 +126,7 @@ class AdminUser {
       isEmailVerified: isEmailVerified,
       isBanned: isBanned ?? this.isBanned,
       isAdmin: isAdmin,
+      isPremium: isPremium ?? this.isPremium,
       rating: rating,
       booksExchangedCount: booksExchangedCount,
       createdAt: createdAt,
@@ -139,6 +142,7 @@ class AdminUser {
       isEmailVerified: json['isEmailVerified'] as bool,
       isBanned: json['isBanned'] as bool,
       isAdmin: json['isAdmin'] as bool,
+      isPremium: json['isPremium'] as bool? ?? false,
       rating: (json['rating'] as num).toDouble(),
       booksExchangedCount: json['booksExchangedCount'] as int,
       createdAt: DateTime.parse(json['createdAt'] as String),

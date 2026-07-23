@@ -75,6 +75,10 @@ model User {
   isAdmin  Boolean @default(false)
   isBanned Boolean @default(false)
 
+  // Premium (Milestone 5) - doar flag + acordare manuală din admin panel,
+  // fără procesare de plăți reale (vezi togglePremium în admin.service.ts).
+  isPremium Boolean @default(false)
+
   showAcquisitionHistory Boolean @default(false)
 
   referralCode String? @unique
@@ -398,6 +402,11 @@ model UserBook {
   // doar ca flag rapid de filtrare la browse, fără să dubleze acele date.
   isAuction Boolean  @default(false)
   auction   Auction?
+
+  // "Promoted Listings" (Premium, Milestone 5) - doar userii isPremium pot
+  // seta acest flag (vezi togglePromoted în books.service.ts); anunțurile
+  // promovate apar primele la sortarea implicită din browse.
+  isPromoted Boolean @default(false)
 
   viewCount Int @default(0)
 

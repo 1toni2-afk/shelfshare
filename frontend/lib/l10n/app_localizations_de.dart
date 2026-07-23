@@ -2111,4 +2111,48 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get groupsNoPosts => 'Noch keine Nachrichten.';
+
+  @override
+  String get premiumBadgeTooltip => 'Premium-Mitglied';
+
+  @override
+  String get adminGrantPremium => 'Premium gewähren';
+
+  @override
+  String get adminRemovePremium => 'Premium entfernen';
+
+  @override
+  String get premiumPromoteListing => 'Anzeige bewerben';
+
+  @override
+  String get premiumUnpromoteListing => 'Bewerbung aufheben';
+
+  @override
+  String get premiumAnalyticsTitle => 'Erweiterte Statistiken';
+
+  @override
+  String get premiumAnalyticsTotalListings => 'Aktive Anzeigen';
+
+  @override
+  String get premiumAnalyticsTotalViews => 'Gesamtaufrufe';
+
+  @override
+  String get premiumAnalyticsOffersReceived => 'Erhaltene Angebote';
+
+  @override
+  String get premiumAnalyticsConversionRate => 'Konversionsrate';
+
+  @override
+  String get premiumAnalyticsRevenue => 'Gesamtumsatz';
+
+  @override
+  String get premiumAnalyticsTopListings => 'Meistgesehene Anzeigen';
+
+  @override
+  String get premiumAnalyticsLocked =>
+      'Erweiterte Statistiken sind eine Premium-Funktion.';
+
+  @override
+  String get premiumAnalyticsLoadError =>
+      'Statistiken konnten nicht geladen werden.';
 }

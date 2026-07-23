@@ -2079,4 +2079,47 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get groupsNoPosts => 'Niciun mesaj încă.';
+
+  @override
+  String get premiumBadgeTooltip => 'Membru Premium';
+
+  @override
+  String get adminGrantPremium => 'Acordă Premium';
+
+  @override
+  String get adminRemovePremium => 'Elimină Premium';
+
+  @override
+  String get premiumPromoteListing => 'Promovează anunțul';
+
+  @override
+  String get premiumUnpromoteListing => 'Anulează promovarea';
+
+  @override
+  String get premiumAnalyticsTitle => 'Statistici avansate';
+
+  @override
+  String get premiumAnalyticsTotalListings => 'Anunțuri active';
+
+  @override
+  String get premiumAnalyticsTotalViews => 'Vizualizări totale';
+
+  @override
+  String get premiumAnalyticsOffersReceived => 'Oferte primite';
+
+  @override
+  String get premiumAnalyticsConversionRate => 'Rată de conversie';
+
+  @override
+  String get premiumAnalyticsRevenue => 'Venit total';
+
+  @override
+  String get premiumAnalyticsTopListings => 'Cele mai vizualizate anunțuri';
+
+  @override
+  String get premiumAnalyticsLocked =>
+      'Statisticile avansate sunt o funcție Premium.';
+
+  @override
+  String get premiumAnalyticsLoadError => 'Nu am putut încărca statisticile.';
 }

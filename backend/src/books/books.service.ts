@@ -128,10 +128,12 @@ export class BooksService {
       return { items, total, limit: filters.limit, offset: filters.offset };
     }
 
-    const orderBy: Prisma.UserBookOrderByWithRelationInput =
-      filters.sort === 'mostViewed'
-        ? { viewCount: 'desc' }
-        : { createdAt: 'desc' };
+    // Anunțurile promovate (Premium) apar mereu primele, apoi criteriul de
+    // sortare ales - vezi togglePromoted și User.isPremium.
+    const orderBy: Prisma.UserBookOrderByWithRelationInput[] = [
+      { isPromoted: 'desc' },
+      filters.sort === 'mostViewed' ? { viewCount: 'desc' } : { createdAt: 'desc' },
+    ];
 
     const [items, total] = await Promise.all([
       this.prisma.userBook.findMany({
@@ -1129,6 +1131,24 @@ export class BooksService {
         .catch(() => {});
     }
 
+    return this.toPublicPhotos(updated);
+  }
+
+  /** "Promoted Listings" (Premium, Milestone 5) - doar userii isPremium pot promova propriile anunțuri. */
+  async togglePromoted(userId: string, userBookId: string) {
+    const userBook = await this.getUserBook(userBookId);
+    this.assertOwnership(userBook.userId, userId);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.isPremium) {
+      throw new ForbiddenException('Promovarea anunțurilor este o funcție Premium');
+    }
+
+    const updated = await this.prisma.userBook.update({
+      where: { id: userBookId },
+      data: { isPromoted: !userBook.isPromoted },
+      include: { book: true },
+    });
     return this.toPublicPhotos(updated);
   }
 

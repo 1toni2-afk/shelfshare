@@ -656,5 +656,20 @@
   "groupsEventLocationLabel": "Ort (optional)",
   "groupsDiscussionTitle": "Diskussion",
   "groupsPostHint": "Schreibe eine Nachricht...",
-  "groupsNoPosts": "Noch keine Nachrichten."
+  "groupsNoPosts": "Noch keine Nachrichten.",
+
+  "premiumBadgeTooltip": "Premium-Mitglied",
+  "adminGrantPremium": "Premium gewähren",
+  "adminRemovePremium": "Premium entfernen",
+  "premiumPromoteListing": "Anzeige bewerben",
+  "premiumUnpromoteListing": "Bewerbung aufheben",
+  "premiumAnalyticsTitle": "Erweiterte Statistiken",
+  "premiumAnalyticsTotalListings": "Aktive Anzeigen",
+  "premiumAnalyticsTotalViews": "Gesamtaufrufe",
+  "premiumAnalyticsOffersReceived": "Erhaltene Angebote",
+  "premiumAnalyticsConversionRate": "Konversionsrate",
+  "premiumAnalyticsRevenue": "Gesamtumsatz",
+  "premiumAnalyticsTopListings": "Meistgesehene Anzeigen",
+  "premiumAnalyticsLocked": "Erweiterte Statistiken sind eine Premium-Funktion.",
+  "premiumAnalyticsLoadError": "Statistiken konnten nicht geladen werden."
 }

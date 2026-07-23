@@ -9,6 +9,8 @@ describe('WishlistService', () => {
   let prisma: {
     book: Record<string, jest.Mock>;
     wishlistItem: Record<string, jest.Mock>;
+    user: Record<string, jest.Mock>;
+    auctionWatch: Record<string, jest.Mock>;
   };
   let notifications: jest.Mocked<NotificationsService>;
 
@@ -20,7 +22,10 @@ describe('WishlistService', () => {
         create: jest.fn(),
         deleteMany: jest.fn(),
         findMany: jest.fn(),
+        count: jest.fn().mockResolvedValue(0),
       },
+      user: { findUnique: jest.fn().mockResolvedValue({ isPremium: false }) },
+      auctionWatch: { count: jest.fn().mockResolvedValue(0) },
     };
 
     const module: TestingModule = await Test.createTestingModule({

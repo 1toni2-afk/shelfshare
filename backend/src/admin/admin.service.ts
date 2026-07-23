@@ -55,6 +55,7 @@ export class AdminService {
         isEmailVerified: true,
         isBanned: true,
         isAdmin: true,
+        isPremium: true,
         rating: true,
         booksExchangedCount: true,
         createdAt: true,
@@ -90,6 +91,20 @@ export class AdminService {
       where: { id: userId },
       data: { isBanned: false },
       select: { id: true, email: true, isBanned: true },
+    });
+  }
+
+  /** Premium e doar un flag acordat manual - nicio procesare de plăți reale, vezi comentariul de pe User.isPremium. */
+  async togglePremium(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { isPremium: !user.isPremium },
+      select: { id: true, email: true, isPremium: true },
     });
   }
 

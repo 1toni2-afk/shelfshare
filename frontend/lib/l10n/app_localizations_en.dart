@@ -2077,4 +2077,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupsNoPosts => 'No messages yet.';
+
+  @override
+  String get premiumBadgeTooltip => 'Premium member';
+
+  @override
+  String get adminGrantPremium => 'Grant Premium';
+
+  @override
+  String get adminRemovePremium => 'Remove Premium';
+
+  @override
+  String get premiumPromoteListing => 'Promote listing';
+
+  @override
+  String get premiumUnpromoteListing => 'Unpromote';
+
+  @override
+  String get premiumAnalyticsTitle => 'Advanced analytics';
+
+  @override
+  String get premiumAnalyticsTotalListings => 'Active listings';
+
+  @override
+  String get premiumAnalyticsTotalViews => 'Total views';
+
+  @override
+  String get premiumAnalyticsOffersReceived => 'Offers received';
+
+  @override
+  String get premiumAnalyticsConversionRate => 'Conversion rate';
+
+  @override
+  String get premiumAnalyticsRevenue => 'Total revenue';
+
+  @override
+  String get premiumAnalyticsTopListings => 'Most viewed listings';
+
+  @override
+  String get premiumAnalyticsLocked =>
+      'Advanced analytics is a Premium feature.';
+
+  @override
+  String get premiumAnalyticsLoadError => 'Couldn\'t load the stats.';
 }

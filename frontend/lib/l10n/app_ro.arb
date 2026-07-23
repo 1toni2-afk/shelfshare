@@ -765,5 +765,20 @@
   "groupsEventLocationLabel": "Locație (opțional)",
   "groupsDiscussionTitle": "Discuții",
   "groupsPostHint": "Scrie un mesaj...",
-  "groupsNoPosts": "Niciun mesaj încă."
+  "groupsNoPosts": "Niciun mesaj încă.",
+
+  "premiumBadgeTooltip": "Membru Premium",
+  "adminGrantPremium": "Acordă Premium",
+  "adminRemovePremium": "Elimină Premium",
+  "premiumPromoteListing": "Promovează anunțul",
+  "premiumUnpromoteListing": "Anulează promovarea",
+  "premiumAnalyticsTitle": "Statistici avansate",
+  "premiumAnalyticsTotalListings": "Anunțuri active",
+  "premiumAnalyticsTotalViews": "Vizualizări totale",
+  "premiumAnalyticsOffersReceived": "Oferte primite",
+  "premiumAnalyticsConversionRate": "Rată de conversie",
+  "premiumAnalyticsRevenue": "Venit total",
+  "premiumAnalyticsTopListings": "Cele mai vizualizate anunțuri",
+  "premiumAnalyticsLocked": "Statisticile avansate sunt o funcție Premium.",
+  "premiumAnalyticsLoadError": "Nu am putut încărca statisticile."
 }

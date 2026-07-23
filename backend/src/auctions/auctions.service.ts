@@ -12,6 +12,7 @@ import { CreateAuctionDto } from './dto/create-auction.dto';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_SALE_COMPLETED } from '../common/utils/xp';
+import { assertUnderWatchlistLimit } from '../common/utils/premium';
 
 // Anti-sniping: un bid plasat în ultimele 5 minute împinge termenul cu încă
 // 5 minute, cât timp tot vin bid-uri târzii - descurajează "sniping"-ul de
@@ -215,6 +216,12 @@ export class AuctionsService {
 
   async watch(userId: string, auctionId: string) {
     await this.findAndExpireIfStale(auctionId);
+    const existing = await this.prisma.auctionWatch.findUnique({
+      where: { auctionId_userId: { auctionId, userId } },
+    });
+    if (!existing) {
+      await assertUnderWatchlistLimit(this.prisma, userId);
+    }
     await this.prisma.auctionWatch.upsert({
       where: { auctionId_userId: { auctionId, userId } },
       create: { auctionId, userId },

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { assertUnderWatchlistLimit } from '../common/utils/premium';
 
 @Injectable()
 export class WishlistService {
@@ -25,6 +26,7 @@ export class WishlistService {
     if (existing) {
       throw new ConflictException('Cartea este deja pe lista ta de dorințe');
     }
+    await assertUnderWatchlistLimit(this.prisma, userId);
 
     return this.prisma.wishlistItem.create({
       data: { userId, bookId },

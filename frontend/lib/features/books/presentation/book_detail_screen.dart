@@ -279,6 +279,9 @@ class _BookDetailContent extends ConsumerWidget {
         const SizedBox(height: 8),
         _AddToCollectionButton(bookId: book.book.id),
         const SizedBox(height: 8),
+        if (isOwnBook && authState is AuthAuthenticated && authState.user.isPremium)
+          _PromoteButton(userBookId: book.id, isPromoted: book.isPromoted),
+        const SizedBox(height: 8),
         Center(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -474,6 +477,27 @@ class _AddToCollectionButton extends ConsumerWidget {
         onPressed: () => showAddToCollectionSheet(context, bookId: bookId),
         icon: const Icon(Icons.bookmark_add_outlined, size: 18),
         label: Text(context.l10n.collectionsAddToTitle),
+      ),
+    );
+  }
+}
+
+class _PromoteButton extends ConsumerWidget {
+  const _PromoteButton({required this.userBookId, required this.isPromoted});
+  final String userBookId;
+  final bool isPromoted;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: () async {
+          await ref.read(booksRepositoryProvider).togglePromoted(userBookId);
+          ref.invalidate(bookDetailProvider(userBookId));
+        },
+        icon: Icon(Icons.trending_up, size: 18, color: isPromoted ? Colors.amber : null),
+        label: Text(isPromoted ? l10n.premiumUnpromoteListing : l10n.premiumPromoteListing),
       ),
     );
   }

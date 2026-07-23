@@ -203,6 +203,7 @@ class _Content extends StatelessWidget {
           rating: user.rating,
           booksExchangedCount: user.booksExchangedCount ?? 0,
           bio: user.bio,
+          isPremium: user.isPremium,
         ),
         if (user.trustScore != null) ...[
           const SizedBox(height: 20),

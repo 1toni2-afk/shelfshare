@@ -115,6 +115,11 @@ class AdminController extends AsyncNotifier<AdminData> {
     _updateUserLocally(userId, isBanned: false);
   }
 
+  Future<void> togglePremium(String userId, {required bool currentValue}) async {
+    await ref.read(adminRepositoryProvider).togglePremium(userId);
+    _updateUserLocally(userId, isPremium: !currentValue);
+  }
+
   Future<void> deleteUser(String userId) async {
     await ref.read(adminRepositoryProvider).deleteUser(userId);
     await refresh();
@@ -129,12 +134,12 @@ class AdminController extends AsyncNotifier<AdminData> {
     );
   }
 
-  void _updateUserLocally(String userId, {required bool isBanned}) {
+  void _updateUserLocally(String userId, {bool? isBanned, bool? isPremium}) {
     final current = state.value;
     if (current == null) return;
     final updatedItems = [
       for (final u in current.users.items)
-        if (u.id == userId) u.copyWith(isBanned: isBanned) else u,
+        if (u.id == userId) u.copyWith(isBanned: isBanned, isPremium: isPremium) else u,
     ];
     state = AsyncData(
       current.copyWith(

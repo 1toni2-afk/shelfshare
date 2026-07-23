@@ -3743,6 +3743,90 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Niciun mesaj încă.'**
   String get groupsNoPosts;
+
+  /// No description provided for @premiumBadgeTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Membru Premium'**
+  String get premiumBadgeTooltip;
+
+  /// No description provided for @adminGrantPremium.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acordă Premium'**
+  String get adminGrantPremium;
+
+  /// No description provided for @adminRemovePremium.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină Premium'**
+  String get adminRemovePremium;
+
+  /// No description provided for @premiumPromoteListing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Promovează anunțul'**
+  String get premiumPromoteListing;
+
+  /// No description provided for @premiumUnpromoteListing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează promovarea'**
+  String get premiumUnpromoteListing;
+
+  /// No description provided for @premiumAnalyticsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici avansate'**
+  String get premiumAnalyticsTitle;
+
+  /// No description provided for @premiumAnalyticsTotalListings.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anunțuri active'**
+  String get premiumAnalyticsTotalListings;
+
+  /// No description provided for @premiumAnalyticsTotalViews.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vizualizări totale'**
+  String get premiumAnalyticsTotalViews;
+
+  /// No description provided for @premiumAnalyticsOffersReceived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oferte primite'**
+  String get premiumAnalyticsOffersReceived;
+
+  /// No description provided for @premiumAnalyticsConversionRate.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rată de conversie'**
+  String get premiumAnalyticsConversionRate;
+
+  /// No description provided for @premiumAnalyticsRevenue.
+  ///
+  /// In ro, this message translates to:
+  /// **'Venit total'**
+  String get premiumAnalyticsRevenue;
+
+  /// No description provided for @premiumAnalyticsTopListings.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai vizualizate anunțuri'**
+  String get premiumAnalyticsTopListings;
+
+  /// No description provided for @premiumAnalyticsLocked.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statisticile avansate sunt o funcție Premium.'**
+  String get premiumAnalyticsLocked;
+
+  /// No description provided for @premiumAnalyticsLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca statisticile.'**
+  String get premiumAnalyticsLoadError;
 }
 
 class _AppLocalizationsDelegate

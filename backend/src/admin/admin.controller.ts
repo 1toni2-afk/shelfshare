@@ -49,6 +49,11 @@ export class AdminController {
     return this.adminService.unbanUser(id);
   }
 
+  @Post('users/:id/toggle-premium')
+  togglePremium(@Param('id') id: string) {
+    return this.adminService.togglePremium(id);
+  }
+
   @Delete('users/:id')
   deleteUser(@Param('id') id: string) {
     return this.adminService.deleteUser(id);

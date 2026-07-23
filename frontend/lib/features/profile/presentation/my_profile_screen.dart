@@ -185,6 +185,7 @@ class _ProfileContent extends ConsumerWidget {
           booksExchangedCount: user.booksExchangedCount,
           bio: user.bio,
           bioTitle: l10n.profileAboutMe,
+          isPremium: user.isPremium,
         ),
         if (user.trustScore != null) ...[
           const SizedBox(height: 20),
@@ -268,6 +269,12 @@ class _ProfileContent extends ConsumerWidget {
           icon: const Icon(Icons.groups_outlined),
           label: Text(l10n.groupsTitle),
           onPressed: () => context.push('/groups'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: Icon(Icons.insights_outlined, color: user.isPremium ? Colors.amber : null),
+          label: Text(l10n.premiumAnalyticsTitle),
+          onPressed: () => context.push('/seller-analytics'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
