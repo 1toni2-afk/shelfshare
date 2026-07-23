@@ -817,6 +817,18 @@ class AppLocalizationsHu extends AppLocalizations {
   String get filtersAnyCondition => 'Bármilyen állapot';
 
   @override
+  String get filtersListingType => 'Hirdetés típusa';
+
+  @override
+  String get filtersListingTypeSwap => 'Csere';
+
+  @override
+  String get filtersListingTypeSale => 'Eladás';
+
+  @override
+  String get filtersListingTypeAuction => 'Árverés';
+
+  @override
   String get filtersNearbyOnly => 'Csak a közelben';
 
   @override
@@ -961,6 +973,43 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get addBookNonNegotiableHint => 'A vevők nem tehetnek ajánlatot';
+
+  @override
+  String get addBookAuctionSwitch => 'Árverés indítása';
+
+  @override
+  String get addBookAuctionHint =>
+      'A vevők licitálnak, a legmagasabb ajánlat nyer a végén';
+
+  @override
+  String get addBookAuctionStartingPrice => 'Kikiáltási ár';
+
+  @override
+  String get addBookAuctionReservePrice => 'Minimálár (opcionális)';
+
+  @override
+  String get addBookAuctionReservePriceHint =>
+      'A legalacsonyabb ár, ami alatt nem adod el';
+
+  @override
+  String get addBookAuctionBuyNowPrice =>
+      '\"Azonnal megveszem\" ár (opcionális)';
+
+  @override
+  String get addBookAuctionBuyNowPriceHint =>
+      'Csak az első licit előtt elérhető';
+
+  @override
+  String get addBookAuctionDuration => 'Árverés időtartama';
+
+  @override
+  String get addBookAuctionDuration24h => '24 óra';
+
+  @override
+  String get addBookAuctionDuration3d => '3 nap';
+
+  @override
+  String get addBookAuctionDuration7d => '7 nap';
 
   @override
   String get addBookPhotosLabelRequired =>
@@ -1747,5 +1796,75 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String adminStatsExchangesSubtitle(int completed, int pending) {
     return '$completed befejezett · $pending folyamatban';
+  }
+
+  @override
+  String get auctionTitle => 'Árverés';
+
+  @override
+  String get auctionCurrentPrice => 'Jelenlegi ár';
+
+  @override
+  String get auctionBidsCount => 'licit';
+
+  @override
+  String get auctionReserveMet => 'A minimálár teljesült';
+
+  @override
+  String get auctionReserveNotMet => 'A minimálár még nem teljesült';
+
+  @override
+  String get auctionEndedWithWinner => 'Az árverés véget ért - valaki nyert';
+
+  @override
+  String get auctionEndedNoWinner => 'Az árverés győztes nélkül ért véget';
+
+  @override
+  String auctionBidAmountLabel(String amount) {
+    return 'Licit (minimum $amount lej)';
+  }
+
+  @override
+  String get auctionPlaceBid => 'Licitálok';
+
+  @override
+  String auctionBuyNowFor(String amount) {
+    return 'Azonnal megveszem $amount lejért';
+  }
+
+  @override
+  String get auctionBidHistory => 'Licitek története';
+
+  @override
+  String get auctionNoBidsYet => 'Még nincs licit';
+
+  @override
+  String get auctionWatch => 'Árverés követése';
+
+  @override
+  String get auctionBidPlaced => 'Licit leadva';
+
+  @override
+  String get auctionBoughtNow => 'Sikeres vásárlás';
+
+  @override
+  String get auctionGenericError => 'Hiba történt, próbáld újra';
+
+  @override
+  String get auctionEnded => 'Lezárult';
+
+  @override
+  String auctionEndsInDays(int days) {
+    return '$days nap múlva zárul';
+  }
+
+  @override
+  String auctionEndsInHours(int hours) {
+    return '$hours óra múlva zárul';
+  }
+
+  @override
+  String auctionEndsInMinutes(int minutes) {
+    return '$minutes perc múlva zárul';
   }
 }

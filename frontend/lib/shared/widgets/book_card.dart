@@ -42,6 +42,10 @@ class BookCard extends StatelessWidget {
               const SizedBox(height: 2),
               _PriceRow(userBook: userBook),
             ],
+            if (userBook.isAuction && userBook.auction != null) ...[
+              const SizedBox(height: 2),
+              _AuctionRow(auction: userBook.auction!),
+            ],
             if (userBook.distanceKm != null) ...[
               const SizedBox(height: 2),
               Row(
@@ -77,6 +81,49 @@ class BookCard extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Prețul curent al licitației + timpul rămas, pe cardul din browse/home.
+class _AuctionRow extends StatelessWidget {
+  const _AuctionRow({required this.auction});
+  final AuctionCardSummary auction;
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = auction.endsAt.difference(DateTime.now());
+    final label = remaining.isNegative
+        ? context.l10n.auctionEnded
+        : remaining.inHours >= 24
+            ? context.l10n.auctionEndsInDays(remaining.inDays)
+            : remaining.inHours >= 1
+                ? context.l10n.auctionEndsInHours(remaining.inHours)
+                : context.l10n.auctionEndsInMinutes(remaining.inMinutes.clamp(1, 59));
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => context.push('/auctions/${auction.id}'),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Icon(Icons.gavel, size: 14, color: AppColors.accent),
+          const SizedBox(width: 4),
+          Text(
+            context.l10n.priceLei(auction.currentPrice.toStringAsFixed(0)),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.accent,
+                ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+          ),
+        ],
       ),
     );
   }

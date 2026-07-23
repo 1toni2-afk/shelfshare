@@ -16,6 +16,8 @@ class UserBook {
   final bool isForSale;
   final double? salePrice;
   final bool isNegotiable;
+  final bool isAuction;
+  final AuctionCardSummary? auction;
   final int viewCount;
   final double? distanceKm;
   final List<String> photos;
@@ -34,6 +36,8 @@ class UserBook {
     this.isForSale = false,
     this.salePrice,
     this.isNegotiable = true,
+    this.isAuction = false,
+    this.auction,
     this.viewCount = 0,
     this.distanceKm,
     this.photos = const [],
@@ -58,6 +62,10 @@ class UserBook {
           ? double.parse(json['salePrice'].toString())
           : null,
       isNegotiable: json['isNegotiable'] as bool? ?? true,
+      isAuction: json['isAuction'] as bool? ?? false,
+      auction: json['auction'] != null
+          ? AuctionCardSummary.fromJson(json['auction'] as Map<String, dynamic>)
+          : null,
       viewCount: json['viewCount'] as int? ?? 0,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       photos: (json['photos'] as List<dynamic>?)
@@ -65,6 +73,36 @@ class UserBook {
               .toList() ??
           const [],
       createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+}
+
+/// Rezumatul licitației afișat pe cardul din browse/library - fără istoricul
+/// de oferte, doar cât să arate prețul curent și timpul rămas.
+class AuctionCardSummary {
+  final String id;
+  final double currentPrice;
+  final DateTime endsAt;
+  final String status;
+  final double? buyNowPrice;
+
+  const AuctionCardSummary({
+    required this.id,
+    required this.currentPrice,
+    required this.endsAt,
+    required this.status,
+    this.buyNowPrice,
+  });
+
+  factory AuctionCardSummary.fromJson(Map<String, dynamic> json) {
+    return AuctionCardSummary(
+      id: json['id'] as String,
+      currentPrice: double.parse(json['currentPrice'].toString()),
+      endsAt: DateTime.parse(json['endsAt'] as String),
+      status: json['status'] as String,
+      buyNowPrice: json['buyNowPrice'] != null
+          ? double.parse(json['buyNowPrice'].toString())
+          : null,
     );
   }
 }

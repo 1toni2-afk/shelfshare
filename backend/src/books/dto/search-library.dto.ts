@@ -41,6 +41,11 @@ export class SearchLibraryDto {
   @IsBooleanString()
   availableOnly?: string;
 
+  /** Tip de anunț - implicit arată swap+vânzare (comportamentul de dinainte); "auction" e singurul filtru nou. */
+  @IsOptional()
+  @IsIn(['swap', 'sale', 'auction'])
+  listingType?: 'swap' | 'sale' | 'auction';
+
   @IsOptional()
   @IsIn(['recent', 'mostViewed', 'distance'])
   sort?: 'recent' | 'mostViewed' | 'distance';

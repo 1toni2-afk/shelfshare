@@ -40,6 +40,7 @@ class BooksRepository {
     String? sort,
     String? fromCity,
     int? maxDistanceKm,
+    String? listingType,
     int limit = 20,
     int offset = 0,
   }) async {
@@ -53,6 +54,7 @@ class BooksRepository {
       if (condition != null && condition.isNotEmpty) 'condition': condition,
       if (sort != null && sort.isNotEmpty) 'sort': sort,
       if (fromCity != null && fromCity.isNotEmpty) 'fromCity': fromCity,
+      if (listingType != null && listingType.isNotEmpty) 'listingType': listingType,
       'maxDistanceKm': ?maxDistanceKm,
       'limit': limit,
       'offset': offset,

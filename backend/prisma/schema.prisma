@@ -104,6 +104,9 @@ model User {
   feedback                 Feedback[]
   bookViews                BookView[]
   bookshelfEntries         BookshelfEntry[]
+  auctionBids              Bid[]             @relation("AuctionBidder")
+  auctionsWon              Auction[]         @relation("AuctionHighestBidder")
+  auctionWatches           AuctionWatch[]
 
   @@map("users")
 }
@@ -266,6 +269,13 @@ model UserBook {
   salePrice    Decimal? @db.Decimal(10, 2)
   isNegotiable Boolean  @default(true)
 
+  // Licitație (Milestone 3) - un al 4-lea tip de anunț, distinct de
+  // isForSale/availableForSwap. Detaliile (preț curent, ofertant cel mai
+  // mare, termen) stau pe modelul Auction, legat 1:1 - isAuction rămâne
+  // doar ca flag rapid de filtrare la browse, fără să dubleze acele date.
+  isAuction Boolean  @default(false)
+  auction   Auction?
+
   viewCount Int @default(0)
 
   photos String[]
@@ -287,6 +297,79 @@ model UserBook {
   nextListings      UserBook[] @relation("ListingChain")
 
   @@map("user_books")
+}
+
+enum AuctionStatus {
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
+model Auction {
+  id String @id @default(uuid())
+
+  userBookId String   @unique
+  userBook   UserBook @relation(fields: [userBookId], references: [id], onDelete: Cascade)
+
+  startingPrice Decimal  @db.Decimal(10, 2)
+  reservePrice  Decimal? @db.Decimal(10, 2)
+  buyNowPrice   Decimal? @db.Decimal(10, 2)
+
+  // currentPrice = startingPrice cât timp nu există nicio licitație - se
+  // actualizează la fiecare bid nou, ca să nu fie nevoie să recalculăm
+  // MAX(bids.amount) la fiecare citire.
+  currentPrice Decimal @db.Decimal(10, 2)
+
+  highestBidderId String?
+  highestBidder   User?   @relation("AuctionHighestBidder", fields: [highestBidderId], references: [id], onDelete: SetNull)
+
+  // Anti-sniping: un bid în ultimele 5 minute împinge termenul cu încă 5
+  // minute (se repetă cât timp tot vin bid-uri târzii) - vezi placeBid în
+  // auctions.service.ts. endsAt e deci mutabil, nu doar setat la creare.
+  endsAt DateTime
+  status AuctionStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bids    Bid[]
+  watches AuctionWatch[]
+
+  @@map("auctions")
+}
+
+/// Ofertele sunt anonime față de ceilalți licitatori (afișate ca "Ofertant
+/// #N", ordinea primei apariții) dar vizibile integral pentru vânzător -
+/// vezi anonymizeBids în auctions.service.ts. Nu există un preț minim de
+/// increment - orice sumă strict mai mare decât currentPrice e validă.
+model Bid {
+  id String @id @default(uuid())
+
+  auctionId String
+  auction   Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  bidderId String
+  bidder   User   @relation("AuctionBidder", fields: [bidderId], references: [id], onDelete: Cascade)
+
+  amount    Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  @@map("bids")
+}
+
+model AuctionWatch {
+  id String @id @default(uuid())
+
+  auctionId String
+  auction   Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([auctionId, userId])
+  @@map("auction_watches")
 }
 
 /// O vizualizare a unei cărți de către un user autentificat - deduplicat
@@ -523,6 +606,9 @@ enum NotificationType {
   FOLLOWED_USER_NEW_BOOK
   NEARBY_BOOK_LISTED
   PRICE_CHANGED
+  OUTBID
+  AUCTION_WON
+  AUCTION_ENDED
 }
 
 model Notification {

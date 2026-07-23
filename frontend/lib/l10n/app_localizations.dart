@@ -1530,6 +1530,30 @@ abstract class AppLocalizations {
   /// **'Orice stare'**
   String get filtersAnyCondition;
 
+  /// No description provided for @filtersListingType.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tip de anunț'**
+  String get filtersListingType;
+
+  /// No description provided for @filtersListingTypeSwap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb'**
+  String get filtersListingTypeSwap;
+
+  /// No description provided for @filtersListingTypeSale.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vânzare'**
+  String get filtersListingTypeSale;
+
+  /// No description provided for @filtersListingTypeAuction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitație'**
+  String get filtersListingTypeAuction;
+
   /// No description provided for @filtersNearbyOnly.
   ///
   /// In ro, this message translates to:
@@ -1805,6 +1829,72 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Cumpărătorii nu vor putea face oferte de preț'**
   String get addBookNonNegotiableHint;
+
+  /// No description provided for @addBookAuctionSwitch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pornește o licitație'**
+  String get addBookAuctionSwitch;
+
+  /// No description provided for @addBookAuctionHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cumpărătorii vor licita, câștigă oferta cea mai mare la final'**
+  String get addBookAuctionHint;
+
+  /// No description provided for @addBookAuctionStartingPrice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț de pornire'**
+  String get addBookAuctionStartingPrice;
+
+  /// No description provided for @addBookAuctionReservePrice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț de rezervă (opțional)'**
+  String get addBookAuctionReservePrice;
+
+  /// No description provided for @addBookAuctionReservePriceHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prețul minim sub care nu vinzi cartea'**
+  String get addBookAuctionReservePriceHint;
+
+  /// No description provided for @addBookAuctionBuyNowPrice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț \"Cumpără acum\" (opțional)'**
+  String get addBookAuctionBuyNowPrice;
+
+  /// No description provided for @addBookAuctionBuyNowPriceHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Disponibil doar înainte de prima ofertă'**
+  String get addBookAuctionBuyNowPriceHint;
+
+  /// No description provided for @addBookAuctionDuration.
+  ///
+  /// In ro, this message translates to:
+  /// **'Durata licitației'**
+  String get addBookAuctionDuration;
+
+  /// No description provided for @addBookAuctionDuration24h.
+  ///
+  /// In ro, this message translates to:
+  /// **'24 ore'**
+  String get addBookAuctionDuration24h;
+
+  /// No description provided for @addBookAuctionDuration3d.
+  ///
+  /// In ro, this message translates to:
+  /// **'3 zile'**
+  String get addBookAuctionDuration3d;
+
+  /// No description provided for @addBookAuctionDuration7d.
+  ///
+  /// In ro, this message translates to:
+  /// **'7 zile'**
+  String get addBookAuctionDuration7d;
 
   /// No description provided for @addBookPhotosLabelRequired.
   ///
@@ -3137,6 +3227,126 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'{completed} finalizate · {pending} în așteptare'**
   String adminStatsExchangesSubtitle(int completed, int pending);
+
+  /// No description provided for @auctionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitație'**
+  String get auctionTitle;
+
+  /// No description provided for @auctionCurrentPrice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț curent'**
+  String get auctionCurrentPrice;
+
+  /// No description provided for @auctionBidsCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'oferte'**
+  String get auctionBidsCount;
+
+  /// No description provided for @auctionReserveMet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prețul de rezervă a fost atins'**
+  String get auctionReserveMet;
+
+  /// No description provided for @auctionReserveNotMet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prețul de rezervă nu a fost încă atins'**
+  String get auctionReserveNotMet;
+
+  /// No description provided for @auctionEndedWithWinner.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitația s-a încheiat - a câștigat cineva'**
+  String get auctionEndedWithWinner;
+
+  /// No description provided for @auctionEndedNoWinner.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitația s-a încheiat fără câștigător'**
+  String get auctionEndedNoWinner;
+
+  /// No description provided for @auctionBidAmountLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ofertă (minim {amount} lei)'**
+  String auctionBidAmountLabel(String amount);
+
+  /// No description provided for @auctionPlaceBid.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitează'**
+  String get auctionPlaceBid;
+
+  /// No description provided for @auctionBuyNowFor.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cumpără acum cu {amount} lei'**
+  String auctionBuyNowFor(String amount);
+
+  /// No description provided for @auctionBidHistory.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoricul ofertelor'**
+  String get auctionBidHistory;
+
+  /// No description provided for @auctionNoBidsYet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio ofertă încă'**
+  String get auctionNoBidsYet;
+
+  /// No description provided for @auctionWatch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Urmărește licitația'**
+  String get auctionWatch;
+
+  /// No description provided for @auctionBidPlaced.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ofertă plasată'**
+  String get auctionBidPlaced;
+
+  /// No description provided for @auctionBoughtNow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cumpărat cu succes'**
+  String get auctionBoughtNow;
+
+  /// No description provided for @auctionGenericError.
+  ///
+  /// In ro, this message translates to:
+  /// **'A apărut o eroare, încearcă din nou'**
+  String get auctionGenericError;
+
+  /// No description provided for @auctionEnded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Încheiată'**
+  String get auctionEnded;
+
+  /// No description provided for @auctionEndsInDays.
+  ///
+  /// In ro, this message translates to:
+  /// **'se încheie în {days} zile'**
+  String auctionEndsInDays(int days);
+
+  /// No description provided for @auctionEndsInHours.
+  ///
+  /// In ro, this message translates to:
+  /// **'se încheie în {hours} h'**
+  String auctionEndsInHours(int hours);
+
+  /// No description provided for @auctionEndsInMinutes.
+  ///
+  /// In ro, this message translates to:
+  /// **'se încheie în {minutes} min'**
+  String auctionEndsInMinutes(int minutes);
 }
 
 class _AppLocalizationsDelegate

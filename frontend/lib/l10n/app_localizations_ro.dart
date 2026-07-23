@@ -814,6 +814,18 @@ class AppLocalizationsRo extends AppLocalizations {
   String get filtersAnyCondition => 'Orice stare';
 
   @override
+  String get filtersListingType => 'Tip de anunț';
+
+  @override
+  String get filtersListingTypeSwap => 'Schimb';
+
+  @override
+  String get filtersListingTypeSale => 'Vânzare';
+
+  @override
+  String get filtersListingTypeAuction => 'Licitație';
+
+  @override
   String get filtersNearbyOnly => 'Doar din apropiere';
 
   @override
@@ -959,6 +971,42 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get addBookNonNegotiableHint =>
       'Cumpărătorii nu vor putea face oferte de preț';
+
+  @override
+  String get addBookAuctionSwitch => 'Pornește o licitație';
+
+  @override
+  String get addBookAuctionHint =>
+      'Cumpărătorii vor licita, câștigă oferta cea mai mare la final';
+
+  @override
+  String get addBookAuctionStartingPrice => 'Preț de pornire';
+
+  @override
+  String get addBookAuctionReservePrice => 'Preț de rezervă (opțional)';
+
+  @override
+  String get addBookAuctionReservePriceHint =>
+      'Prețul minim sub care nu vinzi cartea';
+
+  @override
+  String get addBookAuctionBuyNowPrice => 'Preț \"Cumpără acum\" (opțional)';
+
+  @override
+  String get addBookAuctionBuyNowPriceHint =>
+      'Disponibil doar înainte de prima ofertă';
+
+  @override
+  String get addBookAuctionDuration => 'Durata licitației';
+
+  @override
+  String get addBookAuctionDuration24h => '24 ore';
+
+  @override
+  String get addBookAuctionDuration3d => '3 zile';
+
+  @override
+  String get addBookAuctionDuration7d => '7 zile';
 
   @override
   String get addBookPhotosLabelRequired =>
@@ -1739,5 +1787,76 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String adminStatsExchangesSubtitle(int completed, int pending) {
     return '$completed finalizate · $pending în așteptare';
+  }
+
+  @override
+  String get auctionTitle => 'Licitație';
+
+  @override
+  String get auctionCurrentPrice => 'Preț curent';
+
+  @override
+  String get auctionBidsCount => 'oferte';
+
+  @override
+  String get auctionReserveMet => 'Prețul de rezervă a fost atins';
+
+  @override
+  String get auctionReserveNotMet => 'Prețul de rezervă nu a fost încă atins';
+
+  @override
+  String get auctionEndedWithWinner =>
+      'Licitația s-a încheiat - a câștigat cineva';
+
+  @override
+  String get auctionEndedNoWinner => 'Licitația s-a încheiat fără câștigător';
+
+  @override
+  String auctionBidAmountLabel(String amount) {
+    return 'Ofertă (minim $amount lei)';
+  }
+
+  @override
+  String get auctionPlaceBid => 'Licitează';
+
+  @override
+  String auctionBuyNowFor(String amount) {
+    return 'Cumpără acum cu $amount lei';
+  }
+
+  @override
+  String get auctionBidHistory => 'Istoricul ofertelor';
+
+  @override
+  String get auctionNoBidsYet => 'Nicio ofertă încă';
+
+  @override
+  String get auctionWatch => 'Urmărește licitația';
+
+  @override
+  String get auctionBidPlaced => 'Ofertă plasată';
+
+  @override
+  String get auctionBoughtNow => 'Cumpărat cu succes';
+
+  @override
+  String get auctionGenericError => 'A apărut o eroare, încearcă din nou';
+
+  @override
+  String get auctionEnded => 'Încheiată';
+
+  @override
+  String auctionEndsInDays(int days) {
+    return 'se încheie în $days zile';
+  }
+
+  @override
+  String auctionEndsInHours(int hours) {
+    return 'se încheie în $hours h';
+  }
+
+  @override
+  String auctionEndsInMinutes(int minutes) {
+    return 'se încheie în $minutes min';
   }
 }

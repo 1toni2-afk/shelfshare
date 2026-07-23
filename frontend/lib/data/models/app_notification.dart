@@ -11,6 +11,9 @@ enum NotificationType {
   followedUserNewBook,
   nearbyBookListed,
   priceChanged,
+  outbid,
+  auctionWon,
+  auctionEnded,
 }
 
 extension NotificationTypeX on NotificationType {
@@ -40,6 +43,12 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.nearbyBookListed;
       case 'PRICE_CHANGED':
         return NotificationType.priceChanged;
+      case 'OUTBID':
+        return NotificationType.outbid;
+      case 'AUCTION_WON':
+        return NotificationType.auctionWon;
+      case 'AUCTION_ENDED':
+        return NotificationType.auctionEnded;
       default:
         throw ArgumentError('Tip necunoscut: $value');
     }

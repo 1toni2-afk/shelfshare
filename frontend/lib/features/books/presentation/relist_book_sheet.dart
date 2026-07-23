@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../data/models/book.dart';
+import '../data/auctions_repository.dart';
 import '../data/books_repository.dart';
 
 /// Deschide fluxul de re-listare a unei cărți primite printr-un schimb
@@ -36,9 +37,13 @@ class _RelistBookSheet extends ConsumerStatefulWidget {
 
 class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   final _priceController = TextEditingController();
+  final _reservePriceController = TextEditingController();
+  final _buyNowPriceController = TextEditingController();
   BookCondition _condition = BookCondition.buna;
   bool _isForSale = false;
   bool _isNegotiable = true;
+  bool _isAuction = false;
+  int _auctionDurationHours = 24;
   bool _isSubmitting = false;
   final List<XFile> _photos = [];
 
@@ -47,6 +52,8 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   @override
   void dispose() {
     _priceController.dispose();
+    _reservePriceController.dispose();
+    _buyNowPriceController.dispose();
     super.dispose();
   }
 
@@ -61,17 +68,23 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   Future<void> _submit() async {
     final l10n = context.l10n;
     final salePrice = double.tryParse(_priceController.text.trim().replaceAll(',', '.'));
-    if (_isForSale && salePrice == null) {
+    if ((_isForSale || _isAuction) && salePrice == null) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.addBookInvalidPrice)));
       return;
     }
-    if (_isForSale && _photos.isEmpty) {
+    if ((_isForSale || _isAuction) && _photos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.relistNeedPhoto)),
       );
       return;
     }
+    final reservePrice = _reservePriceController.text.trim().isEmpty
+        ? null
+        : double.tryParse(_reservePriceController.text.trim().replaceAll(',', '.'));
+    final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
+        ? null
+        : double.tryParse(_buyNowPriceController.text.trim().replaceAll(',', '.'));
 
     setState(() => _isSubmitting = true);
     try {
@@ -91,6 +104,14 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
               userBook.id,
               salePrice: salePrice!,
               isNegotiable: _isNegotiable,
+            );
+      } else if (_isAuction) {
+        await ref.read(auctionsRepositoryProvider).createAuction(
+              userBook.id,
+              startingPrice: salePrice!,
+              reservePrice: reservePrice,
+              buyNowPrice: buyNowPrice,
+              durationHours: _auctionDurationHours,
             );
       }
       if (mounted) {
@@ -148,7 +169,10 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.addBookForSaleSwitch),
               value: _isForSale,
-              onChanged: (value) => setState(() => _isForSale = value),
+              onChanged: (value) => setState(() {
+                _isForSale = value;
+                if (value) _isAuction = false;
+              }),
             ),
             if (_isForSale) ...[
               TextField(
@@ -163,9 +187,68 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
                 onChanged: (value) => setState(() => _isNegotiable = !value),
               ),
             ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.addBookAuctionSwitch),
+              value: _isAuction,
+              onChanged: (value) => setState(() {
+                _isAuction = value;
+                if (value) _isForSale = false;
+              }),
+            ),
+            if (_isAuction) ...[
+              TextField(
+                controller: _priceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: l10n.addBookAuctionStartingPrice, suffixText: 'lei'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _reservePriceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: l10n.addBookAuctionReservePrice,
+                  helperText: l10n.addBookAuctionReservePriceHint,
+                  suffixText: 'lei',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _buyNowPriceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: l10n.addBookAuctionBuyNowPrice,
+                  helperText: l10n.addBookAuctionBuyNowPriceHint,
+                  suffixText: 'lei',
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(l10n.addBookAuctionDuration, style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: Text(l10n.addBookAuctionDuration24h),
+                    selected: _auctionDurationHours == 24,
+                    onSelected: (_) => setState(() => _auctionDurationHours = 24),
+                  ),
+                  ChoiceChip(
+                    label: Text(l10n.addBookAuctionDuration3d),
+                    selected: _auctionDurationHours == 72,
+                    onSelected: (_) => setState(() => _auctionDurationHours = 72),
+                  ),
+                  ChoiceChip(
+                    label: Text(l10n.addBookAuctionDuration7d),
+                    selected: _auctionDurationHours == 168,
+                    onSelected: (_) => setState(() => _auctionDurationHours = 168),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
-              _isForSale ? l10n.addBookPhotosLabelRequired : l10n.addBookPhotosLabelOptional,
+              (_isForSale || _isAuction) ? l10n.addBookPhotosLabelRequired : l10n.addBookPhotosLabelOptional,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),

@@ -14,6 +14,7 @@ class BrowseFilters {
     this.city,
     this.condition,
     this.maxDistanceKm,
+    this.listingType,
   });
 
   final String? title;
@@ -23,6 +24,7 @@ class BrowseFilters {
   final String? city;
   final BookCondition? condition;
   final int? maxDistanceKm;
+  final String? listingType;
 
   bool get hasActiveFilters =>
       author != null ||
@@ -30,7 +32,8 @@ class BrowseFilters {
       language != null ||
       city != null ||
       condition != null ||
-      maxDistanceKm != null;
+      maxDistanceKm != null ||
+      listingType != null;
 
   BrowseFilters withTitle(String? title) {
     return BrowseFilters(
@@ -41,6 +44,7 @@ class BrowseFilters {
       city: city,
       condition: condition,
       maxDistanceKm: maxDistanceKm,
+      listingType: listingType,
     );
   }
 }
@@ -118,6 +122,7 @@ class BrowseController extends Notifier<BrowseState> {
       sort: sortingByDistance ? 'distance' : null,
       fromCity: sortingByDistance ? myCity : null,
       maxDistanceKm: sortingByDistance ? f.maxDistanceKm : null,
+      listingType: f.listingType,
       limit: _pageSize,
       offset: offset,
     );

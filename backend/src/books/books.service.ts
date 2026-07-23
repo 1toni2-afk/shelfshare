@@ -50,7 +50,16 @@ export class BooksService {
     if (filters.title) this.logSearch(filters.title);
 
     const where: Prisma.UserBookWhereInput = {
-      availableForSwap: filters.availableOnly === 'false' ? undefined : true,
+      availableForSwap:
+        filters.listingType != null
+          ? filters.listingType === 'swap'
+            ? true
+            : undefined
+          : filters.availableOnly === 'false'
+            ? undefined
+            : true,
+      isForSale: filters.listingType === 'sale' ? true : undefined,
+      isAuction: filters.listingType === 'auction' ? true : undefined,
       condition: filters.condition,
       language: filters.language
         ? { equals: filters.language, mode: 'insensitive' }
@@ -83,7 +92,11 @@ export class BooksService {
       // dar nu se scalează la un catalog foarte mare.
       const candidates = await this.prisma.userBook.findMany({
         where,
-        include: { book: true, user: { select: OWNER_SELECT } },
+        include: {
+          book: true,
+          user: { select: OWNER_SELECT },
+          auction: { select: { id: true, currentPrice: true, endsAt: true, status: true, buyNowPrice: true } },
+        },
         take: 500,
       });
 
@@ -119,7 +132,11 @@ export class BooksService {
     const [items, total] = await Promise.all([
       this.prisma.userBook.findMany({
         where,
-        include: { book: true, user: { select: OWNER_SELECT } },
+        include: {
+          book: true,
+          user: { select: OWNER_SELECT },
+          auction: { select: { id: true, currentPrice: true, endsAt: true, status: true, buyNowPrice: true } },
+        },
         orderBy,
         take: filters.limit,
         skip: filters.offset,
@@ -552,7 +569,11 @@ export class BooksService {
     if (genres.size === 0) {
       const fallback = await this.prisma.userBook.findMany({
         where: { availableForSwap: true, userId: { not: userId } },
-        include: { book: true, user: { select: OWNER_SELECT } },
+        include: {
+          book: true,
+          user: { select: OWNER_SELECT },
+          auction: { select: { id: true, currentPrice: true, endsAt: true, status: true, buyNowPrice: true } },
+        },
         orderBy: { createdAt: 'desc' },
         take: 15,
       });

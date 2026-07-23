@@ -36,6 +36,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
   late String? _city = widget.initial.city;
   late BookCondition? _condition = widget.initial.condition;
   late int? _maxDistanceKm = widget.initial.maxDistanceKm;
+  late String? _listingType = widget.initial.listingType;
 
   Timer? _authorDebounce;
   Timer? _genreDebounce;
@@ -124,6 +125,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
       _city = null;
       _condition = null;
       _maxDistanceKm = null;
+      _listingType = null;
     });
   }
 
@@ -137,6 +139,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
         city: _city,
         condition: _condition,
         maxDistanceKm: _maxDistanceKm,
+        listingType: _listingType,
       ),
     );
   }
@@ -189,6 +192,29 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               _languageSuggestions,
               _languageController,
               () => setState(() => _languageSuggestions = const []),
+            ),
+            const SizedBox(height: 16),
+            Text(l10n.filtersListingType, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                ChoiceChip(
+                  label: Text(l10n.filtersListingTypeSwap),
+                  selected: _listingType == 'swap',
+                  onSelected: (selected) => setState(() => _listingType = selected ? 'swap' : null),
+                ),
+                ChoiceChip(
+                  label: Text(l10n.filtersListingTypeSale),
+                  selected: _listingType == 'sale',
+                  onSelected: (selected) => setState(() => _listingType = selected ? 'sale' : null),
+                ),
+                ChoiceChip(
+                  label: Text(l10n.filtersListingTypeAuction),
+                  selected: _listingType == 'auction',
+                  onSelected: (selected) => setState(() => _listingType = selected ? 'auction' : null),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String?>(

@@ -27,6 +27,7 @@ import '../../features/books/presentation/global_stats_screen.dart';
 import '../../features/books/presentation/my_bookshelf_screen.dart';
 import '../../features/profile/presentation/activity_feed_screen.dart';
 import '../../features/books/presentation/smart_matches_screen.dart';
+import '../../features/books/presentation/auction_detail_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
@@ -108,6 +109,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/bookshelf', builder: (context, state) => const MyBookshelfScreen()),
       GoRoute(path: '/activity-feed', builder: (context, state) => const ActivityFeedScreen()),
       GoRoute(path: '/smart-matches', builder: (context, state) => const SmartMatchesScreen()),
+      GoRoute(
+        path: '/auctions/:id',
+        builder: (context, state) => AuctionDetailScreen(auctionId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: '/users/:userId',
         builder: (context, state) => PublicProfileScreen(

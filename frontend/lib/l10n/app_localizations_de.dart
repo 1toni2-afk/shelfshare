@@ -822,6 +822,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get filtersAnyCondition => 'Beliebiger Zustand';
 
   @override
+  String get filtersListingType => 'Anzeigenart';
+
+  @override
+  String get filtersListingTypeSwap => 'Tausch';
+
+  @override
+  String get filtersListingTypeSale => 'Verkauf';
+
+  @override
+  String get filtersListingTypeAuction => 'Auktion';
+
+  @override
   String get filtersNearbyOnly => 'Nur in der Nähe';
 
   @override
@@ -970,6 +982,42 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get addBookNonNegotiableHint =>
       'Käufer können keine Preisangebote machen';
+
+  @override
+  String get addBookAuctionSwitch => 'Auktion starten';
+
+  @override
+  String get addBookAuctionHint =>
+      'Käufer bieten, das höchste Gebot gewinnt am Ende';
+
+  @override
+  String get addBookAuctionStartingPrice => 'Startpreis';
+
+  @override
+  String get addBookAuctionReservePrice => 'Mindestpreis (optional)';
+
+  @override
+  String get addBookAuctionReservePriceHint =>
+      'Der niedrigste Preis, unter dem du nicht verkaufst';
+
+  @override
+  String get addBookAuctionBuyNowPrice => '\"Sofort kaufen\"-Preis (optional)';
+
+  @override
+  String get addBookAuctionBuyNowPriceHint =>
+      'Nur vor dem ersten Gebot verfügbar';
+
+  @override
+  String get addBookAuctionDuration => 'Auktionsdauer';
+
+  @override
+  String get addBookAuctionDuration24h => '24 Stunden';
+
+  @override
+  String get addBookAuctionDuration3d => '3 Tage';
+
+  @override
+  String get addBookAuctionDuration7d => '7 Tage';
 
   @override
   String get addBookPhotosLabelRequired =>
@@ -1768,5 +1816,78 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String adminStatsExchangesSubtitle(int completed, int pending) {
     return '$completed abgeschlossen · $pending ausstehend';
+  }
+
+  @override
+  String get auctionTitle => 'Auktion';
+
+  @override
+  String get auctionCurrentPrice => 'Aktueller Preis';
+
+  @override
+  String get auctionBidsCount => 'Gebote';
+
+  @override
+  String get auctionReserveMet => 'Der Mindestpreis wurde erreicht';
+
+  @override
+  String get auctionReserveNotMet =>
+      'Der Mindestpreis wurde noch nicht erreicht';
+
+  @override
+  String get auctionEndedWithWinner =>
+      'Die Auktion ist beendet - jemand hat gewonnen';
+
+  @override
+  String get auctionEndedNoWinner => 'Die Auktion endete ohne Gewinner';
+
+  @override
+  String auctionBidAmountLabel(String amount) {
+    return 'Gebot (mindestens $amount lei)';
+  }
+
+  @override
+  String get auctionPlaceBid => 'Bieten';
+
+  @override
+  String auctionBuyNowFor(String amount) {
+    return 'Sofort kaufen für $amount lei';
+  }
+
+  @override
+  String get auctionBidHistory => 'Gebotshistorie';
+
+  @override
+  String get auctionNoBidsYet => 'Noch keine Gebote';
+
+  @override
+  String get auctionWatch => 'Auktion beobachten';
+
+  @override
+  String get auctionBidPlaced => 'Gebot abgegeben';
+
+  @override
+  String get auctionBoughtNow => 'Erfolgreich gekauft';
+
+  @override
+  String get auctionGenericError =>
+      'Etwas ist schiefgelaufen, versuch es erneut';
+
+  @override
+  String get auctionEnded => 'Beendet';
+
+  @override
+  String auctionEndsInDays(int days) {
+    return 'endet in $days Tagen';
+  }
+
+  @override
+  String auctionEndsInHours(int hours) {
+    return 'endet in $hours Std';
+  }
+
+  @override
+  String auctionEndsInMinutes(int minutes) {
+    return 'endet in $minutes Min';
   }
 }

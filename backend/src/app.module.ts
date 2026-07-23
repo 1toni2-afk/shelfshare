@@ -20,6 +20,7 @@ import { FollowModule } from './follow/follow.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { SupportModule } from './support/support.module';
 import { BookshelfModule } from './bookshelf/bookshelf.module';
+import { AuctionsModule } from './auctions/auctions.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { BookshelfModule } from './bookshelf/bookshelf.module';
     FeedbackModule,
     SupportModule,
     BookshelfModule,
+    AuctionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

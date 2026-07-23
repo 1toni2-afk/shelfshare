@@ -47,6 +47,13 @@ class NotificationsScreen extends ConsumerWidget {
         context.push('/search');
       case NotificationType.priceChanged:
         context.push('/wishlist');
+      case NotificationType.outbid:
+      case NotificationType.auctionWon:
+      case NotificationType.auctionEnded:
+        final auctionId = notification.data?['auctionId'] as String?;
+        if (auctionId != null) {
+          context.push('/auctions/$auctionId');
+        }
     }
   }
 
@@ -136,6 +143,10 @@ class NotificationsScreen extends ConsumerWidget {
         return Icons.location_on_outlined;
       case NotificationType.priceChanged:
         return Icons.price_change_outlined;
+      case NotificationType.outbid:
+      case NotificationType.auctionWon:
+      case NotificationType.auctionEnded:
+        return Icons.gavel;
     }
   }
 
