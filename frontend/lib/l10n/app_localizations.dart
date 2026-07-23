@@ -1392,6 +1392,66 @@ abstract class AppLocalizations {
   /// **'Astăzi, aproape de tine'**
   String get homeNearYouToday;
 
+  /// No description provided for @homeRecommendedForYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recomandate pentru tine'**
+  String get homeRecommendedForYou;
+
+  /// No description provided for @homeHiddenGems.
+  ///
+  /// In ro, this message translates to:
+  /// **'Comori ascunse'**
+  String get homeHiddenGems;
+
+  /// No description provided for @homeCompleteYourCollection.
+  ///
+  /// In ro, this message translates to:
+  /// **'Completează-ți colecția'**
+  String get homeCompleteYourCollection;
+
+  /// No description provided for @homeSimilarTaste.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gusturi asemănătoare'**
+  String get homeSimilarTaste;
+
+  /// No description provided for @profileSmartMatches.
+  ///
+  /// In ro, this message translates to:
+  /// **'Potriviri de schimb'**
+  String get profileSmartMatches;
+
+  /// No description provided for @smartMatchesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Potriviri de schimb'**
+  String get smartMatchesTitle;
+
+  /// No description provided for @smartMatchesEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio potrivire încă - adaugă cărți pe wishlist și listează cărți disponibile.'**
+  String get smartMatchesEmpty;
+
+  /// No description provided for @smartMatchesLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca potrivirile.'**
+  String get smartMatchesLoadError;
+
+  /// No description provided for @smartMatchesTheyHave.
+  ///
+  /// In ro, this message translates to:
+  /// **'Are ce vrei tu'**
+  String get smartMatchesTheyHave;
+
+  /// No description provided for @smartMatchesTheyWant.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vrea ce ai tu'**
+  String get smartMatchesTheyWant;
+
   /// No description provided for @homeUpcomingBooks.
   ///
   /// In ro, this message translates to:

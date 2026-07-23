@@ -747,6 +747,37 @@ class AppLocalizationsHu extends AppLocalizations {
   String get homeNearYouToday => 'Ma, a közeledben';
 
   @override
+  String get homeRecommendedForYou => 'Neked ajánljuk';
+
+  @override
+  String get homeHiddenGems => 'Rejtett kincsek';
+
+  @override
+  String get homeCompleteYourCollection => 'Egészítsd ki a gyűjteményed';
+
+  @override
+  String get homeSimilarTaste => 'Hasonló ízlés';
+
+  @override
+  String get profileSmartMatches => 'Csereajánlatok';
+
+  @override
+  String get smartMatchesTitle => 'Csereajánlatok';
+
+  @override
+  String get smartMatchesEmpty =>
+      'Még nincs egyezés - adj hozzá könyveket a kívánságlistádhoz és listázz elérhető könyveket.';
+
+  @override
+  String get smartMatchesLoadError => 'Nem sikerült betölteni az egyezéseket.';
+
+  @override
+  String get smartMatchesTheyHave => 'Megvan neki, amit szeretnél';
+
+  @override
+  String get smartMatchesTheyWant => 'Szeretné, ami megvan neked';
+
+  @override
   String get homeUpcomingBooks => 'Hamarosan megjelenő könyvek';
 
   @override

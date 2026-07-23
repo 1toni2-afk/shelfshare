@@ -743,6 +743,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNearYouToday => 'Near you today';
 
   @override
+  String get homeRecommendedForYou => 'Recommended for you';
+
+  @override
+  String get homeHiddenGems => 'Hidden gems';
+
+  @override
+  String get homeCompleteYourCollection => 'Complete your collection';
+
+  @override
+  String get homeSimilarTaste => 'Similar taste';
+
+  @override
+  String get profileSmartMatches => 'Smart swap matches';
+
+  @override
+  String get smartMatchesTitle => 'Smart swap matches';
+
+  @override
+  String get smartMatchesEmpty =>
+      'No matches yet - add books to your wishlist and list some available books.';
+
+  @override
+  String get smartMatchesLoadError => 'Couldn\'t load matches.';
+
+  @override
+  String get smartMatchesTheyHave => 'Has what you want';
+
+  @override
+  String get smartMatchesTheyWant => 'Wants what you have';
+
+  @override
   String get homeUpcomingBooks => 'Upcoming books';
 
   @override

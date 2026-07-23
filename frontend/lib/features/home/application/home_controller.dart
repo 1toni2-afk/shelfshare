@@ -18,6 +18,10 @@ class HomeData {
     required this.upcomingReleases,
     required this.genres,
     required this.activeMembers,
+    required this.recommended,
+    required this.hiddenGems,
+    required this.completeYourCollection,
+    required this.similarTasteUsers,
   });
   final List<UserBook> recent;
   final List<UserBook> mostViewed;
@@ -26,6 +30,10 @@ class HomeData {
   final List<UpcomingRelease> upcomingReleases;
   final List<BookGenre> genres;
   final List<PublicUser> activeMembers;
+  final List<UserBook> recommended;
+  final List<UserBook> hiddenGems;
+  final List<UserBook> completeYourCollection;
+  final List<SimilarTasteUser> similarTasteUsers;
 }
 
 class HomeController extends AsyncNotifier<HomeData> {
@@ -50,12 +58,28 @@ class HomeController extends AsyncNotifier<HomeData> {
     final activeMembersFuture = ref.read(followRepositoryProvider).getActiveMembers();
     final nearbyTodayFuture =
         city != null && city.isNotEmpty ? repository.getNearbyToday(city) : Future.value(<UserBook>[]);
+    final hiddenGemsFuture = repository.getHiddenGems();
+
+    // Recommended/Complete Your Collection/Similar Taste au nevoie de
+    // autentificare (semnalul de gust vine din biblioteca/wishlist-ul
+    // userului) - liste goale dacă nu e logat, nu o eroare.
+    final isAuthenticated = authState is AuthAuthenticated;
+    final recommendedFuture =
+        isAuthenticated ? repository.getRecommendedForYou() : Future.value(<UserBook>[]);
+    final completeCollectionFuture =
+        isAuthenticated ? repository.getCompleteYourCollection() : Future.value(<UserBook>[]);
+    final similarTasteFuture =
+        isAuthenticated ? repository.getSimilarTasteUsers() : Future.value(<SimilarTasteUser>[]);
 
     final results = await booksResultsFuture;
     final upcomingReleases = await upcomingReleasesFuture;
     final genres = await genresFuture;
     final activeMembers = await activeMembersFuture;
     final nearbyToday = await nearbyTodayFuture;
+    final hiddenGems = await hiddenGemsFuture;
+    final recommended = await recommendedFuture;
+    final completeYourCollection = await completeCollectionFuture;
+    final similarTasteUsers = await similarTasteFuture;
 
     return HomeData(
       recent: results[0].items,
@@ -65,6 +89,10 @@ class HomeController extends AsyncNotifier<HomeData> {
       upcomingReleases: upcomingReleases,
       genres: genres,
       activeMembers: activeMembers,
+      recommended: recommended,
+      hiddenGems: hiddenGems,
+      completeYourCollection: completeYourCollection,
+      similarTasteUsers: similarTasteUsers,
     );
   }
 

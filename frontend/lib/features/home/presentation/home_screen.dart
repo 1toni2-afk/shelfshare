@@ -103,6 +103,12 @@ class _HomeContent extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
+        if (data.recommended.isNotEmpty) ...[
+          SectionHeader(title: l10n.homeRecommendedForYou),
+          const SizedBox(height: 12),
+          _BookGrid(books: data.recommended),
+          const SizedBox(height: 24),
+        ],
         if (data.genres.isNotEmpty) ...[
           SectionHeader(title: l10n.homeCategories),
           const SizedBox(height: 12),
@@ -149,6 +155,18 @@ class _HomeContent extends StatelessWidget {
           _BookGrid(books: data.nearby),
           const SizedBox(height: 24),
         ],
+        if (data.hiddenGems.isNotEmpty) ...[
+          SectionHeader(title: l10n.homeHiddenGems),
+          const SizedBox(height: 12),
+          _BookGrid(books: data.hiddenGems),
+          const SizedBox(height: 24),
+        ],
+        if (data.completeYourCollection.isNotEmpty) ...[
+          SectionHeader(title: l10n.homeCompleteYourCollection),
+          const SizedBox(height: 12),
+          _BookGrid(books: data.completeYourCollection),
+          const SizedBox(height: 24),
+        ],
         if (data.upcomingReleases.isNotEmpty) ...[
           SectionHeader(title: l10n.homeUpcomingBooks),
           const SizedBox(height: 12),
@@ -159,6 +177,12 @@ class _HomeContent extends StatelessWidget {
           SectionHeader(title: l10n.homeActiveMembers),
           const SizedBox(height: 12),
           _ActiveMembersRow(members: data.activeMembers),
+          const SizedBox(height: 24),
+        ],
+        if (data.similarTasteUsers.isNotEmpty) ...[
+          SectionHeader(title: l10n.homeSimilarTaste),
+          const SizedBox(height: 12),
+          _SimilarTasteRow(users: data.similarTasteUsers),
         ],
       ],
     );
@@ -194,6 +218,50 @@ class _ActiveMembersRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     member.name ?? context.l10n.commonUnknownUser,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SimilarTasteRow extends StatelessWidget {
+  const _SimilarTasteRow({required this.users});
+  final List<SimilarTasteUser> users;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 92,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: users.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final user = users[index];
+          return GestureDetector(
+            onTap: () => context.push('/users/${user.id}'),
+            child: SizedBox(
+              width: 64,
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundImage: user.profileImage != null ? NetworkImage(user.profileImage!) : null,
+                    child: user.profileImage == null ? const Icon(Icons.person) : null,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user.name ?? context.l10n.commonUnknownUser,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

@@ -526,6 +526,227 @@ export class BooksService {
   }
 
   /**
+   * "Recommended for You" - rule-based, nu machine learning: adunăm genurile
+   * din cărțile proprii + wishlist ca semnal de gust, apoi arătăm anunțuri
+   * disponibile din acele genuri, sortate după popularitate. Un user fără
+   * nicio carte/wishlist încă (fără semnal) primește cele mai recente
+   * anunțuri, ca să nu vadă o listă goală.
+   */
+  async getRecommendedForYou(userId: string) {
+    const [myBooks, myWishlist] = await Promise.all([
+      this.prisma.userBook.findMany({
+        where: { userId },
+        select: { book: { select: { genre: true } } },
+      }),
+      this.prisma.wishlistItem.findMany({
+        where: { userId },
+        select: { book: { select: { genre: true } } },
+      }),
+    ]);
+
+    const genres = new Set<string>();
+    for (const row of [...myBooks, ...myWishlist]) {
+      if (row.book.genre) genres.add(row.book.genre);
+    }
+
+    if (genres.size === 0) {
+      const fallback = await this.prisma.userBook.findMany({
+        where: { availableForSwap: true, userId: { not: userId } },
+        include: { book: true, user: { select: OWNER_SELECT } },
+        orderBy: { createdAt: 'desc' },
+        take: 15,
+      });
+      return fallback.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
+    }
+
+    const items = await this.prisma.userBook.findMany({
+      where: {
+        availableForSwap: true,
+        userId: { not: userId },
+        book: { genre: { in: Array.from(genres) } },
+      },
+      include: { book: true, user: { select: OWNER_SELECT } },
+      orderBy: { viewCount: 'desc' },
+      take: 15,
+    });
+    return items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
+  }
+
+  /**
+   * "Hidden Gems" - anunțuri disponibile, în stare bună, dar aproape
+   * nevăzute (viewCount mic) - cărți valoroase care se pierd în restul
+   * catalogului, nu neapărat cele mai noi/populare.
+   */
+  async getHiddenGems() {
+    const items = await this.prisma.userBook.findMany({
+      where: {
+        availableForSwap: true,
+        viewCount: { lte: 2 },
+        condition: { in: ['NOUA', 'FOARTE_BUNA'] },
+      },
+      include: { book: true, user: { select: OWNER_SELECT } },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+    });
+    return items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
+  }
+
+  /**
+   * "People with Similar Taste" - alți useri care au listat cărți din
+   * aceleași genuri ca userul curent, ordonați după numărul de genuri
+   * comune. Fără istoric de citit real (vezi restul aplicației) - genul
+   * cărților deja listate e cel mai bun semnal disponibil.
+   */
+  async getSimilarTasteUsers(userId: string) {
+    const myBooks = await this.prisma.userBook.findMany({
+      where: { userId },
+      select: { book: { select: { genre: true } } },
+    });
+    const myGenres = new Set(
+      myBooks.map((b) => b.book.genre).filter((g): g is string => g !== null),
+    );
+    if (myGenres.size === 0) return [];
+
+    const others = await this.prisma.userBook.findMany({
+      where: {
+        userId: { not: userId },
+        book: { genre: { in: Array.from(myGenres) } },
+      },
+      select: {
+        userId: true,
+        book: { select: { genre: true } },
+        user: { select: OWNER_SELECT },
+      },
+    });
+
+    const overlapByUser = new Map<
+      string,
+      { user: (typeof others)[number]['user']; genres: Set<string> }
+    >();
+    for (const row of others) {
+      const entry = overlapByUser.get(row.userId) ?? { user: row.user, genres: new Set<string>() };
+      if (row.book.genre) entry.genres.add(row.book.genre);
+      overlapByUser.set(row.userId, entry);
+    }
+
+    return Array.from(overlapByUser.values())
+      .map((entry) => ({
+        ...entry.user,
+        name: publicName(entry.user),
+        sharedGenres: entry.genres.size,
+      }))
+      .sort((a, b) => b.sharedGenres - a.sharedGenres)
+      .slice(0, 15);
+  }
+
+  /**
+   * "Complete Your Collection" - alte cărți ale acelorași autori pe care
+   * userul îi are deja în bibliotecă, dar pe care nu le deține încă.
+   * Simplificare deliberată: catalogul nu are un concept de "serie/volum"
+   * (ar necesita date externe pe care sursele actuale de lookup nu le dau
+   * consistent) - autorul e proxy-ul cel mai apropiat disponibil.
+   */
+  async getCompleteYourCollection(userId: string) {
+    const myBooks = await this.prisma.userBook.findMany({
+      where: { userId },
+      select: { bookId: true, book: { select: { author: true } } },
+    });
+    const myBookIds = myBooks.map((b) => b.bookId);
+    const myAuthors = new Set(
+      myBooks.map((b) => b.book.author).filter((a): a is string => a !== null),
+    );
+    if (myAuthors.size === 0) return [];
+
+    const items = await this.prisma.userBook.findMany({
+      where: {
+        availableForSwap: true,
+        userId: { not: userId },
+        bookId: { notIn: myBookIds },
+        book: { author: { in: Array.from(myAuthors) } },
+      },
+      include: { book: true, user: { select: OWNER_SELECT } },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+    });
+    return items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
+  }
+
+  /**
+   * "Smart Swap / Auto Match" - dublă coincidență de dorințe: alți useri
+   * care (a) au disponibilă o carte pe care userul curent o are pe
+   * wishlist, ȘI (b) au pe wishlist-ul lor o carte pe care userul curent
+   * o are deja disponibilă. Ăsta e un schimb cu șanse reale de reușită,
+   * spre deosebire de o simplă căutare - ambele părți au deja un motiv să
+   * accepte.
+   */
+  async getSmartMatches(userId: string) {
+    const [myWishlist, myBooks] = await Promise.all([
+      this.prisma.wishlistItem.findMany({ where: { userId }, select: { bookId: true } }),
+      this.prisma.userBook.findMany({
+        where: { userId, availableForSwap: true },
+        select: { id: true, bookId: true, book: { select: { title: true, coverUrl: true } } },
+      }),
+    ]);
+    if (myWishlist.length === 0 || myBooks.length === 0) return [];
+
+    const myWishlistBookIds = myWishlist.map((w) => w.bookId);
+    const myBookIds = myBooks.map((b) => b.bookId);
+
+    const candidates = await this.prisma.userBook.findMany({
+      where: {
+        bookId: { in: myWishlistBookIds },
+        availableForSwap: true,
+        userId: { not: userId },
+      },
+      include: { book: true, user: { select: OWNER_SELECT } },
+    });
+    if (candidates.length === 0) return [];
+
+    const ownerIds = Array.from(new Set(candidates.map((c) => c.userId)));
+    const theirWishlists = await this.prisma.wishlistItem.findMany({
+      where: { userId: { in: ownerIds }, bookId: { in: myBookIds } },
+      select: { userId: true, bookId: true },
+    });
+
+    const wantedByOwner = new Map<string, Set<string>>();
+    for (const w of theirWishlists) {
+      const set = wantedByOwner.get(w.userId) ?? new Set<string>();
+      set.add(w.bookId);
+      wantedByOwner.set(w.userId, set);
+    }
+    if (wantedByOwner.size === 0) return [];
+
+    const grouped = new Map<
+      string,
+      { owner: (typeof candidates)[number]['user']; theirBooks: typeof candidates }
+    >();
+    for (const candidate of candidates) {
+      if (!wantedByOwner.has(candidate.userId)) continue;
+      const entry = grouped.get(candidate.userId) ?? { owner: candidate.user, theirBooks: [] };
+      entry.theirBooks.push(candidate);
+      grouped.set(candidate.userId, entry);
+    }
+
+    return Array.from(grouped.entries()).map(([ownerId, entry]) => {
+      const wanted = wantedByOwner.get(ownerId)!;
+      const myBooksTheyWant = myBooks.filter((b) => wanted.has(b.bookId));
+      return {
+        owner: { ...entry.owner, name: publicName(entry.owner) },
+        theirBooks: entry.theirBooks.map((c) => ({
+          userBookId: c.id,
+          title: c.book.title,
+          coverUrl: c.book.coverUrl,
+        })),
+        myBooksTheyWant: myBooksTheyWant.map((b) => ({
+          userBookId: b.id,
+          title: b.book.title,
+          coverUrl: b.book.coverUrl,
+        })),
+      };
+    });
+  }
+
+  /**
    * Cărți similare cu un anunț - același gen sau același autor, doar
    * exemplare disponibile, excluzându-l pe cel curent.
    */

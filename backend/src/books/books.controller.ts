@@ -92,6 +92,39 @@ export class BooksController {
     return this.booksService.getNearbyToday(city);
   }
 
+  @Get('hidden-gems')
+  getHiddenGems() {
+    return this.booksService.getHiddenGems();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('recommended')
+  getRecommendedForYou(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.getRecommendedForYou(userId!);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('complete-your-collection')
+  getCompleteYourCollection(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.getCompleteYourCollection(userId!);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('smart-matches')
+  getSmartMatches(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.getSmartMatches(userId!);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('similar-taste-users')
+  getSimilarTasteUsers(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.getSimilarTasteUsers(userId!);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   addToLibrary(@Req() req: Request, @Body() dto: AddBookDto) {

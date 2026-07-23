@@ -744,6 +744,37 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homeNearYouToday => 'Astăzi, aproape de tine';
 
   @override
+  String get homeRecommendedForYou => 'Recomandate pentru tine';
+
+  @override
+  String get homeHiddenGems => 'Comori ascunse';
+
+  @override
+  String get homeCompleteYourCollection => 'Completează-ți colecția';
+
+  @override
+  String get homeSimilarTaste => 'Gusturi asemănătoare';
+
+  @override
+  String get profileSmartMatches => 'Potriviri de schimb';
+
+  @override
+  String get smartMatchesTitle => 'Potriviri de schimb';
+
+  @override
+  String get smartMatchesEmpty =>
+      'Nicio potrivire încă - adaugă cărți pe wishlist și listează cărți disponibile.';
+
+  @override
+  String get smartMatchesLoadError => 'Nu am putut încărca potrivirile.';
+
+  @override
+  String get smartMatchesTheyHave => 'Are ce vrei tu';
+
+  @override
+  String get smartMatchesTheyWant => 'Vrea ce ai tu';
+
+  @override
   String get homeUpcomingBooks => 'Cărți viitoare';
 
   @override

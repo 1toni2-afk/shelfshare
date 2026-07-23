@@ -752,6 +752,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeNearYouToday => 'Heute in deiner Nähe';
 
   @override
+  String get homeRecommendedForYou => 'Für dich empfohlen';
+
+  @override
+  String get homeHiddenGems => 'Versteckte Schätze';
+
+  @override
+  String get homeCompleteYourCollection => 'Vervollständige deine Sammlung';
+
+  @override
+  String get homeSimilarTaste => 'Ähnlicher Geschmack';
+
+  @override
+  String get profileSmartMatches => 'Passende Tauschpartner';
+
+  @override
+  String get smartMatchesTitle => 'Passende Tauschpartner';
+
+  @override
+  String get smartMatchesEmpty =>
+      'Noch keine Treffer - füge Bücher zu deiner Wunschliste hinzu und liste verfügbare Bücher.';
+
+  @override
+  String get smartMatchesLoadError => 'Treffer konnten nicht geladen werden.';
+
+  @override
+  String get smartMatchesTheyHave => 'Hat, was du willst';
+
+  @override
+  String get smartMatchesTheyWant => 'Will, was du hast';
+
+  @override
   String get homeUpcomingBooks => 'Kommende Bücher';
 
   @override

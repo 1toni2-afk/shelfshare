@@ -263,6 +263,81 @@ class ImpactStats {
   }
 }
 
+/// "People with Similar Taste" - alți useri clasați după numărul de genuri
+/// comune cu userul curent (vezi getSimilarTasteUsers în backend).
+class SimilarTasteUser {
+  final String id;
+  final String? name;
+  final String? city;
+  final String? profileImage;
+  final double rating;
+  final int sharedGenres;
+
+  const SimilarTasteUser({
+    required this.id,
+    this.name,
+    this.city,
+    this.profileImage,
+    required this.rating,
+    required this.sharedGenres,
+  });
+
+  factory SimilarTasteUser.fromJson(Map<String, dynamic> json) {
+    return SimilarTasteUser(
+      id: json['id'] as String,
+      name: json['name'] as String?,
+      city: json['city'] as String?,
+      profileImage: json['profileImage'] as String?,
+      rating: (json['rating'] as num).toDouble(),
+      sharedGenres: json['sharedGenres'] as int,
+    );
+  }
+}
+
+/// O carte dintr-un match de "Smart Swap" - suficient pentru a o afișa
+/// (fără toate detaliile complete ale unui UserBook).
+class SmartMatchBook {
+  final String userBookId;
+  final String title;
+  final String? coverUrl;
+
+  const SmartMatchBook({required this.userBookId, required this.title, this.coverUrl});
+
+  factory SmartMatchBook.fromJson(Map<String, dynamic> json) {
+    return SmartMatchBook(
+      userBookId: json['userBookId'] as String,
+      title: json['title'] as String,
+      coverUrl: json['coverUrl'] as String?,
+    );
+  }
+}
+
+/// "Smart Swap / Auto Match" - dublă coincidență de dorințe cu un alt user:
+/// el are ceva de pe wishlist-ul meu, eu am ceva de pe wishlist-ul lui.
+class SmartMatch {
+  final PublicUser owner;
+  final List<SmartMatchBook> theirBooks;
+  final List<SmartMatchBook> myBooksTheyWant;
+
+  const SmartMatch({
+    required this.owner,
+    required this.theirBooks,
+    required this.myBooksTheyWant,
+  });
+
+  factory SmartMatch.fromJson(Map<String, dynamic> json) {
+    return SmartMatch(
+      owner: PublicUser.fromJson(json['owner'] as Map<String, dynamic>),
+      theirBooks: (json['theirBooks'] as List<dynamic>)
+          .map((e) => SmartMatchBook.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      myBooksTheyWant: (json['myBooksTheyWant'] as List<dynamic>)
+          .map((e) => SmartMatchBook.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class AcquisitionHistoryEntry {
   final String bookTitle;
   final String? bookCoverUrl;

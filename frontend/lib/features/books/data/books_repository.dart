@@ -5,6 +5,7 @@ import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../../../data/models/map_city.dart';
 import '../../../data/models/price_offer.dart';
+import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
 
 class BrowseResult {
@@ -155,6 +156,46 @@ class BooksRepository {
     final response = await dio.get('/books/nearby-today', queryParameters: {'city': city});
     return (response.data as List)
         .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<UserBook>> getHiddenGems() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/hidden-gems');
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<UserBook>> getRecommendedForYou() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/recommended');
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<UserBook>> getCompleteYourCollection() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/complete-your-collection');
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<SimilarTasteUser>> getSimilarTasteUsers() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/similar-taste-users');
+    return (response.data as List)
+        .map((e) => SimilarTasteUser.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<SmartMatch>> getSmartMatches() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/smart-matches');
+    return (response.data as List)
+        .map((e) => SmartMatch.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 

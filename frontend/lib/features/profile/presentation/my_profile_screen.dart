@@ -265,6 +265,12 @@ class _ProfileContent extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
+          icon: const Icon(Icons.compare_arrows_outlined),
+          label: Text(l10n.profileSmartMatches),
+          onPressed: () => context.push('/smart-matches'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
           icon: const Icon(Icons.language_outlined),
           label: Text(l10n.profileLanguage),
           onPressed: () => _showLanguagePicker(context, ref),
