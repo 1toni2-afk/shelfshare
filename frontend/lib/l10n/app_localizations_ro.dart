@@ -741,6 +741,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homeNearYou => 'Din orașul tău';
 
   @override
+  String get homeNearYouToday => 'Astăzi, aproape de tine';
+
+  @override
   String get homeUpcomingBooks => 'Cărți viitoare';
 
   @override

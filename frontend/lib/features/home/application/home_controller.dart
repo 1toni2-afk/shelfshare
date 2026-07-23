@@ -14,6 +14,7 @@ class HomeData {
     required this.recent,
     required this.mostViewed,
     required this.nearby,
+    required this.nearbyToday,
     required this.upcomingReleases,
     required this.genres,
     required this.activeMembers,
@@ -21,6 +22,7 @@ class HomeData {
   final List<UserBook> recent;
   final List<UserBook> mostViewed;
   final List<UserBook> nearby;
+  final List<UserBook> nearbyToday;
   final List<UpcomingRelease> upcomingReleases;
   final List<BookGenre> genres;
   final List<PublicUser> activeMembers;
@@ -46,16 +48,20 @@ class HomeController extends AsyncNotifier<HomeData> {
     final upcomingReleasesFuture = upcomingReleasesRepository.list();
     final genresFuture = repository.getGenres();
     final activeMembersFuture = ref.read(followRepositoryProvider).getActiveMembers();
+    final nearbyTodayFuture =
+        city != null && city.isNotEmpty ? repository.getNearbyToday(city) : Future.value(<UserBook>[]);
 
     final results = await booksResultsFuture;
     final upcomingReleases = await upcomingReleasesFuture;
     final genres = await genresFuture;
     final activeMembers = await activeMembersFuture;
+    final nearbyToday = await nearbyTodayFuture;
 
     return HomeData(
       recent: results[0].items,
       mostViewed: results[1].items,
       nearby: results.length > 2 ? results[2].items : const [],
+      nearbyToday: nearbyToday,
       upcomingReleases: upcomingReleases,
       genres: genres,
       activeMembers: activeMembers,

@@ -744,6 +744,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get homeNearYou => 'A városodban';
 
   @override
+  String get homeNearYouToday => 'Ma, a közeledben';
+
+  @override
   String get homeUpcomingBooks => 'Hamarosan megjelenő könyvek';
 
   @override

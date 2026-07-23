@@ -84,6 +84,20 @@ class Bookshelf {
   }
 }
 
+class SearchStat {
+  final String query;
+  final int count;
+
+  const SearchStat({required this.query, required this.count});
+
+  factory SearchStat.fromJson(Map<String, dynamic> json) {
+    return SearchStat(
+      query: json['query'] as String,
+      count: json['count'] as int,
+    );
+  }
+}
+
 class AuthorStatEntry {
   final String author;
   final int count;

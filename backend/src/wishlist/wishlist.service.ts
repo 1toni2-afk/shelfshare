@@ -68,4 +68,27 @@ export class WishlistService {
       ),
     );
   }
+
+  /**
+   * "Price Changed" - notifică userii care au cartea pe wishlist când
+   * proprietarul îi modifică prețul de vânzare (nu se declanșează la prima
+   * trecere pe vânzare - vezi apelantul din books.service.ts).
+   */
+  async notifyPriceChanged(bookId: string, excludeUserId: string, newPrice: number) {
+    const wishlistedBy = await this.prisma.wishlistItem.findMany({
+      where: { bookId, userId: { not: excludeUserId } },
+      include: { book: true },
+    });
+
+    await Promise.all(
+      wishlistedBy.map((item) =>
+        this.notifications.create(
+          item.userId,
+          'PRICE_CHANGED',
+          `Prețul cărții "${item.book.title}" de pe lista ta de dorințe s-a schimbat: ${newPrice} lei`,
+          { bookId },
+        ),
+      ),
+    );
+  }
 }

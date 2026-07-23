@@ -1,7 +1,7 @@
 import 'user.dart';
 import 'user_book.dart';
 
-enum ExchangeStatus { pending, accepted, rejected, cancelled, completed }
+enum ExchangeStatus { pending, accepted, rejected, cancelled, completed, expired }
 
 extension ExchangeStatusX on ExchangeStatus {
   static ExchangeStatus fromJson(String value) {
@@ -16,6 +16,8 @@ extension ExchangeStatusX on ExchangeStatus {
         return ExchangeStatus.cancelled;
       case 'COMPLETED':
         return ExchangeStatus.completed;
+      case 'EXPIRED':
+        return ExchangeStatus.expired;
       default:
         throw ArgumentError('Status necunoscut: $value');
     }
@@ -33,6 +35,8 @@ extension ExchangeStatusX on ExchangeStatus {
         return 'Anulat';
       case ExchangeStatus.completed:
         return 'Finalizat';
+      case ExchangeStatus.expired:
+        return 'Expirat';
     }
   }
 }

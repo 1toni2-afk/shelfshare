@@ -246,6 +246,7 @@ class _StatusChip extends StatelessWidget {
       ExchangeStatus.completed => (const Color(0xFF2E7D32), const Color(0xFF2E7D32).withValues(alpha: 0.12)),
       ExchangeStatus.rejected => (AppColors.destructive, AppColors.destructive.withValues(alpha: 0.12)),
       ExchangeStatus.cancelled => (AppColors.mutedForeground, AppColors.muted),
+      ExchangeStatus.expired => (AppColors.mutedForeground, AppColors.muted),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -883,6 +884,7 @@ class _OfferStatusChip extends StatelessWidget {
       OfferStatus.accepted => (const Color(0xFF2E7D32), const Color(0xFF2E7D32).withValues(alpha: 0.12)),
       OfferStatus.rejected => (AppColors.destructive, AppColors.destructive.withValues(alpha: 0.12)),
       OfferStatus.cancelled => (AppColors.mutedForeground, AppColors.muted),
+      OfferStatus.expired => (AppColors.mutedForeground, AppColors.muted),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

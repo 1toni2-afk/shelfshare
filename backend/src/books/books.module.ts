@@ -6,6 +6,7 @@ import { BookLookupService } from './book-lookup.service';
 import { StorageModule } from '../storage/storage.module';
 import { WishlistModule } from '../wishlist/wishlist.module';
 import { FollowModule } from '../follow/follow.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { FollowModule } from '../follow/follow.module';
     StorageModule,
     WishlistModule,
     FollowModule,
+    NotificationsModule,
   ],
   controllers: [BooksController],
   providers: [BooksService, BookLookupService],

@@ -13,6 +13,9 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_SALE_COMPLETED } from '../common/utils/xp';
 
+// Offer Expiration (Milestone 3) - vezi comentariul din exchanges.service.ts.
+const OFFER_EXPIRY_DAYS = 7;
+
 const INCLUDE_FULL = {
   userBook: { include: { book: true } },
   buyer: {
@@ -104,6 +107,7 @@ export class OffersService {
         userBookId,
         amount: dto.amount,
         message: dto.message,
+        expiresAt: new Date(Date.now() + OFFER_EXPIRY_DAYS * 86_400_000),
       },
       include: INCLUDE_FULL,
     });
@@ -134,6 +138,7 @@ export class OffersService {
   }
 
   async getSentOffers(userId: string) {
+    await this.expireStalePending({ buyerId: userId });
     const offers = await this.prisma.priceOffer.findMany({
       where: { buyerId: userId },
       include: INCLUDE_FULL,
@@ -143,12 +148,20 @@ export class OffersService {
   }
 
   async getReceivedOffers(userId: string) {
+    await this.expireStalePending({ ownerId: userId });
     const offers = await this.prisma.priceOffer.findMany({
       where: { ownerId: userId },
       include: INCLUDE_FULL,
       orderBy: { createdAt: 'desc' },
     });
     return offers.map((o) => this.sanitizeParties(o));
+  }
+
+  private async expireStalePending(where: { buyerId?: string; ownerId?: string }) {
+    await this.prisma.priceOffer.updateMany({
+      where: { ...where, status: 'PENDING', expiresAt: { lt: new Date() } },
+      data: { status: 'EXPIRED' },
+    });
   }
 
   async accept(id: string, userId: string) {
@@ -247,7 +260,24 @@ export class OffersService {
     if (!offer) {
       throw new NotFoundException('Oferta nu a fost găsită');
     }
-    return offer;
+    return this.expireIfStale(offer);
+  }
+
+  /**
+   * Expirare "leneșă" - vezi comentariul de pe PriceOffer.expiresAt în
+   * schema.prisma. Verificată la fiecare citire, nu printr-un job separat.
+   */
+  private async expireIfStale<T extends { id: string; status: string; expiresAt: Date | null }>(
+    offer: T,
+  ): Promise<T> {
+    if (offer.status !== 'PENDING' || !offer.expiresAt || offer.expiresAt > new Date()) {
+      return offer;
+    }
+    await this.prisma.priceOffer.update({
+      where: { id: offer.id },
+      data: { status: 'EXPIRED' },
+    });
+    return { ...offer, status: 'EXPIRED' };
   }
 
   private assertIsOwner(offer: { ownerId: string }, userId: string) {

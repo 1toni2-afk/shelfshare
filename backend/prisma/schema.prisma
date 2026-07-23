@@ -290,6 +290,18 @@ model UserBook {
 }
 
 /// O vizualizare a unei cărți de către un user autentificat - deduplicat
+/// Termeni căutați (titlu-carte extern sau în bibliotecă), pentru "Popular
+/// Searches" - un simplu log append-only, agregat la citire (vezi
+/// getPopularSearches în books.service.ts), fără userId (nu ne interesează
+/// cine a căutat, doar ce se caută des).
+model SearchLog {
+  id        String   @id @default(uuid())
+  query     String
+  createdAt DateTime @default(now())
+
+  @@map("search_logs")
+}
+
 /// prin unique(userBookId, userId), ca refresh-urile repetate ale aceluiași
 /// user să nu umfle numărul de vizitatori unici (viewCount de pe UserBook
 /// rămâne totalul brut, cu tot cu refresh-uri).
@@ -342,6 +354,7 @@ enum OfferStatus {
   ACCEPTED
   REJECTED
   CANCELLED
+  EXPIRED
 }
 
 model PriceOffer {
@@ -360,6 +373,13 @@ model PriceOffer {
   message String?
   status  OfferStatus @default(PENDING)
 
+  // Expirare "leneșă" - nu există un job programat care baleiază periodic;
+  // orice citire a unei oferte PENDING (getSentOffers/getReceivedOffers)
+  // verifică expiresAt și trece oferta pe EXPIRED pe loc dacă a trecut
+  // termenul, înainte de a răspunde. Simplu, fără dependință nouă
+  // (@nestjs/schedule), suficient la scara aplicației.
+  expiresAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -374,6 +394,7 @@ enum ExchangeStatus {
   REJECTED
   CANCELLED
   COMPLETED
+  EXPIRED
 }
 
 model ExchangeRequest {
@@ -395,6 +416,9 @@ model ExchangeRequest {
 
   status  ExchangeStatus @default(PENDING)
   message String?
+
+  // Expirare "leneșă" - vezi comentariul de pe PriceOffer.expiresAt.
+  expiresAt DateTime?
 
   requesterRatingForOwner Int?
   ownerRatingForRequester Int?
@@ -497,6 +521,8 @@ enum NotificationType {
   PRICE_OFFER_ACCEPTED
   PRICE_OFFER_REJECTED
   FOLLOWED_USER_NEW_BOOK
+  NEARBY_BOOK_LISTED
+  PRICE_CHANGED
 }
 
 model Notification {

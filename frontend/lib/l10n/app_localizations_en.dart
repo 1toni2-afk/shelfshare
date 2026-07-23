@@ -740,6 +740,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNearYou => 'Near your city';
 
   @override
+  String get homeNearYouToday => 'Near you today';
+
+  @override
   String get homeUpcomingBooks => 'Upcoming books';
 
   @override

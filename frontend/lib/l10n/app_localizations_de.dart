@@ -749,6 +749,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeNearYou => 'In deiner Stadt';
 
   @override
+  String get homeNearYouToday => 'Heute in deiner Nähe';
+
+  @override
   String get homeUpcomingBooks => 'Kommende Bücher';
 
   @override

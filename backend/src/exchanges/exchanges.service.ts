@@ -14,6 +14,10 @@ import { SetMeetingDto } from './dto/set-meeting.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_EXCHANGE_COMPLETED, XP_REVIEW_WRITTEN } from '../common/utils/xp';
 
+// Offer Expiration (Milestone 3) - o cerere PENDING neatinsă expiră automat
+// după atâtea zile, ca să nu rămână la nesfârșit "în așteptare" fără răspuns.
+const OFFER_EXPIRY_DAYS = 7;
+
 const INCLUDE_FULL = {
   requestedBook: { include: { book: true } },
   offeredBook: { include: { book: true } },
@@ -128,6 +132,7 @@ export class ExchangesService {
         offeredBookId: dto.offeredBookId,
         offeredAmount: dto.offeredAmount,
         message: dto.message,
+        expiresAt: new Date(Date.now() + OFFER_EXPIRY_DAYS * 86_400_000),
       },
       include: INCLUDE_FULL,
     });
@@ -143,6 +148,7 @@ export class ExchangesService {
   }
 
   async getSentRequests(userId: string) {
+    await this.expireStalePending({ requesterId: userId });
     const requests = await this.prisma.exchangeRequest.findMany({
       where: { requesterId: userId },
       include: INCLUDE_FULL,
@@ -152,12 +158,20 @@ export class ExchangesService {
   }
 
   async getReceivedRequests(userId: string) {
+    await this.expireStalePending({ ownerId: userId });
     const requests = await this.prisma.exchangeRequest.findMany({
       where: { ownerId: userId },
       include: INCLUDE_FULL,
       orderBy: { createdAt: 'desc' },
     });
     return requests.map((r) => this.sanitizeParties(r));
+  }
+
+  private async expireStalePending(where: { requesterId?: string; ownerId?: string }) {
+    await this.prisma.exchangeRequest.updateMany({
+      where: { ...where, status: 'PENDING', expiresAt: { lt: new Date() } },
+      data: { status: 'EXPIRED' },
+    });
   }
 
   async getRequest(id: string, userId: string) {
@@ -461,7 +475,24 @@ export class ExchangesService {
     if (!request) {
       throw new NotFoundException('Cererea de schimb nu a fost găsită');
     }
-    return request;
+    return this.expireIfStale(request);
+  }
+
+  /**
+   * Expirare "leneșă" - vezi comentariul de pe ExchangeRequest.expiresAt în
+   * schema.prisma. Verificată la fiecare citire, nu printr-un job separat.
+   */
+  private async expireIfStale<T extends { id: string; status: string; expiresAt: Date | null }>(
+    request: T,
+  ): Promise<T> {
+    if (request.status !== 'PENDING' || !request.expiresAt || request.expiresAt > new Date()) {
+      return request;
+    }
+    await this.prisma.exchangeRequest.update({
+      where: { id: request.id },
+      data: { status: 'EXPIRED' },
+    });
+    return { ...request, status: 'EXPIRED' };
   }
 
   private async findOwnedRequest(id: string, userId: string) {
@@ -475,7 +506,7 @@ export class ExchangesService {
     if (request.requesterId !== userId && request.ownerId !== userId) {
       throw new ForbiddenException('Nu ești parte în acest schimb');
     }
-    return this.sanitizeParties(request);
+    return this.sanitizeParties(await this.expireIfStale(request));
   }
 
   private assertIsOwner(request: { ownerId: string }, userId: string) {

@@ -9,6 +9,8 @@ enum NotificationType {
   priceOfferAccepted,
   priceOfferRejected,
   followedUserNewBook,
+  nearbyBookListed,
+  priceChanged,
 }
 
 extension NotificationTypeX on NotificationType {
@@ -34,6 +36,10 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.priceOfferRejected;
       case 'FOLLOWED_USER_NEW_BOOK':
         return NotificationType.followedUserNewBook;
+      case 'NEARBY_BOOK_LISTED':
+        return NotificationType.nearbyBookListed;
+      case 'PRICE_CHANGED':
+        return NotificationType.priceChanged;
       default:
         throw ArgumentError('Tip necunoscut: $value');
     }

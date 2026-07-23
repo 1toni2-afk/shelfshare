@@ -7,7 +7,12 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/browse_controller.dart';
+import '../data/books_repository.dart';
 import 'browse_filters_sheet.dart';
+
+final _popularSearchesProvider = FutureProvider((ref) {
+  return ref.watch(booksRepositoryProvider).getPopularSearches();
+});
 
 /// Argumente opționale trimise ecranului de căutare din alte ecrane (ex.
 /// wishlist trimite un titlu, Home trimite un gen din secțiunea Categorii).
@@ -72,6 +77,11 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     });
   }
 
+  void _selectPopularSearch(String query) {
+    _searchController.text = query;
+    ref.read(browseControllerProvider.notifier).updateTitle(query);
+  }
+
   Future<void> _openFilters() async {
     if (_sheetOpen) return;
     _sheetOpen = true;
@@ -128,10 +138,43 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                 ],
               ),
             ),
+            if (_searchController.text.trim().isEmpty && !state.filters.hasActiveFilters)
+              _PopularSearches(onSelect: _selectPopularSearch),
             Expanded(child: _BrowseResults(state: state, scrollController: _scrollController)),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PopularSearches extends ConsumerWidget {
+  const _PopularSearches({required this.onSelect});
+  final ValueChanged<String> onSelect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(_popularSearchesProvider);
+    return async.when(
+      data: (searches) {
+        if (searches.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final search in searches)
+                ActionChip(
+                  label: Text(search.query),
+                  onPressed: () => onSelect(search.query),
+                ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

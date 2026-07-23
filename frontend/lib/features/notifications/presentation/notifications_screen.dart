@@ -43,6 +43,10 @@ class NotificationsScreen extends ConsumerWidget {
         if (userId != null) {
           context.push('/users/$userId');
         }
+      case NotificationType.nearbyBookListed:
+        context.push('/search');
+      case NotificationType.priceChanged:
+        context.push('/wishlist');
     }
   }
 
@@ -128,6 +132,10 @@ class NotificationsScreen extends ConsumerWidget {
         return Icons.sell_outlined;
       case NotificationType.followedUserNewBook:
         return Icons.person_add_alt_outlined;
+      case NotificationType.nearbyBookListed:
+        return Icons.location_on_outlined;
+      case NotificationType.priceChanged:
+        return Icons.price_change_outlined;
     }
   }
 

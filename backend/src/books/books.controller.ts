@@ -82,6 +82,16 @@ export class BooksController {
     return this.booksService.getMapCities();
   }
 
+  @Get('popular-searches')
+  getPopularSearches() {
+    return this.booksService.getPopularSearches();
+  }
+
+  @Get('nearby-today')
+  getNearbyToday(@Query('city') city: string) {
+    return this.booksService.getNearbyToday(city);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   addToLibrary(@Req() req: Request, @Body() dto: AddBookDto) {

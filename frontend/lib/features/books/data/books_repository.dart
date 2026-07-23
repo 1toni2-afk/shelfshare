@@ -142,6 +142,22 @@ class BooksRepository {
         .toList();
   }
 
+  Future<List<SearchStat>> getPopularSearches() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/popular-searches');
+    return (response.data as List)
+        .map((e) => SearchStat.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<UserBook>> getNearbyToday(String city) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/nearby-today', queryParameters: {'city': city});
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<MapCity>> getMapCities() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/books/map-cities');

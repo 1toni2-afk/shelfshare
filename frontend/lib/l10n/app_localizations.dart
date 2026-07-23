@@ -1386,6 +1386,12 @@ abstract class AppLocalizations {
   /// **'Din orașul tău'**
   String get homeNearYou;
 
+  /// No description provided for @homeNearYouToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Astăzi, aproape de tine'**
+  String get homeNearYouToday;
+
   /// No description provided for @homeUpcomingBooks.
   ///
   /// In ro, this message translates to:

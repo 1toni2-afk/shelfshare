@@ -2,7 +2,7 @@ import 'book.dart';
 import 'user.dart';
 import 'user_book.dart';
 
-enum OfferStatus { pending, accepted, rejected, cancelled }
+enum OfferStatus { pending, accepted, rejected, cancelled, expired }
 
 extension OfferStatusX on OfferStatus {
   static OfferStatus fromJson(String value) {
@@ -15,6 +15,8 @@ extension OfferStatusX on OfferStatus {
         return OfferStatus.rejected;
       case 'CANCELLED':
         return OfferStatus.cancelled;
+      case 'EXPIRED':
+        return OfferStatus.expired;
       default:
         throw ArgumentError('Status necunoscut: $value');
     }
@@ -30,6 +32,8 @@ extension OfferStatusX on OfferStatus {
         return 'Respinsă';
       case OfferStatus.cancelled:
         return 'Anulată';
+      case OfferStatus.expired:
+        return 'Expirată';
     }
   }
 }

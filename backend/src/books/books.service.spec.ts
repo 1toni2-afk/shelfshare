@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { WishlistService } from '../wishlist/wishlist.service';
 import { FollowService } from '../follow/follow.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { BookLookupService } from './book-lookup.service';
 
 describe('BooksService', () => {
@@ -22,6 +23,7 @@ describe('BooksService', () => {
         { provide: StorageService, useValue: {} },
         { provide: WishlistService, useValue: {} },
         { provide: FollowService, useValue: {} },
+        { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: {} },
       ],
     }).compile();

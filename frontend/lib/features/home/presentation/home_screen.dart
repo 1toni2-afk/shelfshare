@@ -137,6 +137,12 @@ class _HomeContent extends StatelessWidget {
           _BookGrid(books: data.mostViewed),
           const SizedBox(height: 24),
         ],
+        if (data.nearbyToday.isNotEmpty) ...[
+          SectionHeader(title: l10n.homeNearYouToday),
+          const SizedBox(height: 12),
+          _BookGrid(books: data.nearbyToday),
+          const SizedBox(height: 24),
+        ],
         if (data.nearby.isNotEmpty) ...[
           SectionHeader(title: l10n.homeNearYou),
           const SizedBox(height: 12),
