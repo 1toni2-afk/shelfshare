@@ -1452,6 +1452,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get chatNoResults => 'Nincs találat.';
 
   @override
+  String get chatSuggestedMeetingPoints =>
+      'Ajánlott találkozási pontok a közelben';
+
+  @override
   String get chatPickDate => 'Válassz dátumot';
 
   @override

@@ -660,6 +660,8 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
   PlaceResult? _selected;
   DateTime? _date;
   TimeOfDay? _time;
+  List<PlaceResult>? _meetingPoints;
+  bool _loadingMeetingPoints = false;
 
   @override
   void dispose() {
@@ -683,6 +685,33 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
         if (mounted) setState(() => _isSearching = false);
       }
     });
+  }
+
+  Future<void> _selectPlace(PlaceResult place) async {
+    setState(() {
+      _selected = place;
+      _meetingPoints = null;
+      _loadingMeetingPoints = true;
+    });
+    try {
+      final points = await ref.read(placesRepositoryProvider).meetingPoints(place.lat, place.lng);
+      if (mounted) setState(() => _meetingPoints = points);
+    } finally {
+      if (mounted) setState(() => _loadingMeetingPoints = false);
+    }
+  }
+
+  IconData _categoryIcon(String? category) {
+    switch (category) {
+      case 'library':
+        return Icons.local_library_outlined;
+      case 'cafe':
+        return Icons.local_cafe_outlined;
+      case 'mall':
+        return Icons.shopping_bag_outlined;
+      default:
+        return Icons.place_outlined;
+    }
   }
 
   Future<void> _pickDate() async {
@@ -758,7 +787,7 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
                               contentPadding: EdgeInsets.zero,
                               leading: const Icon(Icons.place_outlined),
                               title: Text(place.displayName, maxLines: 2, overflow: TextOverflow.ellipsis),
-                              onTap: () => setState(() => _selected = place),
+                              onTap: () => _selectPlace(place),
                             );
                           },
                         ),
@@ -769,10 +798,52 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
                 leading: const Icon(Icons.place, color: AppColors.accent),
                 title: Text(_selected!.displayName),
                 trailing: TextButton(
-                  onPressed: () => setState(() => _selected = null),
+                  onPressed: () => setState(() {
+                    _selected = null;
+                    _meetingPoints = null;
+                  }),
                   child: Text(l10n.addBookChange),
                 ),
               ),
+              const SizedBox(height: 12),
+              if (_loadingMeetingPoints)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_meetingPoints != null && _meetingPoints!.isNotEmpty) ...[
+                Text(
+                  l10n.chatSuggestedMeetingPoints,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 88,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _meetingPoints!.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final point = _meetingPoints![index];
+                      return SizedBox(
+                        width: 140,
+                        child: OutlinedButton.icon(
+                          onPressed: () => setState(() => _selected = point),
+                          icon: Icon(_categoryIcon(point.category), size: 18),
+                          label: Text(
+                            point.displayName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.left,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               const SizedBox(height: 12),
               Row(
                 children: [

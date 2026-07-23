@@ -465,6 +465,7 @@
   },
   "chatSearchPlaceHint": "Suche nach einer Adresse oder einem Ort (z.B. Café X, Cluj)",
   "chatNoResults": "Keine Ergebnisse.",
+  "chatSuggestedMeetingPoints": "Empfohlene Treffpunkte in der Nähe",
   "chatPickDate": "Datum wählen",
   "chatPickTime": "Uhrzeit wählen",
 

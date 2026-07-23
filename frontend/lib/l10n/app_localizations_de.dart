@@ -1473,6 +1473,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chatNoResults => 'Keine Ergebnisse.';
 
   @override
+  String get chatSuggestedMeetingPoints => 'Empfohlene Treffpunkte in der Nähe';
+
+  @override
   String get chatPickDate => 'Datum wählen';
 
   @override

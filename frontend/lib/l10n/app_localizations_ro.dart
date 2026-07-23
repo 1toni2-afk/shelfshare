@@ -1449,6 +1449,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get chatNoResults => 'Niciun rezultat.';
 
   @override
+  String get chatSuggestedMeetingPoints => 'Sugestii de întâlnire în apropiere';
+
+  @override
   String get chatPickDate => 'Alege data';
 
   @override

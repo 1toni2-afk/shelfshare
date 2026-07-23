@@ -538,6 +538,7 @@
   },
   "chatSearchPlaceHint": "Caută o adresă sau un loc (ex: Cafeneaua X, Cluj)",
   "chatNoResults": "Niciun rezultat.",
+  "chatSuggestedMeetingPoints": "Sugestii de întâlnire în apropiere",
   "chatPickDate": "Alege data",
   "chatPickTime": "Alege ora",
 

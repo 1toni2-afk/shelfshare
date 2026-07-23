@@ -2658,6 +2658,12 @@ abstract class AppLocalizations {
   /// **'Niciun rezultat.'**
   String get chatNoResults;
 
+  /// No description provided for @chatSuggestedMeetingPoints.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sugestii de întâlnire în apropiere'**
+  String get chatSuggestedMeetingPoints;
+
   /// No description provided for @chatPickDate.
   ///
   /// In ro, this message translates to:

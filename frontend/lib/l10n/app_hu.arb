@@ -465,6 +465,7 @@
   },
   "chatSearchPlaceHint": "Keress egy címet vagy helyet (pl. X kávézó, Kolozsvár)",
   "chatNoResults": "Nincs találat.",
+  "chatSuggestedMeetingPoints": "Ajánlott találkozási pontok a közelben",
   "chatPickDate": "Válassz dátumot",
   "chatPickTime": "Válassz időpontot",
 
