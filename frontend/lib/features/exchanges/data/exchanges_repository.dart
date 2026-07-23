@@ -49,11 +49,21 @@ class ExchangesRepository {
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<ExchangeRequest> rate(String id, int value, {String? comment}) async {
+  Future<ExchangeRequest> rate(
+    String id,
+    int value, {
+    String? comment,
+    int? communication,
+    int? punctuality,
+    int? condition,
+  }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/exchanges/$id/rate', data: {
       'value': value,
       if (comment != null && comment.isNotEmpty) 'comment': comment,
+      'communication': ?communication,
+      'punctuality': ?punctuality,
+      'condition': ?condition,
     });
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }

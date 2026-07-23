@@ -14,6 +14,9 @@ import '../../../shared/widgets/profile_header.dart';
 import '../../../shared/widgets/achievements_grid.dart';
 import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../../shared/widgets/trust_score_card.dart';
+import '../../../shared/widgets/impact_stats_card.dart';
+import '../../../shared/widgets/gamification_card.dart';
+import 'challenges_widgets.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../application/profile_controller.dart';
@@ -187,11 +190,23 @@ class _ProfileContent extends ConsumerWidget {
           const SizedBox(height: 20),
           TrustScoreCard(trustScore: user.trustScore!),
         ],
+        if (user.gamification != null) ...[
+          const SizedBox(height: 20),
+          GamificationCard(stats: user.gamification!),
+        ],
+        const SizedBox(height: 20),
+        const MonthlyChallengesCard(),
+        const SizedBox(height: 20),
+        const ReadingChallengeCard(),
         if (user.achievements != null && user.achievements!.isNotEmpty) ...[
           const SizedBox(height: 20),
           Text(l10n.profileBadgesTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           AchievementsGrid(achievements: user.achievements!),
+        ],
+        if (user.impactStats != null) ...[
+          const SizedBox(height: 20),
+          ImpactStatsCard(impactStats: user.impactStats!),
         ],
         if (user.referralCode != null) ...[
           const SizedBox(height: 20),
@@ -229,6 +244,24 @@ class _ProfileContent extends ConsumerWidget {
           icon: const Icon(Icons.favorite_border),
           label: Text(l10n.profileFavoriteSellers),
           onPressed: () => context.push('/following'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.bar_chart_outlined),
+          label: Text(l10n.profileGlobalStats),
+          onPressed: () => context.push('/global-stats'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.auto_stories_outlined),
+          label: Text(l10n.profileMyBookshelf),
+          onPressed: () => context.push('/bookshelf'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.dynamic_feed_outlined),
+          label: Text(l10n.profileActivityFeed),
+          onPressed: () => context.push('/activity-feed'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(

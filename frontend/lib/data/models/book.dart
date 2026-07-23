@@ -12,6 +12,92 @@ class BookGenre {
   }
 }
 
+class BookStatEntry {
+  final Book book;
+  final int count;
+
+  const BookStatEntry({required this.book, required this.count});
+
+  factory BookStatEntry.fromJson(Map<String, dynamic> json) {
+    return BookStatEntry(
+      book: Book.fromJson(json['book'] as Map<String, dynamic>),
+      count: json['count'] as int,
+    );
+  }
+}
+
+/// Statusul personal de citit pentru o carte din catalog (Public
+/// Bookshelf) - independent de a deține sau nu un exemplar fizic listat.
+enum BookshelfStatus { reading, wantToRead, finished }
+
+extension BookshelfStatusX on BookshelfStatus {
+  static BookshelfStatus fromJson(String value) {
+    switch (value) {
+      case 'READING':
+        return BookshelfStatus.reading;
+      case 'WANT_TO_READ':
+        return BookshelfStatus.wantToRead;
+      case 'FINISHED':
+        return BookshelfStatus.finished;
+      default:
+        throw ArgumentError('Status necunoscut: $value');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case BookshelfStatus.reading:
+        return 'READING';
+      case BookshelfStatus.wantToRead:
+        return 'WANT_TO_READ';
+      case BookshelfStatus.finished:
+        return 'FINISHED';
+    }
+  }
+}
+
+/// Gruparea raftului (propriu sau public) pe cele 3 stări stocate - "Shared"
+/// nu e parte din asta, se derivă din listările UserBook existente.
+class Bookshelf {
+  final List<Book> reading;
+  final List<Book> wantToRead;
+  final List<Book> finished;
+
+  const Bookshelf({
+    this.reading = const [],
+    this.wantToRead = const [],
+    this.finished = const [],
+  });
+
+  factory Bookshelf.fromJson(Map<String, dynamic> json) {
+    return Bookshelf(
+      reading: (json['reading'] as List<dynamic>? ?? [])
+          .map((e) => Book.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      wantToRead: (json['wantToRead'] as List<dynamic>? ?? [])
+          .map((e) => Book.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      finished: (json['finished'] as List<dynamic>? ?? [])
+          .map((e) => Book.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class AuthorStatEntry {
+  final String author;
+  final int count;
+
+  const AuthorStatEntry({required this.author, required this.count});
+
+  factory AuthorStatEntry.fromJson(Map<String, dynamic> json) {
+    return AuthorStatEntry(
+      author: json['author'] as String,
+      count: json['count'] as int,
+    );
+  }
+}
+
 enum BookCondition { noua, foarteBuna, buna, acceptabila }
 
 extension BookConditionX on BookCondition {

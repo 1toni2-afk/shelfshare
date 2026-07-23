@@ -86,6 +86,24 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get trustScoreLastActiveToday => 'Activ astăzi';
+
+  @override
+  String trustScoreLastActiveDays(int days) {
+    return 'Activ acum $days zile';
+  }
+
+  @override
+  String trustScoreResponseRate(int percent) {
+    return '$percent% rată de răspuns';
+  }
+
+  @override
+  String trustScoreAverageSwapTime(String time) {
+    return 'Schimb finalizat în ~$time';
+  }
+
+  @override
   String memberSinceDays(int days) {
     return 'Membru din $days zile';
   }
@@ -463,6 +481,15 @@ class AppLocalizationsRo extends AppLocalizations {
   String get publicProfileFavoriteGenre => 'Gen preferat';
 
   @override
+  String get publicProfileBooksShared => 'Cărți date';
+
+  @override
+  String get publicProfileBooksReceived => 'Cărți primite';
+
+  @override
+  String get publicProfileLongestBook => 'Cea mai lungă carte';
+
+  @override
   String publicProfileListedBooksCount(int count) {
     return 'Cărți listate ($count)';
   }
@@ -501,6 +528,161 @@ class AppLocalizationsRo extends AppLocalizations {
   String get leaderboardTabNational => 'Național';
 
   @override
+  String get leaderboardTabTopReaders => 'Cititori';
+
+  @override
+  String leaderboardPagesCount(int count) {
+    return '$count pagini';
+  }
+
+  @override
+  String get profileGlobalStats => 'Statistici globale';
+
+  @override
+  String get profileMyBookshelf => 'Raftul meu';
+
+  @override
+  String get bookshelfTitle => 'Raftul meu';
+
+  @override
+  String get bookshelfTabReading => 'Citesc';
+
+  @override
+  String get bookshelfTabWantToRead => 'Vreau să citesc';
+
+  @override
+  String get bookshelfTabFinished => 'Terminate';
+
+  @override
+  String get bookshelfTabShared => 'Împărtășite';
+
+  @override
+  String get bookshelfEmpty => 'Nicio carte aici încă.';
+
+  @override
+  String get bookshelfLoadError => 'Nu am putut încărca raftul.';
+
+  @override
+  String get bookDetailShelfSectionTitle => 'Adaugă în raftul tău';
+
+  @override
+  String gamificationLevel(int level) {
+    return 'Nivel $level';
+  }
+
+  @override
+  String gamificationXp(int xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String gamificationXpToNextLevel(int xp) {
+    return '$xp XP până la nivelul următor';
+  }
+
+  @override
+  String gamificationStreak(int days) {
+    return '$days zile la rând';
+  }
+
+  @override
+  String gamificationLongestStreak(int days) {
+    return 'Record: $days zile';
+  }
+
+  @override
+  String get profileMonthlyChallenges => 'Provocări lunare';
+
+  @override
+  String get monthlyChallengesTitle => 'Provocări lunare';
+
+  @override
+  String get profileReadingChallenge => 'Provocarea de citit';
+
+  @override
+  String readingChallengeTitle(int year) {
+    return 'Provocarea de citit $year';
+  }
+
+  @override
+  String get readingChallengeNoGoal =>
+      'Nu ai setat încă un obiectiv pentru anul acesta.';
+
+  @override
+  String readingChallengeProgress(int progress, int goal) {
+    return '$progress din $goal cărți terminate';
+  }
+
+  @override
+  String get readingChallengeSetGoal => 'Setează un obiectiv';
+
+  @override
+  String get readingChallengeGoalLabel =>
+      'Câte cărți vrei să termini anul acesta?';
+
+  @override
+  String get profileActivityFeed => 'Activitate recentă';
+
+  @override
+  String get activityFeedTitle => 'Activitate recentă';
+
+  @override
+  String get activityFeedEmpty =>
+      'Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.';
+
+  @override
+  String get activityFeedLoadError => 'Nu am putut încărca activitatea.';
+
+  @override
+  String activityNewListing(String name) {
+    return '$name a listat o carte nouă';
+  }
+
+  @override
+  String activityFinishedBook(String name) {
+    return '$name a terminat de citit';
+  }
+
+  @override
+  String activityCompletedExchange(String name) {
+    return '$name a finalizat un schimb';
+  }
+
+  @override
+  String get bookDetailShelfRemove => 'Elimină din raft';
+
+  @override
+  String get publicProfileBookshelfTitle => 'Raftul de cărți';
+
+  @override
+  String get globalStatsTitle => 'Statistici globale';
+
+  @override
+  String get globalStatsTabMostShared => 'Cele mai schimbate';
+
+  @override
+  String get globalStatsTabTrending => 'În tendințe';
+
+  @override
+  String get globalStatsTabPopularAuthors => 'Autori populari';
+
+  @override
+  String get globalStatsEmpty => 'Nicio dată încă.';
+
+  @override
+  String get globalStatsLoadError => 'Nu am putut încărca statisticile.';
+
+  @override
+  String globalStatsTransferCount(int count) {
+    return '$count schimburi/vânzări';
+  }
+
+  @override
+  String globalStatsViewCount(int count) {
+    return '$count vizualizări (14 zile)';
+  }
+
+  @override
   String get profileFavoriteSellers => 'Vânzători favoriți';
 
   @override
@@ -514,6 +696,23 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get publicProfileTopGenres => 'Genuri preferate';
+
+  @override
+  String get impactStatsTitle => 'Impact';
+
+  @override
+  String get impactStatsTotalValue => 'Valoare totală schimbată';
+
+  @override
+  String get impactStatsMoneySaved => 'Bani economisiți';
+
+  @override
+  String get impactStatsCo2Saved => 'CO₂ economisit (estimativ)';
+
+  @override
+  String impactStatsCo2Value(String kg) {
+    return '$kg kg';
+  }
 
   @override
   String homeGreeting(String name) {
@@ -1052,6 +1251,18 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get exchangeRatingDialogTitle => 'Cum a fost schimbul?';
+
+  @override
+  String get exchangeRatingOverall => 'Per ansamblu';
+
+  @override
+  String get exchangeRatingCommunication => 'Comunicare';
+
+  @override
+  String get exchangeRatingPunctuality => 'Punctualitate';
+
+  @override
+  String get exchangeRatingCondition => 'Starea cărții primite';
 
   @override
   String get exchangeReviewOptional => 'Recenzie (opțional)';

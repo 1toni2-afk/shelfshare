@@ -55,6 +55,42 @@ class ProfileRepository {
         .map((e) => CityLeaderboardEntry.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  Future<List<TopReaderEntry>> getTopReaders() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/leaderboard/top-readers');
+    return (response.data as List)
+        .map((e) => TopReaderEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<MonthlyChallenge>> getMonthlyChallenges() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/monthly-challenges');
+    return (response.data as List)
+        .map((e) => MonthlyChallenge.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<ReadingChallenge> getReadingChallenge() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/reading-challenge');
+    return ReadingChallenge.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ReadingChallenge> setReadingChallengeGoal(int? goal) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.patch('/profile/reading-challenge', data: {'goal': goal});
+    return ReadingChallenge.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<ActivityEvent>> getActivityFeed() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/activity-feed');
+    return (response.data as List)
+        .map((e) => ActivityEvent.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {

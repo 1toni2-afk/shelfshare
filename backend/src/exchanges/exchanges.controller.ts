@@ -85,7 +85,7 @@ export class ExchangesController {
     @Body() dto: RateExchangeDto,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.exchangesService.rate(id, userId!, dto.value, dto.comment);
+    return this.exchangesService.rate(id, userId!, dto);
   }
 
   @Patch(':id/meeting')

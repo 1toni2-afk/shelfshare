@@ -15,6 +15,10 @@ final _nationalLeaderboardProvider = FutureProvider((ref) {
   return ref.watch(profileRepositoryProvider).getNationalLeaderboard();
 });
 
+final _topReadersProvider = FutureProvider((ref) {
+  return ref.watch(profileRepositoryProvider).getTopReaders();
+});
+
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});
 
@@ -22,7 +26,7 @@ class LeaderboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.profileLeaderboard),
@@ -30,6 +34,7 @@ class LeaderboardScreen extends StatelessWidget {
             tabs: [
               Tab(text: l10n.leaderboardTabCity),
               Tab(text: l10n.leaderboardTabNational),
+              Tab(text: l10n.leaderboardTabTopReaders),
             ],
           ),
         ),
@@ -38,8 +43,61 @@ class LeaderboardScreen extends StatelessWidget {
             children: [
               _LeaderboardList(provider: _cityLeaderboardProvider, showCity: true),
               _LeaderboardList(provider: _nationalLeaderboardProvider, showCity: false),
+              const _TopReadersList(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TopReadersList extends ConsumerWidget {
+  const _TopReadersList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(_topReadersProvider);
+    final l10n = context.l10n;
+
+    return async.when(
+      data: (entries) {
+        if (entries.isEmpty) {
+          return CenteredScrollable(child: Text(l10n.leaderboardEmpty));
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: entries.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final entry = entries[index];
+            return Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                onTap: () => context.push('/users/${entry.id}'),
+                leading: CircleAvatar(
+                  child: Text('${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                title: Text(entry.name ?? l10n.commonUnknownUser),
+                subtitle: Text(entry.city ?? ''),
+                trailing: Text(l10n.leaderboardPagesCount(entry.totalPages)),
+              ),
+            );
+          },
+        );
+      },
+      loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+      error: (error, _) => CenteredScrollable(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.leaderboardLoadError),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => ref.invalidate(_topReadersProvider),
+              child: Text(l10n.commonRetry),
+            ),
+          ],
         ),
       ),
     );

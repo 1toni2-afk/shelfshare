@@ -60,6 +60,22 @@ export class BooksController {
     return this.booksService.getLanguages(query);
   }
 
+  // Statistici globale - tot înainte de :userBookId, din același motiv.
+  @Get('most-shared')
+  getMostSharedBooks() {
+    return this.booksService.getMostSharedBooks();
+  }
+
+  @Get('trending')
+  getTrendingBooks() {
+    return this.booksService.getTrendingBooks();
+  }
+
+  @Get('popular-authors')
+  getMostPopularAuthors() {
+    return this.booksService.getMostPopularAuthors();
+  }
+
   // Tot înainte de :userBookId, din același motiv ca 'browse'.
   @Get('map-cities')
   getMapCities() {

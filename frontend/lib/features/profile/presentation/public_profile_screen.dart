@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
@@ -11,6 +12,8 @@ import '../../../shared/widgets/profile_header.dart';
 import '../../../shared/widgets/achievements_grid.dart';
 import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../../shared/widgets/trust_score_card.dart';
+import '../../../shared/widgets/impact_stats_card.dart';
+import '../../../shared/widgets/gamification_card.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
@@ -204,6 +207,10 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           TrustScoreCard(trustScore: user.trustScore!),
         ],
+        if (user.gamification != null) ...[
+          const SizedBox(height: 20),
+          GamificationCard(stats: user.gamification!),
+        ],
         if (!isOwnProfile) ...[
           const SizedBox(height: 20),
           Row(
@@ -243,6 +250,15 @@ class _Content extends StatelessWidget {
                 _StatChip(label: l10n.publicProfileTotalPages, value: '${user.readingStats!.totalPages}'),
               if (user.readingStats!.topGenres.length <= 1 && user.readingStats!.favoriteGenre != null)
                 _StatChip(label: l10n.publicProfileFavoriteGenre, value: user.readingStats!.favoriteGenre!),
+              if ((user.booksSharedCount ?? 0) > 0)
+                _StatChip(label: l10n.publicProfileBooksShared, value: '${user.booksSharedCount}'),
+              if ((user.booksReceivedCount ?? 0) > 0)
+                _StatChip(label: l10n.publicProfileBooksReceived, value: '${user.booksReceivedCount}'),
+              if (user.readingStats!.longestBookTitle != null)
+                _StatChip(
+                  label: l10n.publicProfileLongestBook,
+                  value: '${user.readingStats!.longestBookTitle} (${user.readingStats!.longestBookPages}p)',
+                ),
             ],
           ),
           if (user.readingStats!.topGenres.length > 1) ...[
@@ -264,6 +280,21 @@ class _Content extends StatelessWidget {
           Text(l10n.profileBadgesTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           AchievementsGrid(achievements: user.achievements!),
+        ],
+        if (user.impactStats != null) ...[
+          const SizedBox(height: 32),
+          ImpactStatsCard(impactStats: user.impactStats!),
+        ],
+        if (user.bookshelf != null &&
+            (user.bookshelf!.reading.isNotEmpty ||
+                user.bookshelf!.wantToRead.isNotEmpty ||
+                user.bookshelf!.finished.isNotEmpty)) ...[
+          const SizedBox(height: 32),
+          Text(l10n.publicProfileBookshelfTitle, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          _BookshelfGroup(label: l10n.bookshelfTabReading, books: user.bookshelf!.reading),
+          _BookshelfGroup(label: l10n.bookshelfTabWantToRead, books: user.bookshelf!.wantToRead),
+          _BookshelfGroup(label: l10n.bookshelfTabFinished, books: user.bookshelf!.finished),
         ],
         if (user.listedBooks != null && user.listedBooks!.isNotEmpty) ...[
           const SizedBox(height: 32),
@@ -358,6 +389,54 @@ class _Content extends StatelessWidget {
             ),
         ],
       ],
+    );
+  }
+}
+
+class _BookshelfGroup extends StatelessWidget {
+  const _BookshelfGroup({required this.label, required this.books});
+  final String label;
+  final List<Book> books;
+
+  @override
+  Widget build(BuildContext context) {
+    if (books.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label (${books.length})',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 130,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: books.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (context, index) => SizedBox(
+                width: 80,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    BookCover(url: books[index].coverUrl, width: 80, height: 100),
+                    const SizedBox(height: 4),
+                    Text(
+                      books[index].title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

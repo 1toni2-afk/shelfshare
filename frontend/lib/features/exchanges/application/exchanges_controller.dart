@@ -31,8 +31,22 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
 
   Future<void> complete(String id) => _apply((r) => r.complete(id));
 
-  Future<void> rate(String id, int value, {String? comment}) =>
-      _apply((r) => r.rate(id, value, comment: comment));
+  Future<void> rate(
+    String id,
+    int value, {
+    String? comment,
+    int? communication,
+    int? punctuality,
+    int? condition,
+  }) =>
+      _apply((r) => r.rate(
+            id,
+            value,
+            comment: comment,
+            communication: communication,
+            punctuality: punctuality,
+            condition: condition,
+          ));
 
   Future<void> setMeeting(
     String id, {

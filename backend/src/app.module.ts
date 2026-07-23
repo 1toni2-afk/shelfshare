@@ -19,6 +19,7 @@ import { PlacesModule } from './places/places.module';
 import { FollowModule } from './follow/follow.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { SupportModule } from './support/support.module';
+import { BookshelfModule } from './bookshelf/bookshelf.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SupportModule } from './support/support.module';
     FollowModule,
     FeedbackModule,
     SupportModule,
+    BookshelfModule,
   ],
   controllers: [AppController],
   providers: [AppService],

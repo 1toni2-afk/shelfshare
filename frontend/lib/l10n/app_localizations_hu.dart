@@ -86,6 +86,24 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get trustScoreLastActiveToday => 'Ma aktív volt';
+
+  @override
+  String trustScoreLastActiveDays(int days) {
+    return '$days napja aktív';
+  }
+
+  @override
+  String trustScoreResponseRate(int percent) {
+    return '$percent% válaszarány';
+  }
+
+  @override
+  String trustScoreAverageSwapTime(String time) {
+    return 'Egy csere ~$time alatt zárul le';
+  }
+
+  @override
   String memberSinceDays(int days) {
     return 'Tag $days napja';
   }
@@ -466,6 +484,15 @@ class AppLocalizationsHu extends AppLocalizations {
   String get publicProfileFavoriteGenre => 'Kedvenc műfaj';
 
   @override
+  String get publicProfileBooksShared => 'Megosztott könyvek';
+
+  @override
+  String get publicProfileBooksReceived => 'Kapott könyvek';
+
+  @override
+  String get publicProfileLongestBook => 'Leghosszabb könyv';
+
+  @override
   String publicProfileListedBooksCount(int count) {
     return 'Listázott könyvek ($count)';
   }
@@ -504,6 +531,161 @@ class AppLocalizationsHu extends AppLocalizations {
   String get leaderboardTabNational => 'Országos';
 
   @override
+  String get leaderboardTabTopReaders => 'Olvasók';
+
+  @override
+  String leaderboardPagesCount(int count) {
+    return '$count oldal';
+  }
+
+  @override
+  String get profileGlobalStats => 'Globális statisztikák';
+
+  @override
+  String get profileMyBookshelf => 'A polcom';
+
+  @override
+  String get bookshelfTitle => 'A polcom';
+
+  @override
+  String get bookshelfTabReading => 'Olvasom';
+
+  @override
+  String get bookshelfTabWantToRead => 'Szeretném olvasni';
+
+  @override
+  String get bookshelfTabFinished => 'Elolvasva';
+
+  @override
+  String get bookshelfTabShared => 'Megosztva';
+
+  @override
+  String get bookshelfEmpty => 'Még nincs itt egyetlen könyv sem.';
+
+  @override
+  String get bookshelfLoadError => 'Nem sikerült betölteni a polcot.';
+
+  @override
+  String get bookDetailShelfSectionTitle => 'Add hozzá a polcodhoz';
+
+  @override
+  String gamificationLevel(int level) {
+    return '$level. szint';
+  }
+
+  @override
+  String gamificationXp(int xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String gamificationXpToNextLevel(int xp) {
+    return '$xp XP a következő szintig';
+  }
+
+  @override
+  String gamificationStreak(int days) {
+    return '$days napos sorozat';
+  }
+
+  @override
+  String gamificationLongestStreak(int days) {
+    return 'Rekord: $days nap';
+  }
+
+  @override
+  String get profileMonthlyChallenges => 'Havi kihívások';
+
+  @override
+  String get monthlyChallengesTitle => 'Havi kihívások';
+
+  @override
+  String get profileReadingChallenge => 'Olvasási kihívás';
+
+  @override
+  String readingChallengeTitle(int year) {
+    return '$year-es olvasási kihívás';
+  }
+
+  @override
+  String get readingChallengeNoGoal =>
+      'Még nem állítottál be célt erre az évre.';
+
+  @override
+  String readingChallengeProgress(int progress, int goal) {
+    return '$progress/$goal könyv elolvasva';
+  }
+
+  @override
+  String get readingChallengeSetGoal => 'Cél beállítása';
+
+  @override
+  String get readingChallengeGoalLabel =>
+      'Hány könyvet szeretnél elolvasni idén?';
+
+  @override
+  String get profileActivityFeed => 'Legutóbbi tevékenység';
+
+  @override
+  String get activityFeedTitle => 'Legutóbbi tevékenység';
+
+  @override
+  String get activityFeedEmpty =>
+      'Még nincs esemény - kövess másokat, hogy lásd, mit olvasnak.';
+
+  @override
+  String get activityFeedLoadError => 'Nem sikerült betölteni a tevékenységet.';
+
+  @override
+  String activityNewListing(String name) {
+    return '$name új könyvet listázott';
+  }
+
+  @override
+  String activityFinishedBook(String name) {
+    return '$name befejezte az olvasást';
+  }
+
+  @override
+  String activityCompletedExchange(String name) {
+    return '$name lezárt egy cserét';
+  }
+
+  @override
+  String get bookDetailShelfRemove => 'Eltávolítás a polcról';
+
+  @override
+  String get publicProfileBookshelfTitle => 'Könyvespolc';
+
+  @override
+  String get globalStatsTitle => 'Globális statisztikák';
+
+  @override
+  String get globalStatsTabMostShared => 'Legtöbbet megosztott';
+
+  @override
+  String get globalStatsTabTrending => 'Felkapott';
+
+  @override
+  String get globalStatsTabPopularAuthors => 'Népszerű szerzők';
+
+  @override
+  String get globalStatsEmpty => 'Még nincs adat.';
+
+  @override
+  String get globalStatsLoadError => 'Nem sikerült betölteni a statisztikákat.';
+
+  @override
+  String globalStatsTransferCount(int count) {
+    return '$count csere/eladás';
+  }
+
+  @override
+  String globalStatsViewCount(int count) {
+    return '$count megtekintés (14 nap)';
+  }
+
+  @override
   String get profileFavoriteSellers => 'Kedvenc eladók';
 
   @override
@@ -517,6 +699,23 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get publicProfileTopGenres => 'Kedvenc műfajok';
+
+  @override
+  String get impactStatsTitle => 'Hatás';
+
+  @override
+  String get impactStatsTotalValue => 'Elcserélt összérték';
+
+  @override
+  String get impactStatsMoneySaved => 'Megtakarított pénz';
+
+  @override
+  String get impactStatsCo2Saved => 'Megtakarított CO₂ (becsült)';
+
+  @override
+  String impactStatsCo2Value(String kg) {
+    return '$kg kg';
+  }
 
   @override
   String homeGreeting(String name) {
@@ -1055,6 +1254,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get exchangeRatingDialogTitle => 'Milyen volt a csere?';
+
+  @override
+  String get exchangeRatingOverall => 'Összesített';
+
+  @override
+  String get exchangeRatingCommunication => 'Kommunikáció';
+
+  @override
+  String get exchangeRatingPunctuality => 'Pontosság';
+
+  @override
+  String get exchangeRatingCondition => 'A kapott könyv állapota';
 
   @override
   String get exchangeReviewOptional => 'Értékelés (opcionális)';

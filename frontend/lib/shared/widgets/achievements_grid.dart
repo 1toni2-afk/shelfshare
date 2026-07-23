@@ -14,6 +14,7 @@ const _badgeIcons = {
   'explorer': Icons.explore_outlined,
   'fantasy_collector': Icons.auto_awesome_outlined,
   'book_explorer': Icons.travel_explore_outlined,
+  'top_swapper': Icons.emoji_events,
 };
 
 class AchievementsGrid extends StatelessWidget {

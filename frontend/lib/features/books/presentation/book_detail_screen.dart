@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
@@ -22,6 +23,7 @@ import '../../safety/data/safety_repository.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
 import '../data/books_repository.dart';
+import '../data/bookshelf_repository.dart';
 
 class BookDetailScreen extends ConsumerStatefulWidget {
   const BookDetailScreen({super.key, required this.userBookId, this.fallbackOwner});
@@ -271,6 +273,8 @@ class _BookDetailContent extends ConsumerWidget {
             if (book.isForSale && !book.isNegotiable) Chip(label: Text(l10n.addBookNonNegotiable)),
           ],
         ),
+        const SizedBox(height: 16),
+        _ShelfStatusRow(bookId: book.book.id),
         const SizedBox(height: 8),
         Center(
           child: GestureDetector(
@@ -395,6 +399,61 @@ class _BookDetailContent extends ConsumerWidget {
         ],
       ],
     );
+  }
+}
+
+/// Status personal de citit (Public Bookshelf) - independent de a deține
+/// sau nu un exemplar fizic, deci vizibil doar dacă userul e autentificat
+/// (backend-ul cere JwtAuthGuard).
+class _ShelfStatusRow extends ConsumerWidget {
+  const _ShelfStatusRow({required this.bookId});
+  final String bookId;
+
+  Future<void> _toggle(WidgetRef ref, BookshelfStatus tapped, BookshelfStatus? current) async {
+    final repository = ref.read(bookshelfRepositoryProvider);
+    if (current == tapped) {
+      await repository.removeFromShelf(bookId);
+    } else {
+      await repository.setStatus(bookId, tapped);
+    }
+    ref.invalidate(bookshelfStatusProvider(bookId));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) return const SizedBox.shrink();
+    final async = ref.watch(bookshelfStatusProvider(bookId));
+    final l10n = context.l10n;
+
+    return async.when(
+      data: (current) => Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final status in BookshelfStatus.values)
+            ChoiceChip(
+              label: Text(_labelFor(l10n, status)),
+              selected: current == status,
+              onSelected: (_) => _toggle(ref, status, current),
+            ),
+        ],
+      ),
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+
+  String _labelFor(AppLocalizations l10n, BookshelfStatus status) {
+    switch (status) {
+      case BookshelfStatus.reading:
+        return l10n.bookshelfTabReading;
+      case BookshelfStatus.wantToRead:
+        return l10n.bookshelfTabWantToRead;
+      case BookshelfStatus.finished:
+        return l10n.bookshelfTabFinished;
+    }
   }
 }
 

@@ -90,6 +90,44 @@ class TrustScoreCard extends StatelessWidget {
                     ),
                     visualDensity: VisualDensity.compact,
                   ),
+                if (trustScore.lastActiveAt != null)
+                  Chip(
+                    avatar: const Icon(Icons.circle, size: 10, color: Color(0xFF2E7D32)),
+                    label: Text(_lastActiveLabel(l10n, trustScore.lastActiveAt!)),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (trustScore.responseRate != null)
+                  Chip(
+                    avatar: const Icon(Icons.forum_outlined, size: 16),
+                    label: Text(l10n.trustScoreResponseRate((trustScore.responseRate! * 100).round())),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (trustScore.averageSwapTimeHours != null)
+                  Chip(
+                    avatar: const Icon(Icons.swap_horiz, size: 16),
+                    label: Text(
+                      l10n.trustScoreAverageSwapTime(_formatHours(l10n, trustScore.averageSwapTimeHours!)),
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (trustScore.avgCommunicationRating != null)
+                  Chip(
+                    avatar: const Icon(Icons.chat_outlined, size: 16),
+                    label: Text('${l10n.exchangeRatingCommunication}: ${trustScore.avgCommunicationRating}'),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (trustScore.avgPunctualityRating != null)
+                  Chip(
+                    avatar: const Icon(Icons.access_time, size: 16),
+                    label: Text('${l10n.exchangeRatingPunctuality}: ${trustScore.avgPunctualityRating}'),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (trustScore.avgConditionRating != null)
+                  Chip(
+                    avatar: const Icon(Icons.auto_stories_outlined, size: 16),
+                    label: Text('${l10n.exchangeRatingCondition}: ${trustScore.avgConditionRating}'),
+                    visualDensity: VisualDensity.compact,
+                  ),
               ],
             ),
           ],
@@ -102,6 +140,12 @@ class TrustScoreCard extends StatelessWidget {
     if (days < 30) return l10n.memberSinceDays(days);
     if (days < 365) return l10n.memberSinceMonths((days / 30).floor());
     return l10n.memberSinceYears((days / 365).floor());
+  }
+
+  String _lastActiveLabel(AppLocalizations l10n, DateTime lastActiveAt) {
+    final days = DateTime.now().difference(lastActiveAt).inDays;
+    if (days <= 0) return l10n.trustScoreLastActiveToday;
+    return l10n.trustScoreLastActiveDays(days);
   }
 
   String _formatHours(AppLocalizations l10n, double hours) {

@@ -6,6 +6,7 @@ import {
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
+import { BookshelfService } from '../bookshelf/bookshelf.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { publicName } from '../common/utils/user-visibility';
 
@@ -14,6 +15,7 @@ export class ProfileService {
   constructor(
     private users: UsersService,
     private prisma: PrismaService,
+    private bookshelf: BookshelfService,
   ) {}
 
   async getMyProfile(userId: string) {
@@ -37,6 +39,8 @@ export class ProfileService {
       profileImage: user.profileImage,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
+      booksSharedCount: user.booksSharedCount,
+      booksReceivedCount: user.booksReceivedCount,
       isEmailVerified: user.isEmailVerified,
       isAdmin: user.isAdmin,
       showAcquisitionHistory: user.showAcquisitionHistory,
@@ -45,6 +49,8 @@ export class ProfileService {
       createdAt: user.createdAt,
       trustScore: await this.computeTrustScore(user),
       achievements: await this.getAchievements(user),
+      impactStats: await this.getImpactStats(userId),
+      gamification: this.getGamificationStats(user),
     };
   }
 
@@ -98,10 +104,12 @@ export class ProfileService {
       ? await this.getAcquisitionHistory(userId)
       : null;
 
-    const [reviews, readingStats, achievements] = await Promise.all([
+    const [reviews, readingStats, achievements, impactStats, bookshelf] = await Promise.all([
       this.getReviews(userId),
       this.getReadingStats(userId),
       this.getAchievements(user),
+      this.getImpactStats(userId),
+      this.bookshelf.getPublicShelf(userId),
     ]);
 
     return {
@@ -113,6 +121,8 @@ export class ProfileService {
       profileImage: user.profileImage,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
+      booksSharedCount: user.booksSharedCount,
+      booksReceivedCount: user.booksReceivedCount,
       memberSince: user.createdAt,
       listedBooks,
       listingsCount,
@@ -121,6 +131,9 @@ export class ProfileService {
       reviews,
       readingStats,
       achievements,
+      impactStats,
+      bookshelf,
+      gamification: this.getGamificationStats(user),
     };
   }
 
@@ -175,11 +188,13 @@ export class ProfileService {
   private async getReadingStats(userId: string) {
     const listings = await this.prisma.userBook.findMany({
       where: { userId },
-      include: { book: { select: { genre: true, pageCount: true } } },
+      include: { book: { select: { title: true, genre: true, pageCount: true } } },
     });
 
     const genreCounts = new Map<string, number>();
     let totalPages = 0;
+    let longestBookTitle: string | null = null;
+    let longestBookPages = 0;
     for (const listing of listings) {
       if (listing.book.genre) {
         genreCounts.set(
@@ -189,6 +204,10 @@ export class ProfileService {
       }
       if (listing.book.pageCount) {
         totalPages += listing.book.pageCount;
+        if (listing.book.pageCount > longestBookPages) {
+          longestBookPages = listing.book.pageCount;
+          longestBookTitle = listing.book.title;
+        }
       }
     }
 
@@ -201,7 +220,97 @@ export class ProfileService {
       totalListed: listings.length,
       totalPages,
       favoriteGenre: topGenres[0]?.genre ?? null,
+      longestBookTitle,
+      longestBookPages: longestBookPages || null,
       topGenres,
+    };
+  }
+
+  // Estimare aproximativă, nu o măsurătoare certificată - o medie des
+  // citată pentru amprenta de CO2 a producției unei cărți tipărite noi.
+  private static readonly CO2_KG_PER_BOOK = 2.5;
+
+  /**
+   * "Money Saved" / "Total Value of Books Exchanged" / "Estimated CO2
+   * Saved" - calculate din `Book.referencePrice` (prețul de listă preluat
+   * de la Google Books, vezi book-lookup.service.ts), acolo unde există.
+   * Definiție: pentru fiecare carte primită (schimb sau cumpărare), userul
+   * "economisește" diferența dintre prețul de referință și ce a plătit
+   * efectiv (0 la schimb pur, suma oferită la schimb cu bani, prețul plătit
+   * la o vânzare) - iar la un schimb carte-contra-carte, ambele părți
+   * economisesc valoarea cărții primite. Cărțile fără preț de referință
+   * (multe intrări manuale) nu pot contribui la Money Saved, dar tot intră
+   * în Total Value dacă știm măcar suma plătită.
+   */
+  private async getImpactStats(userId: string) {
+    const [asRequester, asOwnerWithOfferedBook, acceptedOffersAsBuyer, user] =
+      await Promise.all([
+        this.prisma.exchangeRequest.findMany({
+          where: { requesterId: userId, status: 'COMPLETED' },
+          select: {
+            offeredAmount: true,
+            requestedBook: { select: { book: { select: { referencePrice: true } } } },
+          },
+        }),
+        this.prisma.exchangeRequest.findMany({
+          where: {
+            ownerId: userId,
+            status: 'COMPLETED',
+            offeredBookId: { not: null },
+          },
+          select: {
+            offeredBook: { select: { book: { select: { referencePrice: true } } } },
+          },
+        }),
+        this.prisma.priceOffer.findMany({
+          where: { buyerId: userId, status: 'ACCEPTED' },
+          select: {
+            amount: true,
+            userBook: { select: { book: { select: { referencePrice: true } } } },
+          },
+        }),
+        this.prisma.user.findUnique({
+          where: { id: userId },
+          select: { booksReceivedCount: true },
+        }),
+      ]);
+
+    let totalValueExchanged = 0;
+    let moneySaved = 0;
+
+    for (const exchange of asRequester) {
+      const price = exchange.requestedBook.book.referencePrice?.toNumber();
+      if (price == null) continue;
+      totalValueExchanged += price;
+      const paid = exchange.offeredAmount?.toNumber() ?? 0;
+      moneySaved += Math.max(0, price - paid);
+    }
+
+    for (const exchange of asOwnerWithOfferedBook) {
+      const price = exchange.offeredBook?.book.referencePrice?.toNumber();
+      if (price == null) continue;
+      totalValueExchanged += price;
+      moneySaved += price;
+    }
+
+    for (const offer of acceptedOffersAsBuyer) {
+      const price = offer.userBook.book.referencePrice?.toNumber();
+      const paid = offer.amount.toNumber();
+      if (price != null) {
+        totalValueExchanged += price;
+        moneySaved += Math.max(0, price - paid);
+      } else {
+        totalValueExchanged += paid;
+      }
+    }
+
+    return {
+      totalValueExchanged: Math.round(totalValueExchanged * 100) / 100,
+      moneySaved: Math.round(moneySaved * 100) / 100,
+      co2SavedKg:
+        Math.round(
+          (user?.booksReceivedCount ?? 0) * ProfileService.CO2_KG_PER_BOOK * 10,
+        ) / 10,
     };
   }
 
@@ -220,22 +329,31 @@ export class ProfileService {
    * un istoric real de comportament.
    */
   private async computeTrustScore(user: User) {
-    const [ownerResponses, terminalExchanges] = await Promise.all([
-      this.prisma.exchangeRequest.findMany({
-        where: {
-          ownerId: user.id,
-          status: { in: ['ACCEPTED', 'REJECTED', 'COMPLETED'] },
-        },
-        select: { createdAt: true, updatedAt: true },
-      }),
-      this.prisma.exchangeRequest.findMany({
-        where: {
-          OR: [{ ownerId: user.id }, { requesterId: user.id }],
-          status: { in: ['COMPLETED', 'REJECTED', 'CANCELLED'] },
-        },
-        select: { status: true, requesterId: true },
-      }),
-    ]);
+    const [ownerResponses, terminalExchanges, pendingReceivedCount] =
+      await Promise.all([
+        this.prisma.exchangeRequest.findMany({
+          where: {
+            ownerId: user.id,
+            status: { in: ['ACCEPTED', 'REJECTED', 'COMPLETED'] },
+          },
+          select: { createdAt: true, updatedAt: true },
+        }),
+        this.prisma.exchangeRequest.findMany({
+          where: {
+            OR: [{ ownerId: user.id }, { requesterId: user.id }],
+            status: { in: ['COMPLETED', 'REJECTED', 'CANCELLED'] },
+          },
+          select: {
+            status: true,
+            requesterId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+        this.prisma.exchangeRequest.count({
+          where: { ownerId: user.id, status: 'PENDING' },
+        }),
+      ]);
 
     const accountAgeDays = Math.floor(
       (Date.now() - user.createdAt.getTime()) / 86_400_000,
@@ -266,6 +384,31 @@ export class ProfileService {
       ? cancelledByUser / asRequester.length
       : null;
 
+    // Rata de răspuns - din cererile primite ca proprietar, cât % au primit
+    // deja un răspuns (acceptat/respins), excluzând cele anulate de
+    // solicitant (nu e vina proprietarului) - restul rămân "pending" (nu
+    // le numărăm ca "răspuns", dar nici nu penalizăm nejustificat cererile
+    // foarte proaspete care abia au ajuns).
+    const respondedCount = ownerResponses.length;
+    const responseRate =
+      respondedCount + pendingReceivedCount > 0
+        ? respondedCount / (respondedCount + pendingReceivedCount)
+        : null;
+
+    // Timpul mediu de finalizare a unui schimb (de la cerere la finalizare
+    // efectivă) - aceeași aproximare ca la averageResponseHours, folosind
+    // updatedAt ca proxy pentru "momentul finalizării".
+    const completedWithTimestamps = terminalExchanges.filter(
+      (e) => e.status === 'COMPLETED',
+    );
+    const averageSwapTimeHours = completedWithTimestamps.length
+      ? completedWithTimestamps.reduce(
+          (sum, e) =>
+            sum + (e.updatedAt.getTime() - e.createdAt.getTime()) / 3_600_000,
+          0,
+        ) / completedWithTimestamps.length
+      : null;
+
     const ageScore = Math.min(accountAgeDays / 365, 1) * 15;
     const emailScore = user.isEmailVerified ? 10 : 0;
     const volumeScore = Math.min(user.booksExchangedCount / 20, 1) * 20;
@@ -294,6 +437,12 @@ export class ProfileService {
       completedExchangeRate,
       averageResponseHours,
       cancellationRate,
+      lastActiveAt: user.lastActiveAt,
+      responseRate,
+      averageSwapTimeHours,
+      avgCommunicationRating: user.avgCommunicationRating || null,
+      avgPunctualityRating: user.avgPunctualityRating || null,
+      avgConditionRating: user.avgConditionRating || null,
     };
   }
 
@@ -355,6 +504,47 @@ export class ProfileService {
   }
 
   /**
+   * "Top Readers" - clasament după totalul de pagini din cărțile listate,
+   * ca proxy pentru activitatea de citit (nu urmărim cărți citite efectiv,
+   * vezi getReadingStats de mai jos pentru același compromis pe profil).
+   */
+  async getTopReaders() {
+    const rows = await this.prisma.userBook.findMany({
+      where: { book: { pageCount: { not: null } } },
+      select: {
+        userId: true,
+        book: { select: { pageCount: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            nameVisible: true,
+            city: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
+
+    const totals = new Map<string, { pages: number; user: (typeof rows)[number]['user'] }>();
+    for (const row of rows) {
+      const entry = totals.get(row.userId) ?? { pages: 0, user: row.user };
+      entry.pages += row.book.pageCount ?? 0;
+      totals.set(row.userId, entry);
+    }
+
+    return Array.from(totals.values())
+      .sort((a, b) => b.pages - a.pages)
+      .slice(0, 15)
+      .map((entry) => ({
+        ...entry.user,
+        name: publicName(entry.user),
+        totalPages: entry.pages,
+      }));
+  }
+
+  /**
    * Insigne calculate din activitatea deja existentă - fără un sistem de
    * puncte separat, doar praguri simple pe date pe care le avem oricum.
    */
@@ -365,6 +555,7 @@ export class ProfileService {
       reviewsWritten,
       earlierUsersCount,
       exchangePartnerRows,
+      higherRankedCount,
     ] = await Promise.all([
       this.prisma.userBook.count({ where: { userId: user.id } }),
       this.prisma.userBook.findMany({
@@ -388,6 +579,9 @@ export class ProfileService {
           OR: [{ requesterId: user.id }, { ownerId: user.id }],
         },
         select: { requesterId: true, ownerId: true },
+      }),
+      this.prisma.user.count({
+        where: { booksExchangedCount: { gt: user.booksExchangedCount } },
       }),
     ]);
 
@@ -469,6 +663,12 @@ export class ProfileService {
         achieved: fantasyBooksCount >= 3,
       },
       {
+        key: 'top_swapper',
+        label: 'Top Swapper',
+        description: 'Ești în top 10 la nivel național după schimburi finalizate.',
+        achieved: user.booksExchangedCount > 0 && higherRankedCount < 10,
+      },
+      {
         key: 'book_explorer',
         label: 'Book Explorer',
         description: 'Ai listat cărți în cel puțin 3 limbi diferite.',
@@ -514,5 +714,182 @@ export class ProfileService {
     return [...fromOffers, ...fromExchanges].sort(
       (a, b) => b.date.getTime() - a.date.getTime(),
     );
+  }
+
+  /**
+   * XP & Levels - nivelul se calculează din xp total, nu se stochează
+   * (curbă simplă, liniară: 100 xp/nivel). Streak-ul (zile consecutive cu
+   * activitate) e actualizat din JwtAuthGuard, aici doar îl expunem.
+   */
+  private getGamificationStats(user: User) {
+    return {
+      xp: user.xp,
+      level: Math.floor(user.xp / 100) + 1,
+      xpToNextLevel: 100 - (user.xp % 100),
+      currentStreakDays: user.currentStreakDays,
+      longestStreakDays: user.longestStreakDays,
+    };
+  }
+
+  /**
+   * Monthly Challenges - fără un sistem separat de misiuni/premii, doar 3
+   * praguri simple recalculate live din activitatea lunii calendaristice
+   * curente (fără tabelă dedicată - la fel ca achievements/badges).
+   */
+  async getMonthlyChallenges(userId: string) {
+    const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1));
+
+    const [booksListed, exchangesCompleted, reviewsWritten] = await Promise.all([
+      this.prisma.userBook.count({
+        where: { userId, createdAt: { gte: monthStart } },
+      }),
+      this.prisma.exchangeRequest.count({
+        where: {
+          status: 'COMPLETED',
+          updatedAt: { gte: monthStart },
+          OR: [{ requesterId: userId }, { ownerId: userId }],
+        },
+      }),
+      this.prisma.exchangeRequest.count({
+        where: {
+          updatedAt: { gte: monthStart },
+          OR: [
+            { requesterId: userId, requesterRatingForOwner: { not: null } },
+            { ownerId: userId, ownerRatingForRequester: { not: null } },
+          ],
+        },
+      }),
+    ]);
+
+    return [
+      { key: 'list_books', label: 'Listează 3 cărți luna asta', progress: booksListed, goal: 3 },
+      { key: 'complete_swaps', label: 'Finalizează 2 schimburi luna asta', progress: exchangesCompleted, goal: 2 },
+      { key: 'write_reviews', label: 'Scrie 1 recenzie luna asta', progress: reviewsWritten, goal: 1 },
+    ].map((c) => ({ ...c, completed: c.progress >= c.goal }));
+  }
+
+  /**
+   * Reading Challenge - obiectiv anual opțional (ca la Goodreads), setat
+   * de user; progresul se calculează din BookshelfEntry cu status FINISHED
+   * marcate în anul calendaristic curent.
+   */
+  async getReadingChallenge(userId: string) {
+    const user = await this.users.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+
+    const yearStart = new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1));
+    const finishedThisYear = await this.prisma.bookshelfEntry.count({
+      where: { userId, status: 'FINISHED', updatedAt: { gte: yearStart } },
+    });
+
+    return {
+      year: new Date().getUTCFullYear(),
+      goal: user.readingChallengeGoal,
+      progress: finishedThisYear,
+    };
+  }
+
+  async setReadingChallengeGoal(userId: string, goal: number | null) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { readingChallengeGoal: goal },
+    });
+    return this.getReadingChallenge(userId);
+  }
+
+  /**
+   * Reading Activity Feed - evenimente recente din activitatea userilor
+   * URMĂRIȚI (vezi Follow), nu globale - altfel ar fi zgomot pe o platformă
+   * cu mulți useri necunoscuți între ei. Fără o tabelă de evenimente
+   * dedicată - recompunem feed-ul din datele deja existente (listări noi,
+   * cărți terminate, schimburi finalizate), la fel ca restul statisticilor
+   * "derivate" din aplicație.
+   */
+  async getActivityFeed(userId: string) {
+    const follows = await this.prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    });
+    const followingIds = follows.map((f) => f.followingId);
+    if (followingIds.length === 0) return [];
+
+    const [newListings, finishedBooks, completedExchanges] = await Promise.all([
+      this.prisma.userBook.findMany({
+        where: { userId: { in: followingIds } },
+        select: {
+          userId: true,
+          createdAt: true,
+          book: { select: { title: true, coverUrl: true } },
+          user: { select: { name: true, nameVisible: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      this.prisma.bookshelfEntry.findMany({
+        where: { userId: { in: followingIds }, status: 'FINISHED' },
+        select: {
+          userId: true,
+          updatedAt: true,
+          book: { select: { title: true, coverUrl: true } },
+          user: { select: { name: true, nameVisible: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 20,
+      }),
+      this.prisma.exchangeRequest.findMany({
+        where: { status: 'COMPLETED', OR: [{ requesterId: { in: followingIds } }, { ownerId: { in: followingIds } }] },
+        select: {
+          requesterId: true,
+          ownerId: true,
+          updatedAt: true,
+          requestedBook: { select: { book: { select: { title: true, coverUrl: true } } } },
+          requester: { select: { name: true, nameVisible: true } },
+          owner: { select: { name: true, nameVisible: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 20,
+      }),
+    ]);
+
+    const events = [
+      ...newListings.map((l) => ({
+        type: 'new_listing' as const,
+        userId: l.userId,
+        userName: publicName(l.user),
+        bookTitle: l.book.title,
+        bookCoverUrl: l.book.coverUrl,
+        date: l.createdAt,
+      })),
+      ...finishedBooks.map((f) => ({
+        type: 'finished_book' as const,
+        userId: f.userId,
+        userName: publicName(f.user),
+        bookTitle: f.book.title,
+        bookCoverUrl: f.book.coverUrl,
+        date: f.updatedAt,
+      })),
+      ...completedExchanges.flatMap((exchange) => {
+        // Evenimentul apare o singură dată, atribuit userului urmărit
+        // implicat (dacă amândoi sunt urmăriți, apare pentru requester -
+        // simplificare acceptabilă, nu dublăm evenimentul).
+        const isRequesterFollowed = followingIds.includes(exchange.requesterId);
+        const actor = isRequesterFollowed ? exchange.requester : exchange.owner;
+        const actorId = isRequesterFollowed ? exchange.requesterId : exchange.ownerId;
+        return [
+          {
+            type: 'completed_exchange' as const,
+            userId: actorId,
+            userName: publicName(actor),
+            bookTitle: exchange.requestedBook.book.title,
+            bookCoverUrl: exchange.requestedBook.book.coverUrl,
+            date: exchange.updatedAt,
+          },
+        ];
+      }),
+    ];
+
+    return events.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 30);
   }
 }

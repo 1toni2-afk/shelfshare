@@ -41,6 +41,36 @@ model User {
 
   rating               Float @default(0)
   booksExchangedCount  Int   @default(0)
+  booksSharedCount     Int   @default(0)
+  booksReceivedCount   Int   @default(0)
+
+  // Medii pe dimensiuni, calculate din ExchangeRequest.*RatingFor* - vezi
+  // recomputeRating în exchanges.service.ts. Rămân 0 până la prima evaluare
+  // primită pe dimensiunea respectivă (conditionRating poate rămâne 0 mult
+  // timp, fiindcă se dă doar de cine chiar primește o carte, nu la orice
+  // schimb - ex. un schimb cu bani în loc de carte).
+  avgCommunicationRating Float @default(0)
+  avgPunctualityRating   Float @default(0)
+  avgConditionRating     Float @default(0)
+
+  lastActiveAt DateTime?
+
+  // Reading Streak - zile consecutive cu activitate (vezi JwtAuthGuard),
+  // calculat pe zi calendaristică, nu pe fereastră de 24h.
+  currentStreakDays Int      @default(0)
+  longestStreakDays Int      @default(0)
+  lastStreakDate    DateTime?
+
+  // XP & Levels - punctele se acumulează la acțiuni cheie deja existente
+  // (listare carte, schimb finalizat, vânzare acceptată, recenzie scrisă);
+  // nivelul se calculează din xp, nu se stochează separat (vezi
+  // levelForXp în profile.service.ts).
+  xp Int @default(0)
+
+  // Reading Challenge - obiectiv anual opțional, setat de user; progresul
+  // se calculează din BookshelfEntry cu status FINISHED din anul curent,
+  // nu e stocat separat.
+  readingChallengeGoal Int?
 
   isAdmin  Boolean @default(false)
   isBanned Boolean @default(false)
@@ -73,6 +103,7 @@ model User {
   followers                Follow[]          @relation("FollowFollowing")
   feedback                 Feedback[]
   bookViews                BookView[]
+  bookshelfEntries         BookshelfEntry[]
 
   @@map("users")
 }
@@ -211,6 +242,7 @@ model Book {
 
   userBooks UserBook[]
   wishlistItems WishlistItem[]
+  bookshelfEntries BookshelfEntry[]
 
   @@map("books")
 }
@@ -271,6 +303,38 @@ model BookView {
 
   @@unique([userBookId, userId])
   @@map("book_views")
+}
+
+enum BookshelfStatus {
+  READING
+  WANT_TO_READ
+  FINISHED
+}
+
+/// "Public Bookshelf" - statusul personal de citit al userului pentru o
+/// carte din catalog, INDIFERENT dacă are sau nu un exemplar fizic
+/// listat (spre deosebire de UserBook, care înseamnă "dețin o copie fizică
+/// și o pot da la schimb/vânzare"). Un user poate marca "Vreau să citesc"
+/// o carte pe care nici măcar n-a văzut-o vreodată la schimb pe platformă.
+/// "Shared" din roadmap nu are o intrare aici - se derivă direct din
+/// UserBook.availableForSwap (vezi getPublicBookshelf), ca să nu dubleze o
+/// stare care există deja.
+model BookshelfEntry {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  status BookshelfStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, bookId])
+  @@map("bookshelf_entries")
 }
 
 enum OfferStatus {
@@ -336,6 +400,17 @@ model ExchangeRequest {
   ownerRatingForRequester Int?
   requesterReviewForOwner String?
   ownerReviewForRequester String?
+
+  // Rating pe dimensiuni - Communication/Punctuality se pot da mereu în
+  // ambele direcții; Condition se dă doar de partea care CHIAR a primit o
+  // carte fizică (requester primește mereu requestedBook; owner primește
+  // offeredBook doar dacă schimbul a fost carte-contra-carte, nu bani).
+  requesterCommunicationForOwner Int?
+  requesterPunctualityForOwner   Int?
+  requesterConditionForOwner     Int?
+  ownerCommunicationForRequester Int?
+  ownerPunctualityForRequester   Int?
+  ownerConditionForRequester     Int?
 
   meetingTime     DateTime?
   meetingLocation String?

@@ -86,6 +86,24 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get trustScoreLastActiveToday => 'Heute aktiv';
+
+  @override
+  String trustScoreLastActiveDays(int days) {
+    return 'Vor $days Tagen aktiv';
+  }
+
+  @override
+  String trustScoreResponseRate(int percent) {
+    return '$percent% Antwortrate';
+  }
+
+  @override
+  String trustScoreAverageSwapTime(String time) {
+    return 'Schließt einen Tausch in ~$time ab';
+  }
+
+  @override
   String memberSinceDays(int days) {
     return 'Mitglied seit $days Tagen';
   }
@@ -469,6 +487,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get publicProfileFavoriteGenre => 'Lieblingsgenre';
 
   @override
+  String get publicProfileBooksShared => 'Geteilte Bücher';
+
+  @override
+  String get publicProfileBooksReceived => 'Erhaltene Bücher';
+
+  @override
+  String get publicProfileLongestBook => 'Längstes Buch';
+
+  @override
   String publicProfileListedBooksCount(int count) {
     return 'Gelistete Bücher ($count)';
   }
@@ -508,6 +535,162 @@ class AppLocalizationsDe extends AppLocalizations {
   String get leaderboardTabNational => 'Landesweit';
 
   @override
+  String get leaderboardTabTopReaders => 'Leser';
+
+  @override
+  String leaderboardPagesCount(int count) {
+    return '$count Seiten';
+  }
+
+  @override
+  String get profileGlobalStats => 'Globale Statistiken';
+
+  @override
+  String get profileMyBookshelf => 'Mein Bücherregal';
+
+  @override
+  String get bookshelfTitle => 'Mein Bücherregal';
+
+  @override
+  String get bookshelfTabReading => 'Lese ich';
+
+  @override
+  String get bookshelfTabWantToRead => 'Möchte ich lesen';
+
+  @override
+  String get bookshelfTabFinished => 'Gelesen';
+
+  @override
+  String get bookshelfTabShared => 'Geteilt';
+
+  @override
+  String get bookshelfEmpty => 'Noch keine Bücher hier.';
+
+  @override
+  String get bookshelfLoadError => 'Bücherregal konnte nicht geladen werden.';
+
+  @override
+  String get bookDetailShelfSectionTitle => 'Zu deinem Bücherregal hinzufügen';
+
+  @override
+  String gamificationLevel(int level) {
+    return 'Level $level';
+  }
+
+  @override
+  String gamificationXp(int xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String gamificationXpToNextLevel(int xp) {
+    return '$xp XP bis zum nächsten Level';
+  }
+
+  @override
+  String gamificationStreak(int days) {
+    return '$days Tage in Folge';
+  }
+
+  @override
+  String gamificationLongestStreak(int days) {
+    return 'Rekord: $days Tage';
+  }
+
+  @override
+  String get profileMonthlyChallenges => 'Monatliche Herausforderungen';
+
+  @override
+  String get monthlyChallengesTitle => 'Monatliche Herausforderungen';
+
+  @override
+  String get profileReadingChallenge => 'Lese-Challenge';
+
+  @override
+  String readingChallengeTitle(int year) {
+    return 'Lese-Challenge $year';
+  }
+
+  @override
+  String get readingChallengeNoGoal =>
+      'Du hast für dieses Jahr noch kein Ziel festgelegt.';
+
+  @override
+  String readingChallengeProgress(int progress, int goal) {
+    return '$progress von $goal Büchern gelesen';
+  }
+
+  @override
+  String get readingChallengeSetGoal => 'Ziel festlegen';
+
+  @override
+  String get readingChallengeGoalLabel =>
+      'Wie viele Bücher möchtest du dieses Jahr beenden?';
+
+  @override
+  String get profileActivityFeed => 'Letzte Aktivität';
+
+  @override
+  String get activityFeedTitle => 'Letzte Aktivität';
+
+  @override
+  String get activityFeedEmpty =>
+      'Noch keine Aktivität - folge anderen, um zu sehen, was sie lesen.';
+
+  @override
+  String get activityFeedLoadError => 'Aktivität konnte nicht geladen werden.';
+
+  @override
+  String activityNewListing(String name) {
+    return '$name hat ein neues Buch eingestellt';
+  }
+
+  @override
+  String activityFinishedBook(String name) {
+    return '$name hat mit dem Lesen fertig';
+  }
+
+  @override
+  String activityCompletedExchange(String name) {
+    return '$name hat einen Tausch abgeschlossen';
+  }
+
+  @override
+  String get bookDetailShelfRemove => 'Vom Regal entfernen';
+
+  @override
+  String get publicProfileBookshelfTitle => 'Bücherregal';
+
+  @override
+  String get globalStatsTitle => 'Globale Statistiken';
+
+  @override
+  String get globalStatsTabMostShared => 'Meistgeteilt';
+
+  @override
+  String get globalStatsTabTrending => 'Im Trend';
+
+  @override
+  String get globalStatsTabPopularAuthors => 'Beliebte Autoren';
+
+  @override
+  String get globalStatsEmpty => 'Noch keine Daten.';
+
+  @override
+  String get globalStatsLoadError =>
+      'Statistiken konnten nicht geladen werden.';
+
+  @override
+  String globalStatsTransferCount(int count) {
+    return '$count Tausch/Verkauf';
+  }
+
+  @override
+  String globalStatsViewCount(int count) {
+    return '$count Aufrufe (14 Tage)';
+  }
+
+  @override
   String get profileFavoriteSellers => 'Lieblingsverkäufer';
 
   @override
@@ -521,6 +704,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get publicProfileTopGenres => 'Lieblingsgenres';
+
+  @override
+  String get impactStatsTitle => 'Wirkung';
+
+  @override
+  String get impactStatsTotalValue => 'Gesamtwert getauscht';
+
+  @override
+  String get impactStatsMoneySaved => 'Gespartes Geld';
+
+  @override
+  String get impactStatsCo2Saved => 'Eingespartes CO₂ (geschätzt)';
+
+  @override
+  String impactStatsCo2Value(String kg) {
+    return '$kg kg';
+  }
 
   @override
   String homeGreeting(String name) {
@@ -1070,6 +1270,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get exchangeRatingDialogTitle => 'Wie war der Tausch?';
+
+  @override
+  String get exchangeRatingOverall => 'Insgesamt';
+
+  @override
+  String get exchangeRatingCommunication => 'Kommunikation';
+
+  @override
+  String get exchangeRatingPunctuality => 'Pünktlichkeit';
+
+  @override
+  String get exchangeRatingCondition => 'Zustand des erhaltenen Buchs';
 
   @override
   String get exchangeReviewOptional => 'Bewertung (optional)';

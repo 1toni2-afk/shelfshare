@@ -377,9 +377,14 @@ class _Actions extends ConsumerWidget {
       builder: (context) => _RatingDialog(exchange: exchange),
     );
     if (result != null) {
-      await ref
-          .read(exchangesControllerProvider.notifier)
-          .rate(exchange.id, result.value, comment: result.comment);
+      await ref.read(exchangesControllerProvider.notifier).rate(
+            exchange.id,
+            result.value,
+            comment: result.comment,
+            communication: result.communication,
+            punctuality: result.punctuality,
+            condition: result.condition,
+          );
     }
   }
 
@@ -417,9 +422,18 @@ class _Actions extends ConsumerWidget {
 }
 
 class RatingResult {
-  const RatingResult({required this.value, this.comment});
+  const RatingResult({
+    required this.value,
+    this.comment,
+    this.communication,
+    this.punctuality,
+    this.condition,
+  });
   final int value;
   final String? comment;
+  final int? communication;
+  final int? punctuality;
+  final int? condition;
 }
 
 class _RatingDialog extends StatefulWidget {
@@ -432,6 +446,9 @@ class _RatingDialog extends StatefulWidget {
 
 class _RatingDialogState extends State<_RatingDialog> {
   int _selected = 5;
+  int? _communication;
+  int? _punctuality;
+  int? _condition;
   final _commentController = TextEditingController();
 
   @override
@@ -440,33 +457,61 @@ class _RatingDialogState extends State<_RatingDialog> {
     super.dispose();
   }
 
+  Widget _starRow(String label, int? value, ValueChanged<int> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 1; i <= 5; i++)
+              IconButton(
+                icon: Icon(
+                  value != null && i <= value ? Icons.star : Icons.star_border,
+                  color: AppColors.accent,
+                  size: 20,
+                ),
+                onPressed: () => onChanged(i),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return AlertDialog(
       title: Text(l10n.exchangeRatingDialogTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 1; i <= 5; i++)
-                IconButton(
-                  icon: Icon(
-                    i <= _selected ? Icons.star : Icons.star_border,
-                    color: AppColors.accent,
-                  ),
-                  onPressed: () => setState(() => _selected = i),
-                ),
-            ],
-          ),
-          TextField(
-            controller: _commentController,
-            maxLines: 3,
-            decoration: InputDecoration(labelText: l10n.exchangeReviewOptional),
-          ),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _starRow(l10n.exchangeRatingOverall, _selected, (v) => setState(() => _selected = v)),
+            _starRow(
+              l10n.exchangeRatingCommunication,
+              _communication,
+              (v) => setState(() => _communication = v),
+            ),
+            _starRow(
+              l10n.exchangeRatingPunctuality,
+              _punctuality,
+              (v) => setState(() => _punctuality = v),
+            ),
+            _starRow(
+              l10n.exchangeRatingCondition,
+              _condition,
+              (v) => setState(() => _condition = v),
+            ),
+            TextField(
+              controller: _commentController,
+              maxLines: 3,
+              decoration: InputDecoration(labelText: l10n.exchangeReviewOptional),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -478,6 +523,9 @@ class _RatingDialogState extends State<_RatingDialog> {
             RatingResult(
               value: _selected,
               comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
+              communication: _communication,
+              punctuality: _punctuality,
+              condition: _condition,
             ),
           ),
           child: Text(l10n.commonSubmit),

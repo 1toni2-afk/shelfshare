@@ -1,3 +1,4 @@
+import 'book.dart';
 import 'user_book.dart';
 
 class AppUser {
@@ -11,6 +12,8 @@ class AppUser {
   final String? profileImage;
   final double rating;
   final int booksExchangedCount;
+  final int booksSharedCount;
+  final int booksReceivedCount;
   final bool isEmailVerified;
   final bool isAdmin;
   final bool showAcquisitionHistory;
@@ -18,6 +21,8 @@ class AppUser {
   final int referralCount;
   final TrustScore? trustScore;
   final List<Achievement>? achievements;
+  final ImpactStats? impactStats;
+  final GamificationStats? gamification;
 
   const AppUser({
     required this.id,
@@ -30,6 +35,8 @@ class AppUser {
     this.profileImage,
     this.rating = 0,
     this.booksExchangedCount = 0,
+    this.booksSharedCount = 0,
+    this.booksReceivedCount = 0,
     this.isEmailVerified = false,
     this.isAdmin = false,
     this.showAcquisitionHistory = false,
@@ -37,6 +44,8 @@ class AppUser {
     this.referralCount = 0,
     this.trustScore,
     this.achievements,
+    this.impactStats,
+    this.gamification,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -51,6 +60,8 @@ class AppUser {
       profileImage: json['profileImage'] as String?,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       booksExchangedCount: json['booksExchangedCount'] as int? ?? 0,
+      booksSharedCount: json['booksSharedCount'] as int? ?? 0,
+      booksReceivedCount: json['booksReceivedCount'] as int? ?? 0,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isAdmin: json['isAdmin'] as bool? ?? false,
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
@@ -62,6 +73,12 @@ class AppUser {
       achievements: (json['achievements'] as List<dynamic>?)
           ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
           .toList(),
+      impactStats: json['impactStats'] != null
+          ? ImpactStats.fromJson(json['impactStats'] as Map<String, dynamic>)
+          : null,
+      gamification: json['gamification'] != null
+          ? GamificationStats.fromJson(json['gamification'] as Map<String, dynamic>)
+          : null,
     );
   }
 }
@@ -78,6 +95,12 @@ class TrustScore {
   final double? completedExchangeRate;
   final double? averageResponseHours;
   final double? cancellationRate;
+  final DateTime? lastActiveAt;
+  final double? responseRate;
+  final double? averageSwapTimeHours;
+  final double? avgCommunicationRating;
+  final double? avgPunctualityRating;
+  final double? avgConditionRating;
 
   const TrustScore({
     required this.score,
@@ -88,6 +111,12 @@ class TrustScore {
     this.completedExchangeRate,
     this.averageResponseHours,
     this.cancellationRate,
+    this.lastActiveAt,
+    this.responseRate,
+    this.averageSwapTimeHours,
+    this.avgCommunicationRating,
+    this.avgPunctualityRating,
+    this.avgConditionRating,
   });
 
   factory TrustScore.fromJson(Map<String, dynamic> json) {
@@ -100,6 +129,136 @@ class TrustScore {
       completedExchangeRate: (json['completedExchangeRate'] as num?)?.toDouble(),
       averageResponseHours: (json['averageResponseHours'] as num?)?.toDouble(),
       cancellationRate: (json['cancellationRate'] as num?)?.toDouble(),
+      lastActiveAt: json['lastActiveAt'] != null ? DateTime.parse(json['lastActiveAt'] as String) : null,
+      responseRate: (json['responseRate'] as num?)?.toDouble(),
+      averageSwapTimeHours: (json['averageSwapTimeHours'] as num?)?.toDouble(),
+      avgCommunicationRating: (json['avgCommunicationRating'] as num?)?.toDouble(),
+      avgPunctualityRating: (json['avgPunctualityRating'] as num?)?.toDouble(),
+      avgConditionRating: (json['avgConditionRating'] as num?)?.toDouble(),
+    );
+  }
+}
+
+/// XP & Levels + Reading Streak - vezi getGamificationStats în
+/// backend/src/profile/profile.service.ts pentru formula de nivel.
+class GamificationStats {
+  final int xp;
+  final int level;
+  final int xpToNextLevel;
+  final int currentStreakDays;
+  final int longestStreakDays;
+
+  const GamificationStats({
+    required this.xp,
+    required this.level,
+    required this.xpToNextLevel,
+    required this.currentStreakDays,
+    required this.longestStreakDays,
+  });
+
+  factory GamificationStats.fromJson(Map<String, dynamic> json) {
+    return GamificationStats(
+      xp: json['xp'] as int,
+      level: json['level'] as int,
+      xpToNextLevel: json['xpToNextLevel'] as int,
+      currentStreakDays: json['currentStreakDays'] as int,
+      longestStreakDays: json['longestStreakDays'] as int,
+    );
+  }
+}
+
+class MonthlyChallenge {
+  final String key;
+  final String label;
+  final int progress;
+  final int goal;
+  final bool completed;
+
+  const MonthlyChallenge({
+    required this.key,
+    required this.label,
+    required this.progress,
+    required this.goal,
+    required this.completed,
+  });
+
+  factory MonthlyChallenge.fromJson(Map<String, dynamic> json) {
+    return MonthlyChallenge(
+      key: json['key'] as String,
+      label: json['label'] as String,
+      progress: json['progress'] as int,
+      goal: json['goal'] as int,
+      completed: json['completed'] as bool,
+    );
+  }
+}
+
+class ReadingChallenge {
+  final int year;
+  final int? goal;
+  final int progress;
+
+  const ReadingChallenge({required this.year, this.goal, required this.progress});
+
+  factory ReadingChallenge.fromJson(Map<String, dynamic> json) {
+    return ReadingChallenge(
+      year: json['year'] as int,
+      goal: json['goal'] as int?,
+      progress: json['progress'] as int,
+    );
+  }
+}
+
+class ActivityEvent {
+  final String type;
+  final String userId;
+  final String? userName;
+  final String bookTitle;
+  final String? bookCoverUrl;
+  final DateTime date;
+
+  const ActivityEvent({
+    required this.type,
+    required this.userId,
+    this.userName,
+    required this.bookTitle,
+    this.bookCoverUrl,
+    required this.date,
+  });
+
+  factory ActivityEvent.fromJson(Map<String, dynamic> json) {
+    return ActivityEvent(
+      type: json['type'] as String,
+      userId: json['userId'] as String,
+      userName: json['userName'] as String?,
+      bookTitle: json['bookTitle'] as String,
+      bookCoverUrl: json['bookCoverUrl'] as String?,
+      date: DateTime.parse(json['date'] as String),
+    );
+  }
+}
+
+/// "Impact" - Money Saved / Total Value of Books Exchanged / Estimated CO2
+/// Saved, calculate din `Book.referencePrice` acolo unde există - vezi
+/// getImpactStats în backend/src/profile/profile.service.ts pentru formula
+/// exactă și limitările ei (cărțile fără preț de referință nu contribuie
+/// la Money Saved).
+class ImpactStats {
+  final double totalValueExchanged;
+  final double moneySaved;
+  final double co2SavedKg;
+
+  const ImpactStats({
+    required this.totalValueExchanged,
+    required this.moneySaved,
+    required this.co2SavedKg,
+  });
+
+  factory ImpactStats.fromJson(Map<String, dynamic> json) {
+    return ImpactStats(
+      totalValueExchanged: (json['totalValueExchanged'] as num).toDouble(),
+      moneySaved: (json['moneySaved'] as num).toDouble(),
+      co2SavedKg: (json['co2SavedKg'] as num).toDouble(),
     );
   }
 }
@@ -188,6 +347,32 @@ class CityLeaderboardEntry {
   }
 }
 
+class TopReaderEntry {
+  final String id;
+  final String? name;
+  final String? city;
+  final String? profileImage;
+  final int totalPages;
+
+  const TopReaderEntry({
+    required this.id,
+    this.name,
+    this.city,
+    this.profileImage,
+    required this.totalPages,
+  });
+
+  factory TopReaderEntry.fromJson(Map<String, dynamic> json) {
+    return TopReaderEntry(
+      id: json['id'] as String,
+      name: json['name'] as String?,
+      city: json['city'] as String?,
+      profileImage: json['profileImage'] as String?,
+      totalPages: json['totalPages'] as int,
+    );
+  }
+}
+
 class Achievement {
   final String key;
   final String label;
@@ -216,12 +401,16 @@ class ReadingStats {
   final int totalPages;
   final String? favoriteGenre;
   final List<GenreCount> topGenres;
+  final String? longestBookTitle;
+  final int? longestBookPages;
 
   const ReadingStats({
     required this.totalListed,
     required this.totalPages,
     this.favoriteGenre,
     this.topGenres = const [],
+    this.longestBookTitle,
+    this.longestBookPages,
   });
 
   factory ReadingStats.fromJson(Map<String, dynamic> json) {
@@ -233,6 +422,8 @@ class ReadingStats {
               ?.map((e) => GenreCount.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      longestBookTitle: json['longestBookTitle'] as String?,
+      longestBookPages: json['longestBookPages'] as int?,
     );
   }
 }
@@ -261,6 +452,8 @@ class PublicUser {
   final double rating;
   final String? bio;
   final int? booksExchangedCount;
+  final int? booksSharedCount;
+  final int? booksReceivedCount;
   final DateTime? memberSince;
   final List<UserBook>? listedBooks;
   final int? listingsCount;
@@ -269,6 +462,9 @@ class PublicUser {
   final List<Review>? reviews;
   final ReadingStats? readingStats;
   final List<Achievement>? achievements;
+  final ImpactStats? impactStats;
+  final Bookshelf? bookshelf;
+  final GamificationStats? gamification;
 
   const PublicUser({
     required this.id,
@@ -279,6 +475,8 @@ class PublicUser {
     this.rating = 0,
     this.bio,
     this.booksExchangedCount,
+    this.booksSharedCount,
+    this.booksReceivedCount,
     this.memberSince,
     this.listedBooks,
     this.listingsCount,
@@ -287,6 +485,9 @@ class PublicUser {
     this.reviews,
     this.readingStats,
     this.achievements,
+    this.impactStats,
+    this.bookshelf,
+    this.gamification,
   });
 
   factory PublicUser.fromJson(Map<String, dynamic> json) {
@@ -299,6 +500,8 @@ class PublicUser {
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       bio: json['bio'] as String?,
       booksExchangedCount: json['booksExchangedCount'] as int?,
+      booksSharedCount: json['booksSharedCount'] as int?,
+      booksReceivedCount: json['booksReceivedCount'] as int?,
       memberSince: json['memberSince'] != null
           ? DateTime.parse(json['memberSince'] as String)
           : null,
@@ -321,6 +524,15 @@ class PublicUser {
       achievements: (json['achievements'] as List<dynamic>?)
           ?.map((e) => Achievement.fromJson(e as Map<String, dynamic>))
           .toList(),
+      impactStats: json['impactStats'] != null
+          ? ImpactStats.fromJson(json['impactStats'] as Map<String, dynamic>)
+          : null,
+      bookshelf: json['bookshelf'] != null
+          ? Bookshelf.fromJson(json['bookshelf'] as Map<String, dynamic>)
+          : null,
+      gamification: json['gamification'] != null
+          ? GamificationStats.fromJson(json['gamification'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

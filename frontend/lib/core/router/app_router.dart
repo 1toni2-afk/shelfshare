@@ -23,6 +23,9 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
 import '../../features/profile/presentation/leaderboard_screen.dart';
 import '../../features/profile/presentation/following_screen.dart';
+import '../../features/books/presentation/global_stats_screen.dart';
+import '../../features/books/presentation/my_bookshelf_screen.dart';
+import '../../features/profile/presentation/activity_feed_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
@@ -100,6 +103,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/help-center', builder: (context, state) => const HelpCenterScreen()),
       GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
       GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),
+      GoRoute(path: '/global-stats', builder: (context, state) => const GlobalStatsScreen()),
+      GoRoute(path: '/bookshelf', builder: (context, state) => const MyBookshelfScreen()),
+      GoRoute(path: '/activity-feed', builder: (context, state) => const ActivityFeedScreen()),
       GoRoute(
         path: '/users/:userId',
         builder: (context, state) => PublicProfileScreen(

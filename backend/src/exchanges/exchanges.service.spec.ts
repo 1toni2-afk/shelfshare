@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ExchangesService } from './exchanges.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { XP_EXCHANGE_COMPLETED } from '../common/utils/xp';
 
 describe('ExchangesService', () => {
   let service: ExchangesService;
@@ -232,11 +233,19 @@ describe('ExchangesService', () => {
 
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'requester-1' },
-        data: { booksExchangedCount: { increment: 1 } },
+        data: {
+          booksExchangedCount: { increment: 1 },
+          booksReceivedCount: { increment: 1 },
+          xp: { increment: XP_EXCHANGE_COMPLETED },
+        },
       });
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'owner-1' },
-        data: { booksExchangedCount: { increment: 1 } },
+        data: {
+          booksExchangedCount: { increment: 1 },
+          booksSharedCount: { increment: 1 },
+          xp: { increment: XP_EXCHANGE_COMPLETED },
+        },
       });
     });
   });
@@ -252,7 +261,7 @@ describe('ExchangesService', () => {
     it('respinge daca schimbul nu e COMPLETED', async () => {
       prisma.exchangeRequest.findUnique.mockResolvedValue(pendingRequest);
 
-      await expect(service.rate('ex-1', 'owner-1', 5)).rejects.toThrow(
+      await expect(service.rate('ex-1', 'owner-1', { value: 5 })).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -263,9 +272,9 @@ describe('ExchangesService', () => {
         requesterRatingForOwner: 4,
       });
 
-      await expect(service.rate('ex-1', 'requester-1', 5)).rejects.toThrow(
-        'Ai evaluat deja',
-      );
+      await expect(
+        service.rate('ex-1', 'requester-1', { value: 5 }),
+      ).rejects.toThrow('Ai evaluat deja');
     });
 
     it('salveaza rating-ul si recalculeaza media utilizatorului evaluat', async () => {
@@ -275,19 +284,39 @@ describe('ExchangesService', () => {
         .mockResolvedValueOnce(completedRequest); // findOwnedRequest la final
       prisma.exchangeRequest.update.mockResolvedValue(completedRequest);
       prisma.exchangeRequest.findMany.mockResolvedValue([
-        { requesterRatingForOwner: 5, ownerRatingForRequester: null },
+        {
+          requesterRatingForOwner: 5,
+          ownerRatingForRequester: null,
+          requesterCommunicationForOwner: null,
+          requesterPunctualityForOwner: null,
+          requesterConditionForOwner: null,
+          ownerCommunicationForRequester: null,
+          ownerPunctualityForRequester: null,
+          ownerConditionForRequester: null,
+        },
       ]);
       prisma.user.update.mockResolvedValue({});
 
-      await service.rate('ex-1', 'requester-1', 5);
+      await service.rate('ex-1', 'requester-1', { value: 5 });
 
       expect(prisma.exchangeRequest.update).toHaveBeenCalledWith({
         where: { id: 'ex-1' },
-        data: { requesterRatingForOwner: 5 },
+        data: {
+          requesterRatingForOwner: 5,
+          requesterReviewForOwner: undefined,
+          requesterCommunicationForOwner: undefined,
+          requesterPunctualityForOwner: undefined,
+          requesterConditionForOwner: undefined,
+        },
       });
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'owner-1' },
-        data: { rating: 5 },
+        data: {
+          rating: 5,
+          avgCommunicationRating: 0,
+          avgPunctualityRating: 0,
+          avgConditionRating: 0,
+        },
       });
       // o singura interogare (OR), nu doua findMany separate
       expect(prisma.exchangeRequest.findMany).toHaveBeenCalledTimes(1);

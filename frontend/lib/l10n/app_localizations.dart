@@ -246,6 +246,30 @@ abstract class AppLocalizations {
   /// **'Răspunde în ~{time}'**
   String trustScoreRespondsIn(String time);
 
+  /// No description provided for @trustScoreLastActiveToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activ astăzi'**
+  String get trustScoreLastActiveToday;
+
+  /// No description provided for @trustScoreLastActiveDays.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activ acum {days} zile'**
+  String trustScoreLastActiveDays(int days);
+
+  /// No description provided for @trustScoreResponseRate.
+  ///
+  /// In ro, this message translates to:
+  /// **'{percent}% rată de răspuns'**
+  String trustScoreResponseRate(int percent);
+
+  /// No description provided for @trustScoreAverageSwapTime.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb finalizat în ~{time}'**
+  String trustScoreAverageSwapTime(String time);
+
   /// No description provided for @memberSinceDays.
   ///
   /// In ro, this message translates to:
@@ -924,6 +948,24 @@ abstract class AppLocalizations {
   /// **'Gen preferat'**
   String get publicProfileFavoriteGenre;
 
+  /// No description provided for @publicProfileBooksShared.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți date'**
+  String get publicProfileBooksShared;
+
+  /// No description provided for @publicProfileBooksReceived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți primite'**
+  String get publicProfileBooksReceived;
+
+  /// No description provided for @publicProfileLongestBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cea mai lungă carte'**
+  String get publicProfileLongestBook;
+
   /// No description provided for @publicProfileListedBooksCount.
   ///
   /// In ro, this message translates to:
@@ -984,6 +1026,258 @@ abstract class AppLocalizations {
   /// **'Național'**
   String get leaderboardTabNational;
 
+  /// No description provided for @leaderboardTabTopReaders.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cititori'**
+  String get leaderboardTabTopReaders;
+
+  /// No description provided for @leaderboardPagesCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} pagini'**
+  String leaderboardPagesCount(int count);
+
+  /// No description provided for @profileGlobalStats.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici globale'**
+  String get profileGlobalStats;
+
+  /// No description provided for @profileMyBookshelf.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raftul meu'**
+  String get profileMyBookshelf;
+
+  /// No description provided for @bookshelfTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raftul meu'**
+  String get bookshelfTitle;
+
+  /// No description provided for @bookshelfTabReading.
+  ///
+  /// In ro, this message translates to:
+  /// **'Citesc'**
+  String get bookshelfTabReading;
+
+  /// No description provided for @bookshelfTabWantToRead.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vreau să citesc'**
+  String get bookshelfTabWantToRead;
+
+  /// No description provided for @bookshelfTabFinished.
+  ///
+  /// In ro, this message translates to:
+  /// **'Terminate'**
+  String get bookshelfTabFinished;
+
+  /// No description provided for @bookshelfTabShared.
+  ///
+  /// In ro, this message translates to:
+  /// **'Împărtășite'**
+  String get bookshelfTabShared;
+
+  /// No description provided for @bookshelfEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio carte aici încă.'**
+  String get bookshelfEmpty;
+
+  /// No description provided for @bookshelfLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca raftul.'**
+  String get bookshelfLoadError;
+
+  /// No description provided for @bookDetailShelfSectionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă în raftul tău'**
+  String get bookDetailShelfSectionTitle;
+
+  /// No description provided for @gamificationLevel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nivel {level}'**
+  String gamificationLevel(int level);
+
+  /// No description provided for @gamificationXp.
+  ///
+  /// In ro, this message translates to:
+  /// **'{xp} XP'**
+  String gamificationXp(int xp);
+
+  /// No description provided for @gamificationXpToNextLevel.
+  ///
+  /// In ro, this message translates to:
+  /// **'{xp} XP până la nivelul următor'**
+  String gamificationXpToNextLevel(int xp);
+
+  /// No description provided for @gamificationStreak.
+  ///
+  /// In ro, this message translates to:
+  /// **'{days} zile la rând'**
+  String gamificationStreak(int days);
+
+  /// No description provided for @gamificationLongestStreak.
+  ///
+  /// In ro, this message translates to:
+  /// **'Record: {days} zile'**
+  String gamificationLongestStreak(int days);
+
+  /// No description provided for @profileMonthlyChallenges.
+  ///
+  /// In ro, this message translates to:
+  /// **'Provocări lunare'**
+  String get profileMonthlyChallenges;
+
+  /// No description provided for @monthlyChallengesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Provocări lunare'**
+  String get monthlyChallengesTitle;
+
+  /// No description provided for @profileReadingChallenge.
+  ///
+  /// In ro, this message translates to:
+  /// **'Provocarea de citit'**
+  String get profileReadingChallenge;
+
+  /// No description provided for @readingChallengeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Provocarea de citit {year}'**
+  String readingChallengeTitle(int year);
+
+  /// No description provided for @readingChallengeNoGoal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai setat încă un obiectiv pentru anul acesta.'**
+  String get readingChallengeNoGoal;
+
+  /// No description provided for @readingChallengeProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'{progress} din {goal} cărți terminate'**
+  String readingChallengeProgress(int progress, int goal);
+
+  /// No description provided for @readingChallengeSetGoal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Setează un obiectiv'**
+  String get readingChallengeSetGoal;
+
+  /// No description provided for @readingChallengeGoalLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Câte cărți vrei să termini anul acesta?'**
+  String get readingChallengeGoalLabel;
+
+  /// No description provided for @profileActivityFeed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activitate recentă'**
+  String get profileActivityFeed;
+
+  /// No description provided for @activityFeedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activitate recentă'**
+  String get activityFeedTitle;
+
+  /// No description provided for @activityFeedEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.'**
+  String get activityFeedEmpty;
+
+  /// No description provided for @activityFeedLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca activitatea.'**
+  String get activityFeedLoadError;
+
+  /// No description provided for @activityNewListing.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} a listat o carte nouă'**
+  String activityNewListing(String name);
+
+  /// No description provided for @activityFinishedBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} a terminat de citit'**
+  String activityFinishedBook(String name);
+
+  /// No description provided for @activityCompletedExchange.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} a finalizat un schimb'**
+  String activityCompletedExchange(String name);
+
+  /// No description provided for @bookDetailShelfRemove.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină din raft'**
+  String get bookDetailShelfRemove;
+
+  /// No description provided for @publicProfileBookshelfTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raftul de cărți'**
+  String get publicProfileBookshelfTitle;
+
+  /// No description provided for @globalStatsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici globale'**
+  String get globalStatsTitle;
+
+  /// No description provided for @globalStatsTabMostShared.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai schimbate'**
+  String get globalStatsTabMostShared;
+
+  /// No description provided for @globalStatsTabTrending.
+  ///
+  /// In ro, this message translates to:
+  /// **'În tendințe'**
+  String get globalStatsTabTrending;
+
+  /// No description provided for @globalStatsTabPopularAuthors.
+  ///
+  /// In ro, this message translates to:
+  /// **'Autori populari'**
+  String get globalStatsTabPopularAuthors;
+
+  /// No description provided for @globalStatsEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio dată încă.'**
+  String get globalStatsEmpty;
+
+  /// No description provided for @globalStatsLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca statisticile.'**
+  String get globalStatsLoadError;
+
+  /// No description provided for @globalStatsTransferCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} schimburi/vânzări'**
+  String globalStatsTransferCount(int count);
+
+  /// No description provided for @globalStatsViewCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} vizualizări (14 zile)'**
+  String globalStatsViewCount(int count);
+
   /// No description provided for @profileFavoriteSellers.
   ///
   /// In ro, this message translates to:
@@ -1013,6 +1307,36 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Genuri preferate'**
   String get publicProfileTopGenres;
+
+  /// No description provided for @impactStatsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Impact'**
+  String get impactStatsTitle;
+
+  /// No description provided for @impactStatsTotalValue.
+  ///
+  /// In ro, this message translates to:
+  /// **'Valoare totală schimbată'**
+  String get impactStatsTotalValue;
+
+  /// No description provided for @impactStatsMoneySaved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bani economisiți'**
+  String get impactStatsMoneySaved;
+
+  /// No description provided for @impactStatsCo2Saved.
+  ///
+  /// In ro, this message translates to:
+  /// **'CO₂ economisit (estimativ)'**
+  String get impactStatsCo2Saved;
+
+  /// No description provided for @impactStatsCo2Value.
+  ///
+  /// In ro, this message translates to:
+  /// **'{kg} kg'**
+  String impactStatsCo2Value(String kg);
 
   /// No description provided for @homeGreeting.
   ///
@@ -1973,6 +2297,30 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Cum a fost schimbul?'**
   String get exchangeRatingDialogTitle;
+
+  /// No description provided for @exchangeRatingOverall.
+  ///
+  /// In ro, this message translates to:
+  /// **'Per ansamblu'**
+  String get exchangeRatingOverall;
+
+  /// No description provided for @exchangeRatingCommunication.
+  ///
+  /// In ro, this message translates to:
+  /// **'Comunicare'**
+  String get exchangeRatingCommunication;
+
+  /// No description provided for @exchangeRatingPunctuality.
+  ///
+  /// In ro, this message translates to:
+  /// **'Punctualitate'**
+  String get exchangeRatingPunctuality;
+
+  /// No description provided for @exchangeRatingCondition.
+  ///
+  /// In ro, this message translates to:
+  /// **'Starea cărții primite'**
+  String get exchangeRatingCondition;
 
   /// No description provided for @exchangeReviewOptional.
   ///

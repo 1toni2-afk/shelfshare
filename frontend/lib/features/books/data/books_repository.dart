@@ -118,6 +118,30 @@ class BooksRepository {
     return (response.data as List).cast<String>();
   }
 
+  Future<List<BookStatEntry>> getMostSharedBooks() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/most-shared');
+    return (response.data as List)
+        .map((e) => BookStatEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<BookStatEntry>> getTrendingBooks() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/trending');
+    return (response.data as List)
+        .map((e) => BookStatEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<AuthorStatEntry>> getMostPopularAuthors() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/popular-authors');
+    return (response.data as List)
+        .map((e) => AuthorStatEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<MapCity>> getMapCities() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/books/map-cities');

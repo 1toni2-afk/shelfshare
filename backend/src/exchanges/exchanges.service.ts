@@ -9,8 +9,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
+import { RateExchangeDto } from './dto/rate-exchange.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
 import { publicName } from '../common/utils/user-visibility';
+import { awardXp, XP_EXCHANGE_COMPLETED, XP_REVIEW_WRITTEN } from '../common/utils/xp';
 
 const INCLUDE_FULL = {
   requestedBook: { include: { book: true } },
@@ -250,11 +252,19 @@ export class ExchangesService {
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: request.requesterId },
-        data: { booksExchangedCount: { increment: 1 } },
+        data: {
+          booksExchangedCount: { increment: 1 },
+          booksReceivedCount: { increment: 1 },
+          xp: { increment: XP_EXCHANGE_COMPLETED },
+        },
       });
       await tx.user.update({
         where: { id: request.ownerId },
-        data: { booksExchangedCount: { increment: 1 } },
+        data: {
+          booksExchangedCount: { increment: 1 },
+          booksSharedCount: { increment: 1 },
+          xp: { increment: XP_EXCHANGE_COMPLETED },
+        },
       });
 
       return tx.exchangeRequest.update({
@@ -271,7 +281,7 @@ export class ExchangesService {
    * o singură dată, după ce schimbul e COMPLETED. Rating-ul de profil
    * e media tuturor evaluărilor primite din toate schimburile.
    */
-  async rate(id: string, userId: string, value: number, comment?: string) {
+  async rate(id: string, userId: string, dto: RateExchangeDto) {
     const request = await this.findRequestForAction(id);
     if (request.requesterId !== userId && request.ownerId !== userId) {
       throw new ForbiddenException('Nu ești parte în acest schimb');
@@ -291,11 +301,24 @@ export class ExchangesService {
     await this.prisma.exchangeRequest.update({
       where: { id },
       data: isRequester
-        ? { requesterRatingForOwner: value, requesterReviewForOwner: comment }
-        : { ownerRatingForRequester: value, ownerReviewForRequester: comment },
+        ? {
+            requesterRatingForOwner: dto.value,
+            requesterReviewForOwner: dto.comment,
+            requesterCommunicationForOwner: dto.communication,
+            requesterPunctualityForOwner: dto.punctuality,
+            requesterConditionForOwner: dto.condition,
+          }
+        : {
+            ownerRatingForRequester: dto.value,
+            ownerReviewForRequester: dto.comment,
+            ownerCommunicationForRequester: dto.communication,
+            ownerPunctualityForRequester: dto.punctuality,
+            ownerConditionForRequester: dto.condition,
+          },
     });
 
     await this.recomputeRating(ratedUserId);
+    await awardXp(this.prisma, userId, XP_REVIEW_WRITTEN);
 
     return this.findOwnedRequest(id, userId);
   }
@@ -387,20 +410,46 @@ export class ExchangesService {
           { requesterId: userId, ownerRatingForRequester: { not: null } },
         ],
       },
-      select: { requesterRatingForOwner: true, ownerRatingForRequester: true },
+      select: {
+        requesterRatingForOwner: true,
+        ownerRatingForRequester: true,
+        requesterCommunicationForOwner: true,
+        requesterPunctualityForOwner: true,
+        requesterConditionForOwner: true,
+        ownerCommunicationForRequester: true,
+        ownerPunctualityForRequester: true,
+        ownerConditionForRequester: true,
+      },
     });
 
     const values = ratedExchanges
       .map((r) => r.requesterRatingForOwner ?? r.ownerRatingForRequester)
       .filter((v): v is number => v !== null);
 
-    const rating =
-      values.length === 0
-        ? 0
-        : Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) /
-          10;
+    const communicationValues = ratedExchanges
+      .map((r) => r.requesterCommunicationForOwner ?? r.ownerCommunicationForRequester)
+      .filter((v): v is number => v !== null);
+    const punctualityValues = ratedExchanges
+      .map((r) => r.requesterPunctualityForOwner ?? r.ownerPunctualityForRequester)
+      .filter((v): v is number => v !== null);
+    const conditionValues = ratedExchanges
+      .map((r) => r.requesterConditionForOwner ?? r.ownerConditionForRequester)
+      .filter((v): v is number => v !== null);
 
-    await this.prisma.user.update({ where: { id: userId }, data: { rating } });
+    const average = (nums: number[]) =>
+      nums.length === 0 ? 0 : Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+
+    const rating = average(values);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        rating,
+        avgCommunicationRating: average(communicationValues),
+        avgPunctualityRating: average(punctualityValues),
+        avgConditionRating: average(conditionValues),
+      },
+    });
   }
 
   // ---------- Helpers ----------

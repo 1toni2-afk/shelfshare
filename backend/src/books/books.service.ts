@@ -17,6 +17,7 @@ import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coo
 import { RomanianCity } from '../common/constants/romanian-cities';
 import { haversineDistanceKm } from '../common/utils/geo';
 import { publicName } from '../common/utils/user-visibility';
+import { awardXp, XP_BOOK_LISTED } from '../common/utils/xp';
 
 const OWNER_SELECT = {
   id: true,
@@ -150,6 +151,7 @@ export class BooksService {
 
     this.wishlist.notifyWishlistedUsers(book.id, userId).catch(() => {});
     this.follow.notifyFollowersOfNewBook(userId, book.title).catch(() => {});
+    awardXp(this.prisma, userId, XP_BOOK_LISTED);
 
     return userBook;
   }
@@ -317,6 +319,107 @@ export class BooksService {
       take: 15,
     });
     return rows.map((r) => r.language as string).filter(Boolean);
+  }
+
+  /**
+   * Câte transferuri reale (schimb finalizat sau vânzare acceptată) a avut
+   * fiecare titlu de carte - baza comună pentru "Most Shared Books" și
+   * "Most Popular Authors" (agregăm în JS, nu la nivel SQL, fiindcă
+   * evenimentele vin din două tabele diferite - ExchangeRequest și
+   * PriceOffer - care nu au o relație comună de grupat direct).
+   */
+  private async getTransferCountsByBook() {
+    const [completedExchanges, acceptedOffers] = await Promise.all([
+      this.prisma.exchangeRequest.findMany({
+        where: { status: 'COMPLETED' },
+        select: { requestedBook: { select: { bookId: true } } },
+      }),
+      this.prisma.priceOffer.findMany({
+        where: { status: 'ACCEPTED' },
+        select: { userBook: { select: { bookId: true } } },
+      }),
+    ]);
+
+    const counts = new Map<string, number>();
+    for (const exchange of completedExchanges) {
+      const id = exchange.requestedBook.bookId;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    for (const offer of acceptedOffers) {
+      const id = offer.userBook.bookId;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    return counts;
+  }
+
+  async getMostSharedBooks() {
+    const counts = await this.getTransferCountsByBook();
+    const topIds = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([id]) => id);
+    if (topIds.length === 0) return [];
+
+    const books = await this.prisma.book.findMany({ where: { id: { in: topIds } } });
+    const byId = new Map(books.map((b) => [b.id, b]));
+    return topIds
+      .map((id) => {
+        const book = byId.get(id);
+        return book ? { book, count: counts.get(id)! } : null;
+      })
+      .filter((entry) => entry !== null);
+  }
+
+  async getMostPopularAuthors() {
+    const counts = await this.getTransferCountsByBook();
+    const bookIds = Array.from(counts.keys());
+    if (bookIds.length === 0) return [];
+
+    const books = await this.prisma.book.findMany({
+      where: { id: { in: bookIds }, author: { not: null } },
+      select: { id: true, author: true },
+    });
+    const authorCounts = new Map<string, number>();
+    for (const book of books) {
+      const count = counts.get(book.id) ?? 0;
+      authorCounts.set(book.author!, (authorCounts.get(book.author!) ?? 0) + count);
+    }
+    return Array.from(authorCounts.entries())
+      .map(([author, count]) => ({ author, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15);
+  }
+
+  /**
+   * "Trending" - cele mai vizualizate cărți în ultimele 14 zile (spre
+   * deosebire de sortarea "mostViewed" din browse, care e all-time).
+   */
+  async getTrendingBooks() {
+    const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const views = await this.prisma.bookView.findMany({
+      where: { createdAt: { gte: since } },
+      select: { userBook: { select: { bookId: true } } },
+    });
+
+    const counts = new Map<string, number>();
+    for (const view of views) {
+      const id = view.userBook.bookId;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    const topIds = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([id]) => id);
+    if (topIds.length === 0) return [];
+
+    const books = await this.prisma.book.findMany({ where: { id: { in: topIds } } });
+    const byId = new Map(books.map((b) => [b.id, b]));
+    return topIds
+      .map((id) => {
+        const book = byId.get(id);
+        return book ? { book, count: counts.get(id)! } : null;
+      })
+      .filter((entry) => entry !== null);
   }
 
   /**

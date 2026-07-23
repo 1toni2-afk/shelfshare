@@ -10,6 +10,7 @@ import {
 import type { Request } from 'express';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { SetReadingChallengeDto } from './dto/set-reading-challenge.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -40,6 +41,39 @@ export class ProfileController {
   @Get('leaderboard/national')
   getNationalLeaderboard() {
     return this.profileService.getNationalLeaderboard();
+  }
+
+  @Get('leaderboard/top-readers')
+  getTopReaders() {
+    return this.profileService.getTopReaders();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('monthly-challenges')
+  getMonthlyChallenges(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.getMonthlyChallenges(userId!);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('reading-challenge')
+  getReadingChallenge(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.getReadingChallenge(userId!);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('reading-challenge')
+  setReadingChallenge(@Req() req: Request, @Body() dto: SetReadingChallengeDto) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.setReadingChallengeGoal(userId!, dto.goal ?? null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('activity-feed')
+  getActivityFeed(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.getActivityFeed(userId!);
   }
 
   @Get(':userId')

@@ -11,6 +11,7 @@ import { ConversationsService } from '../chat/conversations.service';
 import { NotificationType } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { publicName } from '../common/utils/user-visibility';
+import { XP_SALE_COMPLETED } from '../common/utils/xp';
 
 const INCLUDE_FULL = {
   userBook: { include: { book: true } },
@@ -159,6 +160,14 @@ export class OffersService {
       await tx.userBook.update({
         where: { id: offer.userBookId },
         data: { isForSale: false, availableForSwap: false },
+      });
+      await tx.user.update({
+        where: { id: offer.ownerId },
+        data: { booksSharedCount: { increment: 1 }, xp: { increment: XP_SALE_COMPLETED } },
+      });
+      await tx.user.update({
+        where: { id: offer.buyerId },
+        data: { booksReceivedCount: { increment: 1 } },
       });
 
       return tx.priceOffer.update({
