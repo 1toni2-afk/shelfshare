@@ -623,5 +623,17 @@
   "inventoryPriceChangedCount": "Ár módosítva {count} hirdetésen",
   "inventoryDeleteConfirmTitle": "Törlöd a kiválasztott hirdetéseket?",
   "inventoryDeleteConfirmBody": "Ez véglegesen törli {count} hirdetést. Nem vonható vissza.",
-  "inventoryBulkDone": "Művelet alkalmazva"
+  "inventoryBulkDone": "Művelet alkalmazva",
+
+  "collectionsTitle": "Gyűjtemények",
+  "collectionsEmpty": "Még nincs gyűjtemény.",
+  "collectionsLoadError": "Nem sikerült betölteni a gyűjteményeket.",
+  "collectionsCreateTitle": "Új gyűjtemény",
+  "collectionsNameLabel": "Név",
+  "collectionsPublicSwitch": "Nyilvános",
+  "collectionsBookCount": "{count} könyv",
+  "collectionsEmptyItems": "Még nincs könyv ebben a gyűjteményben.",
+  "collectionsDeleteConfirmTitle": "Törlöd ezt a gyűjteményt?",
+  "collectionsAddToTitle": "Hozzáadás gyűjteményhez",
+  "collectionsNewInline": "Új gyűjtemény..."
 }

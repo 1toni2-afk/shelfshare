@@ -1982,4 +1982,39 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get inventoryBulkDone => 'Acțiune aplicată';
+
+  @override
+  String get collectionsTitle => 'Colecții';
+
+  @override
+  String get collectionsEmpty => 'Nicio colecție încă.';
+
+  @override
+  String get collectionsLoadError => 'Nu am putut încărca colecțiile.';
+
+  @override
+  String get collectionsCreateTitle => 'Colecție nouă';
+
+  @override
+  String get collectionsNameLabel => 'Nume';
+
+  @override
+  String get collectionsPublicSwitch => 'Publică';
+
+  @override
+  String collectionsBookCount(int count) {
+    return '$count cărți';
+  }
+
+  @override
+  String get collectionsEmptyItems => 'Nicio carte în această colecție încă.';
+
+  @override
+  String get collectionsDeleteConfirmTitle => 'Ștergi această colecție?';
+
+  @override
+  String get collectionsAddToTitle => 'Adaugă în colecție';
+
+  @override
+  String get collectionsNewInline => 'Colecție nouă...';
 }

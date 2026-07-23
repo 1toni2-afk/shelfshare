@@ -107,6 +107,7 @@ model User {
   auctionBids              Bid[]             @relation("AuctionBidder")
   auctionsWon              Auction[]         @relation("AuctionHighestBidder")
   auctionWatches           AuctionWatch[]
+  collections              Collection[]
 
   @@map("users")
 }
@@ -246,8 +247,46 @@ model Book {
   userBooks UserBook[]
   wishlistItems WishlistItem[]
   bookshelfEntries BookshelfEntry[]
+  collectionItems CollectionItem[]
 
   @@map("books")
+}
+
+/// "Collections" (Milestone 5) - liste curate de cărți, definite liber de
+/// user (ex. "Favorite", "De recitit") - distinct de BookshelfEntry (status
+/// fix de citit) și de WishlistItem (cărți dorite, nu neapărat deținute).
+/// O carte poate apărea în mai multe colecții ale aceluiași user.
+model Collection {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  isPublic    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CollectionItem[]
+
+  @@map("collections")
+}
+
+model CollectionItem {
+  id String @id @default(uuid())
+
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([collectionId, bookId])
+  @@map("collection_items")
 }
 
 model UserBook {

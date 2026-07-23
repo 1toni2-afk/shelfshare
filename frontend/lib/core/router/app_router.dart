@@ -29,6 +29,8 @@ import '../../features/books/presentation/my_bookshelf_screen.dart';
 import '../../features/profile/presentation/activity_feed_screen.dart';
 import '../../features/books/presentation/smart_matches_screen.dart';
 import '../../features/books/presentation/auction_detail_screen.dart';
+import '../../features/collections/presentation/my_collections_screen.dart';
+import '../../features/collections/presentation/collection_detail_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
@@ -114,6 +116,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auctions/:id',
         builder: (context, state) => AuctionDetailScreen(auctionId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/collections', builder: (context, state) => const MyCollectionsScreen()),
+      GoRoute(
+        path: '/collections/:id',
+        builder: (context, state) => CollectionDetailScreen(
+          collectionId: state.pathParameters['id']!,
+          ownerId: state.uri.queryParameters['ownerId'],
+        ),
       ),
       GoRoute(
         path: '/users/:userId',

@@ -16,6 +16,7 @@ import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
+import '../../collections/presentation/add_to_collection_sheet.dart';
 import '../../chat/data/chat_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
 import '../../offers/data/offers_repository.dart';
@@ -276,6 +277,8 @@ class _BookDetailContent extends ConsumerWidget {
         const SizedBox(height: 16),
         _ShelfStatusRow(bookId: book.book.id),
         const SizedBox(height: 8),
+        _AddToCollectionButton(bookId: book.book.id),
+        const SizedBox(height: 8),
         Center(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -454,6 +457,25 @@ class _ShelfStatusRow extends ConsumerWidget {
       case BookshelfStatus.finished:
         return l10n.bookshelfTabFinished;
     }
+  }
+}
+
+class _AddToCollectionButton extends ConsumerWidget {
+  const _AddToCollectionButton({required this.bookId});
+  final String bookId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    if (authState is! AuthAuthenticated) return const SizedBox.shrink();
+
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: () => showAddToCollectionSheet(context, bookId: bookId),
+        icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+        label: Text(context.l10n.collectionsAddToTitle),
+      ),
+    );
   }
 }
 

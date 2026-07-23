@@ -18,6 +18,7 @@ import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../chat/data/chat_repository.dart';
+import '../../collections/data/collections_repository.dart';
 import '../application/public_profile_controller.dart';
 import '../data/follow_repository.dart';
 
@@ -296,6 +297,8 @@ class _Content extends StatelessWidget {
           _BookshelfGroup(label: l10n.bookshelfTabWantToRead, books: user.bookshelf!.wantToRead),
           _BookshelfGroup(label: l10n.bookshelfTabFinished, books: user.bookshelf!.finished),
         ],
+        const SizedBox(height: 32),
+        _PublicCollectionsSection(userId: user.id),
         if (user.listedBooks != null && user.listedBooks!.isNotEmpty) ...[
           const SizedBox(height: 32),
           Text(
@@ -389,6 +392,45 @@ class _Content extends StatelessWidget {
             ),
         ],
       ],
+    );
+  }
+}
+
+final _publicCollectionsProvider = FutureProvider.family((ref, String userId) {
+  return ref.watch(collectionsRepositoryProvider).getForUser(userId);
+});
+
+class _PublicCollectionsSection extends ConsumerWidget {
+  const _PublicCollectionsSection({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(_publicCollectionsProvider(userId));
+    final l10n = context.l10n;
+
+    return async.when(
+      data: (collections) {
+        if (collections.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.collectionsTitle, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            for (final collection in collections)
+              Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  title: Text(collection.name),
+                  subtitle: Text(l10n.collectionsBookCount(collection.itemCount)),
+                  onTap: () => context.push('/collections/${collection.id}?ownerId=$userId'),
+                ),
+              ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

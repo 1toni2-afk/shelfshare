@@ -1980,4 +1980,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryBulkDone => 'Action applied';
+
+  @override
+  String get collectionsTitle => 'Collections';
+
+  @override
+  String get collectionsEmpty => 'No collections yet.';
+
+  @override
+  String get collectionsLoadError => 'Couldn\'t load collections.';
+
+  @override
+  String get collectionsCreateTitle => 'New collection';
+
+  @override
+  String get collectionsNameLabel => 'Name';
+
+  @override
+  String get collectionsPublicSwitch => 'Public';
+
+  @override
+  String collectionsBookCount(int count) {
+    return '$count books';
+  }
+
+  @override
+  String get collectionsEmptyItems => 'No books in this collection yet.';
+
+  @override
+  String get collectionsDeleteConfirmTitle => 'Delete this collection?';
+
+  @override
+  String get collectionsAddToTitle => 'Add to collection';
+
+  @override
+  String get collectionsNewInline => 'New collection...';
 }

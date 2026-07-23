@@ -2014,4 +2014,39 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryBulkDone => 'Aktion angewendet';
+
+  @override
+  String get collectionsTitle => 'Sammlungen';
+
+  @override
+  String get collectionsEmpty => 'Noch keine Sammlungen.';
+
+  @override
+  String get collectionsLoadError => 'Sammlungen konnten nicht geladen werden.';
+
+  @override
+  String get collectionsCreateTitle => 'Neue Sammlung';
+
+  @override
+  String get collectionsNameLabel => 'Name';
+
+  @override
+  String get collectionsPublicSwitch => 'Öffentlich';
+
+  @override
+  String collectionsBookCount(int count) {
+    return '$count Bücher';
+  }
+
+  @override
+  String get collectionsEmptyItems => 'Noch keine Bücher in dieser Sammlung.';
+
+  @override
+  String get collectionsDeleteConfirmTitle => 'Diese Sammlung löschen?';
+
+  @override
+  String get collectionsAddToTitle => 'Zur Sammlung hinzufügen';
+
+  @override
+  String get collectionsNewInline => 'Neue Sammlung...';
 }

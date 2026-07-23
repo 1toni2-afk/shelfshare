@@ -1992,4 +1992,39 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get inventoryBulkDone => 'Művelet alkalmazva';
+
+  @override
+  String get collectionsTitle => 'Gyűjtemények';
+
+  @override
+  String get collectionsEmpty => 'Még nincs gyűjtemény.';
+
+  @override
+  String get collectionsLoadError => 'Nem sikerült betölteni a gyűjteményeket.';
+
+  @override
+  String get collectionsCreateTitle => 'Új gyűjtemény';
+
+  @override
+  String get collectionsNameLabel => 'Név';
+
+  @override
+  String get collectionsPublicSwitch => 'Nyilvános';
+
+  @override
+  String collectionsBookCount(int count) {
+    return '$count könyv';
+  }
+
+  @override
+  String get collectionsEmptyItems => 'Még nincs könyv ebben a gyűjteményben.';
+
+  @override
+  String get collectionsDeleteConfirmTitle => 'Törlöd ezt a gyűjteményt?';
+
+  @override
+  String get collectionsAddToTitle => 'Hozzáadás gyűjteményhez';
+
+  @override
+  String get collectionsNewInline => 'Új gyűjtemény...';
 }

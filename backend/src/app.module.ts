@@ -21,6 +21,7 @@ import { FeedbackModule } from './feedback/feedback.module';
 import { SupportModule } from './support/support.module';
 import { BookshelfModule } from './bookshelf/bookshelf.module';
 import { AuctionsModule } from './auctions/auctions.module';
+import { CollectionsModule } from './collections/collections.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AuctionsModule } from './auctions/auctions.module';
     SupportModule,
     BookshelfModule,
     AuctionsModule,
+    CollectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

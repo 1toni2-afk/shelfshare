@@ -730,5 +730,18 @@
   "inventoryDeleteConfirmTitle": "Ștergi anunțurile selectate?",
   "inventoryDeleteConfirmBody": "Se șterg definitiv {count} anunțuri. Nu se poate anula.",
   "@inventoryDeleteConfirmBody": { "placeholders": { "count": { "type": "int" } } },
-  "inventoryBulkDone": "Acțiune aplicată"
+  "inventoryBulkDone": "Acțiune aplicată",
+
+  "collectionsTitle": "Colecții",
+  "collectionsEmpty": "Nicio colecție încă.",
+  "collectionsLoadError": "Nu am putut încărca colecțiile.",
+  "collectionsCreateTitle": "Colecție nouă",
+  "collectionsNameLabel": "Nume",
+  "collectionsPublicSwitch": "Publică",
+  "collectionsBookCount": "{count} cărți",
+  "@collectionsBookCount": { "placeholders": { "count": { "type": "int" } } },
+  "collectionsEmptyItems": "Nicio carte în această colecție încă.",
+  "collectionsDeleteConfirmTitle": "Ștergi această colecție?",
+  "collectionsAddToTitle": "Adaugă în colecție",
+  "collectionsNewInline": "Colecție nouă..."
 }

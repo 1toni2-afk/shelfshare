@@ -623,5 +623,17 @@
   "inventoryPriceChangedCount": "Price changed on {count} listings",
   "inventoryDeleteConfirmTitle": "Delete the selected listings?",
   "inventoryDeleteConfirmBody": "This permanently deletes {count} listings. This cannot be undone.",
-  "inventoryBulkDone": "Action applied"
+  "inventoryBulkDone": "Action applied",
+
+  "collectionsTitle": "Collections",
+  "collectionsEmpty": "No collections yet.",
+  "collectionsLoadError": "Couldn't load collections.",
+  "collectionsCreateTitle": "New collection",
+  "collectionsNameLabel": "Name",
+  "collectionsPublicSwitch": "Public",
+  "collectionsBookCount": "{count} books",
+  "collectionsEmptyItems": "No books in this collection yet.",
+  "collectionsDeleteConfirmTitle": "Delete this collection?",
+  "collectionsAddToTitle": "Add to collection",
+  "collectionsNewInline": "New collection..."
 }

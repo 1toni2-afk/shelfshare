@@ -3557,6 +3557,72 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Acțiune aplicată'**
   String get inventoryBulkDone;
+
+  /// No description provided for @collectionsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Colecții'**
+  String get collectionsTitle;
+
+  /// No description provided for @collectionsEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio colecție încă.'**
+  String get collectionsEmpty;
+
+  /// No description provided for @collectionsLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca colecțiile.'**
+  String get collectionsLoadError;
+
+  /// No description provided for @collectionsCreateTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Colecție nouă'**
+  String get collectionsCreateTitle;
+
+  /// No description provided for @collectionsNameLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nume'**
+  String get collectionsNameLabel;
+
+  /// No description provided for @collectionsPublicSwitch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Publică'**
+  String get collectionsPublicSwitch;
+
+  /// No description provided for @collectionsBookCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} cărți'**
+  String collectionsBookCount(int count);
+
+  /// No description provided for @collectionsEmptyItems.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio carte în această colecție încă.'**
+  String get collectionsEmptyItems;
+
+  /// No description provided for @collectionsDeleteConfirmTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi această colecție?'**
+  String get collectionsDeleteConfirmTitle;
+
+  /// No description provided for @collectionsAddToTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă în colecție'**
+  String get collectionsAddToTitle;
+
+  /// No description provided for @collectionsNewInline.
+  ///
+  /// In ro, this message translates to:
+  /// **'Colecție nouă...'**
+  String get collectionsNewInline;
 }
 
 class _AppLocalizationsDelegate

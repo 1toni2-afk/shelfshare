@@ -623,5 +623,17 @@
   "inventoryPriceChangedCount": "Preis bei {count} Anzeigen geändert",
   "inventoryDeleteConfirmTitle": "Ausgewählte Anzeigen löschen?",
   "inventoryDeleteConfirmBody": "Dies löscht {count} Anzeigen dauerhaft. Kann nicht rückgängig gemacht werden.",
-  "inventoryBulkDone": "Aktion angewendet"
+  "inventoryBulkDone": "Aktion angewendet",
+
+  "collectionsTitle": "Sammlungen",
+  "collectionsEmpty": "Noch keine Sammlungen.",
+  "collectionsLoadError": "Sammlungen konnten nicht geladen werden.",
+  "collectionsCreateTitle": "Neue Sammlung",
+  "collectionsNameLabel": "Name",
+  "collectionsPublicSwitch": "Öffentlich",
+  "collectionsBookCount": "{count} Bücher",
+  "collectionsEmptyItems": "Noch keine Bücher in dieser Sammlung.",
+  "collectionsDeleteConfirmTitle": "Diese Sammlung löschen?",
+  "collectionsAddToTitle": "Zur Sammlung hinzufügen",
+  "collectionsNewInline": "Neue Sammlung..."
 }
