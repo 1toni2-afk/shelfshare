@@ -10,10 +10,19 @@ class AuthRepository {
   final ApiClient _apiClient;
   final TokenStorage _tokenStorage;
 
-  Future<void> register({required String email, required String password}) async {
+  Future<void> register({
+    required String email,
+    required String password,
+    String? referralCode,
+  }) async {
     await _apiClient.dio.post(
       '/auth/register',
-      data: {'email': email, 'password': password},
+      data: {
+        'email': email,
+        'password': password,
+        if (referralCode != null && referralCode.trim().isNotEmpty)
+          'referralCode': referralCode.trim(),
+      },
     );
   }
 
@@ -26,7 +35,13 @@ class AuthRepository {
       accessToken: response.data['accessToken'] as String,
       refreshToken: response.data['refreshToken'] as String,
     );
-    return AppUser.fromJson(response.data['user'] as Map<String, dynamic>);
+    // Răspunsul de login întoarce un user "subțire" (id/email/isEmailVerified/
+    // isAdmin, fără username) - dacă l-am folosi direct, useri care ȘI-AU ALES
+    // deja un username ar fi trimiși din nou la onboarding la fiecare login,
+    // fiindcă username ar apărea mereu null. Luăm profilul complet, la fel ca
+    // la fluxul Google (completeExternalLogin).
+    final profile = await _apiClient.dio.get('/profile/me');
+    return AppUser.fromJson(profile.data as Map<String, dynamic>);
   }
 
   /// Schimbă codul primit din fluxul Google OAuth (redirect din backend) pe
@@ -58,6 +73,13 @@ class AuthRepository {
     await _apiClient.dio.post('/auth/forgot-password', data: {'email': email});
   }
 
+  Future<void> verifyResetCode({required String email, required String code}) async {
+    await _apiClient.dio.post(
+      '/auth/verify-reset-code',
+      data: {'email': email, 'code': code},
+    );
+  }
+
   Future<void> verifyEmail({required String email, required String code}) async {
     await _apiClient.dio.post('/auth/verify-email', data: {'email': email, 'code': code});
   }
@@ -67,12 +89,13 @@ class AuthRepository {
   }
 
   Future<void> resetPassword({
-    required String token,
+    required String email,
+    required String code,
     required String newPassword,
   }) async {
     await _apiClient.dio.post(
       '/auth/reset-password',
-      data: {'token': token, 'newPassword': newPassword},
+      data: {'email': email, 'code': code, 'newPassword': newPassword},
     );
   }
 

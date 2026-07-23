@@ -121,6 +121,29 @@ class ChatController extends Notifier<ChatState> {
     );
   }
 
+  /// Actualizare optimistă imediat după accept/refuz dintr-un card de ofertă
+  /// afișat în chat - celălalt participant vede starea corectă oricum la
+  /// următorul fetch de mesaje (vezi ConversationsService#getMessages).
+  void updatePriceOfferStatus(String messageId, String newStatus) {
+    state = state.copyWith(
+      messages: [
+        for (final m in state.messages)
+          if (m.id == messageId && m.priceOffer != null)
+            m.copyWith(
+              priceOffer: PriceOfferSummary(
+                id: m.priceOffer!.id,
+                amount: m.priceOffer!.amount,
+                status: newStatus,
+                bookTitle: m.priceOffer!.bookTitle,
+                bookCoverUrl: m.priceOffer!.bookCoverUrl,
+              ),
+            )
+          else
+            m,
+      ],
+    );
+  }
+
   void notifyTyping() {
     _socketService.notifyTyping(conversationId);
   }

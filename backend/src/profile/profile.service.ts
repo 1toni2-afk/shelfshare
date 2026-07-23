@@ -22,6 +22,10 @@ export class ProfileService {
       throw new NotFoundException('Utilizator negăsit');
     }
 
+    const referralCount = await this.prisma.user.count({
+      where: { invitedById: user.id },
+    });
+
     return {
       id: user.id,
       email: user.email,
@@ -36,6 +40,8 @@ export class ProfileService {
       isEmailVerified: user.isEmailVerified,
       isAdmin: user.isAdmin,
       showAcquisitionHistory: user.showAcquisitionHistory,
+      referralCode: user.referralCode,
+      referralCount,
       createdAt: user.createdAt,
       trustScore: await this.computeTrustScore(user),
       achievements: await this.getAchievements(user),
@@ -186,19 +192,16 @@ export class ProfileService {
       }
     }
 
-    let favoriteGenre: string | null = null;
-    let max = 0;
-    for (const [genre, count] of genreCounts) {
-      if (count > max) {
-        max = count;
-        favoriteGenre = genre;
-      }
-    }
+    const topGenres = Array.from(genreCounts.entries())
+      .map(([genre, count]) => ({ genre, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
     return {
       totalListed: listings.length,
       totalPages,
-      favoriteGenre,
+      favoriteGenre: topGenres[0]?.genre ?? null,
+      topGenres,
     };
   }
 
@@ -328,32 +331,79 @@ export class ProfileService {
   }
 
   /**
+   * Clasament național - top useri după schimburi finalizate, indiferent de
+   * oraș (spre deosebire de getCityLeaderboard, care ia un singur user per
+   * oraș).
+   */
+  async getNationalLeaderboard() {
+    const users = await this.prisma.user.findMany({
+      where: { booksExchangedCount: { gt: 0 } },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        nameVisible: true,
+        city: true,
+        profileImage: true,
+        rating: true,
+        booksExchangedCount: true,
+      },
+      orderBy: { booksExchangedCount: 'desc' },
+      take: 20,
+    });
+    return users.map((user) => ({ ...user, name: publicName(user) }));
+  }
+
+  /**
    * Insigne calculate din activitatea deja existentă - fără un sistem de
    * puncte separat, doar praguri simple pe date pe care le avem oricum.
    */
   private async getAchievements(user: User) {
-    const [listingsCount, genreRows, reviewsWritten, earlierUsersCount] =
-      await Promise.all([
-        this.prisma.userBook.count({ where: { userId: user.id } }),
-        this.prisma.userBook.findMany({
-          where: { userId: user.id },
-          select: { book: { select: { genre: true } } },
-        }),
-        this.prisma.exchangeRequest.count({
-          where: {
-            OR: [
-              { requesterId: user.id, requesterReviewForOwner: { not: null } },
-              { ownerId: user.id, ownerReviewForRequester: { not: null } },
-            ],
-          },
-        }),
-        this.prisma.user.count({
-          where: { createdAt: { lt: user.createdAt } },
-        }),
-      ]);
+    const [
+      listingsCount,
+      genreRows,
+      reviewsWritten,
+      earlierUsersCount,
+      exchangePartnerRows,
+    ] = await Promise.all([
+      this.prisma.userBook.count({ where: { userId: user.id } }),
+      this.prisma.userBook.findMany({
+        where: { userId: user.id },
+        select: { language: true, book: { select: { genre: true } } },
+      }),
+      this.prisma.exchangeRequest.count({
+        where: {
+          OR: [
+            { requesterId: user.id, requesterReviewForOwner: { not: null } },
+            { ownerId: user.id, ownerReviewForRequester: { not: null } },
+          ],
+        },
+      }),
+      this.prisma.user.count({
+        where: { createdAt: { lt: user.createdAt } },
+      }),
+      this.prisma.exchangeRequest.findMany({
+        where: {
+          status: 'COMPLETED',
+          OR: [{ requesterId: user.id }, { ownerId: user.id }],
+        },
+        select: { requesterId: true, ownerId: true },
+      }),
+    ]);
 
     const distinctGenres = new Set(
       genreRows.map((r) => r.book.genre).filter((g): g is string => g !== null),
+    ).size;
+    const distinctLanguages = new Set(
+      genreRows.map((r) => r.language).filter((l): l is string => l !== null),
+    ).size;
+    const fantasyBooksCount = genreRows.filter((r) =>
+      r.book.genre?.toLowerCase().includes('fantas'),
+    ).length;
+    const distinctExchangePartners = new Set(
+      exchangePartnerRows.map((r) =>
+        r.requesterId === user.id ? r.ownerId : r.requesterId,
+      ),
     ).size;
     const trustScore = await this.computeTrustScore(user);
 
@@ -405,6 +455,24 @@ export class ProfileService {
         label: 'Community Helper',
         description: 'Ai scris cel puțin 3 recenzii pentru alți utilizatori.',
         achieved: reviewsWritten >= 3,
+      },
+      {
+        key: 'explorer',
+        label: 'Explorer',
+        description: 'Ai făcut schimburi cu cel puțin 5 utilizatori diferiți.',
+        achieved: distinctExchangePartners >= 5,
+      },
+      {
+        key: 'fantasy_collector',
+        label: 'Fantasy Collector',
+        description: 'Ai listat cel puțin 3 cărți din genul fantasy.',
+        achieved: fantasyBooksCount >= 3,
+      },
+      {
+        key: 'book_explorer',
+        label: 'Book Explorer',
+        description: 'Ai listat cărți în cel puțin 3 limbi diferite.',
+        achieved: distinctLanguages >= 3,
       },
     ];
 

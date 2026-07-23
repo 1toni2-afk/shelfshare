@@ -14,6 +14,8 @@ class AppUser {
   final bool isEmailVerified;
   final bool isAdmin;
   final bool showAcquisitionHistory;
+  final String? referralCode;
+  final int referralCount;
   final TrustScore? trustScore;
   final List<Achievement>? achievements;
 
@@ -31,6 +33,8 @@ class AppUser {
     this.isEmailVerified = false,
     this.isAdmin = false,
     this.showAcquisitionHistory = false,
+    this.referralCode,
+    this.referralCount = 0,
     this.trustScore,
     this.achievements,
   });
@@ -50,6 +54,8 @@ class AppUser {
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isAdmin: json['isAdmin'] as bool? ?? false,
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
+      referralCode: json['referralCode'] as String?,
+      referralCount: json['referralCount'] as int? ?? 0,
       trustScore: json['trustScore'] != null
           ? TrustScore.fromJson(json['trustScore'] as Map<String, dynamic>)
           : null,
@@ -209,15 +215,36 @@ class ReadingStats {
   final int totalListed;
   final int totalPages;
   final String? favoriteGenre;
+  final List<GenreCount> topGenres;
 
-  const ReadingStats({required this.totalListed, required this.totalPages, this.favoriteGenre});
+  const ReadingStats({
+    required this.totalListed,
+    required this.totalPages,
+    this.favoriteGenre,
+    this.topGenres = const [],
+  });
 
   factory ReadingStats.fromJson(Map<String, dynamic> json) {
     return ReadingStats(
       totalListed: json['totalListed'] as int,
       totalPages: json['totalPages'] as int,
       favoriteGenre: json['favoriteGenre'] as String?,
+      topGenres: (json['topGenres'] as List<dynamic>?)
+              ?.map((e) => GenreCount.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
+  }
+}
+
+class GenreCount {
+  final String genre;
+  final int count;
+
+  const GenreCount({required this.genre, required this.count});
+
+  factory GenreCount.fromJson(Map<String, dynamic> json) {
+    return GenreCount(genre: json['genre'] as String, count: json['count'] as int);
   }
 }
 

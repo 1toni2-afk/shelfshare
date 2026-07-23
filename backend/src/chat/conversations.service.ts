@@ -18,6 +18,21 @@ const PARTICIPANT_SELECT = {
   profileImage: true,
 } as const;
 
+/**
+ * Statusul ofertei se citește mereu direct de aici, nu e cache-uit pe mesaj -
+ * la fiecare fetch de mesaje, cardul din chat arată starea reală curentă
+ * (Pending/Acceptată/Refuzată), fără să fie nevoie de un event de socket
+ * separat pentru actualizări.
+ */
+const PRICE_OFFER_SELECT = {
+  select: {
+    id: true,
+    amount: true,
+    status: true,
+    userBook: { select: { book: { select: { title: true, coverUrl: true } } } },
+  },
+} as const;
+
 @Injectable()
 export class ConversationsService {
   private readonly logger = new Logger(ConversationsService.name);
@@ -84,6 +99,11 @@ export class ConversationsService {
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
+        _count: {
+          select: {
+            messages: { where: { senderId: { not: userId }, isRead: false } },
+          },
+        },
       },
       orderBy: { updatedAt: 'desc' },
     });
@@ -93,6 +113,7 @@ export class ConversationsService {
       otherUser: conv.userAId === userId ? conv.userB : conv.userA,
       lastMessage: conv.messages[0] ?? null,
       updatedAt: conv.updatedAt,
+      unreadCount: conv._count.messages,
     }));
   }
 
@@ -109,6 +130,7 @@ export class ConversationsService {
         conversationId,
         ...(before ? { createdAt: { lt: new Date(before) } } : {}),
       },
+      include: { priceOffer: PRICE_OFFER_SELECT },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
@@ -147,6 +169,30 @@ export class ConversationsService {
 
     await this.notifyNewMessage(conversation, senderId, dto.conversationId);
 
+    return message;
+  }
+
+  /**
+   * Mesaj special generat automat când cineva face o ofertă de preț (vezi
+   * offers.service.ts#createOffer) - nu trece prin sendMessage() ca să nu
+   * declanșeze și notificarea generică "mesaj nou" (oferta are deja
+   * propria notificare, mai informativă, trimisă separat de OffersService).
+   */
+  async createPriceOfferMessage(
+    conversationId: string,
+    senderId: string,
+    priceOfferId: string,
+    content: string,
+  ) {
+    const [message] = await this.prisma.$transaction([
+      this.prisma.message.create({
+        data: { conversationId, senderId, content, priceOfferId },
+      }),
+      this.prisma.conversation.update({
+        where: { id: conversationId },
+        data: { updatedAt: new Date() },
+      }),
+    ]);
     return message;
   }
 

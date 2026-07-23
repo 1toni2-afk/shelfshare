@@ -42,6 +42,14 @@ class FollowRepository {
     await dio.delete('/users/$userId/follow');
   }
 
+  Future<List<PublicUser>> getFollowing() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/users/me/following');
+    return (response.data as List)
+        .map((e) => PublicUser.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<PublicUser>> getActiveMembers() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/users/active');

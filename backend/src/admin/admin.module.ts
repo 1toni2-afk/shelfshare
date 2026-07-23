@@ -3,9 +3,10 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AdminGuard } from './guards/admin.guard';
 import { FeedbackModule } from '../feedback/feedback.module';
+import { SupportModule } from '../support/support.module';
 
 @Module({
-  imports: [FeedbackModule],
+  imports: [FeedbackModule, SupportModule],
   controllers: [AdminController],
   providers: [AdminService, AdminGuard],
 })

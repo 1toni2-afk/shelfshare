@@ -41,10 +41,18 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
-  Future<void> register({required String email, required String password}) async {
+  Future<void> register({
+    required String email,
+    required String password,
+    String? referralCode,
+  }) async {
     state = const AuthLoading();
     try {
-      await _repository.register(email: email, password: password);
+      await _repository.register(
+        email: email,
+        password: password,
+        referralCode: referralCode,
+      );
       state = const AuthUnauthenticated();
     } on DioException catch (e) {
       state = AuthError(_extractMessage(e));

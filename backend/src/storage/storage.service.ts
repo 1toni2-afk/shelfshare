@@ -88,7 +88,15 @@ export class StorageService implements OnModuleInit {
     });
   }
 
+  /**
+   * `path` e de obicei o cheie relativă din bucket, dar datele demo (seed.ts)
+   * referențiază direct URL-uri absolute către imagini placeholder - le
+   * lăsăm neschimbate în loc să le prefixăm greșit cu bucket-ul local.
+   */
   getPublicUrl(path: string): string {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
     return `${this.publicBaseUrl}/${path}`;
   }
 }

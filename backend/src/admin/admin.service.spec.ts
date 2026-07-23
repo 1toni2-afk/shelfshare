@@ -3,6 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeedbackService } from '../feedback/feedback.service';
+import { SupportService } from '../support/support.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -37,6 +38,7 @@ describe('AdminService', () => {
         AdminService,
         { provide: PrismaService, useValue: prisma },
         { provide: FeedbackService, useValue: { getAll: jest.fn() } },
+        { provide: SupportService, useValue: { getAll: jest.fn() } },
       ],
     }).compile();
 

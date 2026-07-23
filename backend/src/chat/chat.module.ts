@@ -16,5 +16,6 @@ import { SafetyModule } from '../safety/safety.module';
   ],
   controllers: [ConversationsController],
   providers: [ConversationsService, ChatGateway],
+  exports: [ConversationsService],
 })
 export class ChatModule {}

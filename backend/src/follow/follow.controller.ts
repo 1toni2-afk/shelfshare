@@ -23,6 +23,12 @@ export class FollowController {
     return this.followService.getActiveMembers();
   }
 
+  @Get('me/following')
+  getFollowing(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.followService.getFollowing(userId!);
+  }
+
   @Post(':id/follow')
   follow(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;

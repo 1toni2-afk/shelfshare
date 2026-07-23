@@ -37,6 +37,11 @@ export class ProfileController {
     return this.profileService.getCityLeaderboard();
   }
 
+  @Get('leaderboard/national')
+  getNationalLeaderboard() {
+    return this.profileService.getNationalLeaderboard();
+  }
+
   @Get(':userId')
   getPublicProfile(@Param('userId') userId: string) {
     return this.profileService.getPublicProfile(userId);

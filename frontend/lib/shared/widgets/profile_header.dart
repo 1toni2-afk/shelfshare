@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
 
 /// Antetul comun oricărui ecran de profil (al meu sau public): avatar,
@@ -15,7 +16,7 @@ class ProfileHeader extends StatelessWidget {
     required this.rating,
     required this.booksExchangedCount,
     this.bio,
-    this.bioTitle = 'Despre',
+    this.bioTitle,
   });
 
   final String? profileImage;
@@ -25,10 +26,11 @@ class ProfileHeader extends StatelessWidget {
   final double rating;
   final int booksExchangedCount;
   final String? bio;
-  final String bioTitle;
+  final String? bioTitle;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final usernameLabel = username != null ? '@$username' : null;
     return Column(
       children: [
@@ -41,7 +43,7 @@ class ProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          name ?? usernameLabel ?? 'Utilizator',
+          name ?? usernameLabel ?? l10n.commonUnknownUser,
           style: Theme.of(context).textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
@@ -68,13 +70,13 @@ class ProfileHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            StatTile(icon: Icons.star, value: rating.toStringAsFixed(1), label: 'Rating'),
-            StatTile(value: '$booksExchangedCount', label: 'Cărți schimbate'),
+            StatTile(icon: Icons.star, value: rating.toStringAsFixed(1), label: l10n.commonRating),
+            StatTile(value: '$booksExchangedCount', label: l10n.commonBooksExchanged),
           ],
         ),
         if (bio != null && bio!.isNotEmpty) ...[
           const SizedBox(height: 24),
-          Text(bioTitle, style: Theme.of(context).textTheme.titleMedium),
+          Text(bioTitle ?? l10n.commonAbout, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(bio!),
         ],

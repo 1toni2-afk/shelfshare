@@ -1,66 +1,48 @@
 import 'package:flutter/material.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class SafetyCenterScreen extends StatelessWidget {
   const SafetyCenterScreen({super.key});
 
-  static const _tips = [
-    (
-      Icons.wb_sunny_outlined,
-      'Întâlnește-te ziua',
-      'Programează schimbul într-un interval orar cu lumină naturală, ideal dimineața sau după-amiaza.',
-    ),
-    (
-      Icons.storefront_outlined,
-      'Alege un loc public',
-      'O cafenea, o librărie sau un mall sunt variante mai sigure decât adresa personală a cuiva.',
-    ),
-    (
-      Icons.videocam_outlined,
-      'Preferă locații cu supraveghere video',
-      'Zonele cu camere de securitate descurajează comportamentul neplăcut.',
-    ),
-    (
-      Icons.privacy_tip_outlined,
-      'Nu distribui date personale',
-      'Nu ai nevoie să dai adresa de acasă, CNP sau alte date sensibile ca să faci un schimb.',
-    ),
-    (
-      Icons.star_outline,
-      'Verifică rating-ul și scorul de încredere',
-      'Un istoric bun de schimburi finalizate e un semn bun înainte să te întâlnești cu cineva.',
-    ),
-    (
-      Icons.face_outlined,
-      'O poză de profil reală crește încrederea',
-      'Profilurile cu poză și bio completă inspiră mai multă siguranță celorlalți utilizatori.',
-    ),
-    (
-      Icons.menu_book_outlined,
-      'Verifică starea cărții înainte de schimb',
-      'Compară cartea cu descrierea din anunț înainte să confirmi schimbul ca finalizat.',
-    ),
-    (
-      Icons.flag_outlined,
-      'Raportează orice comportament suspect',
-      'Poți raporta sau bloca un utilizator direct din profilul lui sau din conversație.',
-    ),
+  static const _tipIcons = [
+    Icons.wb_sunny_outlined,
+    Icons.storefront_outlined,
+    Icons.videocam_outlined,
+    Icons.privacy_tip_outlined,
+    Icons.star_outline,
+    Icons.face_outlined,
+    Icons.menu_book_outlined,
+    Icons.flag_outlined,
   ];
+
+  static List<(IconData, String, String)> _tips(AppLocalizations l10n) => [
+        (_tipIcons[0], l10n.safetyTip1Title, l10n.safetyTip1Desc),
+        (_tipIcons[1], l10n.safetyTip2Title, l10n.safetyTip2Desc),
+        (_tipIcons[2], l10n.safetyTip3Title, l10n.safetyTip3Desc),
+        (_tipIcons[3], l10n.safetyTip4Title, l10n.safetyTip4Desc),
+        (_tipIcons[4], l10n.safetyTip5Title, l10n.safetyTip5Desc),
+        (_tipIcons[5], l10n.safetyTip6Title, l10n.safetyTip6Desc),
+        (_tipIcons[6], l10n.safetyTip7Title, l10n.safetyTip7Desc),
+        (_tipIcons[7], l10n.safetyTip8Title, l10n.safetyTip8Desc),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Centru de siguranță')),
+      appBar: AppBar(title: Text(l10n.safetyCenterTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Text(
-              'Câteva reguli simple ca schimburile prin ShelfShare să fie plăcute și sigure.',
+              l10n.safetyCenterIntro,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
             ),
             const SizedBox(height: 16),
-            for (final (icon, title, description) in _tips)
+            for (final (icon, title, description) in _tips(l10n))
               Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(

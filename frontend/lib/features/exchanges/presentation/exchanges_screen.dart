@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/exchange_request.dart';
 import '../../../data/models/price_offer.dart';
@@ -45,17 +46,18 @@ class _ExchangesScreenState extends State<ExchangesScreen> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Schimburile mele'),
+        title: Text(l10n.exchangesTitle),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          tabs: const [
-            Tab(text: 'Schimburi primite'),
-            Tab(text: 'Schimburi trimise'),
-            Tab(text: 'Oferte primite'),
-            Tab(text: 'Oferte trimise'),
+          tabs: [
+            Tab(text: l10n.exchangesTabReceived),
+            Tab(text: l10n.exchangesTabSent),
+            Tab(text: l10n.offersTabReceived),
+            Tab(text: l10n.offersTabSent),
           ],
         ),
       ),
@@ -95,8 +97,8 @@ class _ExchangeList extends ConsumerWidget {
             return CenteredScrollable(
               child: Text(
                 mode == _ExchangeListMode.received
-                    ? 'Nu ai primit nicio cerere de schimb.'
-                    : 'Nu ai trimis nicio cerere de schimb.',
+                    ? context.l10n.exchangesEmptyReceived
+                    : context.l10n.exchangesEmptySent,
               ),
             );
           }
@@ -117,11 +119,11 @@ class _ExchangeList extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Nu am putut încărca schimburile.'),
+              Text(context.l10n.exchangesLoadError),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: () => ref.read(exchangesControllerProvider.notifier).refresh(),
-                child: const Text('Încearcă din nou'),
+                child: Text(context.l10n.commonRetry),
               ),
             ],
           ),
@@ -146,6 +148,7 @@ class _ExchangeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final counterpart = isReceived ? exchange.requester : exchange.owner;
     final alreadyRated = myUserId != null && exchange.myRatingGiven(myUserId!);
+    final l10n = context.l10n;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -187,8 +190,8 @@ class _ExchangeCard extends ConsumerWidget {
                         onTap: () => context.push('/users/${counterpart.id}', extra: counterpart),
                         child: Text(
                           isReceived
-                              ? 'Cerută de ${counterpart.name ?? "un utilizator"}'
-                              : 'De la ${counterpart.name ?? "un utilizator"}',
+                              ? l10n.exchangeRequestedBy(counterpart.name ?? l10n.commonAnonymousUser)
+                              : l10n.exchangeFrom(counterpart.name ?? l10n.commonAnonymousUser),
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -197,12 +200,12 @@ class _ExchangeCard extends ConsumerWidget {
                       ),
                       if (exchange.offeredBook != null)
                         Text(
-                          'Oferă: ${exchange.offeredBook!.book.title}',
+                          l10n.exchangeOffersBook(exchange.offeredBook!.book.title),
                           style: Theme.of(context).textTheme.bodySmall,
                         )
                       else if (exchange.offeredAmount != null)
                         Text(
-                          'Oferă: ${exchange.offeredAmount!.toStringAsFixed(0)} RON',
+                          l10n.exchangeOffersAmount(exchange.offeredAmount!.toStringAsFixed(0)),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                     ],
@@ -266,6 +269,7 @@ class _Actions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(exchangesControllerProvider.notifier);
+    final l10n = context.l10n;
 
     if (exchange.status == ExchangeStatus.pending && isReceived) {
       return Row(
@@ -273,12 +277,12 @@ class _Actions extends ConsumerWidget {
         children: [
           OutlinedButton(
             onPressed: () => notifier.reject(exchange.id),
-            child: const Text('Refuză'),
+            child: Text(l10n.exchangeReject),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () => notifier.accept(exchange.id),
-            child: const Text('Acceptă'),
+            child: Text(l10n.exchangeAccept),
           ),
         ],
       );
@@ -289,7 +293,7 @@ class _Actions extends ConsumerWidget {
         alignment: Alignment.centerRight,
         child: OutlinedButton(
           onPressed: () => notifier.cancel(exchange.id),
-          child: const Text('Anulează cererea'),
+          child: Text(l10n.exchangeCancelRequest),
         ),
       );
     }
@@ -309,21 +313,21 @@ class _Actions extends ConsumerWidget {
             children: [
               OutlinedButton(
                 onPressed: () => _openMeetingSheet(context, exchange),
-                child: Text(exchange.meetingTime == null ? 'Programează întâlnirea' : 'Reprogramează'),
+                child: Text(exchange.meetingTime == null ? l10n.exchangeScheduleMeeting : l10n.exchangeReschedule),
               ),
               if (exchange.meetingTime != null) ...[
                 OutlinedButton(
                   onPressed: () => _openCalendar(context, ref, exchange.id),
-                  child: const Text('Adaugă în calendar'),
+                  child: Text(l10n.exchangeAddToCalendar),
                 ),
                 OutlinedButton(
                   onPressed: () => _showQrDialog(context, exchange.id),
-                  child: const Text('Cod QR'),
+                  child: Text(l10n.exchangeQrCode),
                 ),
               ],
               ElevatedButton(
                 onPressed: () => notifier.complete(exchange.id),
-                child: const Text('Marchează finalizat'),
+                child: Text(l10n.exchangeMarkComplete),
               ),
             ],
           ),
@@ -344,20 +348,20 @@ class _Actions extends ConsumerWidget {
                 originalUserBookId: exchange.requestedBook.id,
                 bookTitle: exchange.requestedBook.book.title,
               ),
-              child: const Text('Adaugă în biblioteca ta'),
+              child: Text(l10n.commonAddToLibrary),
             ),
           alreadyRated
-              ? const Row(
+              ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle, size: 16, color: Color(0xFF2E7D32)),
-                    SizedBox(width: 4),
-                    Text('Evaluat', style: TextStyle(color: Color(0xFF2E7D32))),
+                    const Icon(Icons.check_circle, size: 16, color: Color(0xFF2E7D32)),
+                    const SizedBox(width: 4),
+                    Text(l10n.exchangeRated, style: const TextStyle(color: Color(0xFF2E7D32))),
                   ],
                 )
               : OutlinedButton.icon(
                   icon: const Icon(Icons.star_border, size: 18),
-                  label: const Text('Evaluează'),
+                  label: Text(l10n.exchangeRate),
                   onPressed: () => _showRatingDialog(context, ref),
                 ),
         ],
@@ -394,12 +398,12 @@ class _Actions extends ConsumerWidget {
       final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       if (!launched && context.mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut deschide calendarul.')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.exchangeCalendarError)));
       }
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut deschide calendarul.')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.exchangeCalendarError)));
       }
     }
   }
@@ -438,8 +442,9 @@ class _RatingDialogState extends State<_RatingDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return AlertDialog(
-      title: const Text('Cum a fost schimbul?'),
+      title: Text(l10n.exchangeRatingDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -459,14 +464,14 @@ class _RatingDialogState extends State<_RatingDialog> {
           TextField(
             controller: _commentController,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Recenzie (opțional)'),
+            decoration: InputDecoration(labelText: l10n.exchangeReviewOptional),
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Anulează'),
+          child: Text(l10n.commonCancel),
         ),
         ElevatedButton(
           onPressed: () => Navigator.of(context).pop(
@@ -475,7 +480,7 @@ class _RatingDialogState extends State<_RatingDialog> {
               comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
             ),
           ),
-          child: const Text('Trimite'),
+          child: Text(l10n.commonSubmit),
         ),
       ],
     );
@@ -493,13 +498,14 @@ class _ExchangeQrDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final link = '${Uri.base.origin}/exchanges/$exchangeId/confirm';
+    final l10n = context.l10n;
     return AlertDialog(
-      title: const Text('Cod QR de confirmare'),
+      title: Text(l10n.exchangeQrDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Celălalt participant scanează acest cod la întâlnire ca să confirme schimbul.',
+            l10n.exchangeQrDialogBody,
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -508,7 +514,7 @@ class _ExchangeQrDialog extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Închide')),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonClose)),
       ],
     );
   }
@@ -599,7 +605,7 @@ class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut salva întâlnirea.')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.exchangeMeetingSaveError)));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -608,6 +614,7 @@ class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -619,18 +626,18 @@ class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Programează întâlnirea', style: Theme.of(context).textTheme.titleLarge),
+          Text(l10n.exchangeMeetingSheetTitle, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 20),
           OutlinedButton.icon(
             onPressed: _pickDateTime,
             icon: const Icon(Icons.calendar_today),
-            label: Text(_dateTime == null ? 'Alege data și ora' : _formatDateTime(_dateTime!)),
+            label: Text(_dateTime == null ? l10n.exchangePickDateTime : _formatDateTime(_dateTime!)),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _locationController,
             maxLength: 200,
-            decoration: const InputDecoration(labelText: 'Locație'),
+            decoration: InputDecoration(labelText: l10n.exchangeLocationLabel),
           ),
           const SizedBox(height: 8),
           ElevatedButton(
@@ -641,7 +648,7 @@ class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Salvează'),
+                : Text(l10n.commonSave),
           ),
         ],
       ),
@@ -668,8 +675,8 @@ class _OfferList extends ConsumerWidget {
             return CenteredScrollable(
               child: Text(
                 mode == _OfferListMode.received
-                    ? 'Nu ai primit nicio ofertă de preț.'
-                    : 'Nu ai trimis nicio ofertă de preț.',
+                    ? context.l10n.offersEmptyReceived
+                    : context.l10n.offersEmptySent,
               ),
             );
           }
@@ -689,11 +696,11 @@ class _OfferList extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Nu am putut încărca ofertele.'),
+              Text(context.l10n.offersLoadError),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: () => ref.read(offersControllerProvider.notifier).refresh(),
-                child: const Text('Încearcă din nou'),
+                child: Text(context.l10n.commonRetry),
               ),
             ],
           ),
@@ -711,6 +718,7 @@ class _OfferCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final counterpart = isReceived ? offer.buyer : offer.owner;
+    final l10n = context.l10n;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -746,8 +754,8 @@ class _OfferCard extends ConsumerWidget {
                         onTap: () => context.push('/users/${counterpart.id}', extra: counterpart),
                         child: Text(
                           isReceived
-                              ? 'De la ${counterpart.name ?? "un utilizator"}'
-                              : 'Către ${counterpart.name ?? "un utilizator"}',
+                              ? l10n.exchangeFrom(counterpart.name ?? l10n.commonAnonymousUser)
+                              : l10n.offerTo(counterpart.name ?? l10n.commonAnonymousUser),
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -755,7 +763,7 @@ class _OfferCard extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        'Ofertă: ${offer.amount.toStringAsFixed(0)} lei',
+                        l10n.offerAmountLine(l10n.priceLei(offer.amount.toStringAsFixed(0))),
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium
@@ -788,7 +796,7 @@ class _OfferCard extends ConsumerWidget {
                     originalUserBookId: offer.userBook.id,
                     bookTitle: offer.userBook.book.title,
                   ),
-                  child: const Text('Adaugă în biblioteca ta'),
+                  child: Text(l10n.commonAddToLibrary),
                 ),
               ),
             ],
@@ -805,7 +813,7 @@ class _OfferCard extends ConsumerWidget {
                       context.push('/chat/${conversation.id}', extra: counterpart);
                     }
                   },
-                  label: const Text('Trimite mesaj'),
+                  label: Text(l10n.commonSendMessage),
                 ),
               ),
             ],
@@ -844,6 +852,7 @@ class _OfferActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(offersControllerProvider.notifier);
+    final l10n = context.l10n;
 
     if (isReceived) {
       return Row(
@@ -851,12 +860,12 @@ class _OfferActions extends ConsumerWidget {
         children: [
           OutlinedButton(
             onPressed: () => notifier.reject(offer.id),
-            child: const Text('Refuză'),
+            child: Text(l10n.exchangeReject),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () => notifier.accept(offer.id),
-            child: const Text('Acceptă'),
+            child: Text(l10n.exchangeAccept),
           ),
         ],
       );
@@ -866,7 +875,7 @@ class _OfferActions extends ConsumerWidget {
       alignment: Alignment.centerRight,
       child: OutlinedButton(
         onPressed: () => notifier.cancel(offer.id),
-        child: const Text('Anulează oferta'),
+        child: Text(l10n.offerCancel),
       ),
     );
   }

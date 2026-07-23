@@ -132,6 +132,9 @@ export class BooksService {
   async addToLibrary(userId: string, dto: AddBookDto) {
     const book = await this.findOrCreateBook(dto);
 
+    // isForSale pornește mereu false - vezi comentariul din AddBookDto.
+    // Pentru vânzare, userul urcă pozele apoi trece explicit prin
+    // updateUserBook (PATCH), care verifică deja că există cel puțin o poză.
     const userBook = await this.prisma.userBook.create({
       data: {
         userId,
@@ -140,9 +143,7 @@ export class BooksService {
         language: dto.language,
         edition: dto.edition,
         isHardcover: dto.isHardcover ?? false,
-        isForSale: dto.isForSale ?? false,
-        salePrice: dto.isForSale ? dto.salePrice : undefined,
-        isNegotiable: dto.isForSale ? (dto.isNegotiable ?? true) : true,
+        isForSale: false,
       },
       include: { book: true },
     });
@@ -264,21 +265,58 @@ export class BooksService {
       .filter((entry) => entry !== null);
   }
 
-  async getGenres() {
+  async getGenres(query?: string) {
     const rows = await this.prisma.book.groupBy({
       by: ['genre'],
       where: {
-        genre: { not: null },
+        genre: query
+          ? { contains: query, mode: 'insensitive' }
+          : { not: null },
         userBooks: { some: { availableForSwap: true } },
       },
       _count: { genre: true },
-      orderBy: { _count: { genre: 'desc' } },
-      take: 12,
+      orderBy: query ? { genre: 'asc' } : { _count: { genre: 'desc' } },
+      take: query ? 15 : 12,
     });
     return rows.map((r) => ({
       genre: r.genre as string,
       count: r._count.genre,
     }));
+  }
+
+  // Sugestii pentru auto-fill la filtrele de căutare (Author/Language) - la
+  // fel ca la genre, doar din cărți/anunțuri încă disponibile la schimb, ca
+  // sugestiile să nu trimită userul spre căutări fără niciun rezultat.
+  async getAuthors(query?: string) {
+    const rows = await this.prisma.book.findMany({
+      where: {
+        author: query
+          ? { contains: query, mode: 'insensitive' }
+          : { not: null },
+        userBooks: { some: { availableForSwap: true } },
+      },
+      select: { author: true },
+      distinct: ['author'],
+      orderBy: { author: 'asc' },
+      take: 15,
+    });
+    return rows.map((r) => r.author as string).filter(Boolean);
+  }
+
+  async getLanguages(query?: string) {
+    const rows = await this.prisma.userBook.findMany({
+      where: {
+        language: query
+          ? { contains: query, mode: 'insensitive' }
+          : { not: null },
+        availableForSwap: true,
+      },
+      select: { language: true },
+      distinct: ['language'],
+      orderBy: { language: 'asc' },
+      take: 15,
+    });
+    return rows.map((r) => r.language as string).filter(Boolean);
   }
 
   /**
@@ -461,9 +499,7 @@ export class BooksService {
         language: dto.language,
         edition: dto.edition,
         isHardcover: dto.isHardcover ?? false,
-        isForSale: dto.isForSale ?? false,
-        salePrice: dto.isForSale ? dto.salePrice : undefined,
-        isNegotiable: dto.isForSale ? (dto.isNegotiable ?? true) : true,
+        isForSale: false,
         previousListingId: originalUserBookId,
       },
       include: { book: true },

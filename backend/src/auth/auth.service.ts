@@ -85,9 +85,20 @@ export class AuthService {
       Date.now() + EMAIL_VERIFY_EXPIRY_HOURS * 60 * 60 * 1000,
     );
 
+    // Cod invalid/necunoscut -> ignorat silențios, nu blocăm înregistrarea
+    // pentru o greșeală de tastare la un câmp opțional.
+    let invitedById: string | undefined;
+    if (dto.referralCode) {
+      const referrer = await this.users.findByReferralCode(
+        dto.referralCode.trim().toUpperCase(),
+      );
+      invitedById = referrer?.id;
+    }
+
     const user = await this.users.create({
       email: dto.email,
       password: hashedPassword,
+      invitedById,
     });
 
     await this.users.update(user.id, {
@@ -250,16 +261,21 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const user = await this.users.findByEmail(email);
+    const genericResult = {
+      message:
+        'Dacă adresa există în sistem, vei primi un email cu instrucțiuni',
+    };
 
     // Nu dezvăluim dacă email-ul există sau nu, ca să nu permitem enumerarea conturilor
     if (!user || !user.password) {
-      return {
-        message:
-          'Dacă adresa există în sistem, vei primi un email cu instrucțiuni',
-      };
+      return genericResult;
     }
 
-    const resetPasswordToken = crypto.randomBytes(32).toString('hex');
+    // Cod pe 6 cifre introdus manual în aplicație - nu mai e un link, ca să
+    // evităm complet problemele de routing/cache ale linkurilor deschise
+    // din emailul clientului (aceeași problemă rezolvată la verificarea de
+    // email prin trecerea la cod, vezi generateVerificationCode).
+    const resetPasswordToken = generateVerificationCode();
     const resetPasswordExpiry = new Date(
       Date.now() + RESET_PASSWORD_EXPIRY_HOURS * 60 * 60 * 1000,
     );
@@ -278,21 +294,41 @@ export class AuthService {
       );
     }
 
-    return {
-      message:
-        'Dacă adresa există în sistem, vei primi un email cu instrucțiuni',
-    };
+    return genericResult;
   }
 
-  async resetPassword(token: string, newPassword: string) {
-    const user = await this.users.findByResetPasswordToken(token);
+  /** Validează codul fără să-l consume - userul mai are nevoie de el la resetPassword(). */
+  async verifyResetCode(email: string, code: string) {
+    const user = await this.users.findByEmail(email);
 
-    if (!user || !user.resetPasswordExpiry) {
-      throw new BadRequestException('Token de resetare invalid');
+    if (!user || !user.resetPasswordToken || !user.resetPasswordExpiry) {
+      throw new BadRequestException('Cod de resetare invalid');
+    }
+
+    if (user.resetPasswordToken !== code) {
+      throw new BadRequestException('Cod de resetare invalid');
     }
 
     if (user.resetPasswordExpiry < new Date()) {
-      throw new BadRequestException('Token de resetare expirat');
+      throw new BadRequestException('Cod de resetare expirat');
+    }
+
+    return { message: 'Cod valid' };
+  }
+
+  async resetPassword(email: string, code: string, newPassword: string) {
+    const user = await this.users.findByEmail(email);
+
+    if (!user || !user.resetPasswordToken || !user.resetPasswordExpiry) {
+      throw new BadRequestException('Cod de resetare invalid');
+    }
+
+    if (user.resetPasswordToken !== code) {
+      throw new BadRequestException('Cod de resetare invalid');
+    }
+
+    if (user.resetPasswordExpiry < new Date()) {
+      throw new BadRequestException('Cod de resetare expirat');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);

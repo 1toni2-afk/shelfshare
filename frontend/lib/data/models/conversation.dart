@@ -6,12 +6,14 @@ class Conversation {
   final PublicUser otherUser;
   final ChatMessage? lastMessage;
   final DateTime updatedAt;
+  final int unreadCount;
 
   const Conversation({
     required this.id,
     required this.otherUser,
     this.lastMessage,
     required this.updatedAt,
+    this.unreadCount = 0,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class Conversation {
           ? ChatMessage.fromJson(json['lastMessage'] as Map<String, dynamic>)
           : null,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      unreadCount: json['unreadCount'] as int? ?? 0,
     );
   }
 }

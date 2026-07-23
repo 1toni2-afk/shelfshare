@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
@@ -67,6 +68,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   }
 
   Future<void> _reportListing(UserBook book, PublicUser owner) async {
+    final l10n = context.l10n;
     final result = await showDialog<ReportReason>(
       context: context,
       builder: (context) => const ReportReasonDialog(),
@@ -77,16 +79,16 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             owner.id,
             reason: result,
             userBookId: book.id,
-            details: 'Raportat de pe anunțul "${book.book.title}"',
+            details: l10n.bookDetailReportedFrom(book.book.title),
           );
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Raport trimis. Mulțumim!')));
+            .showSnackBar(SnackBar(content: Text(l10n.bookDetailReportSent)));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut trimite raportul')));
+            .showSnackBar(SnackBar(content: Text(l10n.bookDetailReportError)));
       }
     }
   }
@@ -104,20 +106,21 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final isOwnBook = currentBook != null &&
         authState is AuthAuthenticated &&
         authState.user.id == currentBook.userId;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detalii carte'),
+        title: Text(l10n.bookDetailTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined),
-            tooltip: 'Copiază linkul',
+            tooltip: l10n.profileCopyLink,
             onPressed: () => copyShareLink(context, '/books/${widget.userBookId}'),
           ),
           if (currentBook != null && currentOwner != null && !isOwnBook)
             IconButton(
               icon: const Icon(Icons.flag_outlined),
-              tooltip: 'Raportează anunțul',
+              tooltip: l10n.bookDetailReportTooltip,
               onPressed: () => _reportListing(currentBook, currentOwner),
             ),
           if (bookId != null)
@@ -145,11 +148,11 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Nu am putut încărca cartea.'),
+                Text(l10n.bookDetailLoadError),
                 const SizedBox(height: 8),
                 OutlinedButton(
                   onPressed: () => ref.invalidate(bookDetailProvider(widget.userBookId)),
-                  child: const Text('Încearcă din nou'),
+                  child: Text(l10n.commonRetry),
                 ),
               ],
             ),
@@ -161,27 +164,28 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 }
 
 Future<void> _showViewStats(BuildContext context, WidgetRef ref, String userBookId) async {
+  final l10n = context.l10n;
   showDialog<void>(
     context: context,
     builder: (context) => FutureBuilder(
       future: ref.read(booksRepositoryProvider).getViewStats(userBookId),
       builder: (context, snapshot) {
         return AlertDialog(
-          title: const Text('Vizualizări'),
+          title: Text(l10n.bookDetailViewsTitle),
           content: switch (snapshot.connectionState) {
             ConnectionState.waiting => const SizedBox(
                 height: 60,
                 child: Center(child: CircularProgressIndicator()),
               ),
-            _ when snapshot.hasError => const Text('Nu am putut încărca vizualizările.'),
+            _ when snapshot.hasError => Text(l10n.bookDetailViewsLoadError),
             _ => Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${snapshot.data!.unique} vizualizări unice'),
+                  Text(l10n.bookDetailUniqueViews(snapshot.data!.unique)),
                   const SizedBox(height: 4),
                   Text(
-                    '${snapshot.data!.total} vizualizări în total, inclusiv reîncărcări de pagină',
+                    l10n.bookDetailTotalViews(snapshot.data!.total),
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
@@ -193,7 +197,7 @@ Future<void> _showViewStats(BuildContext context, WidgetRef ref, String userBook
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Închide'),
+              child: Text(l10n.commonClose),
             ),
           ],
         );
@@ -221,6 +225,7 @@ class _BookDetailContent extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
     final isOwnBook = currentUserId != null && currentUserId == book.userId;
+    final l10n = context.l10n;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -252,18 +257,18 @@ class _BookDetailContent extends ConsumerWidget {
           children: [
             Chip(label: Text(book.condition.label)),
             if (book.language != null) Chip(label: Text(book.language!)),
-            if (book.isHardcover) const Chip(label: Text('Cartonată')),
+            if (book.isHardcover) Chip(label: Text(l10n.bookDetailHardcoverChip)),
             if (owner?.city != null)
               Chip(
                 avatar: const Icon(Icons.location_on_outlined, size: 16),
                 label: Text(owner!.city!),
               ),
             Chip(
-              label: Text(book.availableForSwap ? 'Disponibilă la schimb' : 'Indisponibilă'),
+              label: Text(book.availableForSwap ? l10n.bookDetailAvailableChip : l10n.libraryUnavailable),
               backgroundColor:
                   book.availableForSwap ? AppColors.accent.withValues(alpha: 0.15) : AppColors.muted,
             ),
-            if (book.isForSale && !book.isNegotiable) const Chip(label: Text('NENEGOCIABIL')),
+            if (book.isForSale && !book.isNegotiable) Chip(label: Text(l10n.addBookNonNegotiable)),
           ],
         ),
         const SizedBox(height: 8),
@@ -274,10 +279,10 @@ class _BookDetailContent extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.visibility_outlined, size: 14, color: AppColors.mutedForeground),
+                Icon(Icons.visibility_outlined, size: 14, color: AppColors.mutedForeground),
                 const SizedBox(width: 4),
                 Text(
-                  '${book.viewCount} vizualizări',
+                  l10n.bookDetailViewCount(book.viewCount),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.mutedForeground,
                         decoration: TextDecoration.underline,
@@ -293,7 +298,7 @@ class _BookDetailContent extends ConsumerWidget {
         ],
         if (book.book.description != null && book.book.description!.isNotEmpty) ...[
           const SizedBox(height: 24),
-          Text('Descriere', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.bookDetailDescriptionTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(book.book.description!),
         ],
@@ -302,18 +307,18 @@ class _BookDetailContent extends ConsumerWidget {
             book.book.publishedYear != null ||
             book.book.pageCount != null) ...[
           const SizedBox(height: 24),
-          Text('Detalii', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.bookDetailDetailsTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          if (book.book.genre != null) _DetailRow(label: 'Gen', value: book.book.genre!),
-          if (book.book.publisher != null) _DetailRow(label: 'Editură', value: book.book.publisher!),
+          if (book.book.genre != null) _DetailRow(label: l10n.filtersGenre, value: book.book.genre!),
+          if (book.book.publisher != null) _DetailRow(label: l10n.bookDetailPublisherLabel, value: book.book.publisher!),
           if (book.book.publishedYear != null)
-            _DetailRow(label: 'An apariție', value: book.book.publishedYear.toString()),
+            _DetailRow(label: l10n.bookDetailYearLabel, value: book.book.publishedYear.toString()),
           if (book.book.pageCount != null)
-            _DetailRow(label: 'Pagini', value: book.book.pageCount.toString()),
+            _DetailRow(label: l10n.bookDetailPagesLabel, value: book.book.pageCount.toString()),
         ],
         if (owner != null) ...[
           const SizedBox(height: 24),
-          Text('Proprietar', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.bookDetailOwnerTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           ListTile(
             contentPadding: EdgeInsets.zero,
@@ -322,7 +327,7 @@ class _BookDetailContent extends ConsumerWidget {
               backgroundImage: owner!.profileImage != null ? NetworkImage(owner!.profileImage!) : null,
               child: owner!.profileImage == null ? const Icon(Icons.person) : null,
             ),
-            title: Text(owner!.name ?? 'Utilizator'),
+            title: Text(owner!.name ?? l10n.commonUnknownUser),
             subtitle: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -344,7 +349,7 @@ class _BookDetailContent extends ConsumerWidget {
         ],
         if (book.photos.isNotEmpty) ...[
           const SizedBox(height: 24),
-          Text('Poze', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.bookDetailPhotosTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           SizedBox(
             height: 100,
@@ -376,15 +381,15 @@ class _BookDetailContent extends ConsumerWidget {
           if (book.availableForSwap)
             ElevatedButton(
               onPressed: onRequestExchange,
-              child: const Text('Cere la schimb'),
+              child: Text(l10n.bookDetailRequestExchange),
             )
           else
-            const ElevatedButton(onPressed: null, child: Text('Indisponibilă la schimb')),
+            ElevatedButton(onPressed: null, child: Text(l10n.bookDetailUnavailableForExchange)),
           if (book.isForSale && book.isNegotiable) ...[
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: onMakeOffer,
-              child: const Text('Fă o ofertă'),
+              child: Text(l10n.bookDetailMakeOffer),
             ),
           ],
         ],
@@ -403,13 +408,14 @@ class _HistorySection extends ConsumerWidget {
     return async.when(
       data: (history) {
         if (history.length <= 1) return const SizedBox.shrink();
+        final l10n = context.l10n;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Istoricul acestei cărți', style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.bookDetailHistoryTitle, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Cum a circulat cartea prin aplicație, cu poze puse de fiecare proprietar.',
+              l10n.bookDetailHistorySubtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
             ),
             const SizedBox(height: 12),
@@ -429,6 +435,7 @@ class _HistoryHop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -449,12 +456,12 @@ class _HistoryHop extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  entry.ownerName ?? 'Utilizator',
+                  entry.ownerName ?? l10n.commonUnknownUser,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  '${entry.condition.label} · listată pe ${_formatDate(entry.listedAt)}'
-                  '${entry.transferredAt != null ? ' · ${entry.transferType == 'sale' ? 'vândută' : 'dată la schimb'} pe ${_formatDate(entry.transferredAt!)}' : entry.isCurrent ? ' · deținută în prezent' : ''}',
+                  '${entry.condition.label} · ${l10n.bookDetailHistoryListedOn(_formatDate(entry.listedAt))}'
+                  '${entry.transferredAt != null ? l10n.bookDetailHistoryTransferredOn(entry.transferType == 'sale' ? l10n.bookDetailHistorySold : l10n.bookDetailHistoryExchanged, _formatDate(entry.transferredAt!)) : entry.isCurrent ? l10n.bookDetailHistoryCurrentlyOwned : ''}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
                 ),
                 if (entry.photos.isNotEmpty) ...[
@@ -499,7 +506,7 @@ class _SimilarBooksSection extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Cărți similare', style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.bookDetailSimilarBooksTitle, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
@@ -540,7 +547,7 @@ class _PriceBlock extends StatelessWidget {
     return Column(
       children: [
         Text(
-          '${salePrice.toStringAsFixed(0)} lei',
+          context.l10n.priceLei(salePrice.toStringAsFixed(0)),
           style: Theme.of(context)
               .textTheme
               .headlineSmall
@@ -549,7 +556,7 @@ class _PriceBlock extends StatelessWidget {
         if (showSaving) ...[
           const SizedBox(height: 4),
           Text(
-            'Preț în librării: ${referencePrice.toStringAsFixed(0)} $referenceCurrency',
+            context.l10n.bookDetailLibraryPriceLabel('${referencePrice.toStringAsFixed(0)} $referenceCurrency'),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   decoration: TextDecoration.lineThrough,
                   color: AppColors.mutedForeground,
@@ -635,22 +642,20 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
       return true; // nu blocăm userul dacă verificarea eșuează
     }
     if (!mounted) return false;
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Primul tău schimb'),
-        content: const Text(
-          'Câteva sfaturi înainte de primul schimb: întâlnește-te ziua, într-un loc public, '
-          'și verifică starea cărții înainte să confirmi schimbul ca finalizat.',
-        ),
+        title: Text(l10n.bookDetailFirstExchangeTitle),
+        content: Text(l10n.bookDetailFirstExchangeBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Renunță'),
+            child: Text(l10n.commonGiveUp),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Am înțeles, continuă'),
+            child: Text(l10n.bookDetailUnderstood),
           ),
         ],
       ),
@@ -659,6 +664,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     if (!await _confirmSafetyIfFirstExchange()) return;
 
     setState(() => _isSubmitting = true);
@@ -671,14 +677,14 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Cerere de schimb trimisă')));
+            .showSnackBar(SnackBar(content: Text(l10n.bookDetailRequestSent)));
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = data is Map && data['message'] != null
-          ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-          : 'Nu am putut trimite cererea.';
       if (mounted) {
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : l10n.bookDetailRequestError;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
@@ -688,6 +694,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -701,7 +708,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Cere „${widget.requestedBook.book.title}" la schimb',
+              l10n.bookDetailRequestedTitle(widget.requestedBook.book.title),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),
@@ -714,16 +721,16 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
-                  'Nu ai cărți disponibile de oferit - poți trimite cererea și fără.',
+                  l10n.bookDetailNoBooksToOffer,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
             else
               DropdownButtonFormField<String?>(
                 initialValue: _offeredBookId,
-                decoration: const InputDecoration(labelText: 'Oferă una din cărțile tale (opțional)'),
+                decoration: InputDecoration(labelText: l10n.bookDetailOfferOneOfYourBooks),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Fără ofertă')),
+                  DropdownMenuItem(value: null, child: Text(l10n.bookDetailNoOffer)),
                   for (final userBook in _myBooks!)
                     DropdownMenuItem(value: userBook.id, child: Text(userBook.book.title)),
                 ],
@@ -733,7 +740,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
             TextField(
               controller: _messageController,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Mesaj (opțional)'),
+              decoration: InputDecoration(labelText: l10n.bookDetailMessageOptional),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -744,7 +751,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Trimite cererea'),
+                  : Text(l10n.bookDetailSendRequest),
             ),
           ],
         ),
@@ -775,10 +782,11 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     final amount = double.tryParse(_amountController.text.trim().replaceAll(',', '.'));
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Introdu o sumă validă')));
+          .showSnackBar(SnackBar(content: Text(l10n.bookDetailInvalidAmount)));
       return;
     }
     setState(() => _isSubmitting = true);
@@ -791,14 +799,14 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Ofertă trimisă')));
+            .showSnackBar(SnackBar(content: Text(l10n.bookDetailOfferSent)));
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = data is Map && data['message'] != null
-          ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-          : 'Nu am putut trimite oferta.';
       if (mounted) {
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : l10n.bookDetailOfferError;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
@@ -808,6 +816,7 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -821,14 +830,14 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Fă o ofertă pentru „${widget.book.book.title}"',
+              l10n.bookDetailMakeOfferTitle(widget.book.book.title),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             if (widget.book.salePrice != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'Preț cerut: ${widget.book.salePrice!.toStringAsFixed(0)} lei',
+                  l10n.bookDetailAskingPrice(l10n.priceLei(widget.book.salePrice!.toStringAsFixed(0))),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -836,13 +845,13 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Suma oferită', suffixText: 'lei'),
+              decoration: InputDecoration(labelText: l10n.bookDetailOfferAmountLabel, suffixText: 'lei'),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _messageController,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Mesaj (opțional)'),
+              decoration: InputDecoration(labelText: l10n.bookDetailMessageOptional),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -853,7 +862,7 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Trimite oferta'),
+                  : Text(l10n.bookDetailSendOffer),
             ),
           ],
         ),

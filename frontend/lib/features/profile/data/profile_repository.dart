@@ -47,6 +47,14 @@ class ProfileRepository {
         .map((e) => CityLeaderboardEntry.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  Future<List<CityLeaderboardEntry>> getNationalLeaderboard() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/leaderboard/national');
+    return (response.data as List)
+        .map((e) => CityLeaderboardEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {

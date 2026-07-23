@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeedbackService } from '../feedback/feedback.service';
+import { SupportService } from '../support/support.service';
 
 @Injectable()
 export class AdminService {
   constructor(
     private prisma: PrismaService,
     private feedback: FeedbackService,
+    private support: SupportService,
   ) {}
 
   async getStats() {
@@ -149,5 +151,9 @@ export class AdminService {
 
   getFeedback() {
     return this.feedback.getAll();
+  }
+
+  getSupportRequests() {
+    return this.support.getAll();
   }
 }

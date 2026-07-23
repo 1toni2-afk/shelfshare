@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../data/models/app_notification.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/notifications_controller.dart';
@@ -23,10 +25,19 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationType.exchangeRequestAccepted:
       case NotificationType.exchangeRequestRejected:
       case NotificationType.exchangeMeetingScheduled:
+        context.push('/exchanges');
       case NotificationType.priceOfferReceived:
       case NotificationType.priceOfferAccepted:
       case NotificationType.priceOfferRejected:
-        context.push('/exchanges');
+        // Oferta e vizibilă și acționabilă direct în chat (vezi Message.priceOfferId) -
+        // trimitem acolo, nu la ecranul separat de schimburi. Notificările vechi
+        // (create înainte de acest fix) n-au conversationId - fallback la /exchanges.
+        final conversationId = notification.data?['conversationId'] as String?;
+        if (conversationId != null) {
+          context.push('/chat/$conversationId');
+        } else {
+          context.push('/exchanges');
+        }
       case NotificationType.followedUserNewBook:
         final userId = notification.data?['userId'] as String?;
         if (userId != null) {
@@ -39,15 +50,16 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(notificationsControllerProvider);
     final hasUnread = (state.value ?? const []).any((n) => !n.isRead);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notificări'),
+        title: Text(l10n.notificationsTitle),
         actions: [
           if (hasUnread)
             TextButton(
               onPressed: () => ref.read(notificationsControllerProvider.notifier).markAllAsRead(),
-              child: const Text('Marchează tot ca citit'),
+              child: Text(l10n.notificationsMarkAllRead),
             ),
         ],
       ),
@@ -57,7 +69,7 @@ class NotificationsScreen extends ConsumerWidget {
           child: state.when(
             data: (notifications) {
               if (notifications.isEmpty) {
-                return const CenteredScrollable(child: Text('Nu ai nicio notificare.'));
+                return CenteredScrollable(child: Text(l10n.notificationsEmpty));
               }
               return ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -68,7 +80,7 @@ class NotificationsScreen extends ConsumerWidget {
                   return ListTile(
                     leading: Icon(_iconFor(notification.type)),
                     title: Text(notification.message),
-                    subtitle: Text(_relativeTime(notification.createdAt)),
+                    subtitle: Text(_relativeTime(l10n, notification.createdAt)),
                     tileColor: notification.isRead ? null : AppColors.accent.withValues(alpha: 0.08),
                     trailing: notification.isRead
                         ? null
@@ -83,11 +95,11 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca notificările.'),
+                  Text(l10n.notificationsLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(notificationsControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),
@@ -119,12 +131,12 @@ class NotificationsScreen extends ConsumerWidget {
     }
   }
 
-  String _relativeTime(DateTime time) {
+  String _relativeTime(AppLocalizations l10n, DateTime time) {
     final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 1) return 'acum';
-    if (diff.inMinutes < 60) return 'acum ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'acum ${diff.inHours} h';
-    if (diff.inDays < 7) return 'acum ${diff.inDays} zile';
+    if (diff.inMinutes < 1) return l10n.timeJustNow;
+    if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.timeDaysAgo(diff.inDays);
     return '${time.day.toString().padLeft(2, '0')}.${time.month.toString().padLeft(2, '0')}.${time.year}';
   }
 }

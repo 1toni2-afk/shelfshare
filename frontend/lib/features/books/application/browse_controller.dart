@@ -52,7 +52,7 @@ class BrowseState {
     this.total = 0,
     this.isLoading = true,
     this.isLoadingMore = false,
-    this.error,
+    this.hasError = false,
   });
 
   final BrowseFilters filters;
@@ -60,7 +60,7 @@ class BrowseState {
   final int total;
   final bool isLoading;
   final bool isLoadingMore;
-  final String? error;
+  final bool hasError;
 
   bool get hasMore => items.length < total;
 
@@ -70,8 +70,7 @@ class BrowseState {
     int? total,
     bool? isLoading,
     bool? isLoadingMore,
-    String? error,
-    bool clearError = false,
+    bool? hasError,
   }) {
     return BrowseState(
       filters: filters ?? this.filters,
@@ -79,7 +78,7 @@ class BrowseState {
       total: total ?? this.total,
       isLoading: isLoading ?? this.isLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-      error: clearError ? null : (error ?? this.error),
+      hasError: hasError ?? this.hasError,
     );
   }
 }
@@ -99,7 +98,7 @@ class BrowseController extends Notifier<BrowseState> {
       final result = await _fetch(filters, offset: 0);
       state = BrowseState(filters: filters, items: result.items, total: result.total, isLoading: false);
     } catch (_) {
-      state = state.copyWith(isLoading: false, error: 'Nu am putut încărca cărțile.');
+      state = state.copyWith(isLoading: false, hasError: true);
     }
   }
 

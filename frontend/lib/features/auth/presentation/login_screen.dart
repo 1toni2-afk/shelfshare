@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/google_sign_in_button.dart';
+import '../../support/presentation/support_dialog.dart';
 import '../application/auth_controller.dart';
 import '../application/auth_state.dart';
 
@@ -29,7 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final error = GoRouterState.of(context).uri.queryParameters['error'];
     if (error == 'google_auth_failed' && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Autentificarea cu Google a eșuat. Încearcă din nou.')),
+        SnackBar(content: Text(context.l10n.authGoogleFailed)),
       );
     }
   }
@@ -53,6 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
     final isLoading = state is AuthLoading;
+    final l10n = context.l10n;
 
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
       if (next is AuthError) {
@@ -90,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Text('ShelfShare', style: Theme.of(context).textTheme.displaySmall),
                   const SizedBox(height: 6),
                   Text(
-                    'Bun venit înapoi',
+                    l10n.loginWelcomeBack,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppColors.mutedForeground,
                         ),
@@ -108,12 +111,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: Icon(Icons.mail_outline),
+                              decoration: InputDecoration(
+                                labelText: l10n.commonEmailLabel,
+                                prefixIcon: const Icon(Icons.mail_outline),
                               ),
                               validator: (value) => (value == null || !value.contains('@'))
-                                  ? 'Email invalid'
+                                  ? l10n.commonEmailInvalid
                                   : null,
                             ),
                             const SizedBox(height: 16),
@@ -121,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
-                                labelText: 'Parolă',
+                                labelText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -134,14 +137,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                               validator: (value) => (value == null || value.isEmpty)
-                                  ? 'Introdu parola'
+                                  ? l10n.authEnterPasswordError
                                   : null,
                             ),
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: () => context.push('/forgot-password'),
-                                child: const Text('Ai uitat parola?'),
+                                child: Text(l10n.authForgotPasswordLink),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -156,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         color: AppColors.primaryForeground,
                                       ),
                                     )
-                                  : const Text('Autentificare'),
+                                  : Text(l10n.authLoginSubmit),
                             ),
                             const SizedBox(height: 20),
                             Row(
@@ -165,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 12),
                                   child: Text(
-                                    'sau',
+                                    l10n.commonOr,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall
@@ -186,12 +189,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Nu ai cont? '),
+                      Text(l10n.authNoAccount),
                       TextButton(
                         onPressed: () => context.push('/register'),
-                        child: const Text('Creează unul'),
+                        child: Text(l10n.authCreateOne),
                       ),
                     ],
+                  ),
+                  TextButton.icon(
+                    onPressed: () => showSupportDialog(context),
+                    icon: const Icon(Icons.help_outline, size: 18),
+                    label: Text(l10n.supportContactButton),
                   ),
                 ],
               ),

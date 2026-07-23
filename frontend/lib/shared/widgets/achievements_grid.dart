@@ -11,6 +11,9 @@ const _badgeIcons = {
   'early_adopter': Icons.rocket_launch_outlined,
   'genre_master': Icons.category_outlined,
   'community_helper': Icons.volunteer_activism_outlined,
+  'explorer': Icons.explore_outlined,
+  'fantasy_collector': Icons.auto_awesome_outlined,
+  'book_explorer': Icons.travel_explore_outlined,
 };
 
 class AchievementsGrid extends StatelessWidget {

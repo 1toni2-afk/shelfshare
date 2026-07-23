@@ -44,8 +44,20 @@ export class BooksController {
 
   // Tot înainte de :userBookId, din același motiv ca 'browse'.
   @Get('genres')
-  getGenres() {
-    return this.booksService.getGenres();
+  getGenres(@Query('query') query?: string) {
+    return this.booksService.getGenres(query);
+  }
+
+  // Sugestii de auto-fill pentru filtrele Author/Language - tot înainte de
+  // :userBookId, din același motiv ca 'browse'/'genres'.
+  @Get('authors')
+  getAuthors(@Query('query') query?: string) {
+    return this.booksService.getAuthors(query);
+  }
+
+  @Get('languages')
+  getLanguages(@Query('query') query?: string) {
+    return this.booksService.getLanguages(query);
   }
 
   // Tot înainte de :userBookId, din același motiv ca 'browse'.

@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const root = path.join(__dirname, '..', 'frontend', 'build', 'web');
 const port = 5959;
@@ -30,15 +31,34 @@ http.createServer((req, res) => {
     return;
   }
 
-  // main.dart.js/flutter_service_worker.js/index.html etc. nu au niciun hash
-  // în nume - Cloudflare și browserul le-ar cache-ui agresiv altfel (am tot
-  // pățit asta la fiecare deploy: build nou pe server, dar userii tot pe
-  // versiunea veche). Doar /assets/ (fonturi, imagini) au conținut stabil
-  // per build și pot fi cache-uite normal.
-  const isVersionedAsset = reqPath.startsWith('/assets/');
-  const cacheControl = isVersionedAsset
-    ? 'public, max-age=31536000, immutable'
-    : 'no-cache, no-store, must-revalidate';
+  // NICIUN fișier din build-ul Flutter web (main.dart.js, index.html, DAR și
+  // tot ce e sub /assets/ - fonturi, imagini, AssetManifest.json) nu are hash
+  // în nume: numele rămâne identic de la un build la altul, doar conținutul
+  // se schimbă. Am tratat /assets/ ca "imuabil, cache 1 an" inițial, dar
+  // asta a fost o presupunere greșită - ex. MaterialIcons-Regular.otf e
+  // tree-shaken în funcție de iconițele folosite în cod, deci conținutul lui
+  // SE schimbă de la un deploy la altul (o iconiță nouă adăugată la o feature
+  // înseamnă un font nou, la același URL) - un vizitator care a cache-uit
+  // fontul vechi (fără glyph-ul nou) va vedea acea iconiță nouă invizibilă
+  // la nesfârșit (butonul tot funcționează - doar glyph-ul lipsește din
+  // fontul cache-uit), fără nicio eroare vizibilă. Deci ETag+revalidare
+  // pentru TOATE fișierele, nu doar cele din afara /assets/.
+  const serve = (data, contentType) => {
+    const etag = `"${crypto.createHash('sha1').update(data).digest('hex')}"`;
+    const headers = {
+      'Content-Type': contentType,
+      'Cache-Control': 'no-cache, must-revalidate',
+      'ETag': etag,
+    };
+
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304, headers);
+      res.end();
+      return;
+    }
+    res.writeHead(200, headers);
+    res.end(data);
+  };
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
@@ -48,17 +68,12 @@ http.createServer((req, res) => {
           res.end('Not found');
           return;
         }
-        res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache, no-store, must-revalidate' });
-        res.end(indexData);
+        serve(indexData, 'text/html');
       });
       return;
     }
     const ext = path.extname(filePath);
-    res.writeHead(200, {
-      'Content-Type': mime[ext] || 'application/octet-stream',
-      'Cache-Control': cacheControl,
-    });
-    res.end(data);
+    serve(data, mime[ext] || 'application/octet-stream');
   });
 }).listen(port, '127.0.0.1', () => {
   console.log(`Static server running at http://127.0.0.1:${port}`);

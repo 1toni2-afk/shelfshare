@@ -11,6 +11,7 @@ class AdminData {
     required this.userReports,
     required this.upcomingReleases,
     required this.feedback,
+    required this.supportRequests,
   });
   final AdminStats stats;
   final AdminUsersPage users;
@@ -18,6 +19,7 @@ class AdminData {
   final List<UserReport> userReports;
   final List<UpcomingRelease> upcomingReleases;
   final List<FeedbackItem> feedback;
+  final List<SupportRequestItem> supportRequests;
 }
 
 class AdminController extends AsyncNotifier<AdminData> {
@@ -33,6 +35,7 @@ class AdminController extends AsyncNotifier<AdminData> {
       repository.getUserReports(),
       repository.getUpcomingReleases(),
       repository.getFeedback(),
+      repository.getSupportRequests(),
     ]);
     return AdminData(
       stats: results[0] as AdminStats,
@@ -41,6 +44,7 @@ class AdminController extends AsyncNotifier<AdminData> {
       userReports: results[3] as List<UserReport>,
       upcomingReleases: results[4] as List<UpcomingRelease>,
       feedback: results[5] as List<FeedbackItem>,
+      supportRequests: results[6] as List<SupportRequestItem>,
     );
   }
 
@@ -73,6 +77,7 @@ class AdminController extends AsyncNotifier<AdminData> {
         userReports: current.userReports,
         upcomingReleases: current.upcomingReleases.where((r) => r.id != id).toList(),
         feedback: current.feedback,
+        supportRequests: current.supportRequests,
       ),
     );
   }
@@ -110,6 +115,7 @@ class AdminController extends AsyncNotifier<AdminData> {
         userReports: current.userReports,
         upcomingReleases: current.upcomingReleases,
         feedback: current.feedback,
+        supportRequests: current.supportRequests,
       ),
     );
   }
@@ -133,6 +139,7 @@ class AdminController extends AsyncNotifier<AdminData> {
         userReports: current.userReports,
         upcomingReleases: current.upcomingReleases,
         feedback: current.feedback,
+        supportRequests: current.supportRequests,
       ),
     );
   }

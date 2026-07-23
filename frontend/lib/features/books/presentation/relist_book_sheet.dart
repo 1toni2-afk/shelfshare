@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../data/models/book.dart';
 import '../data/books_repository.dart';
 
@@ -58,15 +59,16 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     final salePrice = double.tryParse(_priceController.text.trim().replaceAll(',', '.'));
     if (_isForSale && salePrice == null) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Introdu un preț valid')));
+          .showSnackBar(SnackBar(content: Text(l10n.addBookInvalidPrice)));
       return;
     }
     if (_isForSale && _photos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Adaugă cel puțin o poză înainte de a o pune la vânzare')),
+        SnackBar(content: Text(l10n.relistNeedPhoto)),
       );
       return;
     }
@@ -76,9 +78,6 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
       final userBook = await ref.read(booksRepositoryProvider).relistBook(
             widget.originalUserBookId,
             condition: _condition,
-            isForSale: _isForSale,
-            salePrice: _isForSale ? salePrice : null,
-            isNegotiable: _isNegotiable,
           );
       for (final photo in _photos) {
         await ref.read(booksRepositoryProvider).addPhoto(
@@ -87,17 +86,24 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
               filename: photo.name,
             );
       }
+      if (_isForSale) {
+        await ref.read(booksRepositoryProvider).markForSale(
+              userBook.id,
+              salePrice: salePrice!,
+              isNegotiable: _isNegotiable,
+            );
+      }
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Cartea a fost adăugată în biblioteca ta')));
+            .showSnackBar(SnackBar(content: Text(l10n.relistSuccess)));
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = data is Map && data['message'] != null
-          ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-          : 'Nu am putut adăuga cartea.';
       if (mounted) {
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : l10n.relistGenericError;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
@@ -107,6 +113,7 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -119,16 +126,16 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Adaugă „${widget.bookTitle}" în biblioteca ta', style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.relistHeading(widget.bookTitle), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Descrie starea în care ai primit-o - rămâne legată de istoricul cărții.',
+              l10n.relistSubtitle,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<BookCondition>(
               initialValue: _condition,
-              decoration: const InputDecoration(labelText: 'Stare'),
+              decoration: InputDecoration(labelText: l10n.filtersCondition),
               items: [
                 for (final condition in BookCondition.values)
                   DropdownMenuItem(value: condition, child: Text(condition.label)),
@@ -139,7 +146,7 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('De vânzare'),
+              title: Text(l10n.addBookForSaleSwitch),
               value: _isForSale,
               onChanged: (value) => setState(() => _isForSale = value),
             ),
@@ -147,39 +154,44 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
               TextField(
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Preț (lei)', suffixText: 'lei'),
+                decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('NENEGOCIABIL'),
+                title: Text(l10n.addBookNonNegotiable),
                 value: !_isNegotiable,
                 onChanged: (value) => setState(() => _isNegotiable = !value),
               ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (var i = 0; i < _photos.length; i++)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(_photos[i].path, width: 70, height: 70, fit: BoxFit.cover),
-                    ),
-                  if (_photos.length < _maxPhotos)
-                    OutlinedButton(
-                      onPressed: _pickPhotos,
-                      style: OutlinedButton.styleFrom(minimumSize: const Size(70, 70), padding: EdgeInsets.zero),
-                      child: const Icon(Icons.add_a_photo_outlined),
-                    ),
-                ],
-              ),
             ],
+            const SizedBox(height: 8),
+            Text(
+              _isForSale ? l10n.addBookPhotosLabelRequired : l10n.addBookPhotosLabelOptional,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (var i = 0; i < _photos.length; i++)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(_photos[i].path, width: 70, height: 70, fit: BoxFit.cover),
+                  ),
+                if (_photos.length < _maxPhotos)
+                  OutlinedButton(
+                    onPressed: _pickPhotos,
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(70, 70), padding: EdgeInsets.zero),
+                    child: const Icon(Icons.add_a_photo_outlined),
+                  ),
+              ],
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
               child: _isSubmitting
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Adaugă în bibliotecă'),
+                  : Text(l10n.addBookSubmit),
             ),
           ],
         ),

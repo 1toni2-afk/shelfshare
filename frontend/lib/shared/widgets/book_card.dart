@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/models/user_book.dart';
 import 'book_cover.dart';
@@ -45,7 +46,7 @@ class BookCard extends StatelessWidget {
               const SizedBox(height: 2),
               Row(
                 children: [
-                  const Icon(Icons.near_me_outlined, size: 12, color: AppColors.mutedForeground),
+                  Icon(Icons.near_me_outlined, size: 12, color: AppColors.mutedForeground),
                   const SizedBox(width: 2),
                   Text(
                     '${userBook.distanceKm!.round()} km',
@@ -61,11 +62,11 @@ class BookCard extends StatelessWidget {
                 onTap: () => context.push('/users/${userBook.owner!.id}', extra: userBook.owner),
                 child: Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 14, color: AppColors.mutedForeground),
+                    Icon(Icons.person_outline, size: 14, color: AppColors.mutedForeground),
                     const SizedBox(width: 2),
                     Expanded(
                       child: Text(
-                        userBook.owner!.name ?? 'Utilizator',
+                        userBook.owner!.name ?? context.l10n.commonUnknownUser,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
@@ -99,7 +100,7 @@ class _PriceRow extends StatelessWidget {
       textBaseline: TextBaseline.alphabetic,
       children: [
         Text(
-          '${salePrice.toStringAsFixed(0)} lei',
+          context.l10n.priceLei(salePrice.toStringAsFixed(0)),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.accent,

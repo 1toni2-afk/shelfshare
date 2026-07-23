@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../data/exchanges_repository.dart';
 
@@ -29,11 +30,13 @@ class _ExchangeConfirmScreenState extends ConsumerState<ExchangeConfirmScreen> {
       await ref.read(exchangesRepositoryProvider).complete(widget.exchangeId);
       if (mounted) setState(() => _done = true);
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = data is Map && data['message'] != null
-          ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-          : 'Nu am putut confirma schimbul.';
-      if (mounted) setState(() => _error = message);
+      if (mounted) {
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : context.l10n.exchangeConfirmError;
+        setState(() => _error = message);
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -41,8 +44,9 @@ class _ExchangeConfirmScreenState extends ConsumerState<ExchangeConfirmScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirmă schimbul')),
+      appBar: AppBar(title: Text(l10n.exchangeConfirmTitle)),
       body: SafeArea(
         child: CenteredScrollable(
           child: Column(
@@ -51,9 +55,9 @@ class _ExchangeConfirmScreenState extends ConsumerState<ExchangeConfirmScreen> {
               if (_done) ...[
                 const Icon(Icons.check_circle, size: 48, color: Color(0xFF2E7D32)),
                 const SizedBox(height: 12),
-                const Text('Schimb marcat ca finalizat!'),
+                Text(l10n.exchangeConfirmDone),
               ] else ...[
-                const Text('Confirmi că schimbul de cărți s-a finalizat?'),
+                Text(l10n.exchangeConfirmQuestion),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
                   Text(_error!, style: const TextStyle(color: Colors.red)),
@@ -67,7 +71,7 @@ class _ExchangeConfirmScreenState extends ConsumerState<ExchangeConfirmScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Confirmă finalizarea'),
+                      : Text(l10n.exchangeConfirmButton),
                 ),
               ],
             ],

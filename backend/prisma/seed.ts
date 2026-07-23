@@ -100,6 +100,21 @@ const BOOKS = [
   { title: 'Matilda', author: 'Roald Dahl', isbn: '9780142410370', genre: 'Copii', publishedYear: 1988, language: 'Română', pageCount: 240 },
   { title: 'Război și pace', author: 'Lev Tolstoi', isbn: '9781400079988', genre: 'Clasic', publishedYear: 1869, language: 'Română', pageCount: 1225 },
   { title: 'Cel mai iubit dintre pământeni', author: 'Marin Preda', isbn: null, genre: 'Clasic românesc', publishedYear: 1980, language: 'Română', pageCount: 640 },
+  { title: 'Patul lui Procust', author: 'Camil Petrescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1933, language: 'Română', pageCount: 280 },
+  { title: 'Ultima noapte de dragoste, întâia noapte de război', author: 'Camil Petrescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1930, language: 'Română', pageCount: 320 },
+  { title: 'Groapa', author: 'Eugen Barbu', isbn: null, genre: 'Clasic românesc', publishedYear: 1957, language: 'Română', pageCount: 350 },
+  { title: 'Nunta Domnitei Ruxanda', author: 'Bogdan Petriceicu Hasdeu', isbn: null, genre: 'Clasic românesc', publishedYear: 1877, language: 'Română', pageCount: 120 },
+  { title: 'Joc de-a vacanța', author: 'Mihail Sebastian', isbn: null, genre: 'Clasic românesc', publishedYear: 1938, language: 'Română', pageCount: 140 },
+  { title: 'It', author: 'Stephen King', isbn: '9781501142970', genre: 'Thriller', publishedYear: 1986, language: 'Română', pageCount: 1168 },
+  { title: 'Cutremurul', author: 'Ken Follett', isbn: '9780451225467', genre: 'Thriller', publishedYear: 1978, language: 'Română', pageCount: 380 },
+  { title: 'Circul de la miezul nopții', author: 'Erin Morgenstern', isbn: '9780385534635', genre: 'Fantasy', publishedYear: 2011, language: 'Română', pageCount: 512 },
+  { title: 'Numele Trandafirului', author: 'Umberto Eco', isbn: '9780156001311', genre: 'Clasic', publishedYear: 1980, language: 'Română', pageCount: 512 },
+  { title: 'Cronica unei morți anunțate', author: 'Gabriel García Márquez', isbn: '9781400034716', genre: 'Ficțiune', publishedYear: 1981, language: 'Română', pageCount: 120 },
+  { title: 'O sută de ani de singurătate', author: 'Gabriel García Márquez', isbn: '9780060883287', genre: 'Ficțiune', publishedYear: 1967, language: 'Română', pageCount: 417 },
+  { title: 'Talentatul domn Ripley', author: 'Patricia Highsmith', isbn: '9780393332144', genre: 'Thriller', publishedYear: 1955, language: 'Română', pageCount: 290 },
+  { title: 'Educația unui om rațional', author: 'Ray Dalio', isbn: '9781501124020', genre: 'Dezvoltare personală', publishedYear: 2017, language: 'Engleză', pageCount: 592 },
+  { title: 'Gândește repede, gândește încet', author: 'Daniel Kahneman', isbn: '9780374533557', genre: 'Non-ficțiune', publishedYear: 2011, language: 'Română', pageCount: 499 },
+  { title: 'Puterea obiceiului', author: 'Charles Duhigg', isbn: '9780812981605', genre: 'Dezvoltare personală', publishedYear: 2012, language: 'Română', pageCount: 371 },
 ];
 
 const CONDITIONS: BookCondition[] = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'];
@@ -107,6 +122,15 @@ const CONDITIONS: BookCondition[] = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA
 function coverUrl(isbn: string | null): string | null {
   if (!isbn) return null;
   return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+}
+
+/**
+ * Poze "puse de userul demo" pentru un anunț - URL-uri placeholder stabile
+ * (același seed -> aceeași imagine la fiecare rulare). getPublicUrl le lasă
+ * neschimbate fiindcă sunt deja absolute (vezi storage.service.ts).
+ */
+function demoPhotos(seedKey: string, count: number): string[] {
+  return Array.from({ length: count }, (_, i) => `https://picsum.photos/seed/${seedKey}-${i}/600/800`);
 }
 
 async function main() {
@@ -122,6 +146,14 @@ async function main() {
     },
   });
   await prisma.wishlistItem.deleteMany({ where: { user: { email: { endsWith: '@shelfshare.demo' } } } });
+  await prisma.priceOffer.deleteMany({
+    where: {
+      OR: [
+        { buyer: { email: { endsWith: '@shelfshare.demo' } } },
+        { owner: { email: { endsWith: '@shelfshare.demo' } } },
+      ],
+    },
+  });
   await prisma.exchangeRequest.deleteMany({
     where: {
       OR: [
@@ -215,6 +247,62 @@ async function main() {
     userBooks.push({ ...userBook, ownerId: owner.id, bookTitle: book.title });
   }
 
+  console.log('Marchez câteva cărți ca puse la vânzare, cu poze...');
+  type ForSaleUserBook = UserBookWithMeta & { price: number };
+  const forSaleIndices = [1, 4, 7, 10, 13, 16, 19, 22].filter((i) => i < userBooks.length);
+  const forSaleUserBooks: ForSaleUserBook[] = [];
+  for (const i of forSaleIndices) {
+    const ub = userBooks[i];
+    const price = 20 + (i % 8) * 15;
+    const updated = await prisma.userBook.update({
+      where: { id: ub.id },
+      data: {
+        isForSale: true,
+        salePrice: price,
+        isNegotiable: i % 3 !== 0,
+        photos: demoPhotos(ub.id, 2),
+      },
+    });
+    forSaleUserBooks.push({ ...updated, ownerId: ub.ownerId, bookTitle: ub.bookTitle, price });
+  }
+
+  console.log('Creez oferte de preț (istoric de oferte în diverse stări)...');
+  type OfferPlan = { status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'; daysBack: number };
+  const offerPlans: OfferPlan[] = [
+    { status: 'PENDING', daysBack: 2 },
+    { status: 'PENDING', daysBack: 4 },
+    { status: 'PENDING', daysBack: 1 },
+    { status: 'ACCEPTED', daysBack: 10 },
+    { status: 'REJECTED', daysBack: 15 },
+    { status: 'CANCELLED', daysBack: 20 },
+  ];
+  for (let i = 0; i < offerPlans.length && i < forSaleUserBooks.length; i++) {
+    const plan = offerPlans[i];
+    const ub = forSaleUserBooks[i];
+    let buyer = pickSeeded(users, i * 5 + 7);
+    if (buyer.id === ub.ownerId) buyer = users[(users.indexOf(buyer) + 1) % users.length];
+
+    await prisma.priceOffer.create({
+      data: {
+        buyerId: buyer.id,
+        ownerId: ub.ownerId,
+        userBookId: ub.id,
+        amount: plan.status === 'ACCEPTED' ? Math.max(5, ub.price - 5) : ub.price,
+        message: 'Salut! Aș fi interesat, accepți acest preț?',
+        status: plan.status,
+        createdAt: daysAgo(plan.daysBack + 1),
+        updatedAt: daysAgo(plan.daysBack),
+      },
+    });
+
+    if (plan.status === 'ACCEPTED') {
+      await prisma.userBook.update({
+        where: { id: ub.id },
+        data: { isForSale: false, availableForSwap: false },
+      });
+    }
+  }
+
   console.log(`Creez cererile de schimb (istoric complet)...`);
   const exchangeCount = new Map<string, number>();
   const bump = (userId: string) => exchangeCount.set(userId, (exchangeCount.get(userId) ?? 0) + 1);
@@ -286,6 +374,53 @@ async function main() {
         conversationsMap.set(key, { id: conv.id, a: userAId, b: userBId });
       }
     }
+  }
+
+  console.log('Simulez re-listări (istoric traceable, cu poze pe fiecare verigă)...');
+  const userBookById = new Map(userBooks.map((ub) => [ub.id, ub]));
+  const completedExchanges = exchanges.filter((e) => e.status === 'COMPLETED').slice(0, 3);
+  let firstRelistId: string | null = null;
+  let firstRelistOwnerId: string | null = null;
+  let firstRelistBookId: string | null = null;
+
+  for (let i = 0; i < completedExchanges.length; i++) {
+    const ex = completedExchanges[i];
+    const original = userBookById.get(ex.requestedBookId);
+    if (!original) continue;
+
+    const relisted = await prisma.userBook.create({
+      data: {
+        userId: ex.requesterId,
+        bookId: original.bookId,
+        condition: pickSeeded(CONDITIONS, i + 1),
+        photos: demoPhotos(`relist-${i}`, 2),
+        availableForSwap: true,
+        previousListingId: original.id,
+        createdAt: new Date(ex.updatedAt.getTime() + 1000 * 60 * 60 * 24 * 3),
+      },
+    });
+
+    if (i === 0) {
+      firstRelistId = relisted.id;
+      firstRelistOwnerId = relisted.userId;
+      firstRelistBookId = relisted.bookId;
+    }
+  }
+
+  // lanț de 3 verigi pentru cel puțin o carte, ca istoricul să arate mai mult decât un singur hop
+  if (firstRelistId && firstRelistBookId) {
+    const otherUser = users.find((u) => u.id !== firstRelistOwnerId) ?? users[0];
+    await prisma.userBook.create({
+      data: {
+        userId: otherUser.id,
+        bookId: firstRelistBookId,
+        condition: pickSeeded(CONDITIONS, 3),
+        photos: demoPhotos('relist-chain-3', 1),
+        availableForSwap: true,
+        previousListingId: firstRelistId,
+        createdAt: daysAgo(5),
+      },
+    });
   }
 
   console.log('Setez rating și contor de schimburi pe profiluri...');

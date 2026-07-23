@@ -92,12 +92,30 @@ class BooksRepository {
         .toList();
   }
 
-  Future<List<BookGenre>> getGenres() async {
+  Future<List<BookGenre>> getGenres({String? query}) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get('/books/genres');
+    final response = await dio.get('/books/genres', queryParameters: {
+      if (query != null && query.isNotEmpty) 'query': query,
+    });
     return (response.data as List)
         .map((e) => BookGenre.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<List<String>> getAuthorSuggestions(String query) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/authors', queryParameters: {
+      if (query.isNotEmpty) 'query': query,
+    });
+    return (response.data as List).cast<String>();
+  }
+
+  Future<List<String>> getLanguageSuggestions(String query) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/languages', queryParameters: {
+      if (query.isNotEmpty) 'query': query,
+    });
+    return (response.data as List).cast<String>();
   }
 
   Future<List<MapCity>> getMapCities() async {
@@ -146,9 +164,6 @@ class BooksRepository {
     String? language,
     String? edition,
     bool isHardcover = false,
-    bool isForSale = false,
-    double? salePrice,
-    bool isNegotiable = true,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books', data: {
@@ -159,9 +174,6 @@ class BooksRepository {
       if (language != null && language.isNotEmpty) 'language': language,
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
-      'isForSale': isForSale,
-      if (isForSale && salePrice != null) 'salePrice': salePrice,
-      if (isForSale) 'isNegotiable': isNegotiable,
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
   }
@@ -172,9 +184,6 @@ class BooksRepository {
     String? language,
     String? edition,
     bool isHardcover = false,
-    bool isForSale = false,
-    double? salePrice,
-    bool isNegotiable = true,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books/$originalUserBookId/relist', data: {
@@ -182,9 +191,50 @@ class BooksRepository {
       if (language != null && language.isNotEmpty) 'language': language,
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
+    });
+    return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Trece un anunț la vânzare - separat de creare, pentru că backend-ul
+  /// cere cel puțin o poză deja urcată (vezi updateUserBook), iar la
+  /// creare nu poate exista încă nicio poză.
+  Future<UserBook> markForSale(
+    String userBookId, {
+    required double salePrice,
+    required bool isNegotiable,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.patch('/books/$userBookId', data: {
+      'isForSale': true,
+      'salePrice': salePrice,
+      'isNegotiable': isNegotiable,
+    });
+    return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Editare completă a unui anunț deja publicat - condiție, ediție, limbă,
+  /// copertă cartonată și, dacă e la vânzare, preț/negociabil. Folosește
+  /// același PATCH ca markForSale/setAvailability (backend-ul validează
+  /// oricum că există cel puțin o poză înainte de a permite isForSale=true).
+  Future<UserBook> updateListing(
+    String userBookId, {
+    required BookCondition condition,
+    String? language,
+    String? edition,
+    required bool isHardcover,
+    required bool isForSale,
+    double? salePrice,
+    required bool isNegotiable,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.patch('/books/$userBookId', data: {
+      'condition': condition.toJson(),
+      'language': language,
+      'edition': edition,
+      'isHardcover': isHardcover,
       'isForSale': isForSale,
-      if (isForSale && salePrice != null) 'salePrice': salePrice,
-      if (isForSale) 'isNegotiable': isNegotiable,
+      if (isForSale) 'salePrice': salePrice,
+      'isNegotiable': isNegotiable,
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
   }

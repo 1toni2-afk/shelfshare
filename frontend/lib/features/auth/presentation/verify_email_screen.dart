@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/auth_repository.dart';
 
@@ -32,7 +34,7 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
   Future<void> _submit() async {
     final code = _codeController.text.trim();
     if (code.length != 6) {
-      setState(() => _error = 'Codul trebuie să aibă 6 cifre');
+      setState(() => _error = context.l10n.verifyCodeTooShort);
       return;
     }
 
@@ -44,12 +46,12 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
       await ref.read(authRepositoryProvider).verifyEmail(email: widget.email, code: code);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cont confirmat cu succes!')),
+          SnackBar(content: Text(context.l10n.verifySuccessSnackbar)),
         );
         context.go('/login');
       }
     } catch (_) {
-      if (mounted) setState(() => _error = 'Cod invalid sau expirat.');
+      if (mounted) setState(() => _error = context.l10n.verifyInvalidOrExpired);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -61,7 +63,7 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
       await ref.read(authRepositoryProvider).resendVerificationCode(widget.email);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Am retrimis codul, dacă e cazul.')),
+          SnackBar(content: Text(context.l10n.verifyResendSnackbar)),
         );
       }
     } catch (_) {
@@ -73,6 +75,7 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -86,10 +89,10 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
           child: const Icon(Icons.mark_email_read_outlined, color: AppColors.accent, size: 40),
         ),
         const SizedBox(height: 24),
-        Text('Verifică-ți emailul', style: Theme.of(context).textTheme.headlineSmall),
+        Text(l10n.verifyEmailHeading, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         Text(
-          'Ți-am trimis un cod de confirmare pe ${widget.email}',
+          l10n.verifySentTo(widget.email),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
@@ -97,6 +100,11 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
         TextField(
           controller: _codeController,
           keyboardType: TextInputType.number,
+          // Codul din email e afișat cu o linie ("123-456") ca să fie mai
+          // ușor de citit - la copy-paste, linia vine odată cu el, deci
+          // filtrăm orice non-cifră ca lipirea să dea direct codul corect
+          // pe 6 cifre, nu 7 caractere trunchiate greșit.
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           maxLength: 6,
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 8),
@@ -118,12 +126,12 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
                   width: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Confirmă'),
+              : Text(l10n.verifyConfirmButton),
         ),
         const SizedBox(height: 12),
         TextButton(
           onPressed: _isResending ? null : _resend,
-          child: Text(_isResending ? 'Se retrimite...' : 'Nu ai primit codul? Retrimite'),
+          child: Text(_isResending ? l10n.verifyResending : l10n.verifyResendPrompt),
         ),
       ],
     );

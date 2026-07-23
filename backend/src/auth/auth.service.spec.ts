@@ -35,7 +35,6 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             findById: jest.fn(),
             findByGoogleId: jest.fn(),
-            findByResetPasswordToken: jest.fn(),
             create: jest.fn(),
             update: jest.fn(),
           },
@@ -295,34 +294,87 @@ describe('AuthService', () => {
     });
   });
 
-  describe('resetPassword', () => {
-    it('respinge token invalid', async () => {
-      users.findByResetPasswordToken.mockResolvedValue(null);
+  describe('verifyResetCode', () => {
+    it('respinge daca userul nu exista', async () => {
+      users.findByEmail.mockResolvedValue(null);
 
       await expect(
-        service.resetPassword('bad-token', 'parolaNoua1'),
-      ).rejects.toThrow('Token de resetare invalid');
+        service.verifyResetCode('nope@example.com', '123456'),
+      ).rejects.toThrow('Cod de resetare invalid');
     });
 
-    it('respinge token expirat', async () => {
-      users.findByResetPasswordToken.mockResolvedValue({
+    it('respinge un cod care nu se potriveste', async () => {
+      users.findByEmail.mockResolvedValue({
         ...baseUser,
+        resetPasswordToken: '123456',
+        resetPasswordExpiry: new Date(Date.now() + 1000 * 60 * 60),
+      } as never);
+
+      await expect(
+        service.verifyResetCode(baseUser.email, '000000'),
+      ).rejects.toThrow('Cod de resetare invalid');
+    });
+
+    it('respinge un cod expirat', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        resetPasswordToken: '123456',
         resetPasswordExpiry: new Date(Date.now() - 1000),
       } as never);
 
       await expect(
-        service.resetPassword('expired-token', 'parolaNoua1'),
-      ).rejects.toThrow('Token de resetare expirat');
+        service.verifyResetCode(baseUser.email, '123456'),
+      ).rejects.toThrow('Cod de resetare expirat');
     });
 
-    it('schimbă parola și invalidează sesiunea la token valid', async () => {
-      users.findByResetPasswordToken.mockResolvedValue({
+    it('confirma codul valid fara sa-l consume', async () => {
+      users.findByEmail.mockResolvedValue({
         ...baseUser,
+        resetPasswordToken: '123456',
+        resetPasswordExpiry: new Date(Date.now() + 1000 * 60 * 60),
+      } as never);
+
+      const result = await service.verifyResetCode(baseUser.email, '123456');
+
+      expect(users.update).not.toHaveBeenCalled();
+      expect(result.message).toContain('valid');
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('respinge cod invalid', async () => {
+      users.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword(baseUser.email, '123456', 'parolaNoua1'),
+      ).rejects.toThrow('Cod de resetare invalid');
+    });
+
+    it('respinge cod expirat', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        resetPasswordToken: '123456',
+        resetPasswordExpiry: new Date(Date.now() - 1000),
+      } as never);
+
+      await expect(
+        service.resetPassword(baseUser.email, '123456', 'parolaNoua1'),
+      ).rejects.toThrow('Cod de resetare expirat');
+    });
+
+    it('schimbă parola și invalidează sesiunea la cod valid', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        resetPasswordToken: '123456',
         resetPasswordExpiry: new Date(Date.now() + 1000 * 60 * 60),
       } as never);
       users.update.mockResolvedValue(baseUser as never);
 
-      const result = await service.resetPassword('good-token', 'parolaNoua1');
+      const result = await service.resetPassword(
+        baseUser.email,
+        '123456',
+        'parolaNoua1',
+      );
 
       expect(users.update).toHaveBeenCalledWith(
         baseUser.id,

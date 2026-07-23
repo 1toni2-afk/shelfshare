@@ -1,13 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/romanian_cities.dart';
+import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/locale/locale_controller.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/profile_header.dart';
 import '../../../shared/widgets/achievements_grid.dart';
+import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../../shared/widgets/trust_score_card.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
@@ -38,14 +43,28 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(profileControllerProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profilul meu'),
+        title: Text(l10n.profileTitle),
         actions: [
           IconButton(
+            icon: const Icon(Icons.qr_code_2),
+            tooltip: l10n.profileQrTooltip,
+            onPressed: () {
+              final userId = state.value?.id;
+              if (userId != null) {
+                showDialog<void>(
+                  context: context,
+                  builder: (context) => ProfileQrDialog(userId: userId),
+                );
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.share_outlined),
-            tooltip: 'Copiază linkul',
+            tooltip: l10n.profileCopyLink,
             onPressed: () {
               final userId = state.value?.id;
               if (userId != null) copyShareLink(context, '/users/$userId');
@@ -66,11 +85,11 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca profilul.'),
+                  Text(l10n.profileLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(profileControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),
@@ -82,6 +101,66 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
   }
 }
 
+Future<void> _showLanguagePicker(BuildContext context, WidgetRef ref) async {
+  final current = ref.read(localeControllerProvider).value;
+  final chosen = await showDialog<AppLocale>(
+    context: context,
+    builder: (context) => SimpleDialog(
+      title: Text(context.l10n.profileLanguage),
+      children: [
+        for (final locale in AppLocale.values)
+          RadioListTile<AppLocale>(
+            title: Text(locale.label),
+            value: locale,
+            // ignore: deprecated_member_use
+            groupValue: current ?? AppLocale.ro,
+            // ignore: deprecated_member_use
+            onChanged: (value) => Navigator.of(context).pop(value),
+          ),
+      ],
+    ),
+  );
+  if (chosen != null) {
+    await ref.read(localeControllerProvider.notifier).setLocale(chosen);
+  }
+}
+
+String _themeModeLabel(BuildContext context, AppThemeMode mode) {
+  final l10n = context.l10n;
+  switch (mode) {
+    case AppThemeMode.system:
+      return l10n.profileThemeSystem;
+    case AppThemeMode.light:
+      return l10n.profileThemeLight;
+    case AppThemeMode.dark:
+      return l10n.profileThemeDark;
+  }
+}
+
+Future<void> _showThemePicker(BuildContext context, WidgetRef ref) async {
+  final current = ref.read(themeControllerProvider).value ?? AppThemeMode.system;
+  final chosen = await showDialog<AppThemeMode>(
+    context: context,
+    builder: (context) => SimpleDialog(
+      title: Text(context.l10n.profileDarkModeSection),
+      children: [
+        for (final mode in AppThemeMode.values)
+          RadioListTile<AppThemeMode>(
+            title: Text(_themeModeLabel(context, mode)),
+            value: mode,
+            // ignore: deprecated_member_use
+            groupValue: current,
+            // ignore: deprecated_member_use
+            onChanged: (value) => Navigator.of(context).pop(value),
+          ),
+      ],
+    ),
+  );
+  if (chosen != null) {
+    await ref.read(themeControllerProvider.notifier).setThemeMode(chosen);
+  }
+}
+
 class _ProfileContent extends ConsumerWidget {
   const _ProfileContent({required this.user, required this.onEdit});
   final AppUser user;
@@ -89,6 +168,7 @@ class _ProfileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(24),
@@ -101,7 +181,7 @@ class _ProfileContent extends ConsumerWidget {
           rating: user.rating,
           booksExchangedCount: user.booksExchangedCount,
           bio: user.bio,
-          bioTitle: 'Despre mine',
+          bioTitle: l10n.profileAboutMe,
         ),
         if (user.trustScore != null) ...[
           const SizedBox(height: 20),
@@ -109,15 +189,19 @@ class _ProfileContent extends ConsumerWidget {
         ],
         if (user.achievements != null && user.achievements!.isNotEmpty) ...[
           const SizedBox(height: 20),
-          Text('Insigne', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.profileBadgesTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           AchievementsGrid(achievements: user.achievements!),
+        ],
+        if (user.referralCode != null) ...[
+          const SizedBox(height: 20),
+          _ReferralCard(code: user.referralCode!, count: user.referralCount),
         ],
         const SizedBox(height: 20),
         Card(
           child: ListTile(
             leading: const Icon(Icons.swap_horiz),
-            title: const Text('Schimburile mele'),
+            title: Text(l10n.profileMyExchanges),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/exchanges'),
           ),
@@ -125,37 +209,55 @@ class _ProfileContent extends ConsumerWidget {
         const SizedBox(height: 20),
         OutlinedButton.icon(
           icon: const Icon(Icons.shield_outlined),
-          label: const Text('Centru de siguranță'),
+          label: Text(l10n.profileSafetyCenter),
           onPressed: () => context.push('/safety-center'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
           icon: const Icon(Icons.help_outline),
-          label: const Text('Întrebări frecvente'),
+          label: Text(l10n.profileHelpCenter),
           onPressed: () => context.push('/help-center'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
           icon: const Icon(Icons.leaderboard_outlined),
-          label: const Text('Clasament pe orașe'),
+          label: Text(l10n.profileLeaderboard),
           onPressed: () => context.push('/leaderboard'),
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
+          icon: const Icon(Icons.favorite_border),
+          label: Text(l10n.profileFavoriteSellers),
+          onPressed: () => context.push('/following'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.language_outlined),
+          label: Text(l10n.profileLanguage),
+          onPressed: () => _showLanguagePicker(context, ref),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.dark_mode_outlined),
+          label: Text(l10n.profileDarkModeSection),
+          onPressed: () => _showThemePicker(context, ref),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
           icon: const Icon(Icons.feedback_outlined),
-          label: const Text('Trimite feedback'),
+          label: Text(l10n.profileSendFeedback),
           onPressed: () => _showFeedbackDialog(context, ref),
         ),
         const SizedBox(height: 12),
         OutlinedButton(
           onPressed: onEdit,
-          child: const Text('Editează profilul'),
+          child: Text(l10n.profileEditProfile),
         ),
         if (user.isAdmin) ...[
           const SizedBox(height: 12),
           OutlinedButton.icon(
             icon: const Icon(Icons.shield_outlined),
-            label: const Text('Panou de administrare'),
+            label: Text(l10n.profileAdminPanel),
             onPressed: () => context.push('/admin'),
           ),
         ],
@@ -163,29 +265,30 @@ class _ProfileContent extends ConsumerWidget {
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: AppColors.destructive),
           onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-          child: const Text('Deconectare'),
+          child: Text(l10n.profileLogout),
         ),
       ],
     );
   }
 
   Future<void> _showFeedbackDialog(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final controller = TextEditingController();
     final message = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Trimite feedback'),
+        title: Text(l10n.profileSendFeedback),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLines: 4,
-          decoration: const InputDecoration(hintText: 'Ce ai vrea să ne spui?'),
+          decoration: InputDecoration(hintText: l10n.profileFeedbackHint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Anulează')),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Trimite'),
+            child: Text(l10n.commonSubmit),
           ),
         ],
       ),
@@ -195,15 +298,83 @@ class _ProfileContent extends ConsumerWidget {
         await ref.read(feedbackRepositoryProvider).submit(message.trim());
         if (context.mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Mulțumim pentru feedback!')));
+              .showSnackBar(SnackBar(content: Text(l10n.profileFeedbackThanks)));
         }
       } catch (_) {
         if (context.mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Nu am putut trimite feedback-ul')));
+              .showSnackBar(SnackBar(content: Text(l10n.profileFeedbackError)));
         }
       }
     }
+  }
+}
+
+class _ReferralCard extends StatelessWidget {
+  const _ReferralCard({required this.code, required this.count});
+  final String code;
+  final int count;
+
+  Future<void> _copyCode(BuildContext context) async {
+    await Clipboard.setData(ClipboardData(text: code));
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.profileReferralCopied)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.profileReferralTitle, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              l10n.profileReferralSubtitle,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.mutedForeground),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.muted,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      code,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.copy_outlined),
+                  onPressed: () => _copyCode(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.profileReferralCountLabel(count),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -247,17 +418,17 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
           );
       if (mounted) Navigator.of(context).pop();
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = (data is Map && data['message'] != null)
-          ? data['message'].toString()
-          : 'Nu am putut salva profilul.';
       if (mounted) {
+        final data = e.response?.data;
+        final message = (data is Map && data['message'] != null)
+            ? data['message'].toString()
+            : context.l10n.profileSaveError;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut salva profilul.')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.profileSaveError)));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -266,6 +437,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -278,30 +450,33 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Editează profilul', style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.profileEditProfile, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 20),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nume'),
+              decoration: InputDecoration(labelText: l10n.onboardingLastName),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username', prefixIcon: Icon(Icons.alternate_email)),
+              decoration: InputDecoration(
+                labelText: l10n.profileUsernameLabel,
+                prefixIcon: const Icon(Icons.alternate_email),
+              ),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Fă numele vizibil public'),
-              subtitle: const Text('Username-ul rămâne mereu vizibil'),
+              title: Text(l10n.onboardingNameVisibleSwitch),
+              subtitle: Text(l10n.onboardingUsernameAlwaysVisible),
               value: _nameVisible,
               onChanged: (value) => setState(() => _nameVisible = value),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String?>(
               initialValue: _city,
-              decoration: const InputDecoration(labelText: 'Oraș'),
+              decoration: InputDecoration(labelText: l10n.profileCityLabel),
               items: [
-                const DropdownMenuItem(value: null, child: Text('Fără oraș')),
+                DropdownMenuItem(value: null, child: Text(l10n.profileNoCity)),
                 for (final city in kRomanianCities) DropdownMenuItem(value: city, child: Text(city)),
               ],
               onChanged: (value) => setState(() => _city = value),
@@ -311,12 +486,12 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               controller: _bioController,
               maxLines: 3,
               maxLength: 500,
-              decoration: const InputDecoration(labelText: 'Despre mine'),
+              decoration: InputDecoration(labelText: l10n.profileAboutMe),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Arată istoricul de achiziții pe profil'),
-              subtitle: const Text('Cărțile pe care le-ai primit prin schimburi sau cumpărături din aplicație'),
+              title: Text(l10n.profileShowAcquisitionHistory),
+              subtitle: Text(l10n.profileShowAcquisitionHistorySubtitle),
               value: _showAcquisitionHistory,
               onChanged: (value) => setState(() => _showAcquisitionHistory = value),
             ),
@@ -329,7 +504,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Salvează'),
+                  : Text(l10n.commonSave),
             ),
           ],
         ),

@@ -38,7 +38,7 @@ class BookCover extends StatelessWidget {
   Widget _placeholder() {
     return Container(
       color: AppColors.secondary,
-      child: const Icon(Icons.menu_book_rounded, color: AppColors.mutedForeground, size: 32),
+      child: Icon(Icons.menu_book_rounded, color: AppColors.mutedForeground, size: 32),
     );
   }
 }

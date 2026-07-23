@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/browse_controller.dart';
@@ -85,15 +86,16 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(browseControllerProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Caută cărți'),
+        title: Text(l10n.browseTitle),
         actions: [
           IconButton(
             onPressed: () => context.push('/map'),
             icon: const Icon(Icons.map_outlined),
-            tooltip: 'Hartă cărți din apropiere',
+            tooltip: l10n.browseMapTooltip,
           ),
         ],
       ),
@@ -108,9 +110,9 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: _onSearchChanged,
-                      decoration: const InputDecoration(
-                        hintText: 'Caută după titlu',
-                        prefixIcon: Icon(Icons.search),
+                      decoration: InputDecoration(
+                        hintText: l10n.browseSearchHint,
+                        prefixIcon: const Icon(Icons.search),
                       ),
                     ),
                   ),
@@ -145,16 +147,16 @@ class _BrowseResults extends ConsumerWidget {
       return const CenteredScrollable(child: CircularProgressIndicator());
     }
 
-    if (state.error != null) {
+    if (state.hasError) {
       return CenteredScrollable(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(state.error!),
+            Text(context.l10n.homeLoadError),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () => ref.read(browseControllerProvider.notifier).retry(),
-              child: const Text('Încearcă din nou'),
+              child: Text(context.l10n.commonRetry),
             ),
           ],
         ),
@@ -162,7 +164,7 @@ class _BrowseResults extends ConsumerWidget {
     }
 
     if (state.items.isEmpty) {
-      return const CenteredScrollable(child: Text('Nicio carte găsită.'));
+      return CenteredScrollable(child: Text(context.l10n.browseEmpty));
     }
 
     return ListView(

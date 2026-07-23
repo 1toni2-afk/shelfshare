@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/google_sign_in_button.dart';
 import '../application/auth_controller.dart';
@@ -16,6 +17,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  final _referralController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _registered = false;
   bool _obscurePassword = true;
@@ -24,6 +27,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmController.dispose();
+    _referralController.dispose();
     super.dispose();
   }
 
@@ -32,6 +37,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     await ref.read(authControllerProvider.notifier).register(
           email: _emailController.text.trim(),
           password: _passwordController.text,
+          referralCode: _referralController.text.trim().isEmpty
+              ? null
+              : _referralController.text.trim(),
         );
     final state = ref.read(authControllerProvider);
     if (state is! AuthError && mounted) {
@@ -43,6 +51,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
     final isLoading = state is AuthLoading;
+    final l10n = context.l10n;
 
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
       if (next is AuthError) {
@@ -84,10 +93,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Creează cont', style: Theme.of(context).textTheme.displaySmall),
+                    Text(l10n.authRegisterTitle, style: Theme.of(context).textTheme.displaySmall),
                     const SizedBox(height: 8),
                     Text(
-                      'Alătură-te comunității ShelfShare',
+                      l10n.authRegisterSubtitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: AppColors.mutedForeground,
@@ -104,12 +113,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: Icon(Icons.mail_outline),
+                              decoration: InputDecoration(
+                                labelText: l10n.commonEmailLabel,
+                                prefixIcon: const Icon(Icons.mail_outline),
                               ),
                               validator: (value) => (value == null || !value.contains('@'))
-                                  ? 'Email invalid'
+                                  ? l10n.commonEmailInvalid
                                   : null,
                             ),
                             const SizedBox(height: 16),
@@ -117,7 +126,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
-                                labelText: 'Parolă',
+                                labelText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -130,8 +139,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 ),
                               ),
                               validator: (value) => (value == null || value.length < 8)
-                                  ? 'Minim 8 caractere'
+                                  ? l10n.authMinEightChars
                                   : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _confirmController,
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
+                                labelText: l10n.authConfirmPasswordLabel,
+                                prefixIcon: const Icon(Icons.lock_outline),
+                              ),
+                              validator: (value) => value != _passwordController.text
+                                  ? l10n.authPasswordMismatch
+                                  : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _referralController,
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: InputDecoration(
+                                labelText: l10n.authReferralCodeLabel,
+                                prefixIcon: const Icon(Icons.card_giftcard_outlined),
+                              ),
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton(
@@ -145,7 +175,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         color: AppColors.primaryForeground,
                                       ),
                                     )
-                                  : const Text('Creează cont'),
+                                  : Text(l10n.authRegisterTitle),
                             ),
                             const SizedBox(height: 20),
                             Row(
@@ -154,7 +184,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 12),
                                   child: Text(
-                                    'sau',
+                                    l10n.commonOr,
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall

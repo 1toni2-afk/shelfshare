@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/admin_models.dart';
 import '../../../data/models/upcoming_release.dart';
@@ -13,9 +14,10 @@ class AdminScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(adminControllerProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Panou de administrare')),
+      appBar: AppBar(title: Text(l10n.profileAdminPanel)),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(adminControllerProvider.notifier).refresh(),
@@ -26,11 +28,11 @@ class AdminScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca datele de admin.'),
+                  Text(l10n.adminLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(adminControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),
@@ -48,61 +50,92 @@ class _AdminContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Statistici', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _StatsGrid(stats: data.stats),
         const SizedBox(height: 28),
-        Text('Utilizatori (${data.stats.totalUsers})', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.adminUsersCount(data.stats.totalUsers), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         for (final user in data.users.items) _UserTile(user: user),
         const SizedBox(height: 28),
         Text(
-          'Anunțuri fără nicio cerere (${data.inactiveListings.length})',
+          l10n.adminInactiveListingsCount(data.inactiveListings.length),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 4),
         Text(
-          'Cărți puse la schimb pentru care nimeni nu a trimis nicio cerere.',
+          l10n.adminInactiveListingsDesc,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
         ),
         const SizedBox(height: 12),
         if (data.inactiveListings.isEmpty)
-          const Text('Niciun anunț inactiv.')
+          Text(l10n.adminNoInactiveListings)
         else
           for (final listing in data.inactiveListings) _InactiveListingTile(listing: listing),
         const SizedBox(height: 28),
-        Text('Rapoarte utilizatori (${data.userReports.length})', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.adminUserReportsCount(data.userReports.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         if (data.userReports.isEmpty)
-          const Text('Niciun raport.')
+          Text(l10n.adminNoReports)
         else
           for (final report in data.userReports) _UserReportTile(report: report),
         const SizedBox(height: 28),
-        Text('Cărți viitoare (${data.upcomingReleases.length})', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.adminUpcomingReleasesCount(data.upcomingReleases.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 4),
         Text(
-          'Afișate pe ecranul principal, în secțiunea "Cărți viitoare".',
+          l10n.adminUpcomingReleasesDesc,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
         ),
         const SizedBox(height: 12),
         const _AddUpcomingReleaseForm(),
         const SizedBox(height: 12),
         if (data.upcomingReleases.isEmpty)
-          const Text('Nicio carte viitoare adăugată.')
+          Text(l10n.adminNoUpcomingReleases)
         else
           for (final release in data.upcomingReleases) _UpcomingReleaseTile(release: release),
         const SizedBox(height: 28),
-        Text('Feedback primit (${data.feedback.length})', style: Theme.of(context).textTheme.titleLarge),
+        Text(l10n.adminFeedbackCount(data.feedback.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         if (data.feedback.isEmpty)
-          const Text('Niciun feedback trimis încă.')
+          Text(l10n.adminNoFeedback)
         else
           for (final item in data.feedback) _FeedbackTile(item: item),
+        const SizedBox(height: 28),
+        Text(
+          l10n.adminSupportRequestsCount(data.supportRequests.length),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        if (data.supportRequests.isEmpty)
+          Text(l10n.adminNoSupportRequests)
+        else
+          for (final item in data.supportRequests) _SupportRequestTile(item: item),
       ],
+    );
+  }
+}
+
+class _SupportRequestTile extends StatelessWidget {
+  const _SupportRequestTile({required this.item});
+  final SupportRequestItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final contactLine = [item.email, if (item.phone != null && item.phone!.isNotEmpty) item.phone!].join(' · ');
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        title: Text('${item.name} — ${item.message}'),
+        subtitle: Text(
+          '$contactLine · ${item.createdAt.day}.${item.createdAt.month}.${item.createdAt.year}',
+        ),
+        isThreeLine: item.message.length > 60,
+      ),
     );
   }
 }
@@ -137,8 +170,8 @@ class _UserReportTile extends StatelessWidget {
       child: ListTile(
         title: Text('${report.reportedName ?? report.reportedEmail} - ${report.reason}'),
         subtitle: Text(
-          'Raportat de ${report.reporterName ?? report.reporterEmail}'
-          '${report.details != null && report.details!.isNotEmpty ? '\n${report.details}' : ''}',
+          context.l10n.adminReportedBy(report.reporterName ?? report.reporterEmail) +
+              (report.details != null && report.details!.isNotEmpty ? '\n${report.details}' : ''),
         ),
         isThreeLine: report.details != null && report.details!.isNotEmpty,
       ),
@@ -158,7 +191,7 @@ class _UpcomingReleaseTile extends ConsumerWidget {
         leading: BookCover(url: release.coverUrl, width: 40, height: 56),
         title: Text(release.title, overflow: TextOverflow.ellipsis),
         subtitle: Text(
-          '${release.author ?? "Autor necunoscut"} · ${release.releaseDate.day}.${release.releaseDate.month}.${release.releaseDate.year}',
+          '${release.author ?? context.l10n.adminUnknownAuthor} · ${release.releaseDate.day}.${release.releaseDate.month}.${release.releaseDate.year}',
         ),
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline, color: AppColors.destructive),
@@ -203,10 +236,11 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     final title = _titleController.text.trim();
     if (title.isEmpty || _releaseDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Titlul și data lansării sunt obligatorii')),
+        SnackBar(content: Text(l10n.adminTitleDateRequired)),
       );
       return;
     }
@@ -225,7 +259,7 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut adăuga cartea')));
+            .showSnackBar(SnackBar(content: Text(l10n.adminAddBookError)));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -234,6 +268,7 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -242,25 +277,25 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Titlu'),
+              decoration: InputDecoration(labelText: l10n.addBookTitleLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _authorController,
-              decoration: const InputDecoration(labelText: 'Autor (opțional)'),
+              decoration: InputDecoration(labelText: l10n.adminAuthorOptional),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _coverUrlController,
-              decoration: const InputDecoration(labelText: 'URL copertă (opțional)'),
+              decoration: InputDecoration(labelText: l10n.adminCoverUrlOptional),
             ),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: _pickDate,
               child: Text(
                 _releaseDate == null
-                    ? 'Alege data lansării'
-                    : 'Lansare: ${_releaseDate!.day}.${_releaseDate!.month}.${_releaseDate!.year}',
+                    ? l10n.adminPickReleaseDate
+                    : l10n.adminReleaseDateLabel('${_releaseDate!.day}.${_releaseDate!.month}.${_releaseDate!.year}'),
               ),
             ),
             const SizedBox(height: 12),
@@ -272,7 +307,7 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Adaugă'),
+                  : Text(l10n.adminAdd),
             ),
           ],
         ),
@@ -287,10 +322,15 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final tiles = [
-      ('Utilizatori', '${stats.totalUsers}', 'din care ${stats.verifiedUsers} verificați'),
-      ('Cărți în catalog', '${stats.totalBooks}', '${stats.totalListings} exemplare listate'),
-      ('Schimburi', '${stats.totalExchanges}', '${stats.completedExchanges} finalizate · ${stats.pendingExchanges} în așteptare'),
+      (l10n.adminStatsUsersLabel, '${stats.totalUsers}', l10n.adminStatsUsersSubtitle(stats.verifiedUsers)),
+      (l10n.adminStatsBooksLabel, '${stats.totalBooks}', l10n.adminStatsBooksSubtitle(stats.totalListings)),
+      (
+        l10n.adminStatsExchangesLabel,
+        '${stats.totalExchanges}',
+        l10n.adminStatsExchangesSubtitle(stats.completedExchanges, stats.pendingExchanges),
+      ),
     ];
     return Column(
       children: [
@@ -326,18 +366,19 @@ class _UserTile extends ConsumerWidget {
   final AdminUser user;
 
   Future<void> _confirmAndDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Șterge utilizatorul?'),
+        title: Text(l10n.adminDeleteUserTitle),
         content: Text(
-          'Se șterg definitiv contul lui ${user.name ?? user.email} și toate datele asociate (cărți, schimburi, mesaje). Nu se poate anula.',
+          l10n.adminDeleteUserBody(user.name ?? user.email),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Anulează')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Șterge', style: TextStyle(color: AppColors.destructive)),
+            child: Text(l10n.commonDelete, style: const TextStyle(color: AppColors.destructive)),
           ),
         ],
       ),
@@ -349,6 +390,7 @@ class _UserTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -373,7 +415,7 @@ class _UserTile extends ConsumerWidget {
           ],
         ),
         subtitle: Text(
-          '${user.email}${user.city != null ? " · ${user.city}" : ""} · ${user.rating.toStringAsFixed(1)}★ · ${user.booksExchangedCount} schimburi',
+          '${user.email}${user.city != null ? " · ${user.city}" : ""} · ${user.rating.toStringAsFixed(1)}★ · ${l10n.leaderboardExchangesCount(user.booksExchangedCount)}',
           overflow: TextOverflow.ellipsis,
         ),
         trailing: PopupMenuButton<String>(
@@ -390,12 +432,12 @@ class _UserTile extends ConsumerWidget {
           },
           itemBuilder: (context) => [
             if (user.isBanned)
-              const PopupMenuItem(value: 'unban', child: Text('Deblochează'))
+              PopupMenuItem(value: 'unban', child: Text(l10n.chatUnblock))
             else
-              const PopupMenuItem(value: 'ban', child: Text('Blochează')),
-            const PopupMenuItem(
+              PopupMenuItem(value: 'ban', child: Text(l10n.chatBlock)),
+            PopupMenuItem(
               value: 'delete',
-              child: Text('Șterge', style: TextStyle(color: AppColors.destructive)),
+              child: Text(l10n.commonDelete, style: const TextStyle(color: AppColors.destructive)),
             ),
           ],
         ),
@@ -415,7 +457,7 @@ class _InactiveListingTile extends ConsumerWidget {
       child: ListTile(
         title: Text(listing.bookTitle, overflow: TextOverflow.ellipsis),
         subtitle: Text(
-          '${listing.bookAuthor ?? "Autor necunoscut"} · ${listing.ownerName ?? listing.ownerEmail}',
+          '${listing.bookAuthor ?? context.l10n.adminUnknownAuthor} · ${listing.ownerName ?? listing.ownerEmail}',
           overflow: TextOverflow.ellipsis,
         ),
         trailing: IconButton(

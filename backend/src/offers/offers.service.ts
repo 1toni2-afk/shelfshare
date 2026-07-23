@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ConversationsService } from '../chat/conversations.service';
 import { NotificationType } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { publicName } from '../common/utils/user-visibility';
@@ -44,6 +45,7 @@ export class OffersService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private conversations: ConversationsService,
   ) {}
 
   private async notifySafe(
@@ -106,11 +108,25 @@ export class OffersService {
     });
 
     const buyer = await this.prisma.user.findUnique({ where: { id: buyerId } });
+
+    // Oferta devine vizibilă și acționabilă direct în chat, nu doar o
+    // notificare separată - vezi Message.priceOfferId.
+    const conversation = await this.conversations.findOrCreateConversation(
+      buyerId,
+      userBook.userId,
+    );
+    await this.conversations.createPriceOfferMessage(
+      conversation.id,
+      buyerId,
+      created.id,
+      `Ofertă: ${dto.amount} lei pentru "${userBook.book.title}"`,
+    );
+
     await this.notifySafe(
       userBook.userId,
       'PRICE_OFFER_RECEIVED',
       `${buyer?.name ?? 'Un utilizator'} ți-a oferit ${dto.amount} lei pentru cartea ta "${userBook.book.title}"`,
-      { offerId: created.id },
+      { offerId: created.id, conversationId: conversation.id },
     );
 
     return this.sanitizeParties(created);
@@ -152,11 +168,15 @@ export class OffersService {
       });
     });
 
+    const acceptConversationId = await this.findConversationIdForOffer(id);
     await this.notifySafe(
       offer.buyerId,
       'PRICE_OFFER_ACCEPTED',
       `Oferta ta pentru "${updated.userBook.book.title}" a fost acceptată`,
-      { offerId: id },
+      {
+        offerId: id,
+        ...(acceptConversationId ? { conversationId: acceptConversationId } : {}),
+      },
     );
 
     return this.sanitizeParties(updated);
@@ -173,14 +193,27 @@ export class OffersService {
       include: INCLUDE_FULL,
     });
 
+    const rejectConversationId = await this.findConversationIdForOffer(id);
     await this.notifySafe(
       offer.buyerId,
       'PRICE_OFFER_REJECTED',
       `Oferta ta pentru "${updated.userBook.book.title}" a fost refuzată`,
-      { offerId: id },
+      {
+        offerId: id,
+        ...(rejectConversationId ? { conversationId: rejectConversationId } : {}),
+      },
     );
 
     return this.sanitizeParties(updated);
+  }
+
+  /** Regăsește conversația unde a fost postată oferta, ca notificarea de accept/refuz să te trimită tot acolo. */
+  private async findConversationIdForOffer(offerId: string): Promise<string | undefined> {
+    const message = await this.prisma.message.findFirst({
+      where: { priceOfferId: offerId },
+      select: { conversationId: true },
+    });
+    return message?.conversationId;
   }
 
   async cancel(id: string, userId: string) {

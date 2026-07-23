@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { publicName } from '../common/utils/user-visibility';
 
 @Injectable()
 export class FollowService {
@@ -62,6 +63,36 @@ export class FollowService {
       followersCount,
       followingCount,
     };
+  }
+
+  /**
+   * "Vânzători/schimbători favoriți" - userii pe care îi urmărește userul
+   * curent, ca să îi poată regăsi rapid dintr-o listă dedicată, nu doar din
+   * badge-ul de follow de pe fiecare profil vizitat în parte.
+   */
+  async getFollowing(userId: string) {
+    const follows = await this.prisma.follow.findMany({
+      where: { followerId: userId },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            nameVisible: true,
+            city: true,
+            profileImage: true,
+            rating: true,
+            booksExchangedCount: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return follows.map((f) => ({
+      ...f.following,
+      name: publicName(f.following),
+    }));
   }
 
   /**

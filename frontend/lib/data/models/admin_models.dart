@@ -175,6 +175,35 @@ class FeedbackItem {
   }
 }
 
+class SupportRequestItem {
+  final String id;
+  final String name;
+  final String email;
+  final String? phone;
+  final String message;
+  final DateTime createdAt;
+
+  const SupportRequestItem({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.phone,
+    required this.message,
+    required this.createdAt,
+  });
+
+  factory SupportRequestItem.fromJson(Map<String, dynamic> json) {
+    return SupportRequestItem(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      email: json['email'] as String,
+      phone: json['phone'] as String?,
+      message: json['message'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+}
+
 class InactiveListing {
   final String id;
   final String bookTitle;

@@ -18,21 +18,78 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
+
+  <!-- Open Graph / previzualizare la distribuirea linkului (WhatsApp, Facebook, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://shelfshare.ro">
+  <meta property="og:title" content="ShelfShare">
+  <meta property="og:description" content="Schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
+  <meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ShelfShare">
+  <meta name="twitter:description" content="Schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
+  <meta name="twitter:image" content="https://shelfshare.ro/icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="shelfshare">
+  <meta name="apple-mobile-web-app-title" content="ShelfShare">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>shelfshare</title>
+  <title>ShelfShare</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Placeholder afișat instant de browser, înainte ca JS-ul Flutter să
+       apuce să se descarce/parseze - fără el, userul vede o pagină complet
+       albă câteva secunde la fiecare încărcare. Eliminat explicit la evenimentul
+       "flutter-first-frame" (vezi scriptul de mai jos) - un z-index atât de
+       mare nu e garantat acoperit automat de canvas-ul Flutter. */
+    #splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F8F4EC;
+      z-index: 9999;
+    }
+    #splash .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid #EDE8DE;
+      border-top-color: #C8783A;
+      animation: splash-spin 0.8s linear infinite;
+    }
+    @keyframes splash-spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
+  <div id="splash"><div class="spinner"></div></div>
+  <script>
+    // Flutter trimite acest eveniment pe window imediat după primul frame
+    // randat - fără eliminarea explicită, splash-ul (z-index mare, fixed)
+    // ar putea rămâne deasupra aplicației la nesfârșit, chiar dacă aceasta
+    // s-a încărcat corect dedesubt. Timeout-ul e doar o plasă de siguranță,
+    // ca un splash să nu blocheze accesul la aplicație dacă evenimentul nu
+    // ajunge să se declanșeze din vreun motiv neprevăzut.
+    window.addEventListener('flutter-first-frame', function () {
+      document.getElementById('splash')?.remove();
+    });
+    setTimeout(function () {
+      document.getElementById('splash')?.remove();
+    }, 15000);
+  </script>
+
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

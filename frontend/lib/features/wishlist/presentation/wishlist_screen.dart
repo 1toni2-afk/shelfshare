@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/wishlist_item.dart';
 import '../../../shared/widgets/book_cover.dart';
@@ -14,17 +15,18 @@ class WishlistScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(wishlistControllerProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lista de dorințe')),
+      appBar: AppBar(title: Text(l10n.wishlistTitle)),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(wishlistControllerProvider.notifier).refresh(),
           child: state.when(
             data: (items) {
               if (items.isEmpty) {
-                return const CenteredScrollable(
-                  child: Text('Nu ai adăugat încă nicio carte în lista de dorințe.'),
+                return CenteredScrollable(
+                  child: Text(l10n.wishlistEmpty),
                 );
               }
               return ListView(
@@ -46,11 +48,11 @@ class WishlistScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca lista de dorințe.'),
+                  Text(l10n.wishlistLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(wishlistControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),

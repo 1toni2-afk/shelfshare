@@ -95,6 +95,14 @@ class AdminRepository {
         .map((e) => FeedbackItem.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  Future<List<SupportRequestItem>> getSupportRequests() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/support-requests');
+    return (response.data as List)
+        .map((e) => SupportRequestItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 }
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {

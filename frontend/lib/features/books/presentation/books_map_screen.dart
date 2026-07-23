@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/map_city.dart';
 import '../../../data/models/user_book.dart';
@@ -26,9 +27,17 @@ class BooksMapScreen extends ConsumerStatefulWidget {
   ConsumerState<BooksMapScreen> createState() => _BooksMapScreenState();
 }
 
-class _BooksMapScreenState extends ConsumerState<BooksMapScreen> {
+class _BooksMapScreenState extends ConsumerState<BooksMapScreen>
+    with SingleTickerProviderStateMixin {
   final _mapController = MapController();
   bool _didFitBounds = false;
+  AnimationController? _flyController;
+
+  @override
+  void dispose() {
+    _flyController?.dispose();
+    super.dispose();
+  }
 
   void _fitBounds(List<MapCity> cities) {
     if (_didFitBounds || cities.isEmpty) return;
@@ -46,24 +55,45 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen> {
     });
   }
 
+  // flutter_map nu are o mișcare animată a camerei "din cutie" - interpolăm
+  // manual centrul și zoom-ul curent spre țintă, pe durata animației.
+  void _flyTo(LatLng target, double zoom) {
+    _flyController?.dispose();
+    final camera = _mapController.camera;
+    final latTween = Tween<double>(begin: camera.center.latitude, end: target.latitude);
+    final lngTween = Tween<double>(begin: camera.center.longitude, end: target.longitude);
+    final zoomTween = Tween<double>(begin: camera.zoom, end: zoom);
+    final controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    final curved = CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic);
+    curved.addListener(() {
+      _mapController.move(
+        LatLng(latTween.evaluate(curved), lngTween.evaluate(curved)),
+        zoomTween.evaluate(curved),
+      );
+    });
+    _flyController = controller;
+    controller.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
     final citiesAsync = ref.watch(_mapCitiesProvider);
     citiesAsync.whenData(_fitBounds);
 
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Cărți din apropiere')),
+      appBar: AppBar(title: Text(l10n.mapTitle)),
       body: citiesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => CenteredScrollable(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Nu am putut încărca harta.'),
+              Text(l10n.mapLoadError),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: () => ref.invalidate(_mapCitiesProvider),
-                child: const Text('Încearcă din nou'),
+                child: Text(l10n.commonRetry),
               ),
             ],
           ),
@@ -78,12 +108,19 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  // tile.openstreetmap.org descurajează explicit folosirea directă
+                  // în producție (politica lor de trafic/User-Agent) și poate
+                  // degrada silențios plăcile - CartoDB servește aceleași date
+                  // OpenStreetMap, gratuit, fără cheie API, cu CORS permisiv.
+                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                  subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.shelfshare.app',
+                  maxZoom: 20,
                 ),
                 const RichAttributionWidget(
                   attributions: [
                     TextSourceAttribution('© OpenStreetMap contributors'),
+                    TextSourceAttribution('© CARTO'),
                   ],
                 ),
                 MarkerLayer(
@@ -95,7 +132,7 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen> {
                         height: 48,
                         child: _CityMarker(
                           city: city,
-                          onTap: () => _showCityBooks(context, city),
+                          onTap: () => _openCity(context, city),
                         ),
                       ),
                   ],
@@ -103,14 +140,14 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen> {
               ],
             ),
             if (cities.isEmpty)
-              const Positioned(
+              Positioned(
                 left: 16,
                 right: 16,
                 bottom: 24,
                 child: Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('Nicio carte disponibilă momentan în vreun oraș.'),
+                    padding: const EdgeInsets.all(16),
+                    child: Text(l10n.mapEmpty),
                   ),
                 ),
               ),
@@ -118,6 +155,18 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen> {
         ),
       ),
     );
+  }
+
+  // Userul reclama ca dupa ce inchide fisa cu cartile orasului, harta ramane
+  // zoom-ata pe orasul respectiv si trebuie sa dea mereu zoom out manual -
+  // pastram camera de dinainte de fly-in si o restauram la inchiderea fisei.
+  Future<void> _openCity(BuildContext context, MapCity city) async {
+    final camera = _mapController.camera;
+    final previousCenter = camera.center;
+    final previousZoom = camera.zoom;
+    _flyTo(LatLng(city.lat, city.lng), 11);
+    await _showCityBooks(context, city);
+    if (mounted) _flyTo(previousCenter, previousZoom);
   }
 
   Future<void> _showCityBooks(BuildContext context, MapCity city) {
@@ -181,7 +230,7 @@ class _CityBooksSheet extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     child: Text(
-                      '${city.city} · ${city.count} ${city.count == 1 ? 'carte' : 'cărți'}',
+                      '${city.city} · ${context.l10n.mapCityBooksCount(city.count)}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -194,10 +243,10 @@ class _CityBooksSheet extends ConsumerWidget {
                     ),
                   )
                 else if (snapshot.hasError)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Center(child: Text('Nu am putut încărca cărțile.')),
+                      padding: const EdgeInsets.all(32),
+                      child: Center(child: Text(context.l10n.homeLoadError)),
                     ),
                   )
                 else

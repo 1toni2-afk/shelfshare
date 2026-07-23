@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/book_card.dart';
@@ -8,6 +9,7 @@ import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/profile_header.dart';
 import '../../../shared/widgets/achievements_grid.dart';
+import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../../shared/widgets/trust_score_card.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
@@ -60,7 +62,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut actualiza urmărirea')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.publicProfileFollowUpdateError)));
       }
     } finally {
       if (mounted) setState(() => _isTogglingFollow = false);
@@ -77,7 +79,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut porni conversația.')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.publicProfileMessageError)));
       }
     } finally {
       if (mounted) setState(() => _isMessaging = false);
@@ -93,11 +95,19 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil'),
+        title: Text(context.l10n.publicProfileTitle),
         actions: [
           IconButton(
+            icon: const Icon(Icons.qr_code_2),
+            tooltip: context.l10n.profileQrTooltip,
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (context) => ProfileQrDialog(userId: widget.userId),
+            ),
+          ),
+          IconButton(
             icon: const Icon(Icons.share_outlined),
-            tooltip: 'Copiază linkul',
+            tooltip: context.l10n.profileCopyLink,
             onPressed: () => copyShareLink(context, '/users/${widget.userId}'),
           ),
         ],
@@ -132,11 +142,11 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Nu am putut încărca profilul.'),
+                Text(context.l10n.profileLoadError),
                 const SizedBox(height: 8),
                 OutlinedButton(
                   onPressed: () => ref.invalidate(publicProfileProvider(widget.userId)),
-                  child: const Text('Încearcă din nou'),
+                  child: Text(context.l10n.commonRetry),
                 ),
               ],
             ),
@@ -168,6 +178,7 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(24),
@@ -178,9 +189,12 @@ class _Content extends StatelessWidget {
           username: user.username,
           subtitleLines: [
             if (user.city != null) user.city!,
-            if (user.memberSince != null) 'Membru din ${user.memberSince!.year}',
+            if (user.memberSince != null) l10n.publicProfileMemberSince(user.memberSince!.year),
             if (followStatus != null)
-              '${followStatus!.followersCount} urmăritori · ${followStatus!.followingCount} urmăriți',
+              l10n.publicProfileFollowersFollowing(
+                followStatus!.followersCount,
+                followStatus!.followingCount,
+              ),
           ],
           rating: user.rating,
           booksExchangedCount: user.booksExchangedCount ?? 0,
@@ -197,7 +211,7 @@ class _Content extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.chat_bubble_outline),
-                  label: const Text('Trimite mesaj'),
+                  label: Text(l10n.commonSendMessage),
                   onPressed: isMessaging ? null : onMessage,
                 ),
               ),
@@ -207,7 +221,9 @@ class _Content extends StatelessWidget {
                   icon: Icon(
                     (followStatus?.isFollowing ?? false) ? Icons.person_remove_outlined : Icons.person_add_outlined,
                   ),
-                  label: Text((followStatus?.isFollowing ?? false) ? 'Nu mai urmări' : 'Urmărește'),
+                  label: Text(
+                    (followStatus?.isFollowing ?? false) ? l10n.publicProfileUnfollow : l10n.publicProfileFollow,
+                  ),
                   onPressed: isTogglingFollow ? null : onToggleFollow,
                 ),
               ),
@@ -216,30 +232,43 @@ class _Content extends StatelessWidget {
         ],
         if (user.readingStats != null) ...[
           const SizedBox(height: 32),
-          Text('Statistici de citit', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.publicProfileReadingStats, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
-              _StatChip(label: 'Cărți listate', value: '${user.readingStats!.totalListed}'),
+              _StatChip(label: l10n.publicProfileBooksListed, value: '${user.readingStats!.totalListed}'),
               if (user.readingStats!.totalPages > 0)
-                _StatChip(label: 'Total pagini', value: '${user.readingStats!.totalPages}'),
-              if (user.readingStats!.favoriteGenre != null)
-                _StatChip(label: 'Gen preferat', value: user.readingStats!.favoriteGenre!),
+                _StatChip(label: l10n.publicProfileTotalPages, value: '${user.readingStats!.totalPages}'),
+              if (user.readingStats!.topGenres.length <= 1 && user.readingStats!.favoriteGenre != null)
+                _StatChip(label: l10n.publicProfileFavoriteGenre, value: user.readingStats!.favoriteGenre!),
             ],
           ),
+          if (user.readingStats!.topGenres.length > 1) ...[
+            const SizedBox(height: 16),
+            Text(l10n.publicProfileTopGenres, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final entry in user.readingStats!.topGenres)
+                  _StatChip(label: entry.genre, value: '${entry.count}'),
+              ],
+            ),
+          ],
         ],
         if (user.achievements != null && user.achievements!.isNotEmpty) ...[
           const SizedBox(height: 32),
-          Text('Insigne', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.profileBadgesTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           AchievementsGrid(achievements: user.achievements!),
         ],
         if (user.listedBooks != null && user.listedBooks!.isNotEmpty) ...[
           const SizedBox(height: 32),
           Text(
-            'Cărți listate (${user.listingsCount ?? user.listedBooks!.length})',
+            l10n.publicProfileListedBooksCount(user.listingsCount ?? user.listedBooks!.length),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
@@ -258,11 +287,11 @@ class _Content extends StatelessWidget {
         ],
         if (user.acquisitionHistory != null) ...[
           const SizedBox(height: 32),
-          Text('Istoric cărți primite prin aplicație', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.publicProfileAcquisitionHistory, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           if (user.acquisitionHistory!.isEmpty)
             Text(
-              'Niciun schimb sau cumpărare finalizată încă.',
+              l10n.publicProfileNoAcquisitions,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
             )
           else
@@ -285,7 +314,7 @@ class _Content extends StatelessWidget {
         ],
         if (user.reviews != null && user.reviews!.isNotEmpty) ...[
           const SizedBox(height: 32),
-          Text('Recenzii (${user.reviews!.length})', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.publicProfileReviewsCount(user.reviews!.length), style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           for (final review in user.reviews!)
             Card(
@@ -306,7 +335,7 @@ class _Content extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            review.reviewerName ?? 'Utilizator',
+                            review.reviewerName ?? l10n.commonUnknownUser,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                           ),
                         ),

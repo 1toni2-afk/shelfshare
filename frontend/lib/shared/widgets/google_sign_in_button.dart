@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
+import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -24,7 +25,7 @@ class GoogleSignInButton extends StatelessWidget {
           const _GoogleLogo(),
           const SizedBox(width: 12),
           Text(
-            'Continuă cu Google',
+            context.l10n.continueWithGoogle,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppColors.foreground,
                   fontWeight: FontWeight.w600,

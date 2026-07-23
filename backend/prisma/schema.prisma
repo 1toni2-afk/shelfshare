@@ -25,7 +25,7 @@ model User {
   emailVerifyToken  String?
   emailVerifyExpiry DateTime?
 
-  resetPasswordToken  String?   @unique
+  resetPasswordToken  String?
   resetPasswordExpiry DateTime?
 
   refreshTokenHash String?
@@ -46,6 +46,11 @@ model User {
   isBanned Boolean @default(false)
 
   showAcquisitionHistory Boolean @default(false)
+
+  referralCode String? @unique
+  invitedById  String?
+  invitedBy    User?   @relation("Referrals", fields: [invitedById], references: [id], onDelete: SetNull)
+  referrals    User[]  @relation("Referrals")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -83,6 +88,22 @@ model Feedback {
   createdAt DateTime @default(now())
 
   @@map("feedback")
+}
+
+/// Mesaje de la useri care nu se pot loga (deci fără cont autentificat) -
+/// trimise din ecranul de login, protejate cu un captcha simplu în loc de
+/// serviciu extern (vezi support.service.ts).
+model SupportRequest {
+  id String @id @default(uuid())
+
+  name    String
+  email   String
+  phone   String?
+  message String
+
+  createdAt DateTime @default(now())
+
+  @@map("support_requests")
 }
 
 model Follow {
@@ -278,6 +299,8 @@ model PriceOffer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  messages Message[]
+
   @@map("price_offers")
 }
 
@@ -359,6 +382,12 @@ model Message {
   locationLat Float?
   locationLng Float?
   meetingAt   DateTime?
+
+  // Setat doar pe mesajul generat automat când cineva face o ofertă de preț
+  // (vezi offers.service.ts#createOffer) - face oferta vizibilă și
+  // acționabilă direct în chat, nu doar ca o notificare separată.
+  priceOfferId String?
+  priceOffer   PriceOffer? @relation(fields: [priceOfferId], references: [id], onDelete: SetNull)
 
   isRead Boolean @default(false)
 

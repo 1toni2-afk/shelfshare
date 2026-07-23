@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/locale/l10n_extensions.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({super.key, required this.title, this.onSeeAll});
@@ -15,7 +16,7 @@ class SectionHeader extends StatelessWidget {
         children: [
           Text(title, style: Theme.of(context).textTheme.titleLarge),
           if (onSeeAll != null)
-            TextButton(onPressed: onSeeAll, child: const Text('Vezi tot')),
+            TextButton(onPressed: onSeeAll, child: Text(context.l10n.commonSeeAll)),
         ],
       ),
     );

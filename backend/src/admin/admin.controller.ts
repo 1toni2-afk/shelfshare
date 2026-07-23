@@ -68,4 +68,9 @@ export class AdminController {
   getFeedback() {
     return this.adminService.getFeedback();
   }
+
+  @Get('support-requests')
+  getSupportRequests() {
+    return this.adminService.getSupportRequests();
+  }
 }

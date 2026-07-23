@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../application/profile_controller.dart';
 
@@ -49,11 +50,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           );
       if (mounted) context.go('/');
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = (data is Map && data['message'] != null)
-          ? data['message'].toString()
-          : 'A apărut o eroare. Încearcă din nou.';
-      if (mounted) setState(() => _error = message);
+      if (mounted) {
+        final data = e.response?.data;
+        final message = (data is Map && data['message'] != null)
+            ? data['message'].toString()
+            : context.l10n.onboardingGenericError;
+        setState(() => _error = message);
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -61,6 +64,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -74,10 +78,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Aproape gata!', style: Theme.of(context).textTheme.displaySmall),
+                    Text(l10n.onboardingTitle, style: Theme.of(context).textTheme.displaySmall),
                     const SizedBox(height: 8),
                     Text(
-                      'Spune-ne cum vrei să te vadă ceilalți',
+                      l10n.onboardingSubtitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: AppColors.mutedForeground,
@@ -93,34 +97,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           children: [
                             TextFormField(
                               controller: _firstNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Prenume',
-                                prefixIcon: Icon(Icons.person_outline),
+                              decoration: InputDecoration(
+                                labelText: l10n.onboardingFirstName,
+                                prefixIcon: const Icon(Icons.person_outline),
                               ),
                               validator: (value) =>
-                                  (value == null || value.trim().isEmpty) ? 'Obligatoriu' : null,
+                                  (value == null || value.trim().isEmpty) ? l10n.commonRequired : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _lastNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Nume',
-                                prefixIcon: Icon(Icons.person_outline),
+                              decoration: InputDecoration(
+                                labelText: l10n.onboardingLastName,
+                                prefixIcon: const Icon(Icons.person_outline),
                               ),
                               validator: (value) =>
-                                  (value == null || value.trim().isEmpty) ? 'Obligatoriu' : null,
+                                  (value == null || value.trim().isEmpty) ? l10n.commonRequired : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _usernameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Username',
-                                prefixIcon: Icon(Icons.alternate_email),
+                              decoration: InputDecoration(
+                                labelText: l10n.onboardingUsername,
+                                prefixIcon: const Icon(Icons.alternate_email),
                               ),
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) return 'Obligatoriu';
+                                if (value == null || value.trim().isEmpty) return l10n.commonRequired;
                                 if (!RegExp(r'^[a-zA-Z0-9_]{3,20}$').hasMatch(value.trim())) {
-                                  return '3-20 caractere: litere, cifre sau underscore';
+                                  return l10n.onboardingUsernameFormatError;
                                 }
                                 return null;
                               },
@@ -135,8 +139,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             const SizedBox(height: 8),
                             SwitchListTile(
                               contentPadding: EdgeInsets.zero,
-                              title: const Text('Fă numele vizibil public'),
-                              subtitle: const Text('Username-ul rămâne mereu vizibil'),
+                              title: Text(l10n.onboardingNameVisibleSwitch),
+                              subtitle: Text(l10n.onboardingUsernameAlwaysVisible),
                               value: _nameVisible,
                               onChanged: (value) => setState(() => _nameVisible = value),
                             ),
@@ -152,7 +156,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                         color: AppColors.primaryForeground,
                                       ),
                                     )
-                                  : const Text('Continuă'),
+                                  : Text(l10n.commonContinue),
                             ),
                           ],
                         ),

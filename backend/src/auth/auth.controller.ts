@@ -17,6 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ExchangeLoginCodeDto } from './dto/exchange-login-code.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
@@ -63,10 +64,16 @@ export class AuthController {
     return this.authService.forgotPassword(dto.email);
   }
 
+  @Post('verify-reset-code')
+  @HttpCode(HttpStatus.OK)
+  verifyResetCode(@Body() dto: VerifyResetCodeDto) {
+    return this.authService.verifyResetCode(dto.email, dto.code);
+  }
+
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto.token, dto.newPassword);
+    return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
   }
 
   @UseGuards(JwtRefreshGuard)

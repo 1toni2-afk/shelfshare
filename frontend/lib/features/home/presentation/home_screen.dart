@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/upcoming_release.dart';
 import '../../../data/models/user.dart';
@@ -25,10 +27,11 @@ class HomeScreen extends ConsumerWidget {
     final name = authState is AuthAuthenticated ? authState.user.name : null;
     final unreadCount =
         (ref.watch(notificationsControllerProvider).value ?? const []).where((n) => !n.isRead).length;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(name != null && name.isNotEmpty ? 'Salut, $name!' : 'Bine ai venit!'),
+        title: Text(name != null && name.isNotEmpty ? l10n.homeGreeting(name) : l10n.homeWelcome),
         actions: [
           IconButton(
             icon: const Icon(Icons.swap_horiz),
@@ -64,11 +67,11 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca cărțile.'),
+                  Text(l10n.homeLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(homeControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),
@@ -86,10 +89,11 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (data.recent.isEmpty && data.nearby.isEmpty && data.mostViewed.isEmpty) {
       return CenteredScrollable(
         child: Text(
-          'Nu există încă cărți disponibile.',
+          l10n.homeEmpty,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       );
@@ -100,7 +104,7 @@ class _HomeContent extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         if (data.genres.isNotEmpty) ...[
-          const SectionHeader(title: 'Categorii'),
+          SectionHeader(title: l10n.homeCategories),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -122,31 +126,31 @@ class _HomeContent extends StatelessWidget {
           const SizedBox(height: 24),
         ],
         if (data.recent.isNotEmpty) ...[
-          const SectionHeader(title: 'Adăugate recent'),
+          SectionHeader(title: l10n.homeRecentlyAdded),
           const SizedBox(height: 12),
           _BookGrid(books: data.recent),
           const SizedBox(height: 24),
         ],
         if (data.mostViewed.isNotEmpty) ...[
-          const SectionHeader(title: 'Cele mai vizualizate'),
+          SectionHeader(title: l10n.homeMostViewed),
           const SizedBox(height: 12),
           _BookGrid(books: data.mostViewed),
           const SizedBox(height: 24),
         ],
         if (data.nearby.isNotEmpty) ...[
-          const SectionHeader(title: 'Din orașul tău'),
+          SectionHeader(title: l10n.homeNearYou),
           const SizedBox(height: 12),
           _BookGrid(books: data.nearby),
           const SizedBox(height: 24),
         ],
         if (data.upcomingReleases.isNotEmpty) ...[
-          const SectionHeader(title: 'Cărți viitoare'),
+          SectionHeader(title: l10n.homeUpcomingBooks),
           const SizedBox(height: 12),
           _UpcomingReleasesList(releases: data.upcomingReleases),
           const SizedBox(height: 24),
         ],
         if (data.activeMembers.isNotEmpty) ...[
-          const SectionHeader(title: 'Membri activi'),
+          SectionHeader(title: l10n.homeActiveMembers),
           const SizedBox(height: 12),
           _ActiveMembersRow(members: data.activeMembers),
         ],
@@ -183,7 +187,7 @@ class _ActiveMembersRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    member.name ?? 'Utilizator',
+                    member.name ?? context.l10n.commonUnknownUser,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
@@ -246,33 +250,19 @@ class _UpcomingReleasesList extends StatelessWidget {
           subtitle: Text(
             [
               if (release.author != null) release.author!,
-              _formatReleaseDate(release.releaseDate),
+              _formatReleaseDate(context, release.releaseDate),
             ].join(' · '),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          trailing: const Icon(Icons.event_outlined, color: AppColors.mutedForeground),
+          trailing: Icon(Icons.event_outlined, color: AppColors.mutedForeground),
         );
       },
     );
   }
 }
 
-const _romanianMonths = [
-  'ian',
-  'feb',
-  'mar',
-  'apr',
-  'mai',
-  'iun',
-  'iul',
-  'aug',
-  'sep',
-  'oct',
-  'nov',
-  'dec',
-];
-
-String _formatReleaseDate(DateTime date) {
-  return '${date.day} ${_romanianMonths[date.month - 1]} ${date.year}';
+String _formatReleaseDate(BuildContext context, DateTime date) {
+  final locale = Localizations.localeOf(context).toString();
+  return DateFormat('d MMM yyyy', locale).format(date);
 }

@@ -351,8 +351,15 @@ export class ExchangesService {
     const formatDate = (date: Date) =>
       date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
-    const summary = `Schimb de cărți: ${request.requestedBook.book.title}`;
-    const description = `Întâlnire între ${request.requester.name ?? 'Cineva'} și ${request.owner.name ?? 'Cineva'} pentru schimbul cărții „${request.requestedBook.book.title}"`;
+    const requesterName = request.requester.name ?? 'Cineva';
+    const ownerName = request.owner.name ?? 'Cineva';
+    const bookTitle = request.requestedBook.book.title;
+    const verb = request.offeredAmount != null ? 'cumpăra' : 'schimba';
+    const priceClause =
+      request.offeredAmount != null ? ` (la prețul de ${request.offeredAmount} lei)` : '';
+
+    const summary = 'Schimb de carte';
+    const description = `${requesterName} se întâlnește cu ${ownerName} pentru a ${verb} cartea „${bookTitle}"${priceClause}`;
 
     return [
       'BEGIN:VCALENDAR',

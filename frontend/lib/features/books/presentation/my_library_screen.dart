@@ -1,8 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/book_card.dart';
@@ -31,17 +34,25 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     _sheetOpen = false;
   }
 
-  void _exportCsv(List<UserBook> books) {
+  void _exportCsv(AppLocalizations l10n, List<UserBook> books) {
     final rows = [
-      'Titlu,Autor,Stare,Limbă,Disponibilă la schimb,De vânzare,Preț',
+      [
+        l10n.csvHeaderTitle,
+        l10n.filtersAuthor,
+        l10n.filtersCondition,
+        l10n.filtersLanguage,
+        l10n.csvHeaderAvailableForSwap,
+        l10n.csvHeaderForSale,
+        l10n.csvHeaderPrice,
+      ].join(','),
       for (final b in books)
         [
           _csvEscape(b.book.title),
           _csvEscape(b.book.author ?? ''),
           b.condition.label,
           b.language ?? '',
-          b.availableForSwap ? 'Da' : 'Nu',
-          b.isForSale ? 'Da' : 'Nu',
+          b.availableForSwap ? l10n.commonYes : l10n.commonNo,
+          b.isForSale ? l10n.commonYes : l10n.commonNo,
           b.salePrice?.toStringAsFixed(0) ?? '',
         ].join(','),
     ];
@@ -62,20 +73,21 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(myLibraryControllerProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Biblioteca mea'),
+        title: Text(l10n.libraryTitle),
         actions: [
           IconButton(
             icon: Icon(_isGridView ? Icons.view_list_outlined : Icons.grid_view_outlined),
-            tooltip: _isGridView ? 'Vezi ca listă' : 'Vezi ca grilă',
+            tooltip: _isGridView ? l10n.libraryViewAsList : l10n.libraryViewAsGrid,
             onPressed: () => setState(() => _isGridView = !_isGridView),
           ),
           IconButton(
             icon: const Icon(Icons.download_outlined),
-            tooltip: 'Exportă în CSV',
-            onPressed: () => _exportCsv(state.value ?? const []),
+            tooltip: l10n.libraryExportCsv,
+            onPressed: () => _exportCsv(l10n, state.value ?? const []),
           ),
         ],
       ),
@@ -89,8 +101,8 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           child: state.when(
             data: (books) {
               if (books.isEmpty) {
-                return const CenteredScrollable(
-                  child: Text('Nu ai nicio carte în bibliotecă încă.'),
+                return CenteredScrollable(
+                  child: Text(l10n.libraryEmpty),
                 );
               }
               if (!_isGridView) {
@@ -128,11 +140,11 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca biblioteca.'),
+                  Text(l10n.libraryLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(myLibraryControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),
@@ -162,7 +174,7 @@ class _MyLibraryListRow extends StatelessWidget {
             if (userBook.book.author != null) userBook.book.author!,
             userBook.condition.label,
             if (userBook.isForSale && userBook.salePrice != null)
-              '${userBook.salePrice!.toStringAsFixed(0)} lei',
+              context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
           ].join(' · '),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -176,7 +188,7 @@ class _MyLibraryListRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            userBook.availableForSwap ? 'Disponibilă' : 'Indisponibilă',
+            userBook.availableForSwap ? context.l10n.libraryAvailable : context.l10n.libraryUnavailable,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: userBook.availableForSwap ? AppColors.accent : AppColors.mutedForeground,
                   fontWeight: FontWeight.w600,
@@ -232,16 +244,16 @@ class _BookActionsSheet extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ștergi cartea?'),
-        content: Text('"${userBook.book.title}" va fi eliminată din bibliotecă.'),
+        title: Text(context.l10n.libraryDeleteConfirmTitle),
+        content: Text(context.l10n.libraryDeleteConfirmBody(userBook.book.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Renunță'),
+            child: Text(context.l10n.commonGiveUp),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Șterge'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -271,19 +283,184 @@ class _BookActionsSheet extends ConsumerWidget {
             child: Text(current.book.title, style: Theme.of(context).textTheme.titleLarge),
           ),
           SwitchListTile(
-            title: const Text('Disponibilă pentru schimb'),
+            title: Text(context.l10n.libraryAvailableForSwap),
             value: current.availableForSwap,
             onChanged: (value) => ref
                 .read(myLibraryControllerProvider.notifier)
                 .setAvailability(userBook.id, availableForSwap: value),
           ),
           ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: Text(context.l10n.libraryEditListing),
+            onTap: () async {
+              Navigator.of(context).pop();
+              await showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => _EditListingSheet(userBook: current),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.delete_outline, color: AppColors.destructive),
-            title: const Text('Șterge cartea', style: TextStyle(color: AppColors.destructive)),
+            title: Text(context.l10n.libraryDeleteBook, style: const TextStyle(color: AppColors.destructive)),
             onTap: () => _confirmDelete(context, ref),
           ),
           const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+}
+
+class _EditListingSheet extends ConsumerStatefulWidget {
+  const _EditListingSheet({required this.userBook});
+  final UserBook userBook;
+
+  @override
+  ConsumerState<_EditListingSheet> createState() => _EditListingSheetState();
+}
+
+class _EditListingSheetState extends ConsumerState<_EditListingSheet> {
+  late BookCondition _condition = widget.userBook.condition;
+  late final _languageController = TextEditingController(text: widget.userBook.language);
+  late final _editionController = TextEditingController(text: widget.userBook.edition);
+  late bool _isHardcover = widget.userBook.isHardcover;
+  late bool _isForSale = widget.userBook.isForSale;
+  late bool _isNegotiable = widget.userBook.isNegotiable;
+  late final _priceController = TextEditingController(
+    text: widget.userBook.salePrice?.toStringAsFixed(0) ?? '',
+  );
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _languageController.dispose();
+    _editionController.dispose();
+    _priceController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final l10n = context.l10n;
+    final salePrice = double.tryParse(_priceController.text.trim().replaceAll(',', '.'));
+    if (_isForSale && salePrice == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.addBookInvalidPrice)));
+      return;
+    }
+    if (_isForSale && widget.userBook.photos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.addBookNeedPhoto)));
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(myLibraryControllerProvider.notifier).editListing(
+            widget.userBook.id,
+            condition: _condition,
+            language: _languageController.text.trim().isEmpty ? null : _languageController.text.trim(),
+            edition: _editionController.text.trim().isEmpty ? null : _editionController.text.trim(),
+            isHardcover: _isHardcover,
+            isForSale: _isForSale,
+            salePrice: _isForSale ? salePrice : null,
+            isNegotiable: _isNegotiable,
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.libraryEditListingSuccess)));
+        Navigator.of(context).pop();
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : l10n.addBookGenericError;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.libraryEditListingTitle, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<BookCondition>(
+              initialValue: _condition,
+              decoration: InputDecoration(labelText: l10n.filtersCondition),
+              items: [
+                for (final condition in BookCondition.values)
+                  DropdownMenuItem(value: condition, child: Text(condition.label)),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => _condition = value);
+              },
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _languageController,
+              decoration: InputDecoration(labelText: l10n.addBookLanguageOptional),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _editionController,
+              decoration: InputDecoration(labelText: l10n.addBookEditionOptional),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.addBookHardcoverSwitch),
+              value: _isHardcover,
+              onChanged: (value) => setState(() => _isHardcover = value),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.addBookForSaleSwitch),
+              subtitle: Text(l10n.addBookForSaleHint),
+              value: _isForSale,
+              onChanged: (value) => setState(() => _isForSale = value),
+            ),
+            if (_isForSale) ...[
+              const SizedBox(height: 8),
+              TextField(
+                controller: _priceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.addBookNonNegotiable),
+                subtitle: Text(l10n.addBookNonNegotiableHint),
+                value: !_isNegotiable,
+                onChanged: (value) => setState(() => _isNegotiable = !value),
+              ),
+            ],
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _isSubmitting ? null : _save,
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.commonSave),
+            ),
+          ],
+        ),
       ),
     );
   }

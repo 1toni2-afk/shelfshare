@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../../../shared/widgets/book_cover.dart';
@@ -93,7 +94,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       final results = await ref.read(booksRepositoryProvider).searchExternal(query);
       if (mounted) setState(() => _results = results);
     } catch (_) {
-      if (mounted) setState(() => _searchError = 'Căutarea a eșuat. Încearcă din nou.');
+      if (mounted) setState(() => _searchError = context.l10n.addBookSearchFailed);
     } finally {
       if (mounted) setState(() => _isSearching = false);
     }
@@ -121,22 +122,23 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     final title = _selected?.title ?? _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Titlul este obligatoriu')));
+          .showSnackBar(SnackBar(content: Text(l10n.addBookTitleRequired)));
       return;
     }
 
     final salePrice = double.tryParse(_priceController.text.trim().replaceAll(',', '.'));
     if (_isForSale && salePrice == null) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Introdu un preț valid')));
+          .showSnackBar(SnackBar(content: Text(l10n.addBookInvalidPrice)));
       return;
     }
     if (_isForSale && _photos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Adaugă cel puțin o poză cu cartea înainte de a o pune la vânzare')),
+        SnackBar(content: Text(l10n.addBookNeedPhoto)),
       );
       return;
     }
@@ -152,9 +154,6 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             language: _languageController.text.trim().isEmpty ? null : _languageController.text.trim(),
             edition: _editionController.text.trim().isEmpty ? null : _editionController.text.trim(),
             isHardcover: _isHardcover,
-            isForSale: _isForSale,
-            salePrice: _isForSale ? salePrice : null,
-            isNegotiable: _isNegotiable,
           );
       for (final photo in _photos) {
         await ref.read(booksRepositoryProvider).addPhoto(
@@ -163,18 +162,25 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               filename: photo.name,
             );
       }
+      if (_isForSale) {
+        await ref.read(booksRepositoryProvider).markForSale(
+              userBook.id,
+              salePrice: salePrice!,
+              isNegotiable: _isNegotiable,
+            );
+      }
       ref.invalidate(myLibraryControllerProvider);
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Carte adăugată în bibliotecă')));
+            .showSnackBar(SnackBar(content: Text(l10n.addBookSuccess)));
         Navigator.of(context).pop();
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final message = data is Map && data['message'] != null
-          ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-          : 'Nu am putut adăuga cartea. Încearcă din nou.';
       if (mounted) {
+        final data = e.response?.data;
+        final message = data is Map && data['message'] != null
+            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
+            : l10n.addBookGenericError;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
@@ -185,7 +191,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Adaugă o carte')),
+      appBar: AppBar(title: Text(context.l10n.addBookTitle)),
       body: SafeArea(
         child: _showDetailsForm ? _buildDetailsForm() : _buildSearchStep(),
       ),
@@ -193,6 +199,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   }
 
   Widget _buildSearchStep() {
+    final l10n = context.l10n;
     return Column(
       children: [
         Padding(
@@ -204,13 +211,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   controller: _searchController,
                   onChanged: _onSearchChanged,
                   onSubmitted: (_) => _search(),
-                  decoration: const InputDecoration(hintText: 'Titlu sau ISBN'),
+                  decoration: InputDecoration(hintText: l10n.addBookSearchHint),
                 ),
               ),
               const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: _isSearching ? null : _search,
-                child: const Text('Caută'),
+                child: Text(l10n.addBookSearchButton),
               ),
             ],
           ),
@@ -221,6 +228,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   }
 
   Widget _buildSearchResults() {
+    final l10n = context.l10n;
     if (_isSearching) {
       return const CenteredScrollable(child: CircularProgressIndicator());
     }
@@ -231,7 +239,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           children: [
             Text(_searchError!),
             const SizedBox(height: 8),
-            OutlinedButton(onPressed: _search, child: const Text('Încearcă din nou')),
+            OutlinedButton(onPressed: _search, child: Text(l10n.commonRetry)),
           ],
         ),
       );
@@ -241,11 +249,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_results == null ? 'Caută o carte după titlu sau ISBN.' : 'Nicio carte găsită.'),
+            Text(_results == null ? l10n.addBookSearchPrompt : l10n.browseEmpty),
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: _startManualEntry,
-              child: const Text('Adaugă manual'),
+              child: Text(l10n.addBookManualEntry),
             ),
           ],
         ),
@@ -263,7 +271,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             child: Center(
               child: TextButton(
                 onPressed: _startManualEntry,
-                child: const Text('Nu găsești cartea? Adaugă manual'),
+                child: Text(l10n.addBookNotFoundManual),
               ),
             ),
           );
@@ -285,6 +293,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   }
 
   Widget _buildDetailsForm() {
+    final l10n = context.l10n;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -294,27 +303,27 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             leading: BookCover(url: _selected!.coverUrl, width: 48, height: 68),
             title: Text(_selected!.title),
             subtitle: _selected!.author != null ? Text(_selected!.author!) : null,
-            trailing: TextButton(onPressed: _backToSearch, child: const Text('Schimbă')),
+            trailing: TextButton(onPressed: _backToSearch, child: Text(l10n.addBookChange)),
           )
         else ...[
           TextField(
             controller: _titleController,
-            decoration: const InputDecoration(labelText: 'Titlu'),
+            decoration: InputDecoration(labelText: l10n.addBookTitleLabel),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _authorController,
-            decoration: const InputDecoration(labelText: 'Autor'),
+            decoration: InputDecoration(labelText: l10n.filtersAuthor),
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton(onPressed: _backToSearch, child: const Text('Caută în schimb')),
+            child: TextButton(onPressed: _backToSearch, child: Text(l10n.addBookSearchInstead)),
           ),
         ],
         const SizedBox(height: 16),
         DropdownButtonFormField<BookCondition>(
           initialValue: _condition,
-          decoration: const InputDecoration(labelText: 'Stare'),
+          decoration: InputDecoration(labelText: l10n.filtersCondition),
           items: [
             for (final condition in BookCondition.values)
               DropdownMenuItem(value: condition, child: Text(condition.label)),
@@ -326,23 +335,23 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         const SizedBox(height: 16),
         TextField(
           controller: _languageController,
-          decoration: const InputDecoration(labelText: 'Limbă (opțional)'),
+          decoration: InputDecoration(labelText: l10n.addBookLanguageOptional),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _editionController,
-          decoration: const InputDecoration(labelText: 'Ediție (opțional)'),
+          decoration: InputDecoration(labelText: l10n.addBookEditionOptional),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Ediție cartonată'),
+          title: Text(l10n.addBookHardcoverSwitch),
           value: _isHardcover,
           onChanged: (value) => setState(() => _isHardcover = value),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('De vânzare'),
-          subtitle: const Text('Pe lângă schimb, poți vinde cartea la un preț fix'),
+          title: Text(l10n.addBookForSaleSwitch),
+          subtitle: Text(l10n.addBookForSaleHint),
           value: _isForSale,
           onChanged: (value) => setState(() => _isForSale = value),
         ),
@@ -351,58 +360,58 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           TextField(
             controller: _priceController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Preț (lei)', suffixText: 'lei'),
+            decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('NENEGOCIABIL'),
-            subtitle: const Text('Cumpărătorii nu vor putea face oferte de preț'),
+            title: Text(l10n.addBookNonNegotiable),
+            subtitle: Text(l10n.addBookNonNegotiableHint),
             value: !_isNegotiable,
             onChanged: (value) => setState(() => _isNegotiable = !value),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Poze cu cartea (obligatoriu, cel puțin 1)',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (var i = 0; i < _photos.length; i++)
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(_photos[i].path, width: 90, height: 90, fit: BoxFit.cover),
-                    ),
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: GestureDetector(
-                        onTap: () => _removePhoto(i),
-                        child: const CircleAvatar(
-                          radius: 10,
-                          backgroundColor: Colors.black54,
-                          child: Icon(Icons.close, size: 14, color: Colors.white),
-                        ),
+        ],
+        const SizedBox(height: 8),
+        Text(
+          _isForSale ? l10n.addBookPhotosLabelRequired : l10n.addBookPhotosLabelOptional,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (var i = 0; i < _photos.length; i++)
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(_photos[i].path, width: 90, height: 90, fit: BoxFit.cover),
+                  ),
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: GestureDetector(
+                      onTap: () => _removePhoto(i),
+                      child: const CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.black54,
+                        child: Icon(Icons.close, size: 14, color: Colors.white),
                       ),
                     ),
-                  ],
-                ),
-              if (_photos.length < _maxPhotos)
-                OutlinedButton(
-                  onPressed: _pickPhotos,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(90, 90),
-                    padding: EdgeInsets.zero,
                   ),
-                  child: const Icon(Icons.add_a_photo_outlined),
+                ],
+              ),
+            if (_photos.length < _maxPhotos)
+              OutlinedButton(
+                onPressed: _pickPhotos,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(90, 90),
+                  padding: EdgeInsets.zero,
                 ),
-            ],
-          ),
-        ],
+                child: const Icon(Icons.add_a_photo_outlined),
+              ),
+          ],
+        ),
         const SizedBox(height: 8),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
@@ -412,7 +421,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   width: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Adaugă în bibliotecă'),
+              : Text(l10n.addBookSubmit),
         ),
       ],
     );

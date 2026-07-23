@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/conversations_controller.dart';
 
@@ -10,16 +11,17 @@ class ConversationsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(conversationsControllerProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat')),
+      appBar: AppBar(title: Text(l10n.navChat)),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(conversationsControllerProvider.notifier).refresh(),
           child: state.when(
             data: (conversations) {
               if (conversations.isEmpty) {
-                return const CenteredScrollable(child: Text('Nu ai nicio conversație încă.'));
+                return CenteredScrollable(child: Text(l10n.chatEmptyConversations));
               }
               return ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -29,9 +31,9 @@ class ConversationsListScreen extends ConsumerWidget {
                   final conversation = conversations[index];
                   final lastMessage = conversation.lastMessage;
                   final preview = lastMessage == null
-                      ? 'Începe conversația'
+                      ? l10n.chatStartConversation
                       : lastMessage.content ??
-                          (lastMessage.photo != null ? '📷 Poză' : '📍 Locație');
+                          (lastMessage.photo != null ? l10n.chatPhotoPreview : l10n.chatLocationPreview);
 
                   return ListTile(
                     leading: CircleAvatar(
@@ -42,7 +44,7 @@ class ConversationsListScreen extends ConsumerWidget {
                           ? const Icon(Icons.person)
                           : null,
                     ),
-                    title: Text(conversation.otherUser.name ?? 'Utilizator'),
+                    title: Text(conversation.otherUser.name ?? l10n.commonUnknownUser),
                     subtitle: Text(preview, maxLines: 1, overflow: TextOverflow.ellipsis),
                     onTap: () => context.push(
                       '/chat/${conversation.id}',
@@ -57,11 +59,11 @@ class ConversationsListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Nu am putut încărca conversațiile.'),
+                  Text(l10n.chatLoadError),
                   const SizedBox(height: 8),
                   OutlinedButton(
                     onPressed: () => ref.read(conversationsControllerProvider.notifier).refresh(),
-                    child: const Text('Încearcă din nou'),
+                    child: Text(l10n.commonRetry),
                   ),
                 ],
               ),

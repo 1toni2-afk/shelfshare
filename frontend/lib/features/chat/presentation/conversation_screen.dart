@@ -4,16 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web/web.dart' as web;
+import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
 import '../../../data/models/message.dart';
+import '../../../data/models/price_offer.dart';
 import '../../../data/models/user.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
+import '../../offers/data/offers_repository.dart';
 import '../../safety/data/safety_repository.dart';
 import '../application/chat_controller.dart';
 import '../data/places_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ConversationScreen extends ConsumerStatefulWidget {
   const ConversationScreen({super.key, required this.conversationId, this.otherUser});
@@ -67,14 +71,15 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       }
       await _loadBlockStatus();
       if (mounted) {
+        final l10n = context.l10n;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isBlocked ? 'Utilizator deblocat' : 'Utilizator blocat')),
+          SnackBar(content: Text(isBlocked ? l10n.chatUserUnblocked : l10n.chatUserBlocked)),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut actualiza blocarea')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.chatBlockUpdateError)));
       }
     }
   }
@@ -91,12 +96,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       await ref.read(safetyRepositoryProvider).reportUser(otherUser.id, reason: result);
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Raport trimis. Mulțumim!')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.bookDetailReportSent)));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Nu am putut trimite raportul')));
+            .showSnackBar(SnackBar(content: Text(context.l10n.bookDetailReportError)));
       }
     }
   }
@@ -124,6 +129,27 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     }
   }
 
+  Future<void> _handleOfferAction(ChatMessage message, {required bool accept}) async {
+    final offerId = message.priceOffer?.id;
+    if (offerId == null) return;
+    try {
+      if (accept) {
+        await ref.read(offersRepositoryProvider).accept(offerId);
+      } else {
+        await ref.read(offersRepositoryProvider).reject(offerId);
+      }
+      ref.read(chatControllerProvider(widget.conversationId).notifier).updatePriceOfferStatus(
+            message.id,
+            accept ? 'ACCEPTED' : 'REJECTED',
+          );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.chatOfferActionError)));
+      }
+    }
+  }
+
   void _scrollToBottom() {
     if (!_scrollController.hasClients) return;
     _scrollController.animateTo(
@@ -148,10 +174,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     });
 
     final isBlocked = (_blockStatus?.blockedByMe ?? false) || (_blockStatus?.blockedByThem ?? false);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.otherUser?.name ?? 'Conversație'),
+        title: Text(widget.otherUser?.name ?? l10n.chatConversationFallbackTitle),
         actions: [
           if (widget.otherUser != null)
             PopupMenuButton<String>(
@@ -162,9 +189,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 'block',
-                  child: Text((_blockStatus?.blockedByMe ?? false) ? 'Deblochează' : 'Blochează'),
+                  child: Text((_blockStatus?.blockedByMe ?? false) ? l10n.chatUnblock : l10n.chatBlock),
                 ),
-                const PopupMenuItem(value: 'report', child: Text('Raportează')),
+                PopupMenuItem(value: 'report', child: Text(l10n.reportDialogTitle)),
               ],
             ),
         ],
@@ -186,6 +213,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                           hasMore: state.hasMore,
                           onLoadMore: () =>
                               ref.read(chatControllerProvider(widget.conversationId).notifier).loadMore(),
+                          onOfferAction: _handleOfferAction,
                         ),
             ),
             if (state.otherUserTyping)
@@ -194,7 +222,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'scrie...',
+                    l10n.chatTyping,
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
@@ -206,7 +234,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Nu poți trimite mesaje acestui utilizator - conversația este blocată.',
+                  l10n.chatBlockedNotice,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
                   textAlign: TextAlign.center,
                 ),
@@ -218,7 +246,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.location_on_outlined),
-                      tooltip: 'Trimite locația întâlnirii',
+                      tooltip: l10n.chatShareLocationTooltip,
                       onPressed: _shareLocation,
                     ),
                     Expanded(
@@ -226,7 +254,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                         controller: _messageController,
                         onChanged: (_) =>
                             ref.read(chatControllerProvider(widget.conversationId).notifier).notifyTyping(),
-                        decoration: const InputDecoration(hintText: 'Scrie un mesaj...'),
+                        decoration: InputDecoration(hintText: l10n.chatMessageHint),
                         onSubmitted: (_) => _send(),
                       ),
                     ),
@@ -248,6 +276,7 @@ class _SafetyBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       padding: const EdgeInsets.all(12),
@@ -265,14 +294,13 @@ class _SafetyBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nu trimite bani în avans și întâlnește-te într-un loc public pentru schimb. '
-                  'Dacă ceva pare suspect, raportează sau blochează utilizatorul din meniul de sus.',
+                  l10n.chatSafetyBannerBody,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 GestureDetector(
                   onTap: () => context.push('/safety-center'),
                   child: Text(
-                    'Află mai multe',
+                    l10n.chatSafetyBannerLearnMore,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w600,
@@ -295,6 +323,12 @@ class _SafetyBanner extends StatelessWidget {
   }
 }
 
+/// Marchează locul unde apare cardul "safety advisor", imediat după orice
+/// mesaj de locație cu întâlnire programată - vezi _MessageList._buildItems.
+class _SafetyAdvisoryMarker {
+  const _SafetyAdvisoryMarker();
+}
+
 class _MessageList extends StatelessWidget {
   const _MessageList({
     required this.messages,
@@ -303,6 +337,7 @@ class _MessageList extends StatelessWidget {
     required this.isLoadingMore,
     required this.hasMore,
     required this.onLoadMore,
+    required this.onOfferAction,
   });
 
   final List<ChatMessage> messages;
@@ -311,12 +346,25 @@ class _MessageList extends StatelessWidget {
   final bool isLoadingMore;
   final bool hasMore;
   final VoidCallback onLoadMore;
+  final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
+
+  List<Object> _buildItems() {
+    final items = <Object>[];
+    for (final message in messages) {
+      items.add(message);
+      if (message.location != null && message.meetingAt != null) {
+        items.add(const _SafetyAdvisoryMarker());
+      }
+    }
+    return items;
+  }
 
   @override
   Widget build(BuildContext context) {
     if (messages.isEmpty) {
-      return const Center(child: Text('Niciun mesaj încă. Spune salut!'));
+      return Center(child: Text(context.l10n.chatEmptyMessages));
     }
+    final items = _buildItems();
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         if (hasMore && !isLoadingMore && notification.metrics.pixels <= 100) {
@@ -327,7 +375,7 @@ class _MessageList extends StatelessWidget {
       child: ListView.builder(
         controller: scrollController,
         padding: const EdgeInsets.all(16),
-        itemCount: messages.length + (isLoadingMore ? 1 : 0),
+        itemCount: items.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (isLoadingMore && index == 0) {
             return const Padding(
@@ -335,8 +383,15 @@ class _MessageList extends StatelessWidget {
               child: Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
             );
           }
-          final messageIndex = isLoadingMore ? index - 1 : index;
-          final message = messages[messageIndex];
+          final itemIndex = isLoadingMore ? index - 1 : index;
+          final item = items[itemIndex];
+          if (item is _SafetyAdvisoryMarker) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: _SafetyAdvisoryCard(),
+            );
+          }
+          final message = item as ChatMessage;
           final isMine = message.senderId == currentUserId;
           return Align(
             alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -348,7 +403,11 @@ class _MessageList extends StatelessWidget {
                 color: isMine ? AppColors.primary : AppColors.muted,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: _MessageContent(message: message, isMine: isMine),
+              child: _MessageContent(
+                message: message,
+                isMine: isMine,
+                onOfferAction: onOfferAction,
+              ),
             ),
           );
         },
@@ -357,18 +416,113 @@ class _MessageList extends StatelessWidget {
   }
 }
 
+class _SafetyAdvisoryCard extends StatelessWidget {
+  const _SafetyAdvisoryCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 320),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.accent.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.shield_outlined, color: AppColors.accent, size: 18),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    l10n.chatSafetyAdvisorLabel,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontWeight: FontWeight.w600, color: AppColors.accent),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.chatSafetyAdvisorBody,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => context.push('/safety-center'),
+              child: Text(l10n.chatSafetyBannerLearnMore),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MessageContent extends StatelessWidget {
-  const _MessageContent({required this.message, required this.isMine});
+  const _MessageContent({required this.message, required this.isMine, required this.onOfferAction});
   final ChatMessage message;
   final bool isMine;
+  final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
 
   @override
   Widget build(BuildContext context) {
     final textColor = isMine ? AppColors.primaryForeground : AppColors.foreground;
+    final l10n = context.l10n;
     if (message.photo != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(message.photo!, width: 180, height: 180, fit: BoxFit.cover),
+      );
+    }
+    if (message.priceOffer != null) {
+      final offer = message.priceOffer!;
+      final status = OfferStatusX.fromJson(offer.status);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.sell_outlined, size: 16, color: textColor),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  l10n.chatOfferCardLabel(offer.amount.toStringAsFixed(0), offer.bookTitle),
+                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(status.label, style: TextStyle(color: textColor, fontSize: 13)),
+          if (!isMine && status == OfferStatus.pending) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                OutlinedButton(
+                  onPressed: () => onOfferAction(message, accept: false),
+                  child: Text(l10n.exchangeReject),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => onOfferAction(message, accept: true),
+                  child: Text(l10n.exchangeAccept),
+                ),
+              ],
+            ),
+          ],
+        ],
       );
     }
     if (message.location != null) {
@@ -386,7 +540,7 @@ class _MessageContent extends StatelessWidget {
           ),
           if (message.meetingAt != null) ...[
             const SizedBox(height: 4),
-            Text(_formatMeetingDate(message.meetingAt!), style: TextStyle(color: textColor, fontSize: 13)),
+            Text(_formatMeetingDate(l10n, message.meetingAt!), style: TextStyle(color: textColor, fontSize: 13)),
           ],
           const SizedBox(height: 6),
           Wrap(
@@ -395,7 +549,7 @@ class _MessageContent extends StatelessWidget {
               if (message.locationLat != null && message.locationLng != null)
                 _MessageActionButton(
                   icon: Icons.map_outlined,
-                  label: 'Hartă',
+                  label: l10n.chatMapLabel,
                   textColor: textColor,
                   onTap: () => web.window.open(
                     'https://www.openstreetmap.org/?mlat=${message.locationLat}&mlon=${message.locationLng}#map=17/${message.locationLat}/${message.locationLng}',
@@ -405,9 +559,9 @@ class _MessageContent extends StatelessWidget {
               if (message.meetingAt != null)
                 _MessageActionButton(
                   icon: Icons.calendar_month_outlined,
-                  label: 'Calendar',
+                  label: l10n.chatCalendarLabel,
                   textColor: textColor,
-                  onTap: () => _downloadMeetingIcs(message),
+                  onTap: () => _downloadMeetingIcs(l10n, message),
                 ),
             ],
           ),
@@ -417,14 +571,14 @@ class _MessageContent extends StatelessWidget {
     return Text(message.content ?? '', style: TextStyle(color: textColor));
   }
 
-  String _formatMeetingDate(DateTime date) {
+  String _formatMeetingDate(AppLocalizations l10n, DateTime date) {
     final local = date.toLocal();
     final h = local.hour.toString().padLeft(2, '0');
     final m = local.minute.toString().padLeft(2, '0');
-    return '${local.day}.${local.month}.${local.year}, ora $h:$m';
+    return l10n.chatMeetingAt('${local.day}.${local.month}.${local.year}', '$h:$m');
   }
 
-  void _downloadMeetingIcs(ChatMessage message) {
+  void _downloadMeetingIcs(AppLocalizations l10n, ChatMessage message) {
     final start = message.meetingAt!.toUtc();
     final end = start.add(const Duration(hours: 1));
     String formatIcs(DateTime d) =>
@@ -440,7 +594,7 @@ class _MessageContent extends StatelessWidget {
       'DTSTAMP:${formatIcs(DateTime.now().toUtc())}',
       'DTSTART:${formatIcs(start)}',
       'DTEND:${formatIcs(end)}',
-      'SUMMARY:Întâlnire ShelfShare',
+      'SUMMARY:Schimb de carte',
       'LOCATION:${message.location}',
       'END:VEVENT',
       'END:VCALENDAR',
@@ -555,6 +709,7 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -567,16 +722,16 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Trimite locația întâlnirii', style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.chatShareLocationTooltip, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             if (_selected == null) ...[
               TextField(
                 controller: _searchController,
                 autofocus: true,
                 onChanged: _onSearchChanged,
-                decoration: const InputDecoration(
-                  hintText: 'Caută o adresă sau un loc (ex: Cafeneaua X, Cluj)',
-                  prefixIcon: Icon(Icons.search),
+                decoration: InputDecoration(
+                  hintText: l10n.chatSearchPlaceHint,
+                  prefixIcon: const Icon(Icons.search),
                 ),
               ),
               const SizedBox(height: 8),
@@ -589,9 +744,9 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 260),
                   child: _results!.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Text('Niciun rezultat.'),
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Text(l10n.chatNoResults),
                         )
                       : ListView.separated(
                           shrinkWrap: true,
@@ -615,7 +770,7 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
                 title: Text(_selected!.displayName),
                 trailing: TextButton(
                   onPressed: () => setState(() => _selected = null),
-                  child: const Text('Schimbă'),
+                  child: Text(l10n.addBookChange),
                 ),
               ),
               const SizedBox(height: 12),
@@ -624,14 +779,14 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _pickDate,
-                      child: Text(_date == null ? 'Alege data' : '${_date!.day}.${_date!.month}.${_date!.year}'),
+                      child: Text(_date == null ? l10n.chatPickDate : '${_date!.day}.${_date!.month}.${_date!.year}'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _pickTime,
-                      child: Text(_time == null ? 'Alege ora' : _time!.format(context)),
+                      child: Text(_time == null ? l10n.chatPickTime : _time!.format(context)),
                     ),
                   ),
                 ],
@@ -639,7 +794,7 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: (_date != null && _time != null) ? _submit : null,
-                child: const Text('Trimite'),
+                child: Text(l10n.commonSubmit),
               ),
             ],
           ],

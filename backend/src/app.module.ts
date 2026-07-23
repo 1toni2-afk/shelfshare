@@ -18,6 +18,7 @@ import { OffersModule } from './offers/offers.module';
 import { PlacesModule } from './places/places.module';
 import { FollowModule } from './follow/follow.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     PlacesModule,
     FollowModule,
     FeedbackModule,
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
