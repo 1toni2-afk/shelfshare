@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:web/web.dart' as web;
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
@@ -551,9 +551,11 @@ class _MessageContent extends StatelessWidget {
                   icon: Icons.map_outlined,
                   label: l10n.chatMapLabel,
                   textColor: textColor,
-                  onTap: () => web.window.open(
-                    'https://www.openstreetmap.org/?mlat=${message.locationLat}&mlon=${message.locationLng}#map=17/${message.locationLat}/${message.locationLng}',
-                    '_blank',
+                  onTap: () => launchUrl(
+                    Uri.parse(
+                      'https://www.openstreetmap.org/?mlat=${message.locationLat}&mlon=${message.locationLng}#map=17/${message.locationLat}/${message.locationLng}',
+                    ),
+                    mode: LaunchMode.externalApplication,
                   ),
                 ),
               if (message.meetingAt != null)

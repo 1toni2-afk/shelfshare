@@ -182,7 +182,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
 
   Future<void> _importListingsCsv() async {
     final l10n = context.l10n;
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
       withData: true,

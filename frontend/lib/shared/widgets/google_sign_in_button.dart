@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:web/web.dart' as web;
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import 'google_sign_in_launcher.dart';
 
 /// Buton "Continuă cu Google" - navighează întreaga pagină (nu doar ruta
 /// Flutter) către backend, care redirecționează la rândul lui către Google.
@@ -12,7 +12,7 @@ class GoogleSignInButton extends StatelessWidget {
   const GoogleSignInButton({super.key});
 
   void _launch() {
-    web.window.location.href = '${ApiConfig.baseUrl}/auth/google';
+    launchGoogleSignIn('${ApiConfig.baseUrl}/auth/google');
   }
 
   @override

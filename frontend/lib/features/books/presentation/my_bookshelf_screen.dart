@@ -27,7 +27,7 @@ class MyBookshelfScreen extends ConsumerWidget {
 
   Future<void> _pickAndImport(BuildContext context, WidgetRef ref, String source) async {
     final l10n = context.l10n;
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
       withData: true,

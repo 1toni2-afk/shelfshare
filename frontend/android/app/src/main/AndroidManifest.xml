@@ -1,6 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Toate apelurile către api.shelfshare.ro (dio/socket.io) eșuează silențios
+         fără acest permis - manifestul de debug îl are automat (pentru hot
+         reload), dar cel de release/main nu, din scaffolding-ul implicit Flutter. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Scanare ISBN/QR (mobile_scanner) - vezi bulk_add_screen.dart și
+         _ExchangeQrDialog. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
     <application
-        android:label="shelfshare"
+        android:label="ShelfShare"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

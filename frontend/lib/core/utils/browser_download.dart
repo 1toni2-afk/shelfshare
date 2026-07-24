@@ -1,19 +1,6 @@
-import 'dart:js_interop';
-import 'dart:typed_data';
-import 'package:web/web.dart' as web;
-
-/// Declanșează descărcarea unui fișier text direct din browser, fără request
-/// la server - folosit pentru export CSV. Pentru fișiere care vin de la
-/// server (ex. .ics), vezi implementarea din exchanges_repository.dart.
-void downloadTextFile({required String filename, required String content, String mimeType = 'text/plain'}) {
-  final bytes = Uint8List.fromList(content.codeUnits);
-  final blob = web.Blob([bytes.toJS].toJS, web.BlobPropertyBag(type: '$mimeType;charset=utf-8'));
-  final url = web.URL.createObjectURL(blob);
-  final anchor = web.document.createElement('a') as web.HTMLAnchorElement
-    ..href = url
-    ..download = filename;
-  web.document.body!.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  web.URL.revokeObjectURL(url);
-}
+// package:web (dart:js_interop) nu compilează pentru ținte non-web
+// (Android/iOS/desktop) - de-abia la prima compilare pentru Android a ieșit
+// la iveală, fiindcă până acum aplicația a rulat doar pe web. Import
+// condiționat: implementarea reală doar când compilăm pentru web, altfel
+// share sheet-ul nativ (vezi browser_download_stub.dart).
+export 'browser_download_stub.dart' if (dart.library.js_interop) 'browser_download_web.dart';
