@@ -194,6 +194,14 @@ export class BooksController {
     return this.booksService.getViewStats(userBookId);
   }
 
+  // Distinct de getUserBook - nu incrementează viewCount. Folosit de
+  // static-server.js pentru a genera meta tag-uri (SEO/Open Graph) fără
+  // să umfle statisticile de vizualizări la fiecare hit de crawler.
+  @Get(':userBookId/preview')
+  getPreview(@Param('userBookId') userBookId: string) {
+    return this.booksService.getPreview(userBookId);
+  }
+
   @Get(':userBookId/history')
   getListingHistory(@Param('userBookId') userBookId: string) {
     return this.booksService.getListingHistory(userBookId);

@@ -1,11 +1,11 @@
 {
-    "name": "shelfshare",
-    "short_name": "shelfshare",
+    "name": "ShelfShare",
+    "short_name": "ShelfShare",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F8F4EC",
+    "theme_color": "#7C3A1E",
+    "description": "Schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

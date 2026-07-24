@@ -1097,6 +1097,30 @@ export class BooksService {
     return { total: userBook.viewCount, unique };
   }
 
+  async getPreview(userBookId: string) {
+    const userBook = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+      select: {
+        salePrice: true,
+        updatedAt: true,
+        book: { select: { title: true, author: true, description: true, coverUrl: true } },
+        user: { select: { city: true } },
+      },
+    });
+    if (!userBook) {
+      throw new NotFoundException('Cartea nu a fost găsită în bibliotecă');
+    }
+    return {
+      title: userBook.book.title,
+      author: userBook.book.author,
+      description: userBook.book.description,
+      coverUrl: userBook.book.coverUrl,
+      salePrice: userBook.salePrice,
+      city: userBook.user.city,
+      updatedAt: userBook.updatedAt,
+    };
+  }
+
   async updateUserBook(
     userId: string,
     userBookId: string,

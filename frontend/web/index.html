@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ro">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -19,16 +19,20 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
+  <meta name="theme-color" content="#7C3A1E">
+  <link rel="canonical" href="https://shelfshare.ro/">
 
   <!-- Open Graph / previzualizare la distribuirea linkului (WhatsApp, Facebook, etc.) -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://shelfshare.ro">
+  <meta property="og:site_name" content="ShelfShare">
   <meta property="og:title" content="ShelfShare">
   <meta property="og:description" content="Schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
   <meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+  <meta property="og:locale" content="ro_RO">
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ShelfShare">
   <meta name="twitter:description" content="Schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
   <meta name="twitter:image" content="https://shelfshare.ro/icons/Icon-512.png">
@@ -44,6 +48,18 @@
 
   <title>ShelfShare</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Structured Data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "ShelfShare",
+    "url": "https://shelfshare.ro",
+    "logo": "https://shelfshare.ro/icons/Icon-512.png",
+    "description": "Schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România."
+  }
+  </script>
 
   <style>
     /* Placeholder afișat instant de browser, înainte ca JS-ul Flutter să
