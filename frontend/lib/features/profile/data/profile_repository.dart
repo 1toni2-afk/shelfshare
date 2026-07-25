@@ -40,6 +40,19 @@ class ProfileRepository {
     return getMyProfile();
   }
 
+  /// Programează ștergerea contului cu 15 zile grace period. Backend întoarce
+  /// `scheduledFor` (ISO date). Vezi AccountDeletionService pe backend.
+  Future<DateTime> requestAccountDeletion() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/account/delete-request');
+    return DateTime.parse((response.data as Map<String, dynamic>)['scheduledFor'] as String);
+  }
+
+  Future<void> cancelAccountDeletion() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.delete('/account/delete-request');
+  }
+
   Future<List<CityLeaderboardEntry>> getCityLeaderboard() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/profile/leaderboard/cities');

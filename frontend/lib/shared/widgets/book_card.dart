@@ -1,169 +1,248 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/models/user_book.dart';
+import '../../features/wishlist/data/wishlist_repository.dart';
 import 'book_cover.dart';
 
-/// Card compact pentru o carte oferită la schimb, cu copertă, titlu, autor
-/// și mini-profilul proprietarului (nume, oraș) - stilul din designul Figma.
+/// Card compact pentru o carte, cu copertă, buton inimă (adăugare rapidă la
+/// wishlist), indicator preț/schimb și titlu + autor + locație dedesubt.
+///
+/// `width == null` => cardul umple lățimea părintelui (celula de GridView din
+/// home/discover). O lățime explicită e folosită de carusele orizontale.
 class BookCard extends StatelessWidget {
-  const BookCard({super.key, required this.userBook, this.onTap, this.width = 140});
+  const BookCard({super.key, required this.userBook, this.onTap, this.width});
 
   final UserBook userBook;
   final VoidCallback? onTap;
-  final double width;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final card = GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BookCover(url: userBook.book.coverUrl, width: width, height: width * 1.4),
-            const SizedBox(height: 8),
-            Text(
-              userBook.book.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            if (userBook.book.author != null)
-              Text(
-                userBook.book.author!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            if (userBook.isForSale && userBook.salePrice != null) ...[
-              const SizedBox(height: 2),
-              _PriceRow(userBook: userBook),
-            ],
-            if (userBook.isAuction && userBook.auction != null) ...[
-              const SizedBox(height: 2),
-              _AuctionRow(auction: userBook.auction!),
-            ],
-            if (userBook.distanceKm != null) ...[
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  Icon(Icons.near_me_outlined, size: 12, color: AppColors.mutedForeground),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${userBook.distanceKm!.round()} km',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AspectRatio(
+            aspectRatio: 2 / 3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.foreground.withValues(alpha: 0.14),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
-            ],
-            const SizedBox(height: 4),
-            if (userBook.owner != null)
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => context.push('/users/${userBook.owner!.id}', extra: userBook.owner),
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline, size: 14, color: AppColors.mutedForeground),
-                    const SizedBox(width: 2),
-                    Expanded(
-                      child: Text(
-                        userBook.owner!.name ?? context.l10n.commonUnknownUser,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ],
-                ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  BookCover.expand(url: userBook.book.coverUrl),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: _WishlistHeart(bookId: userBook.book.id),
+                  ),
+                  Positioned(
+                    bottom: 6,
+                    right: 6,
+                    child: _PriceBadge(userBook: userBook),
+                  ),
+                ],
               ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Prețul curent al licitației + timpul rămas, pe cardul din browse/home.
-class _AuctionRow extends StatelessWidget {
-  const _AuctionRow({required this.auction});
-  final AuctionCardSummary auction;
-
-  @override
-  Widget build(BuildContext context) {
-    final remaining = auction.endsAt.difference(DateTime.now());
-    final label = remaining.isNegative
-        ? context.l10n.auctionEnded
-        : remaining.inHours >= 24
-            ? context.l10n.auctionEndsInDays(remaining.inDays)
-            : remaining.inHours >= 1
-                ? context.l10n.auctionEndsInHours(remaining.inHours)
-                : context.l10n.auctionEndsInMinutes(remaining.inMinutes.clamp(1, 59));
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => context.push('/auctions/${auction.id}'),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Icon(Icons.gavel, size: 14, color: AppColors.accent),
-          const SizedBox(width: 4),
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
-            context.l10n.priceLei(auction.currentPrice.toStringAsFixed(0)),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.accent,
+            userBook.book.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.playfairDisplay(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: AppColors.foreground,
+            ),
+          ),
+          if (userBook.book.author != null)
+            Text(
+              userBook.book.author!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          if (userBook.owner?.city != null) ...[
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(Icons.place_outlined, size: 13, color: AppColors.mutedForeground),
+                const SizedBox(width: 2),
+                Expanded(
+                  child: Text(
+                    userBook.owner!.city!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.mutedForeground,
+                        ),
+                  ),
                 ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-          ),
+              ],
+            ),
+          ],
         ],
       ),
     );
+
+    if (width != null) {
+      return SizedBox(width: width, child: card);
+    }
+    return card;
   }
 }
 
-/// Prețul de vânzare al userului, plus prețul de referință din librării
-/// (Google Books) atunci când e mai mare - ca userul să vadă economia.
-class _PriceRow extends StatelessWidget {
-  const _PriceRow({required this.userBook});
+/// Badge din colțul dreapta-jos al coperții: preț (vânzare/licitație) sau o
+/// iconiță de schimb dacă e disponibilă la swap. Prioritate: licitație >
+/// vânzare > swap - un anunț poate fi mai multe deodată, arătăm cel mai
+/// „acționabil" preț.
+class _PriceBadge extends StatelessWidget {
+  const _PriceBadge({required this.userBook});
   final UserBook userBook;
 
   @override
   Widget build(BuildContext context) {
-    final salePrice = userBook.salePrice!;
-    final referencePrice = userBook.book.referencePrice;
-    final referenceCurrency = userBook.book.referencePriceCurrency ?? '';
-    final showReference = referencePrice != null && referencePrice > salePrice;
+    if (userBook.isAuction && userBook.auction != null) {
+      return _badge(
+        context,
+        icon: Icons.gavel,
+        label: context.l10n.priceLei(userBook.auction!.currentPrice.toStringAsFixed(0)),
+        color: AppColors.accent,
+      );
+    }
+    if (userBook.isForSale && userBook.salePrice != null) {
+      return _badge(
+        context,
+        label: context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
+        color: AppColors.accent,
+      );
+    }
+    if (userBook.availableForSwap) {
+      return _badge(
+        context,
+        icon: Icons.swap_horiz,
+        label: context.l10n.bookAvailableForSwapShort,
+        color: AppColors.primary,
+      );
+    }
+    return const SizedBox.shrink();
+  }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Text(
-          context.l10n.priceLei(salePrice.toStringAsFixed(0)),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.accent,
-              ),
-        ),
-        if (showReference) ...[
-          const SizedBox(width: 6),
-          Text(
-            '${referencePrice.toStringAsFixed(0)} $referenceCurrency',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  decoration: TextDecoration.lineThrough,
-                  color: AppColors.mutedForeground,
-                ),
+  Widget _badge(
+    BuildContext context, {
+    IconData? icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
-      ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 13, color: Colors.white),
+            const SizedBox(width: 3),
+          ],
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Buton inimă din colțul dreapta-sus al coperții pentru adăugare rapidă la
+/// wishlist. Optimist: umple imediat inima, apoi apelează API-ul; la eroare
+/// revine. Nu știm din feed dacă e deja în wishlist, așa că pornește gol -
+/// e un buton de „adaugă rapid", tap din nou îl scoate.
+class _WishlistHeart extends ConsumerStatefulWidget {
+  const _WishlistHeart({required this.bookId});
+  final String bookId;
+
+  @override
+  ConsumerState<_WishlistHeart> createState() => _WishlistHeartState();
+}
+
+class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
+  bool _wishlisted = false;
+  bool _busy = false;
+
+  Future<void> _toggle() async {
+    if (_busy) return;
+    final next = !_wishlisted;
+    setState(() {
+      _wishlisted = next;
+      _busy = true;
+    });
+    try {
+      final repo = ref.read(wishlistRepositoryProvider);
+      if (next) {
+        await repo.addToWishlist(widget.bookId);
+      } else {
+        await repo.removeFromWishlist(widget.bookId);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _wishlisted = !next);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _toggle,
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.9),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Icon(
+          _wishlisted ? Icons.favorite : Icons.favorite_border,
+          size: 17,
+          color: _wishlisted ? AppColors.destructive : AppColors.mutedForeground,
+        ),
+      ),
     );
   }
 }

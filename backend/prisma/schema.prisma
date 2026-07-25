@@ -86,6 +86,12 @@ model User {
   invitedBy    User?   @relation("Referrals", fields: [invitedById], references: [id], onDelete: SetNull)
   referrals    User[]  @relation("Referrals")
 
+  // Ștergere de cont amânată 15 zile (cerință Google Play + politică de
+  // „cooling off"): user cere ștergerea → setăm timestamp-ul → un cron zilnic
+  // șterge efectiv contul după expirare. NULL = neprogramat. Anularea = set
+  // pe NULL. Vezi AccountDeletionService.
+  deletionScheduledAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -24,6 +24,9 @@ class AppUser {
   final List<Achievement>? achievements;
   final ImpactStats? impactStats;
   final GamificationStats? gamification;
+  /// Setat dacă userul a cerut ștergerea contului - contul se șterge efectiv
+  /// la această dată dacă nu anulează între timp. Vezi AccountDeletionService.
+  final DateTime? deletionScheduledAt;
 
   const AppUser({
     required this.id,
@@ -48,6 +51,7 @@ class AppUser {
     this.achievements,
     this.impactStats,
     this.gamification,
+    this.deletionScheduledAt,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -81,6 +85,9 @@ class AppUser {
           : null,
       gamification: json['gamification'] != null
           ? GamificationStats.fromJson(json['gamification'] as Map<String, dynamic>)
+          : null,
+      deletionScheduledAt: json['deletionScheduledAt'] != null
+          ? DateTime.parse(json['deletionScheduledAt'] as String)
           : null,
     );
   }

@@ -1,107 +1,91 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/book.dart';
-import '../../../data/models/upcoming_release.dart';
-import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
-import '../../auth/application/auth_controller.dart';
-import '../../auth/application/auth_state.dart';
 import '../../books/data/books_repository.dart';
-import '../../profile/data/follow_repository.dart';
-import '../data/upcoming_releases_repository.dart';
 
-class HomeData {
-  const HomeData({
-    required this.recent,
-    required this.mostViewed,
-    required this.nearby,
-    required this.nearbyToday,
-    required this.upcomingReleases,
-    required this.genres,
-    required this.activeMembers,
-    required this.recommended,
-    required this.hiddenGems,
-    required this.completeYourCollection,
-    required this.similarTasteUsers,
+/// Feed-ul paginat al paginii principale: ultimele cărți postate (după
+/// `createdAt`, NU `updatedAt` - ca userii să nu-și boosteze anunțul printr-un
+/// simplu edit) + un carusel „Cele mai căutate" injectat după primele 12.
+class HomeFeedState {
+  const HomeFeedState({
+    this.recent = const [],
+    this.mostViewed = const [],
+    this.isLoadingMore = false,
+    this.hasMore = true,
   });
+
   final List<UserBook> recent;
   final List<UserBook> mostViewed;
-  final List<UserBook> nearby;
-  final List<UserBook> nearbyToday;
-  final List<UpcomingRelease> upcomingReleases;
-  final List<BookGenre> genres;
-  final List<PublicUser> activeMembers;
-  final List<UserBook> recommended;
-  final List<UserBook> hiddenGems;
-  final List<UserBook> completeYourCollection;
-  final List<SimilarTasteUser> similarTasteUsers;
+  final bool isLoadingMore;
+  final bool hasMore;
+
+  HomeFeedState copyWith({
+    List<UserBook>? recent,
+    List<UserBook>? mostViewed,
+    bool? isLoadingMore,
+    bool? hasMore,
+  }) {
+    return HomeFeedState(
+      recent: recent ?? this.recent,
+      mostViewed: mostViewed ?? this.mostViewed,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+    );
+  }
 }
 
-class HomeController extends AsyncNotifier<HomeData> {
+const _pageSize = 12;
+
+class HomeController extends AsyncNotifier<HomeFeedState> {
   @override
-  Future<HomeData> build() => _load();
+  Future<HomeFeedState> build() => _loadInitial();
 
-  Future<HomeData> _load() async {
+  Future<HomeFeedState> _loadInitial() async {
     final repository = ref.read(booksRepositoryProvider);
-    final upcomingReleasesRepository =
-        ref.read(upcomingReleasesRepositoryProvider);
-    final authState = ref.read(authControllerProvider);
-    final city = authState is AuthAuthenticated ? authState.user.city : null;
-
-    // Pornim toate cererile în paralel - nu așteptăm una după alta.
-    final booksResultsFuture = Future.wait([
-      repository.browse(limit: 10),
-      repository.browse(sort: 'mostViewed', limit: 10),
-      if (city != null && city.isNotEmpty) repository.browse(city: city, limit: 10),
+    // Prima pagină de recente + trending, în paralel.
+    final results = await Future.wait([
+      repository.browse(sort: 'recent', limit: _pageSize, offset: 0),
+      repository.browse(sort: 'mostViewed', limit: _pageSize, offset: 0),
     ]);
-    final upcomingReleasesFuture = upcomingReleasesRepository.list();
-    final genresFuture = repository.getGenres();
-    final activeMembersFuture = ref.read(followRepositoryProvider).getActiveMembers();
-    final nearbyTodayFuture =
-        city != null && city.isNotEmpty ? repository.getNearbyToday(city) : Future.value(<UserBook>[]);
-    final hiddenGemsFuture = repository.getHiddenGems();
-
-    // Recommended/Complete Your Collection/Similar Taste au nevoie de
-    // autentificare (semnalul de gust vine din biblioteca/wishlist-ul
-    // userului) - liste goale dacă nu e logat, nu o eroare.
-    final isAuthenticated = authState is AuthAuthenticated;
-    final recommendedFuture =
-        isAuthenticated ? repository.getRecommendedForYou() : Future.value(<UserBook>[]);
-    final completeCollectionFuture =
-        isAuthenticated ? repository.getCompleteYourCollection() : Future.value(<UserBook>[]);
-    final similarTasteFuture =
-        isAuthenticated ? repository.getSimilarTasteUsers() : Future.value(<SimilarTasteUser>[]);
-
-    final results = await booksResultsFuture;
-    final upcomingReleases = await upcomingReleasesFuture;
-    final genres = await genresFuture;
-    final activeMembers = await activeMembersFuture;
-    final nearbyToday = await nearbyTodayFuture;
-    final hiddenGems = await hiddenGemsFuture;
-    final recommended = await recommendedFuture;
-    final completeYourCollection = await completeCollectionFuture;
-    final similarTasteUsers = await similarTasteFuture;
-
-    return HomeData(
-      recent: results[0].items,
-      mostViewed: results[1].items,
-      nearby: results.length > 2 ? results[2].items : const [],
-      nearbyToday: nearbyToday,
-      upcomingReleases: upcomingReleases,
-      genres: genres,
-      activeMembers: activeMembers,
-      recommended: recommended,
-      hiddenGems: hiddenGems,
-      completeYourCollection: completeYourCollection,
-      similarTasteUsers: similarTasteUsers,
+    final recentResult = results[0];
+    final mostViewedResult = results[1];
+    return HomeFeedState(
+      recent: recentResult.items,
+      mostViewed: mostViewedResult.items,
+      hasMore: recentResult.items.length < recentResult.total,
     );
+  }
+
+  Future<void> loadMore() async {
+    final current = state.value;
+    if (current == null || current.isLoadingMore || !current.hasMore) return;
+
+    state = AsyncData(current.copyWith(isLoadingMore: true));
+    try {
+      final repository = ref.read(booksRepositoryProvider);
+      final result = await repository.browse(
+        sort: 'recent',
+        limit: _pageSize,
+        offset: current.recent.length,
+      );
+      final merged = [...current.recent, ...result.items];
+      state = AsyncData(current.copyWith(
+        recent: merged,
+        isLoadingMore: false,
+        hasMore: merged.length < result.total && result.items.isNotEmpty,
+      ));
+    } catch (_) {
+      // Nu dărâmăm tot feed-ul pentru o pagină eșuată - doar oprim spinner-ul,
+      // userul poate reîncerca dând scroll din nou.
+      state = AsyncData(current.copyWith(isLoadingMore: false));
+    }
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(_load);
+    state = await AsyncValue.guard(_loadInitial);
   }
 }
 
-final homeControllerProvider = AsyncNotifierProvider<HomeController, HomeData>(
+final homeControllerProvider = AsyncNotifierProvider<HomeController, HomeFeedState>(
   HomeController.new,
 );

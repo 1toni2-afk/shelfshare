@@ -49,6 +49,7 @@ export class ProfileService {
       referralCode: user.referralCode,
       referralCount,
       createdAt: user.createdAt,
+      deletionScheduledAt: user.deletionScheduledAt,
       trustScore: await this.computeTrustScore(user),
       achievements: await this.getAchievements(user),
       impactStats: await this.getImpactStats(userId),

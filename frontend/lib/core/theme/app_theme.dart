@@ -16,30 +16,32 @@ class AppColors {
   static void setDark(bool value) => _dark = value;
 
   static const _lightBackground = Color(0xFFF8F4EC);
-  static const _darkBackground = Color(0xFF1C140D);
+  // Negru aproape pur (nu maro-închis) - aspect "luxury", nu doar un maro
+  // supra-întunecat. Vezi [[feedback_dark_theme_luxury_black]].
+  static const _darkBackground = Color(0xFF0E0E0F);
   static Color get background => _dark ? _darkBackground : _lightBackground;
 
   static const _lightForeground = Color(0xFF2A1A0E);
-  static const _darkForeground = Color(0xFFF3E7D8);
+  static const _darkForeground = Color(0xFFF5F3F0);
   static Color get foreground => _dark ? _darkForeground : _lightForeground;
 
   static const _lightCard = Color(0xFFFDFAF4);
-  static const _darkCard = Color(0xFF261C13);
+  static const _darkCard = Color(0xFF19191B);
   static Color get card => _dark ? _darkCard : _lightCard;
 
   static const primary = Color(0xFF7C3A1E);
   static const primaryForeground = Color(0xFFFDF9F3);
 
   static const _lightSecondary = Color(0xFFE8E2D5);
-  static const _darkSecondary = Color(0xFF3A2C1D);
+  static const _darkSecondary = Color(0xFF242426);
   static Color get secondary => _dark ? _darkSecondary : _lightSecondary;
 
   static const _lightMuted = Color(0xFFEDE8DE);
-  static const _darkMuted = Color(0xFF332619);
+  static const _darkMuted = Color(0xFF29292B);
   static Color get muted => _dark ? _darkMuted : _lightMuted;
 
   static const _lightMutedForeground = Color(0xFF7A6A5A);
-  static const _darkMutedForeground = Color(0xFFB9A891);
+  static const _darkMutedForeground = Color(0xFFA8A6A3);
   static Color get mutedForeground => _dark ? _darkMutedForeground : _lightMutedForeground;
 
   static const accent = Color(0xFFC8783A);
@@ -47,7 +49,7 @@ class AppColors {
   static const destructive = Color(0xFFC0392B);
 
   static const _lightBorder = Color(0x212A1A0E); // rgba(42,26,14,0.13)
-  static const _darkBorder = Color(0x33F3E7D8); // rgba(243,231,216,0.2)
+  static const _darkBorder = Color(0x1FFFFFFF); // rgba(255,255,255,0.12)
   static Color get border => _dark ? _darkBorder : _lightBorder;
 }
 

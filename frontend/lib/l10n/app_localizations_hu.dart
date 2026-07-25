@@ -142,6 +142,9 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get bookAvailableForSwapShort => 'Csere';
+
+  @override
   String get commonEmailLabel => 'Email';
 
   @override
@@ -761,6 +764,15 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get homeMostViewed => 'Legtöbbet megtekintett';
+
+  @override
+  String get homeMostSearched => 'Legkeresettebb';
+
+  @override
+  String get homeSeeAll => 'Összes megtekintése';
+
+  @override
+  String get homeFeedEnd => 'Minden könyvet láttál';
 
   @override
   String get homeNearYou => 'A városodban';

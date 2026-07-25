@@ -318,6 +318,12 @@ abstract class AppLocalizations {
   /// **'{amount} lei'**
   String priceLei(String amount);
 
+  /// No description provided for @bookAvailableForSwapShort.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb'**
+  String get bookAvailableForSwapShort;
+
   /// No description provided for @commonEmailLabel.
   ///
   /// In ro, this message translates to:
@@ -1415,6 +1421,24 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Cele mai vizualizate'**
   String get homeMostViewed;
+
+  /// No description provided for @homeMostSearched.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai căutate'**
+  String get homeMostSearched;
+
+  /// No description provided for @homeSeeAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi toate'**
+  String get homeSeeAll;
+
+  /// No description provided for @homeFeedEnd.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai văzut toate cărțile'**
+  String get homeFeedEnd;
 
   /// No description provided for @homeNearYou.
   ///

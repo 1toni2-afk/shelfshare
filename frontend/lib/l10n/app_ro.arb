@@ -66,6 +66,7 @@
 
   "priceLei": "{amount} lei",
   "@priceLei": { "placeholders": { "amount": { "type": "String" } } },
+  "bookAvailableForSwapShort": "Schimb",
 
   "commonEmailLabel": "Email",
   "commonEmailInvalid": "Email invalid",
@@ -290,6 +291,9 @@
   "homeCategories": "Categorii",
   "homeRecentlyAdded": "Adăugate recent",
   "homeMostViewed": "Cele mai vizualizate",
+  "homeMostSearched": "Cele mai căutate",
+  "homeSeeAll": "Vezi toate",
+  "homeFeedEnd": "Ai văzut toate cărțile",
   "homeNearYou": "Din orașul tău",
   "homeNearYouToday": "Astăzi, aproape de tine",
   "homeRecommendedForYou": "Recomandate pentru tine",

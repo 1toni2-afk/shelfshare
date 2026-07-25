@@ -44,6 +44,7 @@
   "durationDays": "{days} nap",
 
   "priceLei": "{amount} lej",
+  "bookAvailableForSwapShort": "Csere",
 
   "commonEmailLabel": "Email",
   "commonEmailInvalid": "Érvénytelen email",
@@ -240,6 +241,9 @@
   "homeCategories": "Kategóriák",
   "homeRecentlyAdded": "Nemrég hozzáadva",
   "homeMostViewed": "Legtöbbet megtekintett",
+  "homeMostSearched": "Legkeresettebb",
+  "homeSeeAll": "Összes megtekintése",
+  "homeFeedEnd": "Minden könyvet láttál",
   "homeNearYou": "A városodban",
   "homeNearYouToday": "Ma, a közeledben",
   "homeRecommendedForYou": "Neked ajánljuk",

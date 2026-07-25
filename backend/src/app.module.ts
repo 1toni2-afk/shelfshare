@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -23,10 +24,12 @@ import { BookshelfModule } from './bookshelf/bookshelf.module';
 import { AuctionsModule } from './auctions/auctions.module';
 import { CollectionsModule } from './collections/collections.module';
 import { GroupsModule } from './groups/groups.module';
+import { AccountDeletionModule } from './account-deletion/account-deletion.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     ProfileModule,
@@ -48,6 +51,7 @@ import { GroupsModule } from './groups/groups.module';
     AuctionsModule,
     CollectionsModule,
     GroupsModule,
+    AccountDeletionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

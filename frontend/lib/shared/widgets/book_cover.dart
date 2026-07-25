@@ -11,9 +11,18 @@ class BookCover extends StatelessWidget {
     this.borderRadius = 12,
   });
 
+  /// Umple tot spațiul părintelui (ex. o celulă de GridView sau un AspectRatio)
+  /// în loc de o dimensiune fixă - folosit de BookCard în grila responsivă.
+  const BookCover.expand({
+    super.key,
+    required this.url,
+    this.borderRadius = 12,
+  })  : width = null,
+        height = null;
+
   final String? url;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final double borderRadius;
 
   @override

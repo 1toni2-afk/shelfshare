@@ -44,6 +44,7 @@
   "durationDays": "{days} days",
 
   "priceLei": "{amount} lei",
+  "bookAvailableForSwapShort": "Swap",
 
   "commonEmailLabel": "Email",
   "commonEmailInvalid": "Invalid email",
@@ -240,6 +241,9 @@
   "homeCategories": "Categories",
   "homeRecentlyAdded": "Recently added",
   "homeMostViewed": "Most viewed",
+  "homeMostSearched": "Most sought after",
+  "homeSeeAll": "See all",
+  "homeFeedEnd": "You've seen all the books",
   "homeNearYou": "Near your city",
   "homeNearYouToday": "Near you today",
   "homeRecommendedForYou": "Recommended for you",

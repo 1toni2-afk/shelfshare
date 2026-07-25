@@ -12,3 +12,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+# Sufixele de backup (.bak/.old/copie renumită) NU erau prinse de regulile de
+# mai sus - un `git add frontend` a stagiat odată un `upload-keystore...jks.bak`.
+**/*.keystore.*
+**/*.jks.*

@@ -21,6 +21,7 @@ import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../application/profile_controller.dart';
 import '../data/feedback_repository.dart';
+import '../data/profile_repository.dart';
 
 class MyProfileScreen extends ConsumerStatefulWidget {
   const MyProfileScreen({super.key});
@@ -325,6 +326,8 @@ class _ProfileContent extends ConsumerWidget {
           onPressed: () => ref.read(authControllerProvider.notifier).logout(),
           child: Text(l10n.profileLogout),
         ),
+        const SizedBox(height: 24),
+        _DeleteAccountSection(user: user),
       ],
     );
   }
@@ -567,6 +570,152 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Secțiunea de ștergere cont din josul profilului. Două stări:
+/// (a) neprogramat - buton „Șterge contul" cu confirm dialog care explică
+///     fereastra de 15 zile,
+/// (b) programat - banner de avertisment cu data efectivă + buton „Anulează".
+/// Cerință Google Play (Data safety): trebuie să existe cale in-app pentru
+/// ștergerea contului, nu doar formular web.
+class _DeleteAccountSection extends ConsumerStatefulWidget {
+  const _DeleteAccountSection({required this.user});
+  final AppUser user;
+
+  @override
+  ConsumerState<_DeleteAccountSection> createState() => _DeleteAccountSectionState();
+}
+
+class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
+  bool _busy = false;
+
+  Future<void> _requestDeletion() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Șterge contul'),
+        content: const Text(
+          'Contul tău și toate datele asociate (cărți, schimburi, mesaje, wishlist) '
+          'vor fi șterse definitiv după 15 zile. Poți anula oricând în această perioadă '
+          'reintrând în cont și apăsând „Anulează ștergerea".\n\n'
+          'Vrei să continui?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Renunță'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.destructive),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Șterge contul'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _busy = true);
+    try {
+      await ref.read(profileRepositoryProvider).requestAccountDeletion();
+      await ref.read(profileControllerProvider.notifier).refresh();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ștergerea contului a fost programată')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nu am putut programa ștergerea. Încearcă din nou.')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _cancelDeletion() async {
+    setState(() => _busy = true);
+    try {
+      await ref.read(profileRepositoryProvider).cancelAccountDeletion();
+      await ref.read(profileControllerProvider.notifier).refresh();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ștergerea a fost anulată')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nu am putut anula. Încearcă din nou.')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheduledAt = widget.user.deletionScheduledAt;
+    if (scheduledAt != null) {
+      final daysLeft = scheduledAt.difference(DateTime.now()).inDays;
+      final dateStr = '${scheduledAt.day.toString().padLeft(2, '0')}.'
+          '${scheduledAt.month.toString().padLeft(2, '0')}.${scheduledAt.year}';
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.destructive.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.destructive.withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: AppColors.destructive),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Contul tău va fi șters',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.destructive,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Data ștergerii: $dateStr'
+              '${daysLeft > 0 ? " (peste $daysLeft zile)" : " (astăzi)"}.\n'
+              'Poți anula acum și contul va rămâne activ.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _busy ? null : _cancelDeletion,
+                child: _busy
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Anulează ștergerea'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return TextButton(
+      onPressed: _busy ? null : _requestDeletion,
+      style: TextButton.styleFrom(foregroundColor: AppColors.destructive),
+      child: const Text('Șterge contul'),
     );
   }
 }

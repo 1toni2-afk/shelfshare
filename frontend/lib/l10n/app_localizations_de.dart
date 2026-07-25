@@ -142,6 +142,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get bookAvailableForSwapShort => 'Tausch';
+
+  @override
   String get commonEmailLabel => 'E-Mail';
 
   @override
@@ -766,6 +769,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get homeMostViewed => 'Meistgesehen';
+
+  @override
+  String get homeMostSearched => 'Meistgesucht';
+
+  @override
+  String get homeSeeAll => 'Alle ansehen';
+
+  @override
+  String get homeFeedEnd => 'Du hast alle Bücher gesehen';
 
   @override
   String get homeNearYou => 'In deiner Stadt';
