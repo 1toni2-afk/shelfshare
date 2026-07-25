@@ -1,5 +1,10 @@
 node_modules
 dist
+# Fără asta, tsc-ul incremental din `nest build` vede un .tsbuildinfo rămas de
+# la un build local, crede că output-ul e deja actualizat și NU emite nimic -
+# imaginea iese fără /app/dist și containerul crapă cu MODULE_NOT_FOUND.
+# (dist e ignorat mai sus, deci în context nu există output care să-l valideze.)
+*.tsbuildinfo
 .env
 .env.local
 .git

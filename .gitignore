@@ -29,3 +29,8 @@ postgres_data/
 
 # pnpm cache local, nu trebuie versionat
 .pnpm-store/
+
+# Artefact local de build TypeScript incremental. Versionat din greșeală, a
+# rupt build-ul Docker: tsc credea că output-ul e deja generat și nu emitea
+# dist/ (vezi backend/.dockerignore).
+*.tsbuildinfo
