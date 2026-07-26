@@ -221,15 +221,21 @@ async function main() {
         language: books[i].language,
         isHardcover: i % 3 === 0,
         availableForSwap: true,
-        photos: [],
+        // Aplicația cere minim o poză reală per anunț - un seed fără poze ar
+        // produce carduri goale peste tot în feed.
+        photos: demoPhotos(`ub-${i}`, 1 + (i % 3)),
+        viewCount: (i * 37) % 240,
         createdAt: daysAgo(180 - i * 4),
       },
     });
     userBooks.push({ ...userBook, ownerId: owner.id, bookTitle: books[i].title });
   }
 
-  // câteva cărți duplicate în alte biblioteci, ca să existe suprapuneri
-  for (let i = 0; i < 6; i++) {
+  // Exemplare duplicate în alte biblioteci: creează suprapuneri (aceeași carte
+  // la mai mulți useri) și ne duce la ~100 de anunțuri în total, împreună cu
+  // re-listările generate mai jos.
+  const TARGET_LISTINGS = 96; // + ~4 verigi de re-listare => ~100
+  for (let i = 0; userBooks.length < TARGET_LISTINGS; i++) {
     const book = pickSeeded(books, i * 7 + 2);
     const owner = pickSeeded(users, i * 5 + 3);
     const userBook = await prisma.userBook.create({
@@ -238,10 +244,11 @@ async function main() {
         bookId: book.id,
         condition: pickSeeded(CONDITIONS, i + 2),
         language: book.language,
-        isHardcover: false,
+        isHardcover: i % 4 === 0,
         availableForSwap: true,
-        photos: [],
-        createdAt: daysAgo(90 - i * 3),
+        photos: demoPhotos(`dup-${i}`, 1 + (i % 2)),
+        viewCount: (i * 53) % 180,
+        createdAt: daysAgo(Math.max(1, 90 - i * 2)),
       },
     });
     userBooks.push({ ...userBook, ownerId: owner.id, bookTitle: book.title });
@@ -382,6 +389,9 @@ async function main() {
   let firstRelistId: string | null = null;
   let firstRelistOwnerId: string | null = null;
   let firstRelistBookId: string | null = null;
+  // Reținem lanțurile create ca să le putem raporta la final - altfel ar trebui
+  // căutate manual în DB ca să vezi cum arată istoricul în aplicație.
+  const provenance: { title: string; listingId: string; hops: number }[] = [];
 
   for (let i = 0; i < completedExchanges.length; i++) {
     const ex = completedExchanges[i];
@@ -400,6 +410,8 @@ async function main() {
       },
     });
 
+    provenance.push({ title: original.bookTitle, listingId: relisted.id, hops: 2 });
+
     if (i === 0) {
       firstRelistId = relisted.id;
       firstRelistOwnerId = relisted.userId;
@@ -410,7 +422,7 @@ async function main() {
   // lanț de 3 verigi pentru cel puțin o carte, ca istoricul să arate mai mult decât un singur hop
   if (firstRelistId && firstRelistBookId) {
     const otherUser = users.find((u) => u.id !== firstRelistOwnerId) ?? users[0];
-    await prisma.userBook.create({
+    const third = await prisma.userBook.create({
       data: {
         userId: otherUser.id,
         bookId: firstRelistBookId,
@@ -421,6 +433,11 @@ async function main() {
         createdAt: daysAgo(5),
       },
     });
+    // Veriga a 3-a înlocuiește intrarea de 2 hop-uri a aceleiași cărți.
+    const idx = provenance.findIndex((p) => p.listingId === firstRelistId);
+    if (idx >= 0) provenance.splice(idx, 1);
+    const title = books.find((b) => b.id === firstRelistBookId)?.title ?? '?';
+    provenance.push({ title, listingId: third.id, hops: 3 });
   }
 
   console.log('Setez rating și contor de schimburi pe profiluri...');
@@ -526,8 +543,185 @@ async function main() {
     });
   }
 
-  console.log('\nGata! Cont de test pentru login: oricare email de mai jos + parola "Parola123!"');
-  console.log(users.slice(0, 5).map((u) => u.email).join('\n'));
+  console.log('Creez licitații (active + una încheiată), cu oferte și urmăritori...');
+  // Alegem anunțuri care nu sunt deja la vânzare, ca un anunț să nu fie
+  // simultan „de vânzare" și „la licitație".
+  const auctionCandidates = userBooks.filter((ub) => !forSaleIndices.includes(userBooks.indexOf(ub)));
+  const auctionPlans = [
+    { endsInDays: 3, startPrice: 25, bids: 4, status: 'ACTIVE' as const },
+    { endsInDays: 6, startPrice: 40, bids: 2, status: 'ACTIVE' as const },
+    { endsInDays: 1, startPrice: 15, bids: 6, status: 'ACTIVE' as const },
+    { endsInDays: -4, startPrice: 30, bids: 3, status: 'ENDED' as const },
+  ];
+  for (let i = 0; i < auctionPlans.length && i < auctionCandidates.length; i++) {
+    const plan = auctionPlans[i];
+    const ub = auctionCandidates[i * 5];
+    if (!ub) continue;
+
+    const currentPrice = plan.startPrice + plan.bids * 5;
+    const endsAt = new Date(Date.now() + plan.endsInDays * 24 * 60 * 60 * 1000);
+
+    const bidders = users.filter((u) => u.id !== ub.ownerId).slice(0, plan.bids);
+    const topBidder = bidders[bidders.length - 1];
+
+    await prisma.userBook.update({
+      where: { id: ub.id },
+      data: { isAuction: true, availableForSwap: false },
+    });
+
+    const auction = await prisma.auction.create({
+      data: {
+        userBookId: ub.id,
+        startingPrice: plan.startPrice,
+        buyNowPrice: i % 2 === 0 ? currentPrice + 40 : null,
+        currentPrice,
+        highestBidderId: topBidder?.id ?? null,
+        endsAt,
+        status: plan.status,
+        createdAt: daysAgo(10),
+      },
+    });
+
+    for (let b = 0; b < bidders.length; b++) {
+      await prisma.bid.create({
+        data: {
+          auctionId: auction.id,
+          bidderId: bidders[b].id,
+          amount: plan.startPrice + (b + 1) * 5,
+          createdAt: daysAgo(9 - b),
+        },
+      });
+    }
+
+    for (const watcher of users.filter((u) => u.id !== ub.ownerId).slice(0, 3)) {
+      await prisma.auctionWatch.create({
+        data: { auctionId: auction.id, userId: watcher.id },
+      });
+    }
+  }
+
+  console.log('Marchez utilizatori Premium și anunțuri promovate...');
+  for (let i = 0; i < 3; i++) {
+    await prisma.user.update({ where: { id: users[i].id }, data: { isPremium: true } });
+  }
+  // Anunțurile promovate apar primele în browse (vezi orderBy din searchLibrary).
+  for (const ub of userBooks.filter((u) => users.slice(0, 3).some((p) => p.id === u.ownerId)).slice(0, 4)) {
+    await prisma.userBook.update({ where: { id: ub.id }, data: { isPromoted: true } });
+  }
+
+  console.log('Creez colecții...');
+  const collectionPlans = [
+    { name: 'Clasici românești', description: 'Ce vreau să recitesc din literatura română.' },
+    { name: 'SF & Distopii', description: 'Lista mea de SF, în ordinea în care le citesc.' },
+    { name: 'De citit în vacanță', description: null },
+  ];
+  for (let i = 0; i < collectionPlans.length; i++) {
+    const collection = await prisma.collection.create({
+      data: {
+        userId: users[i].id,
+        name: collectionPlans[i].name,
+        description: collectionPlans[i].description,
+        isPublic: true,
+        createdAt: daysAgo(40 - i * 5),
+      },
+    });
+    const chosen = new Set<string>();
+    for (let j = 0; j < 6; j++) {
+      const book = pickSeeded(books, i * 11 + j * 3);
+      if (chosen.has(book.id)) continue;
+      chosen.add(book.id);
+      await prisma.collectionItem.create({
+        data: { collectionId: collection.id, bookId: book.id },
+      });
+    }
+  }
+
+  console.log('Creez grupuri cu membri și discuții...');
+  const groupPlans = [
+    { name: 'Cititori din București', description: 'Ne întâlnim lunar și facem schimburi în persoană.' },
+    { name: 'Fan Fantasy România', description: 'Tolkien, Sanderson, Martin - discuții și schimburi.' },
+    { name: 'Clubul de lectură Cluj', description: 'O carte pe lună, discuție la final.' },
+  ];
+  for (let i = 0; i < groupPlans.length; i++) {
+    const creator = users[i + 2];
+    const group = await prisma.group.create({
+      data: {
+        name: groupPlans[i].name,
+        description: groupPlans[i].description,
+        creatorId: creator.id,
+        isPublic: true,
+        createdAt: daysAgo(70 - i * 10),
+      },
+    });
+
+    await prisma.groupMember.create({
+      data: { groupId: group.id, userId: creator.id, role: 'ADMIN', joinedAt: daysAgo(70 - i * 10) },
+    });
+    for (const member of users.filter((u) => u.id !== creator.id).slice(0, 5 + i)) {
+      await prisma.groupMember.create({
+        data: { groupId: group.id, userId: member.id, role: 'MEMBER', joinedAt: daysAgo(60 - i * 8) },
+      });
+    }
+
+    const posts = [
+      'Salut tuturor! Ce citiți luna asta?',
+      'Am terminat cartea propusă, mi-a plăcut mult finalul.',
+      'Cine vine la întâlnirea de sâmbătă?',
+    ];
+    for (let p = 0; p < posts.length; p++) {
+      await prisma.groupPost.create({
+        data: {
+          groupId: group.id,
+          authorId: pickSeeded(users, i * 4 + p).id,
+          content: posts[p],
+          createdAt: daysAgo(20 - p * 5),
+        },
+      });
+    }
+  }
+
+  console.log('Populez rafturile personale (citite / în curs / de citit)...');
+  const shelfStatuses = ['FINISHED', 'READING', 'WANT_TO_READ'] as const;
+  for (let i = 0; i < users.length; i++) {
+    const used = new Set<string>();
+    for (let j = 0; j < 8; j++) {
+      const book = pickSeeded(books, i * 7 + j * 5);
+      if (used.has(book.id)) continue;
+      used.add(book.id);
+      await prisma.bookshelfEntry.create({
+        data: {
+          userId: users[i].id,
+          bookId: book.id,
+          status: shelfStatuses[j % shelfStatuses.length],
+          createdAt: daysAgo(120 - j * 10),
+        },
+      });
+    }
+  }
+
+  console.log('Creez relații de urmărire între utilizatori...');
+  for (let i = 0; i < users.length; i++) {
+    for (let j = 1; j <= 3; j++) {
+      const target = users[(i + j * 2) % users.length];
+      if (target.id === users[i].id) continue;
+      await prisma.follow.create({
+        data: { followerId: users[i].id, followingId: target.id, createdAt: daysAgo(50 - j * 5) },
+      }).catch(() => undefined); // unique(follower, following) - ignorăm coliziunile
+    }
+  }
+
+  const totalListings = await prisma.userBook.count();
+
+  console.log('\n=====================================================');
+  console.log(`Gata! ${totalListings} anunțuri în total.`);
+  console.log('=====================================================');
+  console.log('\nCărțile CU ISTORIC (lanț de proprietari) - deschide-le ca să vezi secțiunea "Istoricul cărții":\n');
+  for (const p of provenance) {
+    console.log(`  • ${p.title}  (${p.hops} proprietari)`);
+    console.log(`    /books/${p.listingId}`);
+  }
+  console.log('\nLogin de test: oricare email de mai jos + parola "Parola123!"');
+  console.log(users.slice(0, 5).map((u) => '  ' + u.email).join('\n'));
 }
 
 main()
