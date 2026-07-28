@@ -2,7 +2,7 @@
     "@@locale":  "en",
     "navHome":  "Home",
     "navSearch":  "Discover",
-    "navLibrary":  "Library",
+    "navLibrary":  "My Shelf",
     "navChat":  "Chat",
     "navProfile":  "Profile",
     "commonCancel":  "Cancel",
@@ -275,7 +275,7 @@
     "commonYes":  "Yes",
     "commonNo":  "No",
     "commonGiveUp":  "Cancel",
-    "libraryTitle":  "My library",
+    "libraryTitle":  "My Shelf",
     "libraryViewAsList":  "View as list",
     "libraryViewAsGrid":  "View as grid",
     "libraryExportCsv":  "Export to CSV",
@@ -667,5 +667,8 @@
     "discoverRecommendedForYou":  "Recommended for you",
     "discoverPopularAuthors":  "Popular authors",
     "discoverQuickFilters":  "Quick filters",
-    "discoverNearYou":  "In your city"
+    "discoverNearYou":  "In your city",
+    "inventorySelectAll":  "Select all",
+    "myShelfShare":  "+ Share",
+    "inventoryMarkAvailable":  "Mark available"
 }

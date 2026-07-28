@@ -2,7 +2,7 @@
     "@@locale":  "hu",
     "navHome":  "Kezdőlap",
     "navSearch":  "Felfedezés",
-    "navLibrary":  "Könyvtár",
+    "navLibrary":  "A polcom",
     "navChat":  "Chat",
     "navProfile":  "Profil",
     "commonCancel":  "Mégse",
@@ -275,7 +275,7 @@
     "commonYes":  "Igen",
     "commonNo":  "Nem",
     "commonGiveUp":  "Mégse",
-    "libraryTitle":  "Könyvtáram",
+    "libraryTitle":  "A polcom",
     "libraryViewAsList":  "Listanézet",
     "libraryViewAsGrid":  "Rácsnézet",
     "libraryExportCsv":  "Exportálás CSV-be",
@@ -667,5 +667,8 @@
     "discoverRecommendedForYou":  "Neked ajánlott",
     "discoverPopularAuthors":  "Népszerű szerzők",
     "discoverQuickFilters":  "Gyors szűrők",
-    "discoverNearYou":  "A városodban"
+    "discoverNearYou":  "A városodban",
+    "inventorySelectAll":  "Összes kijelölése",
+    "myShelfShare":  "+ Megosztás",
+    "inventoryMarkAvailable":  "Elérhetőnek jelöl"
 }

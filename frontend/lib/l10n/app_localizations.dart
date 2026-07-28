@@ -117,7 +117,7 @@ abstract class AppLocalizations {
   /// No description provided for @navLibrary.
   ///
   /// In ro, this message translates to:
-  /// **'Biblioteca'**
+  /// **'Raftul meu'**
   String get navLibrary;
 
   /// No description provided for @navChat.
@@ -1671,7 +1671,7 @@ abstract class AppLocalizations {
   /// No description provided for @libraryTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Biblioteca mea'**
+  /// **'Raftul meu'**
   String get libraryTitle;
 
   /// No description provided for @libraryViewAsList.
@@ -3923,6 +3923,24 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'În orașul tău'**
   String get discoverNearYou;
+
+  /// No description provided for @inventorySelectAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Selectează toate'**
+  String get inventorySelectAll;
+
+  /// No description provided for @myShelfShare.
+  ///
+  /// In ro, this message translates to:
+  /// **'+ Împarte'**
+  String get myShelfShare;
+
+  /// No description provided for @inventoryMarkAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Marchează disponibile'**
+  String get inventoryMarkAvailable;
 }
 
 class _AppLocalizationsDelegate

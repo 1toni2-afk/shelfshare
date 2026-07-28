@@ -15,7 +15,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get navSearch => 'Descoperă';
 
   @override
-  String get navLibrary => 'Biblioteca';
+  String get navLibrary => 'Raftul meu';
 
   @override
   String get navChat => 'Chat';
@@ -891,7 +891,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get commonGiveUp => 'Renunță';
 
   @override
-  String get libraryTitle => 'Biblioteca mea';
+  String get libraryTitle => 'Raftul meu';
 
   @override
   String get libraryViewAsList => 'Vezi ca listă';
@@ -2170,4 +2170,13 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get discoverNearYou => 'În orașul tău';
+
+  @override
+  String get inventorySelectAll => 'Selectează toate';
+
+  @override
+  String get myShelfShare => '+ Împarte';
+
+  @override
+  String get inventoryMarkAvailable => 'Marchează disponibile';
 }

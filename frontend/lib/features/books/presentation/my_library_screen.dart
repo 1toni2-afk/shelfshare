@@ -47,65 +47,17 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     }
   }
 
-  Future<void> _bulkMarkUnavailable(List<UserBook> books) async {
+  /// Marchează în bulk anunțurile ca disponibile sau nu (înlocuiește vechiul
+  /// buton unidirecțional de „ascunde" - user cerea și calea inversă).
+  Future<void> _bulkSetAvailability(bool available) async {
     final notifier = ref.read(myLibraryControllerProvider.notifier);
     for (final id in _selectedIds.toList()) {
-      await notifier.setAvailability(id, availableForSwap: false);
-    }
-    if (mounted) {
-      setState(() => _selectedIds.clear());
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.inventoryBulkDone)));
-    }
-  }
-
-  Future<void> _bulkChangePrice(List<UserBook> books) async {
-    final l10n = context.l10n;
-    final priceController = TextEditingController();
-    final newPrice = await showDialog<double>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.inventoryChangePriceTitle),
-        content: TextField(
-          controller: priceController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonGiveUp)),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(double.tryParse(priceController.text.trim().replaceAll(',', '.'))),
-            child: Text(l10n.commonSubmit),
-          ),
-        ],
-      ),
-    );
-    if (newPrice == null) return;
-
-    final notifier = ref.read(myLibraryControllerProvider.notifier);
-    var changed = 0;
-    for (final id in _selectedIds.toList()) {
-      UserBook? book;
-      for (final b in books) {
-        if (b.id == id) book = b;
-      }
-      if (book == null || !book.isForSale) continue;
-      await notifier.editListing(
-        id,
-        condition: book.condition,
-        language: book.language,
-        edition: book.edition,
-        isHardcover: book.isHardcover,
-        isForSale: true,
-        salePrice: newPrice,
-        isNegotiable: book.isNegotiable,
-      );
-      changed++;
+      await notifier.setAvailability(id, availableForSwap: available);
     }
     if (mounted) {
       setState(() => _selectedIds.clear());
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.inventoryPriceChangedCount(changed))));
+          .showSnackBar(SnackBar(content: Text(context.l10n.inventoryBulkDone)));
     }
   }
 
@@ -232,6 +184,24 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 icon: const Icon(Icons.close),
                 onPressed: () => setState(() => _selectedIds.clear()),
               ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.select_all),
+                  tooltip: l10n.inventorySelectAll,
+                  onPressed: () => setState(() {
+                    // Toggle: dacă toate sunt deja selectate, deselectează tot;
+                    // altfel selectează tot ce e afișat curent.
+                    final all = (state.value ?? const []).map((b) => b.id).toSet();
+                    if (_selectedIds.length == all.length) {
+                      _selectedIds.clear();
+                    } else {
+                      _selectedIds
+                        ..clear()
+                        ..addAll(all);
+                    }
+                  }),
+                ),
+              ],
             )
           : AppBar(
               title: Text(l10n.libraryTitle),
@@ -261,11 +231,14 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 ),
               ],
             ),
+      // FAB extended = iconă + label „+ Share" (cerință Milestone 10). Icon-ul
+      // simplu era greu de descifrat pentru useri noi.
       floatingActionButton: _selectionMode
           ? null
-          : FloatingActionButton(
+          : FloatingActionButton.extended(
               onPressed: () => context.push('/library/add'),
-              child: const Icon(Icons.add),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.myShelfShare),
             ),
       bottomNavigationBar: _selectionMode
           ? BottomAppBar(
@@ -275,12 +248,12 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   IconButton(
                     icon: const Icon(Icons.visibility_off_outlined),
                     tooltip: l10n.inventoryMarkUnavailable,
-                    onPressed: () => _bulkMarkUnavailable(state.value ?? const []),
+                    onPressed: () => _bulkSetAvailability(false),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.sell_outlined),
-                    tooltip: l10n.inventoryChangePriceTitle,
-                    onPressed: () => _bulkChangePrice(state.value ?? const []),
+                    icon: const Icon(Icons.visibility_outlined),
+                    tooltip: l10n.inventoryMarkAvailable,
+                    onPressed: () => _bulkSetAvailability(true),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline),

@@ -15,7 +15,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get navSearch => 'Felfedezés';
 
   @override
-  String get navLibrary => 'Könyvtár';
+  String get navLibrary => 'A polcom';
 
   @override
   String get navChat => 'Chat';
@@ -895,7 +895,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get commonGiveUp => 'Mégse';
 
   @override
-  String get libraryTitle => 'Könyvtáram';
+  String get libraryTitle => 'A polcom';
 
   @override
   String get libraryViewAsList => 'Listanézet';
@@ -2181,4 +2181,13 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get discoverNearYou => 'A városodban';
+
+  @override
+  String get inventorySelectAll => 'Összes kijelölése';
+
+  @override
+  String get myShelfShare => '+ Megosztás';
+
+  @override
+  String get inventoryMarkAvailable => 'Elérhetőnek jelöl';
 }

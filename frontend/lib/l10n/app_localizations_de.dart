@@ -15,7 +15,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navSearch => 'Entdecken';
 
   @override
-  String get navLibrary => 'Bibliothek';
+  String get navLibrary => 'Mein Regal';
 
   @override
   String get navChat => 'Chat';
@@ -900,7 +900,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonGiveUp => 'Abbrechen';
 
   @override
-  String get libraryTitle => 'Meine Bibliothek';
+  String get libraryTitle => 'Mein Regal';
 
   @override
   String get libraryViewAsList => 'Als Liste anzeigen';
@@ -2203,4 +2203,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get discoverNearYou => 'In deiner Stadt';
+
+  @override
+  String get inventorySelectAll => 'Alle auswählen';
+
+  @override
+  String get myShelfShare => '+ Teilen';
+
+  @override
+  String get inventoryMarkAvailable => 'Verfügbar markieren';
 }

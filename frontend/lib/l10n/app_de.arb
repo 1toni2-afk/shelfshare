@@ -2,7 +2,7 @@
     "@@locale":  "de",
     "navHome":  "Start",
     "navSearch":  "Entdecken",
-    "navLibrary":  "Bibliothek",
+    "navLibrary":  "Mein Regal",
     "navChat":  "Chat",
     "navProfile":  "Profil",
     "commonCancel":  "Abbrechen",
@@ -275,7 +275,7 @@
     "commonYes":  "Ja",
     "commonNo":  "Nein",
     "commonGiveUp":  "Abbrechen",
-    "libraryTitle":  "Meine Bibliothek",
+    "libraryTitle":  "Mein Regal",
     "libraryViewAsList":  "Als Liste anzeigen",
     "libraryViewAsGrid":  "Als Raster anzeigen",
     "libraryExportCsv":  "Als CSV exportieren",
@@ -667,5 +667,8 @@
     "discoverRecommendedForYou":  "Für dich empfohlen",
     "discoverPopularAuthors":  "Beliebte Autoren",
     "discoverQuickFilters":  "Schnellfilter",
-    "discoverNearYou":  "In deiner Stadt"
+    "discoverNearYou":  "In deiner Stadt",
+    "inventorySelectAll":  "Alle auswählen",
+    "myShelfShare":  "+ Teilen",
+    "inventoryMarkAvailable":  "Verfügbar markieren"
 }

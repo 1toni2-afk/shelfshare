@@ -2,7 +2,7 @@
     "@@locale":  "ro",
     "navHome":  "Acasă",
     "navSearch":  "Descoperă",
-    "navLibrary":  "Biblioteca",
+    "navLibrary":  "Raftul meu",
     "navChat":  "Chat",
     "navProfile":  "Profil",
     "commonCancel":  "Anulează",
@@ -536,7 +536,7 @@
     "commonYes":  "Da",
     "commonNo":  "Nu",
     "commonGiveUp":  "Renunță",
-    "libraryTitle":  "Biblioteca mea",
+    "libraryTitle":  "Raftul meu",
     "libraryViewAsList":  "Vezi ca listă",
     "libraryViewAsGrid":  "Vezi ca grilă",
     "libraryExportCsv":  "Exportă în CSV",
@@ -1272,5 +1272,8 @@
     "discoverRecommendedForYou":  "Recomandate pentru tine",
     "discoverPopularAuthors":  "Autori populari",
     "discoverQuickFilters":  "Filtre rapide",
-    "discoverNearYou":  "În orașul tău"
+    "discoverNearYou":  "În orașul tău",
+    "inventorySelectAll":  "Selectează toate",
+    "myShelfShare":  "+ Împarte",
+    "inventoryMarkAvailable":  "Marchează disponibile"
 }
