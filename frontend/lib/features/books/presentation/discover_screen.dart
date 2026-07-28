@@ -245,7 +245,10 @@ class _TrendingSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_trendingProvider);
     return async.when(
-      loading: () => const _LoadingCarousel(),
+      loading: () => _SkeletonSection(
+        title: context.l10n.discoverMostLookedFor,
+        icon: Icons.local_fire_department,
+      ),
       error: (_, _) => const SizedBox.shrink(),
       data: (books) {
         if (books.isEmpty) return const SizedBox.shrink();
@@ -271,7 +274,10 @@ class _RecentsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_recentsProvider);
     return async.when(
-      loading: () => const _LoadingCarousel(),
+      loading: () => _SkeletonSection(
+        title: context.l10n.homeRecentlyAdded,
+        icon: Icons.new_releases_outlined,
+      ),
       error: (_, _) => const SizedBox.shrink(),
       data: (page) {
         if (page.items.isEmpty) return const SizedBox.shrink();
@@ -356,7 +362,10 @@ class _MostWishedSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_mostWishedProvider);
     return async.when(
-      loading: () => const _LoadingCarousel(),
+      loading: () => _SkeletonSection(
+        title: context.l10n.discoverMostWishedFor,
+        icon: Icons.favorite_outline,
+      ),
       error: (_, _) => const SizedBox.shrink(),
       data: (books) {
         if (books.isEmpty) return const SizedBox.shrink();
@@ -595,14 +604,67 @@ class _PopularAuthorsSection extends ConsumerWidget {
   }
 }
 
-class _LoadingCarousel extends StatelessWidget {
-  const _LoadingCarousel();
+/// Placeholder-e carduri gri afișate cât timp o secțiune se încarcă. Structura
+/// e aceeași ca `_HorizontalCarousel`, deci layout-ul nu tresare când datele
+/// vin. Preferat față de un spinner central (fost mesaj de „ecran blocat" pe
+/// cold start, când backend-ul lua ~1 min să răspundă la primul apel).
+class _SkeletonCarousel extends StatelessWidget {
+  const _SkeletonCarousel();
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 200,
-      child: Center(child: CircularProgressIndicator()),
+    return SizedBox(
+      height: 290,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: 4,
+        separatorBuilder: (_, _) => const SizedBox(width: 16),
+        itemBuilder: (context, _) {
+          final placeholder = AppColors.muted;
+          return SizedBox(
+            width: 150,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 150,
+                  height: 210,
+                  decoration: BoxDecoration(
+                    color: placeholder,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(height: 14, width: 130, color: placeholder),
+                const SizedBox(height: 6),
+                Container(height: 12, width: 100, color: placeholder),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Placeholder secțiune cu antet + skeleton carousel, pentru secțiunile care
+/// pot fi lente sau importante vizual. Fără el, între loading și data,
+/// pagina arăta ca un ecran gol și user nu era sigur că se încarcă ceva.
+class _SkeletonSection extends StatelessWidget {
+  const _SkeletonSection({required this.title, this.icon});
+  final String title;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: title, icon: icon),
+        const _SkeletonCarousel(),
+      ],
     );
   }
 }
