@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
@@ -138,6 +139,25 @@ class _HomeFeed extends StatelessWidget {
         : const <UserBook>[];
     final showTrending = data.recent.length >= _trendingInjectAfter && data.mostViewed.isNotEmpty;
 
+    // Grilă responsivă: cardurile își păstrează lățimea (~220dp), deci pe
+    // ecrane înguste ies 2 pe rând, iar pe desktop apar tot mai multe coloane
+    // pe măsură ce se lățește fereastra. Plafonat la 1350px (~6 coloane) ca
+    // pe monitoare 4K să nu se răsfire pe 10+ coloane.
+    //
+    // ScrollView-ul ocupă TOATĂ lățimea (chiar dacă vizual conținutul e mai
+    // îngust) - altfel wheel-ul de mouse și scroll-ul cu trackpad nu prind pe
+    // zonele goale din stânga/dreapta grilei. Constrângerea de lățime e mutată
+    // în padding-ul fiecărui sliver, calculat din lățimea ecranului.
+    return _buildScrollView(context, firstBatch, rest, showTrending);
+  }
+
+  Widget _buildScrollView(
+    BuildContext context,
+    List<UserBook> firstBatch,
+    List<UserBook> rest,
+    bool showTrending,
+  ) {
+    final l10n = context.l10n;
     return CustomScrollView(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -146,7 +166,18 @@ class _HomeFeed extends StatelessWidget {
         _BookSliverGrid(books: firstBatch),
         if (showTrending)
           SliverToBoxAdapter(
-            child: _TrendingCarousel(books: data.mostViewed),
+            child: Builder(
+              builder: (context) {
+                final screenWidth = MediaQuery.of(context).size.width;
+                final side = screenWidth > _feedMaxWidth
+                    ? (screenWidth - _feedMaxWidth) / 2
+                    : 0.0;
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: side),
+                  child: _TrendingCarousel(books: data.mostViewed),
+                );
+              },
+            ),
           ),
         if (rest.isNotEmpty) _BookSliverGrid(books: rest),
         SliverToBoxAdapter(
@@ -164,9 +195,36 @@ class _HomeFeed extends StatelessWidget {
   }
 }
 
-/// Grilă de 2 coloane. `childAspectRatio` e calibrat ca pe un telefon obișnuit
-/// să se vadă ~2 rânduri complete + jumătate din al treilea (cerință Milestone
-/// 8), fără overflow pe cardul copertă(2:3) + titlu/autor/locație.
+/// Grilă responsivă. Pe telefon (~360-430dp) iese exact pe 2 coloane, cu ~2
+/// rânduri complete + jumătate din al treilea vizibile (cerință Milestone 8).
+///
+/// Folosim `MaxCrossAxisExtent`, nu `FixedCrossAxisCount`: cu număr fix de
+/// coloane, pe web/desktop cele 2 coloane se întindeau pe toată lățimea
+/// ferestrei și un singur card ajungea la ~950px. Aici lățimea unui card e
+/// plafonată, deci pe ecrane late apar pur și simplu mai multe coloane.
+///
+/// 220 e ales ca orice telefon să rămână pe 2 coloane: la 430dp (cel mai lat
+/// telefon uzual) rămân 398dp utili, iar 398/220 se rotunjește tot la 2. Cu
+/// 190 ar fi ieșit 3 coloane pe telefoanele late.
+const _cardMaxWidth = 220.0;
+const _feedMaxWidth = 1350.0;
+
+/// Înălțimea celulei = lățime / raport. Coperta e 2:3 (deci 1.5×lățime), plus
+/// ~62dp pentru titlu + autor + oraș. La 156dp lățime (telefon, 2 coloane)
+/// conținutul cere ~296dp, iar 0.50 dă 312dp - marjă suficientă cât să nu
+/// apară overflow, fără spațiu gol vizibil.
+const _cardAspectRatio = 0.50;
+
+/// Centrează conținutul lăsând margini egale în stânga/dreapta când ecranul
+/// e mai lat decât [_feedMaxWidth] - grila devine „centered" pe monitoare
+/// mari, dar ScrollView-ul din jur rămâne pe toată lățimea (ca wheel-ul de
+/// mouse să prindă pe orice zonă).
+EdgeInsets _centeringPadding(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final extra = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
+  return EdgeInsets.symmetric(horizontal: 16 + extra);
+}
+
 class _BookSliverGrid extends StatelessWidget {
   const _BookSliverGrid({required this.books});
   final List<UserBook> books;
@@ -174,13 +232,13 @@ class _BookSliverGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: _centeringPadding(context),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: _cardMaxWidth,
           mainAxisSpacing: 20,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.54,
+          childAspectRatio: _cardAspectRatio,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -206,23 +264,32 @@ class _TrendingCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    // Fundal ușor „faded" cu tent de accent, ca secțiunea să se detașeze
+    // vizual de grila principală (cerință explicită - fără el, caruselul
+    // se pierdea între rândurile de deasupra și dedesubt).
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      color: AppColors.accent.withValues(alpha: 0.08),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+            padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
             child: Row(
               children: [
+                Icon(Icons.local_fire_department, color: AppColors.accent, size: 22),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     l10n.homeMostSearched,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: AppColors.accent,
+                        ),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/search'),
+                  onPressed: () => context.push('/browse'),
                   child: Text(l10n.homeSeeAll),
                 ),
               ],

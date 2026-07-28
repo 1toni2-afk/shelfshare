@@ -12,7 +12,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get navHome => 'Kezdőlap';
 
   @override
-  String get navSearch => 'Keresés';
+  String get navSearch => 'Felfedezés';
 
   @override
   String get navLibrary => 'Könyvtár';
@@ -2145,4 +2145,40 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get premiumAnalyticsLoadError =>
       'Nem sikerült betölteni a statisztikákat.';
+
+  @override
+  String get discoverMostWishedFor => 'Legkívántabbak';
+
+  @override
+  String get discoverMostLookedFor => 'Legkeresettebbek';
+
+  @override
+  String get discoverSearchTooltip => 'Könyvek keresése';
+
+  @override
+  String get discoverTopSearches => 'Népszerű keresések';
+
+  @override
+  String get discoverAuctions => 'Aktív aukciók';
+
+  @override
+  String get discoverHiddenGems => 'Rejtett gyöngyszemek';
+
+  @override
+  String get discoverSwapOnly => 'Csak csere';
+
+  @override
+  String get discoverUnder30 => '30 lej alatt';
+
+  @override
+  String get discoverRecommendedForYou => 'Neked ajánlott';
+
+  @override
+  String get discoverPopularAuthors => 'Népszerű szerzők';
+
+  @override
+  String get discoverQuickFilters => 'Gyors szűrők';
+
+  @override
+  String get discoverNearYou => 'A városodban';
 }

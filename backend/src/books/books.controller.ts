@@ -75,6 +75,16 @@ export class BooksController {
     return this.booksService.getTrendingBooks();
   }
 
+  @Get('trending-listings')
+  getTrendingListings() {
+    return this.booksService.getTrendingListings();
+  }
+
+  @Get('most-wished')
+  getMostWishedBooks() {
+    return this.booksService.getMostWishedBooks();
+  }
+
   @Get('popular-authors')
   getMostPopularAuthors() {
     return this.booksService.getMostPopularAuthors();

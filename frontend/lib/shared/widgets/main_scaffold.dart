@@ -35,7 +35,7 @@ class MainScaffold extends ConsumerWidget {
 
     final destinations = [
       (icon: Icons.home_outlined, activeIcon: Icons.home, label: l10n.navHome, badge: 0),
-      (icon: Icons.search_outlined, activeIcon: Icons.search, label: l10n.navSearch, badge: 0),
+      (icon: Icons.explore_outlined, activeIcon: Icons.explore, label: l10n.navSearch, badge: 0),
       (
         icon: Icons.menu_book_outlined,
         activeIcon: Icons.menu_book,

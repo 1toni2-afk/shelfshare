@@ -88,9 +88,22 @@ class _TypewriterTextState extends State<TypewriterText> {
         ? const TypewriterPhrase('', Duration.zero)
         : widget.phrases[_phraseIndex];
     final visible = phrase.text.substring(0, _charCount.clamp(0, phrase.text.length));
-    return Text(
-      '$visible${_cursorOn ? '_' : ' '}',
-      style: widget.style,
+    // Cursorul e mereu prezent în layout - doar culoarea alternează între
+    // opac și transparent. Varianta veche schimba `_` cu spațiu, dar spațiul
+    // și `_` au lățimi diferite în fonturi non-monospace, iar `centerTitle`
+    // re-centra textul la fiecare 500ms => textul dansa stânga-dreapta.
+    final baseColor = widget.style?.color ?? DefaultTextStyle.of(context).style.color;
+    return Text.rich(
+      TextSpan(
+        style: widget.style,
+        children: [
+          TextSpan(text: visible),
+          TextSpan(
+            text: '_',
+            style: TextStyle(color: _cursorOn ? baseColor : Colors.transparent),
+          ),
+        ],
+      ),
       maxLines: 1,
       overflow: TextOverflow.clip,
     );

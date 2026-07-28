@@ -17,15 +17,26 @@ final _popularSearchesProvider = FutureProvider((ref) {
 /// Argumente opționale trimise ecranului de căutare din alte ecrane (ex.
 /// wishlist trimite un titlu, Home trimite un gen din secțiunea Categorii).
 class SearchScreenArgs {
-  const SearchScreenArgs({this.title, this.genre});
+  const SearchScreenArgs({this.title, this.genre, this.listingType, this.city});
   final String? title;
   final String? genre;
+  /// „swap" / „sale" / „auction" - folosit de filtrele rapide din Discover.
+  final String? listingType;
+  final String? city;
 }
 
 class BrowseScreen extends ConsumerStatefulWidget {
-  const BrowseScreen({super.key, this.initialTitle, this.initialGenre});
+  const BrowseScreen({
+    super.key,
+    this.initialTitle,
+    this.initialGenre,
+    this.initialListingType,
+    this.initialCity,
+  });
   final String? initialTitle;
   final String? initialGenre;
+  final String? initialListingType;
+  final String? initialCity;
 
   @override
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
@@ -41,15 +52,23 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
+    // Aplicăm filtrele initiale ca un singur update - dacă vin mai multe
+    // (ex. „Doar la schimb" din orașul tău), le combinăm într-un singur
+    // `BrowseFilters`, altfel al doilea l-ar suprascrie pe primul.
+    final hasPreset = (widget.initialGenre?.isNotEmpty ?? false) ||
+        (widget.initialListingType?.isNotEmpty ?? false) ||
+        (widget.initialCity?.isNotEmpty ?? false);
+    if (hasPreset) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(browseControllerProvider.notifier).applyFilters(BrowseFilters(
+              genre: widget.initialGenre,
+              listingType: widget.initialListingType,
+              city: widget.initialCity,
+            ));
+      });
+    } else if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => ref.read(browseControllerProvider.notifier).updateTitle(widget.initialTitle),
-      );
-    } else if (widget.initialGenre != null && widget.initialGenre!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => ref.read(browseControllerProvider.notifier).applyFilters(
-              BrowseFilters(genre: widget.initialGenre),
-            ),
       );
     }
   }

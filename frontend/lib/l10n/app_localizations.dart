@@ -111,7 +111,7 @@ abstract class AppLocalizations {
   /// No description provided for @navSearch.
   ///
   /// In ro, this message translates to:
-  /// **'Caută'**
+  /// **'Descoperă'**
   String get navSearch;
 
   /// No description provided for @navLibrary.
@@ -3851,6 +3851,78 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nu am putut încărca statisticile.'**
   String get premiumAnalyticsLoadError;
+
+  /// No description provided for @discoverMostWishedFor.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai dorite'**
+  String get discoverMostWishedFor;
+
+  /// No description provided for @discoverMostLookedFor.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai căutate'**
+  String get discoverMostLookedFor;
+
+  /// No description provided for @discoverSearchTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută cărți'**
+  String get discoverSearchTooltip;
+
+  /// No description provided for @discoverTopSearches.
+  ///
+  /// In ro, this message translates to:
+  /// **'Top căutări'**
+  String get discoverTopSearches;
+
+  /// No description provided for @discoverAuctions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitații active'**
+  String get discoverAuctions;
+
+  /// No description provided for @discoverHiddenGems.
+  ///
+  /// In ro, this message translates to:
+  /// **'Comori ascunse'**
+  String get discoverHiddenGems;
+
+  /// No description provided for @discoverSwapOnly.
+  ///
+  /// In ro, this message translates to:
+  /// **'Doar la schimb'**
+  String get discoverSwapOnly;
+
+  /// No description provided for @discoverUnder30.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sub 30 lei'**
+  String get discoverUnder30;
+
+  /// No description provided for @discoverRecommendedForYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recomandate pentru tine'**
+  String get discoverRecommendedForYou;
+
+  /// No description provided for @discoverPopularAuthors.
+  ///
+  /// In ro, this message translates to:
+  /// **'Autori populari'**
+  String get discoverPopularAuthors;
+
+  /// No description provided for @discoverQuickFilters.
+  ///
+  /// In ro, this message translates to:
+  /// **'Filtre rapide'**
+  String get discoverQuickFilters;
+
+  /// No description provided for @discoverNearYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'În orașul tău'**
+  String get discoverNearYou;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ import '../../features/books/presentation/bulk_add_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/books_map_screen.dart';
 import '../../features/books/presentation/browse_screen.dart';
+import '../../features/books/presentation/discover_screen.dart';
 import '../../features/books/presentation/my_library_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
@@ -101,6 +102,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
       GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
       GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
+      GoRoute(
+        path: '/browse',
+        builder: (context, state) {
+          final args = state.extra as SearchScreenArgs?;
+          return BrowseScreen(
+            initialTitle: args?.title,
+            initialGenre: args?.genre,
+            initialListingType: args?.listingType,
+            initialCity: args?.city,
+          );
+        },
+      ),
       GoRoute(path: '/map', builder: (context, state) => const BooksMapScreen()),
       GoRoute(path: '/exchanges', builder: (context, state) => const ExchangesScreen()),
       GoRoute(
@@ -166,10 +179,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/search',
-              builder: (context, state) {
-                final args = state.extra as SearchScreenArgs?;
-                return BrowseScreen(initialTitle: args?.title, initialGenre: args?.genre);
-              },
+              builder: (context, state) => const DiscoverScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [

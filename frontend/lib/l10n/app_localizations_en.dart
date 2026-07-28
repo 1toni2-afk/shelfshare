@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHome => 'Home';
 
   @override
-  String get navSearch => 'Search';
+  String get navSearch => 'Discover';
 
   @override
   String get navLibrary => 'Library';
@@ -2132,4 +2132,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumAnalyticsLoadError => 'Couldn\'t load the stats.';
+
+  @override
+  String get discoverMostWishedFor => 'Most wished for';
+
+  @override
+  String get discoverMostLookedFor => 'Most looked for';
+
+  @override
+  String get discoverSearchTooltip => 'Search books';
+
+  @override
+  String get discoverTopSearches => 'Top searches';
+
+  @override
+  String get discoverAuctions => 'Active auctions';
+
+  @override
+  String get discoverHiddenGems => 'Hidden gems';
+
+  @override
+  String get discoverSwapOnly => 'Swap only';
+
+  @override
+  String get discoverUnder30 => 'Under 30 lei';
+
+  @override
+  String get discoverRecommendedForYou => 'Recommended for you';
+
+  @override
+  String get discoverPopularAuthors => 'Popular authors';
+
+  @override
+  String get discoverQuickFilters => 'Quick filters';
+
+  @override
+  String get discoverNearYou => 'In your city';
 }

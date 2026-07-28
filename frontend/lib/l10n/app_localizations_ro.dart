@@ -12,7 +12,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get navHome => 'Acasă';
 
   @override
-  String get navSearch => 'Caută';
+  String get navSearch => 'Descoperă';
 
   @override
   String get navLibrary => 'Biblioteca';
@@ -2134,4 +2134,40 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get premiumAnalyticsLoadError => 'Nu am putut încărca statisticile.';
+
+  @override
+  String get discoverMostWishedFor => 'Cele mai dorite';
+
+  @override
+  String get discoverMostLookedFor => 'Cele mai căutate';
+
+  @override
+  String get discoverSearchTooltip => 'Caută cărți';
+
+  @override
+  String get discoverTopSearches => 'Top căutări';
+
+  @override
+  String get discoverAuctions => 'Licitații active';
+
+  @override
+  String get discoverHiddenGems => 'Comori ascunse';
+
+  @override
+  String get discoverSwapOnly => 'Doar la schimb';
+
+  @override
+  String get discoverUnder30 => 'Sub 30 lei';
+
+  @override
+  String get discoverRecommendedForYou => 'Recomandate pentru tine';
+
+  @override
+  String get discoverPopularAuthors => 'Autori populari';
+
+  @override
+  String get discoverQuickFilters => 'Filtre rapide';
+
+  @override
+  String get discoverNearYou => 'În orașul tău';
 }

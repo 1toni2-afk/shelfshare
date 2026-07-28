@@ -558,32 +558,105 @@ export class BooksService {
    * "Trending" - cele mai vizualizate cărți în ultimele 14 zile (spre
    * deosebire de sortarea "mostViewed" din browse, care e all-time).
    */
+  /**
+   * „Trending": clasament {book, count} - viewer-i UNICI (per user autentificat,
+   * cei anonimi contează ca o singură entitate) în ultimele 7 zile. Folosit
+   * de pagina de statistici globale.
+   */
   async getTrendingBooks() {
-    const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const uniques = await this.trendingUniqueViewers();
+    const top = Array.from(uniques.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15);
+    if (top.length === 0) return [];
+    const books = await this.prisma.book.findMany({
+      where: { id: { in: top.map(([id]) => id) } },
+    });
+    const byId = new Map(books.map((b) => [b.id, b]));
+    return top
+      .map(([id, count]) => {
+        const book = byId.get(id);
+        return book ? { book, count } : null;
+      })
+      .filter((e) => e !== null);
+  }
+
+  /**
+   * Aceleași cărți ca `getTrendingBooks`, dar returnate ca `UserBook` (cel
+   * mai recent anunț disponibil la schimb per carte). Folosit în Discover:
+   * ne trebuie feed-item, nu doar statistica.
+   */
+  async getTrendingListings() {
+    const uniques = await this.trendingUniqueViewers();
+    const topIds = Array.from(uniques.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([id]) => id);
+    return this.pickListingsForBooks(topIds);
+  }
+
+  /// Numără vizualizări unice per carte în ultimele 7 zile. Vizitatorii
+  /// ne-autentificați sunt tratați ca o singură entitate, altfel trendingul
+  /// s-ar putea umfla cu vizite din tab-uri incognito.
+  private async trendingUniqueViewers(): Promise<Map<string, number>> {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const views = await this.prisma.bookView.findMany({
       where: { createdAt: { gte: since } },
-      select: { userBook: { select: { bookId: true } } },
+      select: {
+        userId: true,
+        userBook: { select: { bookId: true } },
+      },
     });
-
-    const counts = new Map<string, number>();
+    const perBook = new Map<string, Set<string>>();
     for (const view of views) {
-      const id = view.userBook.bookId;
-      counts.set(id, (counts.get(id) ?? 0) + 1);
+      const bookId = view.userBook.bookId;
+      const viewer = view.userId ?? '__anon__';
+      const set = perBook.get(bookId) ?? new Set<string>();
+      set.add(viewer);
+      perBook.set(bookId, set);
     }
-    const topIds = Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 15)
-      .map(([id]) => id);
-    if (topIds.length === 0) return [];
+    return new Map(Array.from(perBook.entries()).map(([id, s]) => [id, s.size]));
+  }
 
-    const books = await this.prisma.book.findMany({ where: { id: { in: topIds } } });
-    const byId = new Map(books.map((b) => [b.id, b]));
-    return topIds
+  /**
+   * „Cele mai dorite": cărțile cu cei mai mulți useri distincți care le-au
+   * pus pe wishlist. Semnal pur de cerere, complementar cu `getTrendingBooks`
+   * (care măsoară vizionările - atenție, nu neapărat dorință de a primi).
+   */
+  async getMostWishedBooks() {
+    const grouped = await this.prisma.wishlistItem.groupBy({
+      by: ['bookId'],
+      _count: { userId: true },
+      orderBy: { _count: { userId: 'desc' } },
+      take: 20,
+    });
+    const topIds = grouped.map((g) => g.bookId);
+    return this.pickListingsForBooks(topIds);
+  }
+
+  /// Pentru o listă ordonată de bookId, alege cel mai recent anunț disponibil
+  /// la schimb per carte (dacă există) și îl întoarce în format DTO (poze
+  /// URL-uri publice, owner sanitizat). Preservează ordinea `bookIds`.
+  private async pickListingsForBooks(bookIds: string[]) {
+    if (bookIds.length === 0) return [];
+
+    const listings = await this.prisma.userBook.findMany({
+      where: { bookId: { in: bookIds }, availableForSwap: true },
+      include: { book: true, user: { select: OWNER_SELECT } },
+      orderBy: { createdAt: 'desc' },
+    });
+    const chosen = new Map<string, (typeof listings)[number]>();
+    for (const l of listings) {
+      if (!chosen.has(l.bookId)) chosen.set(l.bookId, l);
+    }
+
+    return bookIds
       .map((id) => {
-        const book = byId.get(id);
-        return book ? { book, count: counts.get(id)! } : null;
+        const listing = chosen.get(id);
+        if (!listing) return null;
+        return this.sanitizeOwner(this.toPublicPhotos(listing));
       })
-      .filter((entry) => entry !== null);
+      .filter((e) => e !== null);
   }
 
   // Fire-and-forget - "Popular Searches" nu trebuie să încetinească

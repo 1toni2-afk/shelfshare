@@ -105,6 +105,13 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen>
               options: const MapOptions(
                 initialCenter: _romaniaCenter,
                 initialZoom: 6.3,
+                // Blocăm rotația (nordul mereu în sus): la zoom mare userii se
+                // pierdeau ușor dacă atingeau accidental harta cu 2 degete și
+                // o roteau. Restul gesturilor (pan, pinch-zoom, dublu-tap)
+                // rămân active - excludem doar flag-urile de rotire.
+                interactionOptions: InteractionOptions(
+                  flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                ),
               ),
               children: [
                 TileLayer(

@@ -215,6 +215,25 @@ class BooksRepository {
         .toList();
   }
 
+  /// Aceleași cărți ca `/books/trending`, dar ca `UserBook`-uri (cu proprietar,
+  /// poze etc.) - gata de afișat în feed-ul Discover.
+  Future<List<UserBook>> getTrendingListings() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/trending-listings');
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Cărțile cele mai adăugate pe wishlist (cerere), ca `UserBook`-uri.
+  Future<List<UserBook>> getMostWishedBooks() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/most-wished');
+    return (response.data as List)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<AuthorStatEntry>> getMostPopularAuthors() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/books/popular-authors');

@@ -12,7 +12,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navHome => 'Start';
 
   @override
-  String get navSearch => 'Suche';
+  String get navSearch => 'Entdecken';
 
   @override
   String get navLibrary => 'Bibliothek';
@@ -2167,4 +2167,40 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get premiumAnalyticsLoadError =>
       'Statistiken konnten nicht geladen werden.';
+
+  @override
+  String get discoverMostWishedFor => 'Am meisten gewünscht';
+
+  @override
+  String get discoverMostLookedFor => 'Am meisten gesucht';
+
+  @override
+  String get discoverSearchTooltip => 'Bücher suchen';
+
+  @override
+  String get discoverTopSearches => 'Beliebte Suchen';
+
+  @override
+  String get discoverAuctions => 'Aktive Auktionen';
+
+  @override
+  String get discoverHiddenGems => 'Versteckte Perlen';
+
+  @override
+  String get discoverSwapOnly => 'Nur Tausch';
+
+  @override
+  String get discoverUnder30 => 'Unter 30 Lei';
+
+  @override
+  String get discoverRecommendedForYou => 'Für dich empfohlen';
+
+  @override
+  String get discoverPopularAuthors => 'Beliebte Autoren';
+
+  @override
+  String get discoverQuickFilters => 'Schnellfilter';
+
+  @override
+  String get discoverNearYou => 'In deiner Stadt';
 }

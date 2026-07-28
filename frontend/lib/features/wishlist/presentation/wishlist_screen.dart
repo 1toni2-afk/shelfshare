@@ -78,7 +78,7 @@ class _WishlistCard extends ConsumerWidget {
           Stack(
             children: [
               GestureDetector(
-                onTap: () => context.push('/search', extra: SearchScreenArgs(title: item.book.title)),
+                onTap: () => context.push('/browse', extra: SearchScreenArgs(title: item.book.title)),
                 child: BookCover(url: item.book.coverUrl, width: 160, height: 224),
               ),
               Positioned(
