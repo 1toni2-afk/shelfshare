@@ -2190,4 +2190,46 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get inventoryMarkAvailable => 'Elérhetőnek jelöl';
+
+  @override
+  String get libraryTrashEmpty => 'A kuka üres';
+
+  @override
+  String get inventoryAppendText => 'Hozzáfűz a végéhez';
+
+  @override
+  String get inventoryTransferred => 'Átadva';
+
+  @override
+  String inventoryDeletedDaysLeft(int days) {
+    return '$days nap múlva törli';
+  }
+
+  @override
+  String get libraryEmptiedShelves => 'Elajándékozott vagy cserélt könyvek';
+
+  @override
+  String get libraryRestored => 'Könyv visszaállítva';
+
+  @override
+  String get inventoryDescriptionDone => 'Leírások frissítve';
+
+  @override
+  String get libraryTrashHint =>
+      'A törölt könyvek 7 napig maradnak itt, majd véglegesen törlődnek';
+
+  @override
+  String get inventoryBulkEditDescription => 'Tömeges leírás szerkesztés';
+
+  @override
+  String get libraryTrash => 'Kuka';
+
+  @override
+  String get inventoryRemoveText => 'Törlés a szövegből';
+
+  @override
+  String get libraryRestore => 'Visszaállít';
+
+  @override
+  String get libraryEmptiedShelvesEmpty => 'Még nincsenek átadott könyvek';
 }

@@ -2,8 +2,10 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { BookCondition, Prisma } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,6 +38,8 @@ const OWNER_SELECT = {
 
 @Injectable()
 export class BooksService {
+  private readonly logger = new Logger(BooksService.name);
+
   constructor(
     private prisma: PrismaService,
     private lookup: BookLookupService,
@@ -54,6 +58,9 @@ export class BooksService {
     if (filters.title) this.logSearch(filters.title);
 
     const where: Prisma.UserBookWhereInput = {
+      // Cărțile din coșul de gunoi al proprietarului (soft-delete) NU trebuie
+      // să apară în feed - vezi Milestone 10 batch 2.
+      deletedAt: null,
       availableForSwap:
         filters.listingType != null
           ? filters.listingType === 'swap'
@@ -384,7 +391,9 @@ export class BooksService {
 
   async getMyLibrary(userId: string) {
     const items = await this.prisma.userBook.findMany({
-      where: { userId },
+      // Coșul de gunoi (soft-delete) e listat separat prin
+      // /books/library/deleted; aici afișăm doar cărțile „vii".
+      where: { userId, deletedAt: null },
       include: { book: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -1208,6 +1217,15 @@ export class BooksService {
       );
     }
 
+    // Milestone 10: o carte deja transferată către alt user nu poate reveni
+    // în stoc, chiar dacă bulk edit-ul cere „marchează ca disponibilă".
+    // Vezi permanentlyTransferred setat la exchange COMPLETED.
+    if (userBook.permanentlyTransferred && dto.availableForSwap === true) {
+      throw new BadRequestException(
+        'Cartea a fost deja schimbată și nu mai poate fi făcută disponibilă',
+      );
+    }
+
     const updated = await this.prisma.userBook.update({
       where: { id: userBookId },
       data: dto,
@@ -1249,16 +1267,107 @@ export class BooksService {
     return this.toPublicPhotos(updated);
   }
 
+  /**
+   * Soft-delete cu grace period de 7 zile. Cartea nu mai apare în feed / în
+   * bibliotecă, dar poate fi restaurată din „Coșul de gunoi" (`GET
+   * /books/deleted`). Un cron zilnic o șterge definitiv după expirare, inclusiv
+   * pozele din storage - nu ștergem imediat ca să nu pierdem imagini care ar
+   * trebui să revină la restore.
+   */
   async deleteUserBook(userId: string, userBookId: string) {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
 
-    await Promise.all(
-      userBook.photos.map((path) => this.storage.deleteImage(path)),
-    );
+    await this.prisma.userBook.update({
+      where: { id: userBookId },
+      data: { deletedAt: new Date(), availableForSwap: false },
+    });
+    return { message: 'Carte mutată în coșul de gunoi (7 zile)' };
+  }
 
-    await this.prisma.userBook.delete({ where: { id: userBookId } });
-    return { message: 'Carte ștearsă din bibliotecă' };
+  /**
+   * Listează cărțile șterse ale userului care încă sunt în fereastra de
+   * restore. Cele mai vechi de 7 zile sunt filtrate aici (chiar dacă cron-ul
+   * de curățenie nu a rulat încă, userul nu ar trebui să vadă „false hope").
+   */
+  async getDeletedUserBooks(userId: string) {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const items = await this.prisma.userBook.findMany({
+      where: {
+        userId,
+        deletedAt: { not: null, gte: cutoff },
+      },
+      include: { book: true },
+      orderBy: { deletedAt: 'desc' },
+    });
+    return items.map((i) => this.toPublicPhotos(i));
+  }
+
+  /**
+   * Restaurează o carte din coșul de gunoi. Availability rămâne pe false -
+   * userul o marchează manual „disponibilă" când decide. E deliberat: după
+   * o săptămână în coș, poate condiția / prețul s-au schimbat, și cerem un
+   * pas conștient înainte să reapară în feed.
+   */
+  async restoreUserBook(userId: string, userBookId: string) {
+    const userBook = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+    });
+    if (!userBook) {
+      throw new NotFoundException('Cartea nu a fost găsită');
+    }
+    this.assertOwnership(userBook.userId, userId);
+    if (!userBook.deletedAt) {
+      throw new BadRequestException('Cartea nu e în coșul de gunoi');
+    }
+
+    await this.prisma.userBook.update({
+      where: { id: userBookId },
+      data: { deletedAt: null },
+    });
+    return { message: 'Carte restaurată' };
+  }
+
+  /**
+   * „Emptied Shelves" - cărțile deja transferate (permanentlyTransferred).
+   * Rămân vizibile în bibliotecă ca istoric, marcate ca „schimbată/vândută" -
+   * user cerea să apară „permanent ca fiind indisponibilă în acea listare".
+   */
+  async getEmptiedShelves(userId: string) {
+    const items = await this.prisma.userBook.findMany({
+      where: { userId, permanentlyTransferred: true, deletedAt: null },
+      include: { book: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return items.map((i) => this.toPublicPhotos(i));
+  }
+
+  /**
+   * Rulează zilnic la 03:15 - șterge definitiv rândurile din user_books cu
+   * `deletedAt` mai vechi de 7 zile, plus pozele lor din storage. Decuplat
+   * de `deleteUserBook` (unde am făcut soft-delete) tocmai ca ștergerea reală
+   * să fie recuperabilă în intervalul de grace.
+   */
+  @Cron('15 3 * * *')
+  async purgeDeletedUserBooks(): Promise<void> {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const expired = await this.prisma.userBook.findMany({
+      where: { deletedAt: { not: null, lte: cutoff } },
+      select: { id: true, photos: true },
+    });
+    if (expired.length === 0) return;
+
+    this.logger.log(`Purge coș gunoi: șterg definitiv ${expired.length} anunțuri`);
+    for (const item of expired) {
+      try {
+        await Promise.all(
+          item.photos.map((path) => this.storage.deleteImage(path).catch(() => undefined)),
+        );
+        await this.prisma.userBook.delete({ where: { id: item.id } });
+      } catch (error) {
+        this.logger.error(`Nu am putut șterge anunțul ${item.id}`, error);
+      }
+    }
   }
 
   async addPhoto(userId: string, userBookId: string, fileBuffer: Buffer) {

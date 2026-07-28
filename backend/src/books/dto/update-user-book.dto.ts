@@ -46,4 +46,9 @@ export class UpdateUserBookDto {
   @IsOptional()
   @IsBoolean()
   isNegotiable?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256, { message: 'Descrierea nu poate depăși 256 de caractere' })
+  description?: string;
 }

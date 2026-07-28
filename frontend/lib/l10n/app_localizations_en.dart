@@ -2177,4 +2177,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryMarkAvailable => 'Mark available';
+
+  @override
+  String get libraryTrashEmpty => 'Trash is empty';
+
+  @override
+  String get inventoryAppendText => 'Append to end';
+
+  @override
+  String get inventoryTransferred => 'Transferred';
+
+  @override
+  String inventoryDeletedDaysLeft(int days) {
+    return 'Deletes in $days days';
+  }
+
+  @override
+  String get libraryEmptiedShelves => 'Given or exchanged books';
+
+  @override
+  String get libraryRestored => 'Book restored';
+
+  @override
+  String get inventoryDescriptionDone => 'Descriptions updated';
+
+  @override
+  String get libraryTrashHint =>
+      'Deleted books stay here for 7 days, then are permanently removed';
+
+  @override
+  String get inventoryBulkEditDescription => 'Bulk edit descriptions';
+
+  @override
+  String get libraryTrash => 'Trash';
+
+  @override
+  String get inventoryRemoveText => 'Remove from text';
+
+  @override
+  String get libraryRestore => 'Restore';
+
+  @override
+  String get libraryEmptiedShelvesEmpty => 'No transferred books yet';
 }

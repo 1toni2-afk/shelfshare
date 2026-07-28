@@ -670,5 +670,18 @@
     "discoverNearYou":  "In your city",
     "inventorySelectAll":  "Select all",
     "myShelfShare":  "+ Share",
-    "inventoryMarkAvailable":  "Mark available"
+    "inventoryMarkAvailable":  "Mark available",
+    "libraryTrashEmpty":  "Trash is empty",
+    "inventoryAppendText":  "Append to end",
+    "inventoryTransferred":  "Transferred",
+    "inventoryDeletedDaysLeft":  "Deletes in {days} days",
+    "libraryEmptiedShelves":  "Given or exchanged books",
+    "libraryRestored":  "Book restored",
+    "inventoryDescriptionDone":  "Descriptions updated",
+    "libraryTrashHint":  "Deleted books stay here for 7 days, then are permanently removed",
+    "inventoryBulkEditDescription":  "Bulk edit descriptions",
+    "libraryTrash":  "Trash",
+    "inventoryRemoveText":  "Remove from text",
+    "libraryRestore":  "Restore",
+    "libraryEmptiedShelvesEmpty":  "No transferred books yet"
 }

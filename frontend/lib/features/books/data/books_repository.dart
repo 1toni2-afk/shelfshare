@@ -314,6 +314,43 @@ class BooksRepository {
         .toList();
   }
 
+  /// Coșul de gunoi (Milestone 10): cărți șterse în ultimele 7 zile, gata de
+  /// restore. Backend-ul filtrează deja pe fereastra de grace, deci frontendul
+  /// nu trebuie să știe cât e.
+  Future<List<UserBook>> getDeletedBooks() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/my-library/deleted');
+    return (response.data as List<dynamic>)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// „Emptied Shelves" (Milestone 10): cărțile deja transferate. Rămân
+  /// vizibile ca istoric al userului.
+  Future<List<UserBook>> getEmptiedShelves() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/my-library/emptied');
+    return (response.data as List<dynamic>)
+        .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> restoreBook(String userBookId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.post('/books/$userBookId/restore');
+  }
+
+  /// Setare doar pentru descriere (folosit de bulk edit descrieri). Cel mai
+  /// simplu PATCH parțial; backend-ul validează max 256 chars.
+  Future<UserBook> updateDescription(String userBookId, {required String description}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.patch(
+      '/books/$userBookId',
+      data: {'description': description},
+    );
+    return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<UserBook> setAvailability(String userBookId, {required bool availableForSwap}) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.patch(

@@ -670,5 +670,18 @@
     "discoverNearYou":  "In deiner Stadt",
     "inventorySelectAll":  "Alle auswählen",
     "myShelfShare":  "+ Teilen",
-    "inventoryMarkAvailable":  "Verfügbar markieren"
+    "inventoryMarkAvailable":  "Verfügbar markieren",
+    "libraryTrashEmpty":  "Papierkorb ist leer",
+    "inventoryAppendText":  "Am Ende hinzufügen",
+    "inventoryTransferred":  "Übertragen",
+    "inventoryDeletedDaysLeft":  "Löscht in {days} Tagen",
+    "libraryEmptiedShelves":  "Verschenkte oder getauschte Bücher",
+    "libraryRestored":  "Buch wiederhergestellt",
+    "inventoryDescriptionDone":  "Beschreibungen aktualisiert",
+    "libraryTrashHint":  "Gelöschte Bücher bleiben 7 Tage, dann werden sie endgültig entfernt",
+    "inventoryBulkEditDescription":  "Beschreibungen in Massen bearbeiten",
+    "libraryTrash":  "Papierkorb",
+    "inventoryRemoveText":  "Aus Text entfernen",
+    "libraryRestore":  "Wiederherstellen",
+    "libraryEmptiedShelvesEmpty":  "Noch keine übertragenen Bücher"
 }

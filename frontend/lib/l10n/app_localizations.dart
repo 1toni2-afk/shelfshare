@@ -3941,6 +3941,84 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Marchează disponibile'**
   String get inventoryMarkAvailable;
+
+  /// No description provided for @libraryTrashEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coșul de gunoi e gol'**
+  String get libraryTrashEmpty;
+
+  /// No description provided for @inventoryAppendText.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă la sfârșit'**
+  String get inventoryAppendText;
+
+  /// No description provided for @inventoryTransferred.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbată'**
+  String get inventoryTransferred;
+
+  /// No description provided for @inventoryDeletedDaysLeft.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge în {days} zile'**
+  String inventoryDeletedDaysLeft(int days);
+
+  /// No description provided for @libraryEmptiedShelves.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți date sau schimbate'**
+  String get libraryEmptiedShelves;
+
+  /// No description provided for @libraryRestored.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cartea a fost restaurată'**
+  String get libraryRestored;
+
+  /// No description provided for @inventoryDescriptionDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descrierile au fost actualizate'**
+  String get inventoryDescriptionDone;
+
+  /// No description provided for @libraryTrashHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărțile șterse rămân aici 7 zile, apoi dispar definitiv'**
+  String get libraryTrashHint;
+
+  /// No description provided for @inventoryBulkEditDescription.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează descriere în bulk'**
+  String get inventoryBulkEditDescription;
+
+  /// No description provided for @libraryTrash.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coșul de gunoi'**
+  String get libraryTrash;
+
+  /// No description provided for @inventoryRemoveText.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge din text'**
+  String get inventoryRemoveText;
+
+  /// No description provided for @libraryRestore.
+  ///
+  /// In ro, this message translates to:
+  /// **'Restaurează'**
+  String get libraryRestore;
+
+  /// No description provided for @libraryEmptiedShelvesEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio carte transferată încă'**
+  String get libraryEmptiedShelvesEmpty;
 }
 
 class _AppLocalizationsDelegate

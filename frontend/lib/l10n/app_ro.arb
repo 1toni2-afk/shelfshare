@@ -1275,5 +1275,25 @@
     "discoverNearYou":  "În orașul tău",
     "inventorySelectAll":  "Selectează toate",
     "myShelfShare":  "+ Împarte",
-    "inventoryMarkAvailable":  "Marchează disponibile"
+    "inventoryMarkAvailable":  "Marchează disponibile",
+    "libraryTrashEmpty":  "Coșul de gunoi e gol",
+    "inventoryAppendText":  "Adaugă la sfârșit",
+    "inventoryTransferred":  "Schimbată",
+    "inventoryDeletedDaysLeft":  "Șterge în {days} zile",
+    "libraryEmptiedShelves":  "Cărți date sau schimbate",
+    "libraryRestored":  "Cartea a fost restaurată",
+    "inventoryDescriptionDone":  "Descrierile au fost actualizate",
+    "libraryTrashHint":  "Cărțile șterse rămân aici 7 zile, apoi dispar definitiv",
+    "inventoryBulkEditDescription":  "Editează descriere în bulk",
+    "libraryTrash":  "Coșul de gunoi",
+    "inventoryRemoveText":  "Șterge din text",
+    "libraryRestore":  "Restaurează",
+    "libraryEmptiedShelvesEmpty":  "Nicio carte transferată încă",
+    "@inventoryDeletedDaysLeft":  {
+                                      "placeholders":  {
+                                                           "days":  {
+                                                                        "type":  "int"
+                                                                    }
+                                                       }
+                                  }
 }

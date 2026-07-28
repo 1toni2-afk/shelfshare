@@ -2179,4 +2179,46 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get inventoryMarkAvailable => 'Marchează disponibile';
+
+  @override
+  String get libraryTrashEmpty => 'Coșul de gunoi e gol';
+
+  @override
+  String get inventoryAppendText => 'Adaugă la sfârșit';
+
+  @override
+  String get inventoryTransferred => 'Schimbată';
+
+  @override
+  String inventoryDeletedDaysLeft(int days) {
+    return 'Șterge în $days zile';
+  }
+
+  @override
+  String get libraryEmptiedShelves => 'Cărți date sau schimbate';
+
+  @override
+  String get libraryRestored => 'Cartea a fost restaurată';
+
+  @override
+  String get inventoryDescriptionDone => 'Descrierile au fost actualizate';
+
+  @override
+  String get libraryTrashHint =>
+      'Cărțile șterse rămân aici 7 zile, apoi dispar definitiv';
+
+  @override
+  String get inventoryBulkEditDescription => 'Editează descriere în bulk';
+
+  @override
+  String get libraryTrash => 'Coșul de gunoi';
+
+  @override
+  String get inventoryRemoveText => 'Șterge din text';
+
+  @override
+  String get libraryRestore => 'Restaurează';
+
+  @override
+  String get libraryEmptiedShelvesEmpty => 'Nicio carte transferată încă';
 }

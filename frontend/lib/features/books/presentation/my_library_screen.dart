@@ -47,6 +47,73 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     }
   }
 
+  /// Bulk edit descrieri: dialog cu 2 câmpuri (adaugă la sfârșit, șterge din
+  /// text). Aplicat pe cărțile selectate care nu sunt permanent transferate
+  /// și nici în coșul de gunoi.
+  Future<void> _bulkEditDescriptions(List<UserBook> allBooks) async {
+    final l10n = context.l10n;
+    final appendController = TextEditingController();
+    final removeController = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.inventoryBulkEditDescription),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: appendController,
+              maxLines: 3,
+              decoration: InputDecoration(labelText: l10n.inventoryAppendText),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: removeController,
+              decoration: InputDecoration(labelText: l10n.inventoryRemoveText),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.commonGiveUp)),
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.commonSubmit)),
+        ],
+      ),
+    );
+    if (result != true) return;
+
+    final append = appendController.text;
+    final remove = removeController.text;
+    if (append.isEmpty && remove.isEmpty) return;
+
+    final selectedBooks = allBooks
+        .where((b) => _selectedIds.contains(b.id) && !b.permanentlyTransferred)
+        .toList();
+
+    final changed = await ref
+        .read(myLibraryControllerProvider.notifier)
+        .bulkTransformDescriptions(selectedBooks, (current) {
+      var next = current;
+      if (remove.isNotEmpty) next = next.replaceAll(remove, '');
+      if (append.isNotEmpty) {
+        next = next.isEmpty ? append : '$next $append';
+      }
+      // Limita e enforced pe backend, dar tăiem local ca să nu-i dam 400 pe
+      // useri care ar depăși constant.
+      if (next.length > 256) next = next.substring(0, 256);
+      return next;
+    });
+    if (mounted) {
+      setState(() => _selectedIds.clear());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.inventoryDescriptionDone} ($changed)')),
+      );
+    }
+  }
+
   /// Marchează în bulk anunțurile ca disponibile sau nu (înlocuiește vechiul
   /// buton unidirecțional de „ascunde" - user cerea și calea inversă).
   Future<void> _bulkSetAvailability(bool available) async {
@@ -221,12 +288,15 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                         _importListingsCsv();
                       case 'bulk-add':
                         context.push('/library/bulk-add');
+                      case 'trash':
+                        context.push('/library/trash');
                     }
                   },
                   itemBuilder: (context) => [
                     PopupMenuItem(value: 'export', child: Text(l10n.libraryExportCsv)),
                     PopupMenuItem(value: 'import', child: Text(l10n.libraryImportCsv)),
                     PopupMenuItem(value: 'bulk-add', child: Text(l10n.libraryBulkAdd)),
+                    PopupMenuItem(value: 'trash', child: Text(l10n.libraryTrash)),
                   ],
                 ),
               ],
@@ -254,6 +324,11 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                     icon: const Icon(Icons.visibility_outlined),
                     tooltip: l10n.inventoryMarkAvailable,
                     onPressed: () => _bulkSetAvailability(true),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit_note),
+                    tooltip: l10n.inventoryBulkEditDescription,
+                    onPressed: () => _bulkEditDescriptions(state.value ?? const []),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
@@ -305,6 +380,8 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                         ),
                     ],
                   ),
+                  const SizedBox(height: 32),
+                  const _EmptiedShelvesSection(),
                 ],
               );
             },
@@ -665,6 +742,102 @@ class _EditListingSheetState extends ConsumerState<_EditListingSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// „Emptied Shelves" - cărțile deja transferate. Marcate ca istoric imutabil
+/// în josul bibliotecii, cu badge de „schimbată" - user cerea să apară
+/// permanent ca fiind indisponibile.
+class _EmptiedShelvesSection extends ConsumerWidget {
+  const _EmptiedShelvesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final async = ref.watch(emptiedShelvesProvider);
+    return async.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (items) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.archive_outlined, size: 20, color: AppColors.mutedForeground),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.libraryEmptiedShelves,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (items.isEmpty)
+              Text(
+                l10n.libraryEmptiedShelvesEmpty,
+                style: Theme.of(context).textTheme.bodySmall,
+              )
+            else
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final b in items) _EmptiedShelfCard(userBook: b),
+                ],
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _EmptiedShelfCard extends StatelessWidget {
+  const _EmptiedShelfCard({required this.userBook});
+  final UserBook userBook;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              // Cover afișat cu opacitate redusă ca să indice „nu mai e activă".
+              Opacity(
+                opacity: 0.55,
+                child: BookCover(url: userBook.book.coverUrl, width: 120, height: 168),
+              ),
+              Positioned(
+                left: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.foreground.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    context.l10n.inventoryTransferred,
+                    style: TextStyle(color: AppColors.background, fontSize: 10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            userBook.book.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
       ),
     );
   }

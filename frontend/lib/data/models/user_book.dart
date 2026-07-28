@@ -23,6 +23,15 @@ class UserBook {
   final double? distanceKm;
   final List<String> photos;
   final DateTime createdAt;
+  /// Setat true când un exchange s-a completat pe această listare - carte
+  /// „plecată permanent", nu mai poate fi făcută disponibilă. Vezi Milestone 10.
+  final bool permanentlyTransferred;
+  /// Setat când userul a apăsat delete pe carte - rămâne în coșul de gunoi
+  /// 7 zile, iar apoi cron-ul o șterge definitiv.
+  final DateTime? deletedAt;
+  /// Descriere per exemplar (independent de Book.description care e a operei).
+  /// Max 256 caractere pe backend. Milestone 10.
+  final String? description;
 
   const UserBook({
     required this.id,
@@ -44,6 +53,9 @@ class UserBook {
     this.distanceKm,
     this.photos = const [],
     required this.createdAt,
+    this.permanentlyTransferred = false,
+    this.deletedAt,
+    this.description,
   });
 
   factory UserBook.fromJson(Map<String, dynamic> json) {
@@ -76,6 +88,11 @@ class UserBook {
               .toList() ??
           const [],
       createdAt: DateTime.parse(json['createdAt'] as String),
+      permanentlyTransferred: json['permanentlyTransferred'] as bool? ?? false,
+      deletedAt: json['deletedAt'] != null
+          ? DateTime.parse(json['deletedAt'] as String)
+          : null,
+      description: json['description'] as String?,
     );
   }
 }

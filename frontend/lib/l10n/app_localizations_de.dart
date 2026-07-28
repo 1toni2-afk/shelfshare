@@ -2212,4 +2212,47 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryMarkAvailable => 'Verfügbar markieren';
+
+  @override
+  String get libraryTrashEmpty => 'Papierkorb ist leer';
+
+  @override
+  String get inventoryAppendText => 'Am Ende hinzufügen';
+
+  @override
+  String get inventoryTransferred => 'Übertragen';
+
+  @override
+  String inventoryDeletedDaysLeft(int days) {
+    return 'Löscht in $days Tagen';
+  }
+
+  @override
+  String get libraryEmptiedShelves => 'Verschenkte oder getauschte Bücher';
+
+  @override
+  String get libraryRestored => 'Buch wiederhergestellt';
+
+  @override
+  String get inventoryDescriptionDone => 'Beschreibungen aktualisiert';
+
+  @override
+  String get libraryTrashHint =>
+      'Gelöschte Bücher bleiben 7 Tage, dann werden sie endgültig entfernt';
+
+  @override
+  String get inventoryBulkEditDescription =>
+      'Beschreibungen in Massen bearbeiten';
+
+  @override
+  String get libraryTrash => 'Papierkorb';
+
+  @override
+  String get inventoryRemoveText => 'Aus Text entfernen';
+
+  @override
+  String get libraryRestore => 'Wiederherstellen';
+
+  @override
+  String get libraryEmptiedShelvesEmpty => 'Noch keine übertragenen Bücher';
 }

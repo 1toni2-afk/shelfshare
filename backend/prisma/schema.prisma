@@ -418,6 +418,17 @@ model UserBook {
 
   photos String[]
 
+  /// Descriere per exemplar (Milestone 10) - independent de Book.description
+  /// care e a operei. Max 256 char, validat în DTO.
+  description String?
+
+  // Soft-delete cu grace de 7 zile (vezi migration + BooksService.softDelete).
+  deletedAt DateTime?
+
+  // Setat true doar când un exchange se completează efectiv - blochează
+  // „mark available" pe carte transferată. Vezi Milestone 10 + exchanges.
+  permanentlyTransferred Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

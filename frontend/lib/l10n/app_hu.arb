@@ -670,5 +670,18 @@
     "discoverNearYou":  "A városodban",
     "inventorySelectAll":  "Összes kijelölése",
     "myShelfShare":  "+ Megosztás",
-    "inventoryMarkAvailable":  "Elérhetőnek jelöl"
+    "inventoryMarkAvailable":  "Elérhetőnek jelöl",
+    "libraryTrashEmpty":  "A kuka üres",
+    "inventoryAppendText":  "Hozzáfűz a végéhez",
+    "inventoryTransferred":  "Átadva",
+    "inventoryDeletedDaysLeft":  "{days} nap múlva törli",
+    "libraryEmptiedShelves":  "Elajándékozott vagy cserélt könyvek",
+    "libraryRestored":  "Könyv visszaállítva",
+    "inventoryDescriptionDone":  "Leírások frissítve",
+    "libraryTrashHint":  "A törölt könyvek 7 napig maradnak itt, majd véglegesen törlődnek",
+    "inventoryBulkEditDescription":  "Tömeges leírás szerkesztés",
+    "libraryTrash":  "Kuka",
+    "inventoryRemoveText":  "Törlés a szövegből",
+    "libraryRestore":  "Visszaállít",
+    "libraryEmptiedShelvesEmpty":  "Még nincsenek átadott könyvek"
 }

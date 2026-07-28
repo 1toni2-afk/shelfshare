@@ -15,6 +15,7 @@ import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/books_map_screen.dart';
 import '../../features/books/presentation/browse_screen.dart';
 import '../../features/books/presentation/discover_screen.dart';
+import '../../features/books/presentation/trash_screen.dart';
 import '../../features/books/presentation/my_library_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
@@ -101,6 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
       GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
+      GoRoute(path: '/library/trash', builder: (context, state) => const TrashScreen()),
       GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
       GoRoute(
         path: '/browse',

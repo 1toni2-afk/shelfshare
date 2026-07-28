@@ -281,6 +281,20 @@ export class ExchangesService {
         },
       });
 
+      // Milestone 10: cartea confirmată ca schimbată devine permanent
+      // indisponibilă în acea listare - user cerea ca butonul de „marchează
+      // disponibil" să nu o poată reînvia.
+      await tx.userBook.update({
+        where: { id: request.requestedBookId },
+        data: { permanentlyTransferred: true, availableForSwap: false },
+      });
+      if (request.offeredBookId) {
+        await tx.userBook.update({
+          where: { id: request.offeredBookId },
+          data: { permanentlyTransferred: true, availableForSwap: false },
+        });
+      }
+
       return tx.exchangeRequest.update({
         where: { id },
         data: { status: 'COMPLETED' },
