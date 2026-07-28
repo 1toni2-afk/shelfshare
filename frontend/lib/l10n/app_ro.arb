@@ -1295,5 +1295,34 @@
                                                                         "type":  "int"
                                                                     }
                                                        }
-                                  }
+                                  },
+    "shareMaxTagsReached":  "Poți adăuga maxim 5 taguri",
+    "shareTitleHint":  "Titlu carte",
+    "shareTagsHint":  "Taguri (max 5)",
+    "shareEditionYear":  "An ediție",
+    "shareDescriptionHint":  "Descriere (max 256 caractere)",
+    "shareMoreInfo":  "Mai multe informații",
+    "shareAuthorHint":  "Autor",
+    "sharePageCountCustom":  "Număr de pagini (suprascrie autofill)",
+    "shareTagAdd":  "Adaugă tag",
+    "sharePublisher":  "Editura",
+    "shareCityHint":  "Localitatea unde se face schimbul",
+    "sharePublishedYear":  "An apariție",
+    "shareSubmit":  "Publică",
+    "shareListingModeAuction":  "Licitație",
+    "shareListingMode":  "Mod de schimb",
+    "shareDescriptionCharsLeft":  "{n} caractere rămase",
+    "shareListingModeSwap":  "Schimb normal",
+    "shareListingModeSale":  "Vânzare",
+    "shareListingModeDonation":  "Donație",
+    "shareTitleAutocomplete":  "Începe să scrii ca să vezi sugestii",
+    "shareGenreHint":  "Gen",
+    "shareAddPhotos":  "Adaugă poze",
+    "@shareDescriptionCharsLeft":  {
+                                       "placeholders":  {
+                                                            "n":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                        }
+                                   }
 }

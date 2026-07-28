@@ -171,15 +171,22 @@ export class BooksService {
     // isForSale pornește mereu false - vezi comentariul din AddBookDto.
     // Pentru vânzare, userul urcă pozele apoi trece explicit prin
     // updateUserBook (PATCH), care verifică deja că există cel puțin o poză.
+    //
+    // Câmpurile per-exemplar din Milestone 10 (description, tags, city,
+    // edition an=editionYear) se salvează direct pe userBook, distinct de
+    // câmpurile pe Book care sunt partajate între toate exemplarele.
     const userBook = await this.prisma.userBook.create({
       data: {
         userId,
         bookId: book.id,
         condition: dto.condition,
         language: dto.language,
-        edition: dto.edition,
+        edition: dto.edition ?? (dto.editionYear ? String(dto.editionYear) : undefined),
         isHardcover: dto.isHardcover ?? false,
         isForSale: false,
+        description: dto.description,
+        tags: dto.tags ?? [],
+        city: dto.city,
       },
       include: { book: true },
     });
@@ -380,10 +387,18 @@ export class BooksService {
     if (!dto.title) {
       throw new BadRequestException('Titlul este obligatoriu dacă nu dai ISBN');
     }
+    // Fără ISBN, „findOrCreate" nu poate deduplica exemplarele deja existente
+    // pe același titlu - preferăm o carte nouă, ca metadata (genre, publisher,
+    // etc.) userului nou să nu suprascrie cea a altui user (proprietar
+    // efectiv al entry-ului). Deduplication reală se face doar pe ISBN.
     return this.prisma.book.create({
       data: {
         title: dto.title,
         author: dto.author,
+        genre: dto.genre,
+        publisher: dto.publisher,
+        publishedYear: dto.publishedYear,
+        pageCount: dto.pageCount,
         source: 'manual',
       },
     });

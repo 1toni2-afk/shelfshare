@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNumber,
@@ -51,4 +53,15 @@ export class UpdateUserBookDto {
   @IsString()
   @MaxLength(256, { message: 'Descrierea nu poate depăși 256 de caractere' })
   description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5, { message: 'Poți adăuga maxim 5 taguri' })
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  city?: string;
 }

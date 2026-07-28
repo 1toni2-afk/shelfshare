@@ -2255,4 +2255,73 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get libraryEmptiedShelvesEmpty => 'Noch keine übertragenen Bücher';
+
+  @override
+  String get shareMaxTagsReached => 'Du kannst bis zu 5 Tags hinzufügen';
+
+  @override
+  String get shareTitleHint => 'Buchtitel';
+
+  @override
+  String get shareTagsHint => 'Tags (max. 5)';
+
+  @override
+  String get shareEditionYear => 'Ausgabejahr';
+
+  @override
+  String get shareDescriptionHint => 'Beschreibung (max. 256 Zeichen)';
+
+  @override
+  String get shareMoreInfo => 'Weitere Informationen';
+
+  @override
+  String get shareAuthorHint => 'Autor';
+
+  @override
+  String get sharePageCountCustom => 'Seitenzahl (überschreibt Autofill)';
+
+  @override
+  String get shareTagAdd => 'Tag hinzufügen';
+
+  @override
+  String get sharePublisher => 'Verlag';
+
+  @override
+  String get shareCityHint => 'Stadt für den Austausch';
+
+  @override
+  String get sharePublishedYear => 'Erscheinungsjahr';
+
+  @override
+  String get shareSubmit => 'Veröffentlichen';
+
+  @override
+  String get shareListingModeAuction => 'Auktion';
+
+  @override
+  String get shareListingMode => 'Angebotsart';
+
+  @override
+  String shareDescriptionCharsLeft(int n) {
+    return '$n Zeichen übrig';
+  }
+
+  @override
+  String get shareListingModeSwap => 'Normaler Tausch';
+
+  @override
+  String get shareListingModeSale => 'Zum Verkauf';
+
+  @override
+  String get shareListingModeDonation => 'Spende';
+
+  @override
+  String get shareTitleAutocomplete =>
+      'Beginne zu tippen, um Vorschläge zu sehen';
+
+  @override
+  String get shareGenreHint => 'Genre';
+
+  @override
+  String get shareAddPhotos => 'Fotos hinzufügen';
 }

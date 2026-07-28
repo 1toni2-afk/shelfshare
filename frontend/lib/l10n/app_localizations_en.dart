@@ -2219,4 +2219,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryEmptiedShelvesEmpty => 'No transferred books yet';
+
+  @override
+  String get shareMaxTagsReached => 'You can add up to 5 tags';
+
+  @override
+  String get shareTitleHint => 'Book title';
+
+  @override
+  String get shareTagsHint => 'Tags (max 5)';
+
+  @override
+  String get shareEditionYear => 'Edition year';
+
+  @override
+  String get shareDescriptionHint => 'Description (max 256 characters)';
+
+  @override
+  String get shareMoreInfo => 'More information';
+
+  @override
+  String get shareAuthorHint => 'Author';
+
+  @override
+  String get sharePageCountCustom => 'Page count (overrides autofill)';
+
+  @override
+  String get shareTagAdd => 'Add tag';
+
+  @override
+  String get sharePublisher => 'Publisher';
+
+  @override
+  String get shareCityHint => 'City where the exchange happens';
+
+  @override
+  String get sharePublishedYear => 'Published year';
+
+  @override
+  String get shareSubmit => 'Publish';
+
+  @override
+  String get shareListingModeAuction => 'Auction';
+
+  @override
+  String get shareListingMode => 'Listing mode';
+
+  @override
+  String shareDescriptionCharsLeft(int n) {
+    return '$n characters left';
+  }
+
+  @override
+  String get shareListingModeSwap => 'Normal swap';
+
+  @override
+  String get shareListingModeSale => 'For sale';
+
+  @override
+  String get shareListingModeDonation => 'Donation';
+
+  @override
+  String get shareTitleAutocomplete => 'Start typing to see suggestions';
+
+  @override
+  String get shareGenreHint => 'Genre';
+
+  @override
+  String get shareAddPhotos => 'Add photos';
 }

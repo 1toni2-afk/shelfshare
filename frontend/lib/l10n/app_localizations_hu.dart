@@ -2232,4 +2232,72 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get libraryEmptiedShelvesEmpty => 'Még nincsenek átadott könyvek';
+
+  @override
+  String get shareMaxTagsReached => 'Legfeljebb 5 címkét adhatsz hozzá';
+
+  @override
+  String get shareTitleHint => 'Könyvcím';
+
+  @override
+  String get shareTagsHint => 'Címkék (max 5)';
+
+  @override
+  String get shareEditionYear => 'Kiadás éve';
+
+  @override
+  String get shareDescriptionHint => 'Leírás (max 256 karakter)';
+
+  @override
+  String get shareMoreInfo => 'További információk';
+
+  @override
+  String get shareAuthorHint => 'Szerző';
+
+  @override
+  String get sharePageCountCustom => 'Oldalszám (felülírja az autofillt)';
+
+  @override
+  String get shareTagAdd => 'Címke hozzáadása';
+
+  @override
+  String get sharePublisher => 'Kiadó';
+
+  @override
+  String get shareCityHint => 'Város, ahol a csere történik';
+
+  @override
+  String get sharePublishedYear => 'Kiadás éve';
+
+  @override
+  String get shareSubmit => 'Közzététel';
+
+  @override
+  String get shareListingModeAuction => 'Aukció';
+
+  @override
+  String get shareListingMode => 'Hirdetés típusa';
+
+  @override
+  String shareDescriptionCharsLeft(int n) {
+    return '$n karakter maradt';
+  }
+
+  @override
+  String get shareListingModeSwap => 'Normál csere';
+
+  @override
+  String get shareListingModeSale => 'Eladó';
+
+  @override
+  String get shareListingModeDonation => 'Adomány';
+
+  @override
+  String get shareTitleAutocomplete => 'Kezdj el gépelni a javaslatokért';
+
+  @override
+  String get shareGenreHint => 'Műfaj';
+
+  @override
+  String get shareAddPhotos => 'Fotók hozzáadása';
 }

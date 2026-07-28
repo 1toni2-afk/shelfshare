@@ -32,6 +32,10 @@ class UserBook {
   /// Descriere per exemplar (independent de Book.description care e a operei).
   /// Max 256 caractere pe backend. Milestone 10.
   final String? description;
+  /// Tag-uri custom (max 5). Milestone 10.
+  final List<String> tags;
+  /// Localitatea unde se face schimbul (distinctă de user.city). Milestone 10.
+  final String? city;
 
   const UserBook({
     required this.id,
@@ -56,6 +60,8 @@ class UserBook {
     this.permanentlyTransferred = false,
     this.deletedAt,
     this.description,
+    this.tags = const [],
+    this.city,
   });
 
   factory UserBook.fromJson(Map<String, dynamic> json) {
@@ -93,6 +99,8 @@ class UserBook {
           ? DateTime.parse(json['deletedAt'] as String)
           : null,
       description: json['description'] as String?,
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
+      city: json['city'] as String?,
     );
   }
 }

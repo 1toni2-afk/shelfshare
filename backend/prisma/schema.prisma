@@ -422,6 +422,14 @@ model UserBook {
   /// care e a operei. Max 256 char, validat în DTO.
   description String?
 
+  /// Tag-uri (max 5, validat în DTO) - stil hashtag: „lectura de vară",
+  /// „ediție rară", etc. Milestone 10.
+  tags String[] @default([])
+
+  /// Localitatea unde se face schimbul, distinctă de user.city (userul poate
+  /// avea cărți în orașe diferite). Milestone 10.
+  city String?
+
   // Soft-delete cu grace de 7 zile (vezi migration + BooksService.softDelete).
   deletedAt DateTime?
 

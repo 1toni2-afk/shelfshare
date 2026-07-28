@@ -2221,4 +2221,72 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get libraryEmptiedShelvesEmpty => 'Nicio carte transferată încă';
+
+  @override
+  String get shareMaxTagsReached => 'Poți adăuga maxim 5 taguri';
+
+  @override
+  String get shareTitleHint => 'Titlu carte';
+
+  @override
+  String get shareTagsHint => 'Taguri (max 5)';
+
+  @override
+  String get shareEditionYear => 'An ediție';
+
+  @override
+  String get shareDescriptionHint => 'Descriere (max 256 caractere)';
+
+  @override
+  String get shareMoreInfo => 'Mai multe informații';
+
+  @override
+  String get shareAuthorHint => 'Autor';
+
+  @override
+  String get sharePageCountCustom => 'Număr de pagini (suprascrie autofill)';
+
+  @override
+  String get shareTagAdd => 'Adaugă tag';
+
+  @override
+  String get sharePublisher => 'Editura';
+
+  @override
+  String get shareCityHint => 'Localitatea unde se face schimbul';
+
+  @override
+  String get sharePublishedYear => 'An apariție';
+
+  @override
+  String get shareSubmit => 'Publică';
+
+  @override
+  String get shareListingModeAuction => 'Licitație';
+
+  @override
+  String get shareListingMode => 'Mod de schimb';
+
+  @override
+  String shareDescriptionCharsLeft(int n) {
+    return '$n caractere rămase';
+  }
+
+  @override
+  String get shareListingModeSwap => 'Schimb normal';
+
+  @override
+  String get shareListingModeSale => 'Vânzare';
+
+  @override
+  String get shareListingModeDonation => 'Donație';
+
+  @override
+  String get shareTitleAutocomplete => 'Începe să scrii ca să vezi sugestii';
+
+  @override
+  String get shareGenreHint => 'Gen';
+
+  @override
+  String get shareAddPhotos => 'Adaugă poze';
 }

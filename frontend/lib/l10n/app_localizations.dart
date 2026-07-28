@@ -4019,6 +4019,138 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nicio carte transferată încă'**
   String get libraryEmptiedShelvesEmpty;
+
+  /// No description provided for @shareMaxTagsReached.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți adăuga maxim 5 taguri'**
+  String get shareMaxTagsReached;
+
+  /// No description provided for @shareTitleHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Titlu carte'**
+  String get shareTitleHint;
+
+  /// No description provided for @shareTagsHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Taguri (max 5)'**
+  String get shareTagsHint;
+
+  /// No description provided for @shareEditionYear.
+  ///
+  /// In ro, this message translates to:
+  /// **'An ediție'**
+  String get shareEditionYear;
+
+  /// No description provided for @shareDescriptionHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descriere (max 256 caractere)'**
+  String get shareDescriptionHint;
+
+  /// No description provided for @shareMoreInfo.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai multe informații'**
+  String get shareMoreInfo;
+
+  /// No description provided for @shareAuthorHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Autor'**
+  String get shareAuthorHint;
+
+  /// No description provided for @sharePageCountCustom.
+  ///
+  /// In ro, this message translates to:
+  /// **'Număr de pagini (suprascrie autofill)'**
+  String get sharePageCountCustom;
+
+  /// No description provided for @shareTagAdd.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă tag'**
+  String get shareTagAdd;
+
+  /// No description provided for @sharePublisher.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editura'**
+  String get sharePublisher;
+
+  /// No description provided for @shareCityHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Localitatea unde se face schimbul'**
+  String get shareCityHint;
+
+  /// No description provided for @sharePublishedYear.
+  ///
+  /// In ro, this message translates to:
+  /// **'An apariție'**
+  String get sharePublishedYear;
+
+  /// No description provided for @shareSubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Publică'**
+  String get shareSubmit;
+
+  /// No description provided for @shareListingModeAuction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitație'**
+  String get shareListingModeAuction;
+
+  /// No description provided for @shareListingMode.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mod de schimb'**
+  String get shareListingMode;
+
+  /// No description provided for @shareDescriptionCharsLeft.
+  ///
+  /// In ro, this message translates to:
+  /// **'{n} caractere rămase'**
+  String shareDescriptionCharsLeft(int n);
+
+  /// No description provided for @shareListingModeSwap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb normal'**
+  String get shareListingModeSwap;
+
+  /// No description provided for @shareListingModeSale.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vânzare'**
+  String get shareListingModeSale;
+
+  /// No description provided for @shareListingModeDonation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Donație'**
+  String get shareListingModeDonation;
+
+  /// No description provided for @shareTitleAutocomplete.
+  ///
+  /// In ro, this message translates to:
+  /// **'Începe să scrii ca să vezi sugestii'**
+  String get shareTitleAutocomplete;
+
+  /// No description provided for @shareGenreHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gen'**
+  String get shareGenreHint;
+
+  /// No description provided for @shareAddPhotos.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă poze'**
+  String get shareAddPhotos;
 }
 
 class _AppLocalizationsDelegate

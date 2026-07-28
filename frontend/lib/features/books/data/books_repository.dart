@@ -388,6 +388,15 @@ class BooksRepository {
     String? language,
     String? edition,
     bool isHardcover = false,
+    // Câmpuri noi (Milestone 10): metadata operei + câmpuri per exemplar.
+    String? genre,
+    String? publisher,
+    int? publishedYear,
+    int? editionYear,
+    int? pageCount,
+    String? description,
+    List<String>? tags,
+    String? city,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books', data: {
@@ -398,6 +407,14 @@ class BooksRepository {
       if (language != null && language.isNotEmpty) 'language': language,
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
+      if (genre != null && genre.isNotEmpty) 'genre': genre,
+      if (publisher != null && publisher.isNotEmpty) 'publisher': publisher,
+      'publishedYear': ?publishedYear,
+      'editionYear': ?editionYear,
+      'pageCount': ?pageCount,
+      if (description != null && description.isNotEmpty) 'description': description,
+      if (tags != null && tags.isNotEmpty) 'tags': tags,
+      if (city != null && city.isNotEmpty) 'city': city,
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
   }
