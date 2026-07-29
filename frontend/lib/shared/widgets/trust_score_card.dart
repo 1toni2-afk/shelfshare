@@ -4,16 +4,24 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/user.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Afișează scorul de încredere (0-100) și detaliile din spatele lui.
+/// Afișează scorul de încredere (0-100). Colapsat implicit - doar
+/// numărul + titlu; tap oriunde pe card extinde detaliile pe care e bazat.
 /// E doar un indicator calculat din activitatea din aplicație, nu o
-/// certificare de identitate - textul din widget lasă asta clar.
-class TrustScoreCard extends StatelessWidget {
+/// certificare de identitate.
+class TrustScoreCard extends StatefulWidget {
   const TrustScoreCard({super.key, required this.trustScore});
   final TrustScore trustScore;
 
+  @override
+  State<TrustScoreCard> createState() => _TrustScoreCardState();
+}
+
+class _TrustScoreCardState extends State<TrustScoreCard> {
+  bool _expanded = false;
+
   Color _scoreColor() {
-    if (trustScore.score >= 70) return const Color(0xFF2E7D32);
-    if (trustScore.score >= 40) return AppColors.accent;
+    if (widget.trustScore.score >= 70) return const Color(0xFF2E7D32);
+    if (widget.trustScore.score >= 40) return AppColors.accent;
     return AppColors.destructive;
   }
 
@@ -23,116 +31,154 @@ class TrustScoreCard extends StatelessWidget {
     final l10n = context.l10n;
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: color.withValues(alpha: 0.15),
-                  child: Text(
-                    '${trustScore.score}',
-                    style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.trustScoreTitle, style: Theme.of(context).textTheme.titleSmall),
-                      Text(
-                        l10n.trustScoreSubtitle,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: AppColors.mutedForeground),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (trustScore.isEmailVerified)
-                  Chip(
-                    avatar: const Icon(Icons.mark_email_read_outlined, size: 16),
-                    label: Text(l10n.trustScoreEmailVerified),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                Chip(
-                  avatar: const Icon(Icons.cake_outlined, size: 16),
-                  label: Text(_accountAgeLabel(l10n, trustScore.accountAgeDays)),
-                  visualDensity: VisualDensity.compact,
-                ),
-                if (trustScore.completedExchangeRate != null)
-                  Chip(
-                    avatar: const Icon(Icons.check_circle_outline, size: 16),
-                    label: Text(
-                      l10n.trustScoreCompletedRate(
-                        (trustScore.completedExchangeRate! * 100).round(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => setState(() => _expanded = !_expanded),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: color.withValues(alpha: 0.15),
+                    child: Text(
+                      '${widget.trustScore.score}',
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-                    visualDensity: VisualDensity.compact,
                   ),
-                if (trustScore.averageResponseHours != null)
-                  Chip(
-                    avatar: const Icon(Icons.schedule_outlined, size: 16),
-                    label: Text(
-                      l10n.trustScoreRespondsIn(_formatHours(l10n, trustScore.averageResponseHours!)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.trustScoreTitle,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        Text(
+                          l10n.trustScoreSubtitle,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.mutedForeground,
+                              ),
+                        ),
+                      ],
                     ),
-                    visualDensity: VisualDensity.compact,
                   ),
-                if (trustScore.lastActiveAt != null)
-                  Chip(
-                    avatar: const Icon(Icons.circle, size: 10, color: Color(0xFF2E7D32)),
-                    label: Text(_lastActiveLabel(l10n, trustScore.lastActiveAt!)),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                if (trustScore.responseRate != null)
-                  Chip(
-                    avatar: const Icon(Icons.forum_outlined, size: 16),
-                    label: Text(l10n.trustScoreResponseRate((trustScore.responseRate! * 100).round())),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                if (trustScore.averageSwapTimeHours != null)
-                  Chip(
-                    avatar: const Icon(Icons.swap_horiz, size: 16),
-                    label: Text(
-                      l10n.trustScoreAverageSwapTime(_formatHours(l10n, trustScore.averageSwapTimeHours!)),
+                  // Chevron care se rotește la extindere - semnalul vizual că
+                  // e clickable, altfel cardul arată ca un simplu display.
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.expand_more,
+                      color: AppColors.mutedForeground,
                     ),
-                    visualDensity: VisualDensity.compact,
                   ),
-                if (trustScore.avgCommunicationRating != null)
-                  Chip(
-                    avatar: const Icon(Icons.chat_outlined, size: 16),
-                    label: Text('${l10n.exchangeRatingCommunication}: ${trustScore.avgCommunicationRating}'),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                if (trustScore.avgPunctualityRating != null)
-                  Chip(
-                    avatar: const Icon(Icons.access_time, size: 16),
-                    label: Text('${l10n.exchangeRatingPunctuality}: ${trustScore.avgPunctualityRating}'),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                if (trustScore.avgConditionRating != null)
-                  Chip(
-                    avatar: const Icon(Icons.auto_stories_outlined, size: 16),
-                    label: Text('${l10n.exchangeRatingCondition}: ${trustScore.avgConditionRating}'),
-                    visualDensity: VisualDensity.compact,
-                  ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              // AnimatedSize + AnimatedCrossFade: schimbă între „vid" și
+              // detalii cu tranziție lină. Wrap-ul cu chip-urile e greu de
+              // recalculat, deci îl construim mereu și îl ascundem doar
+              // vizual când e colapsat.
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 220),
+                firstChild: const SizedBox(width: double.infinity),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: _buildDetails(l10n),
+                ),
+                crossFadeState: _expanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDetails(AppLocalizations l10n) {
+    final t = widget.trustScore;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        if (t.isEmailVerified)
+          Chip(
+            avatar: const Icon(Icons.mark_email_read_outlined, size: 16),
+            label: Text(l10n.trustScoreEmailVerified),
+            visualDensity: VisualDensity.compact,
+          ),
+        Chip(
+          avatar: const Icon(Icons.cake_outlined, size: 16),
+          label: Text(_accountAgeLabel(l10n, t.accountAgeDays)),
+          visualDensity: VisualDensity.compact,
+        ),
+        if (t.completedExchangeRate != null)
+          Chip(
+            avatar: const Icon(Icons.check_circle_outline, size: 16),
+            label: Text(
+              l10n.trustScoreCompletedRate(
+                (t.completedExchangeRate! * 100).round(),
+              ),
+            ),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.averageResponseHours != null)
+          Chip(
+            avatar: const Icon(Icons.schedule_outlined, size: 16),
+            label: Text(
+              l10n.trustScoreRespondsIn(_formatHours(l10n, t.averageResponseHours!)),
+            ),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.lastActiveAt != null)
+          Chip(
+            avatar: const Icon(Icons.circle, size: 10, color: Color(0xFF2E7D32)),
+            label: Text(_lastActiveLabel(l10n, t.lastActiveAt!)),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.responseRate != null)
+          Chip(
+            avatar: const Icon(Icons.forum_outlined, size: 16),
+            label: Text(l10n.trustScoreResponseRate((t.responseRate! * 100).round())),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.averageSwapTimeHours != null)
+          Chip(
+            avatar: const Icon(Icons.swap_horiz, size: 16),
+            label: Text(
+              l10n.trustScoreAverageSwapTime(_formatHours(l10n, t.averageSwapTimeHours!)),
+            ),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.avgCommunicationRating != null)
+          Chip(
+            avatar: const Icon(Icons.chat_outlined, size: 16),
+            label: Text('${l10n.exchangeRatingCommunication}: ${t.avgCommunicationRating}'),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.avgPunctualityRating != null)
+          Chip(
+            avatar: const Icon(Icons.access_time, size: 16),
+            label: Text('${l10n.exchangeRatingPunctuality}: ${t.avgPunctualityRating}'),
+            visualDensity: VisualDensity.compact,
+          ),
+        if (t.avgConditionRating != null)
+          Chip(
+            avatar: const Icon(Icons.auto_stories_outlined, size: 16),
+            label: Text('${l10n.exchangeRatingCondition}: ${t.avgConditionRating}'),
+            visualDensity: VisualDensity.compact,
+          ),
+      ],
     );
   }
 

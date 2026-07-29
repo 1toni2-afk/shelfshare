@@ -2300,4 +2300,34 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get shareAddPhotos => 'Fotók hozzáadása';
+
+  @override
+  String get preRegisterAlreadyLoggedIn =>
+      'A fiókod címét használjuk, ha üresen hagyod';
+
+  @override
+  String get preRegisterAndroidHeadline => 'Hamarosan a telefonodon';
+
+  @override
+  String get preRegisterSuccess => 'Rajta vagy a listán. Szólunk, amikor kész.';
+
+  @override
+  String get profilePreRegister => 'Előregisztráció Androidra';
+
+  @override
+  String get preRegisterAndroidBody =>
+      'Hagyd meg az e-mail címed és értesítünk, amint az app elérhető a Google Play-en.';
+
+  @override
+  String get preRegisterSubmit => 'Felkerülök a listára';
+
+  @override
+  String get preRegisterAndroidTitle => 'Előregisztráció Androidra';
+
+  @override
+  String get preRegisterEmailHint => 'E-mail az értesítéshez';
+
+  @override
+  String get preRegisterError =>
+      'Nem sikerült regisztrálni az e-mailt. Próbáld újra.';
 }

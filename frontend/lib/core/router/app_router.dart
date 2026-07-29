@@ -24,6 +24,7 @@ import '../../features/exchanges/presentation/exchanges_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
+import '../../features/profile/presentation/pre_registration_screen.dart';
 import '../../features/profile/presentation/leaderboard_screen.dart';
 import '../../features/profile/presentation/following_screen.dart';
 import '../../features/books/presentation/global_stats_screen.dart';
@@ -124,6 +125,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
       GoRoute(path: '/safety-center', builder: (context, state) => const SafetyCenterScreen()),
+      GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
       GoRoute(path: '/help-center', builder: (context, state) => const HelpCenterScreen()),
       GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
       GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),

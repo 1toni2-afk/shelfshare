@@ -784,3 +784,18 @@ model Notification {
 
   @@map("notifications")
 }
+
+/// Pre-înscriere pentru lansarea Android. Simplu email opt-in cu deduplicare
+/// case-insensitive; anunțul de lansare se trimite tuturor odată ce APK-ul e
+/// live. Vezi PreRegistrationService.
+model PreRegistration {
+  id         String   @id @default(uuid())
+  email      String
+  /// Copie lowercase pentru dedup case-insensitive - Postgres nu dă unique
+  /// citext ieftin, iar un index unic pe lower(email) e mai fragil în Prisma.
+  emailLower String   @unique
+  userId     String?
+  createdAt  DateTime @default(now())
+
+  @@map("pre_registrations")
+}

@@ -705,5 +705,14 @@
     "shareListingModeDonation":  "Donation",
     "shareTitleAutocomplete":  "Start typing to see suggestions",
     "shareGenreHint":  "Genre",
-    "shareAddPhotos":  "Add photos"
+    "shareAddPhotos":  "Add photos",
+    "preRegisterAlreadyLoggedIn":  "We\u0027ll use your account email if you leave this blank",
+    "preRegisterAndroidHeadline":  "Coming soon to your phone",
+    "preRegisterSuccess":  "You\u0027re on the list. We\u0027ll let you know when it\u0027s ready.",
+    "profilePreRegister":  "Pre-register for Android",
+    "preRegisterAndroidBody":  "Leave your email and we\u0027ll notify you the day the app is live on Google Play.",
+    "preRegisterSubmit":  "Add me to the list",
+    "preRegisterAndroidTitle":  "Pre-register for Android",
+    "preRegisterEmailHint":  "Email for the launch notice",
+    "preRegisterError":  "Could not register your email. Please try again."
 }

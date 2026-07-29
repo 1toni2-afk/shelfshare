@@ -25,6 +25,7 @@ import { AuctionsModule } from './auctions/auctions.module';
 import { CollectionsModule } from './collections/collections.module';
 import { GroupsModule } from './groups/groups.module';
 import { AccountDeletionModule } from './account-deletion/account-deletion.module';
+import { PreRegistrationModule } from './pre-registration/pre-registration.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { AccountDeletionModule } from './account-deletion/account-deletion.modul
     CollectionsModule,
     GroupsModule,
     AccountDeletionModule,
+    PreRegistrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

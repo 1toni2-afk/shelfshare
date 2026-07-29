@@ -2289,4 +2289,35 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get shareAddPhotos => 'Adaugă poze';
+
+  @override
+  String get preRegisterAlreadyLoggedIn =>
+      'Vom folosi emailul tău dacă nu completezi altul';
+
+  @override
+  String get preRegisterAndroidHeadline => 'Vine în curând pe telefoanele tale';
+
+  @override
+  String get preRegisterSuccess =>
+      'Te-ai înscris. Îți dăm de veste când e gata.';
+
+  @override
+  String get profilePreRegister => 'Pre-înscriere Android';
+
+  @override
+  String get preRegisterAndroidBody =>
+      'Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.';
+
+  @override
+  String get preRegisterSubmit => 'Adaugă-mă pe listă';
+
+  @override
+  String get preRegisterAndroidTitle => 'Pre-înscrie-te pentru Android';
+
+  @override
+  String get preRegisterEmailHint => 'Email pentru anunț';
+
+  @override
+  String get preRegisterError =>
+      'Nu am putut înregistra emailul. Încearcă din nou.';
 }

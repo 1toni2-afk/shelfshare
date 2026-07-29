@@ -2324,4 +2324,35 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shareAddPhotos => 'Fotos hinzufügen';
+
+  @override
+  String get preRegisterAlreadyLoggedIn =>
+      'Wir nutzen deine Konto-E-Mail, wenn du das Feld leer lässt';
+
+  @override
+  String get preRegisterAndroidHeadline => 'Bald auf deinem Handy';
+
+  @override
+  String get preRegisterSuccess =>
+      'Du bist auf der Liste. Wir melden uns, sobald es losgeht.';
+
+  @override
+  String get profilePreRegister => 'Für Android vormerken';
+
+  @override
+  String get preRegisterAndroidBody =>
+      'Hinterlass deine E-Mail und wir benachrichtigen dich, sobald die App bei Google Play verfügbar ist.';
+
+  @override
+  String get preRegisterSubmit => 'Auf die Liste setzen';
+
+  @override
+  String get preRegisterAndroidTitle => 'Für Android vormerken';
+
+  @override
+  String get preRegisterEmailHint => 'E-Mail für die Benachrichtigung';
+
+  @override
+  String get preRegisterError =>
+      'Konnte E-Mail nicht registrieren. Versuche es erneut.';
 }

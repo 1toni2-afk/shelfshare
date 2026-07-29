@@ -705,5 +705,14 @@
     "shareListingModeDonation":  "Adomány",
     "shareTitleAutocomplete":  "Kezdj el gépelni a javaslatokért",
     "shareGenreHint":  "Műfaj",
-    "shareAddPhotos":  "Fotók hozzáadása"
+    "shareAddPhotos":  "Fotók hozzáadása",
+    "preRegisterAlreadyLoggedIn":  "A fiókod címét használjuk, ha üresen hagyod",
+    "preRegisterAndroidHeadline":  "Hamarosan a telefonodon",
+    "preRegisterSuccess":  "Rajta vagy a listán. Szólunk, amikor kész.",
+    "profilePreRegister":  "Előregisztráció Androidra",
+    "preRegisterAndroidBody":  "Hagyd meg az e-mail címed és értesítünk, amint az app elérhető a Google Play-en.",
+    "preRegisterSubmit":  "Felkerülök a listára",
+    "preRegisterAndroidTitle":  "Előregisztráció Androidra",
+    "preRegisterEmailHint":  "E-mail az értesítéshez",
+    "preRegisterError":  "Nem sikerült regisztrálni az e-mailt. Próbáld újra."
 }

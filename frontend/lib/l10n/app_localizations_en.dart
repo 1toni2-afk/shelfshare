@@ -2287,4 +2287,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareAddPhotos => 'Add photos';
+
+  @override
+  String get preRegisterAlreadyLoggedIn =>
+      'We\'ll use your account email if you leave this blank';
+
+  @override
+  String get preRegisterAndroidHeadline => 'Coming soon to your phone';
+
+  @override
+  String get preRegisterSuccess =>
+      'You\'re on the list. We\'ll let you know when it\'s ready.';
+
+  @override
+  String get profilePreRegister => 'Pre-register for Android';
+
+  @override
+  String get preRegisterAndroidBody =>
+      'Leave your email and we\'ll notify you the day the app is live on Google Play.';
+
+  @override
+  String get preRegisterSubmit => 'Add me to the list';
+
+  @override
+  String get preRegisterAndroidTitle => 'Pre-register for Android';
+
+  @override
+  String get preRegisterEmailHint => 'Email for the launch notice';
+
+  @override
+  String get preRegisterError =>
+      'Could not register your email. Please try again.';
 }

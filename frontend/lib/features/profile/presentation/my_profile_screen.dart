@@ -308,6 +308,12 @@ class _ProfileContent extends ConsumerWidget {
           onPressed: () => _showFeedbackDialog(context, ref),
         ),
         const SizedBox(height: 12),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.android),
+          label: Text(l10n.profilePreRegister),
+          onPressed: () => context.push('/pre-register'),
+        ),
+        const SizedBox(height: 12),
         OutlinedButton(
           onPressed: onEdit,
           child: Text(l10n.profileEditProfile),

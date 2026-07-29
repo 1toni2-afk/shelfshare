@@ -705,5 +705,14 @@
     "shareListingModeDonation":  "Spende",
     "shareTitleAutocomplete":  "Beginne zu tippen, um Vorschläge zu sehen",
     "shareGenreHint":  "Genre",
-    "shareAddPhotos":  "Fotos hinzufügen"
+    "shareAddPhotos":  "Fotos hinzufügen",
+    "preRegisterAlreadyLoggedIn":  "Wir nutzen deine Konto-E-Mail, wenn du das Feld leer lässt",
+    "preRegisterAndroidHeadline":  "Bald auf deinem Handy",
+    "preRegisterSuccess":  "Du bist auf der Liste. Wir melden uns, sobald es losgeht.",
+    "profilePreRegister":  "Für Android vormerken",
+    "preRegisterAndroidBody":  "Hinterlass deine E-Mail und wir benachrichtigen dich, sobald die App bei Google Play verfügbar ist.",
+    "preRegisterSubmit":  "Auf die Liste setzen",
+    "preRegisterAndroidTitle":  "Für Android vormerken",
+    "preRegisterEmailHint":  "E-Mail für die Benachrichtigung",
+    "preRegisterError":  "Konnte E-Mail nicht registrieren. Versuche es erneut."
 }

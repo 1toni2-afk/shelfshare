@@ -1324,5 +1324,14 @@
                                                                       "type":  "int"
                                                                   }
                                                         }
-                                   }
+                                   },
+    "preRegisterAlreadyLoggedIn":  "Vom folosi emailul tău dacă nu completezi altul",
+    "preRegisterAndroidHeadline":  "Vine în curând pe telefoanele tale",
+    "preRegisterSuccess":  "Te-ai înscris. Îți dăm de veste când e gata.",
+    "profilePreRegister":  "Pre-înscriere Android",
+    "preRegisterAndroidBody":  "Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.",
+    "preRegisterSubmit":  "Adaugă-mă pe listă",
+    "preRegisterAndroidTitle":  "Pre-înscrie-te pentru Android",
+    "preRegisterEmailHint":  "Email pentru anunț",
+    "preRegisterError":  "Nu am putut înregistra emailul. Încearcă din nou."
 }

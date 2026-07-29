@@ -4151,6 +4151,60 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Adaugă poze'**
   String get shareAddPhotos;
+
+  /// No description provided for @preRegisterAlreadyLoggedIn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vom folosi emailul tău dacă nu completezi altul'**
+  String get preRegisterAlreadyLoggedIn;
+
+  /// No description provided for @preRegisterAndroidHeadline.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vine în curând pe telefoanele tale'**
+  String get preRegisterAndroidHeadline;
+
+  /// No description provided for @preRegisterSuccess.
+  ///
+  /// In ro, this message translates to:
+  /// **'Te-ai înscris. Îți dăm de veste când e gata.'**
+  String get preRegisterSuccess;
+
+  /// No description provided for @profilePreRegister.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pre-înscriere Android'**
+  String get profilePreRegister;
+
+  /// No description provided for @preRegisterAndroidBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.'**
+  String get preRegisterAndroidBody;
+
+  /// No description provided for @preRegisterSubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă-mă pe listă'**
+  String get preRegisterSubmit;
+
+  /// No description provided for @preRegisterAndroidTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pre-înscrie-te pentru Android'**
+  String get preRegisterAndroidTitle;
+
+  /// No description provided for @preRegisterEmailHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Email pentru anunț'**
+  String get preRegisterEmailHint;
+
+  /// No description provided for @preRegisterError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut înregistra emailul. Încearcă din nou.'**
+  String get preRegisterError;
 }
 
 class _AppLocalizationsDelegate
