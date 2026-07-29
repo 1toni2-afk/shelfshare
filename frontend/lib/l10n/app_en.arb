@@ -714,5 +714,14 @@
     "preRegisterSubmit":  "Add me to the list",
     "preRegisterAndroidTitle":  "Pre-register for Android",
     "preRegisterEmailHint":  "Email for the launch notice",
-    "preRegisterError":  "Could not register your email. Please try again."
+    "preRegisterError":  "Could not register your email. Please try again.",
+    "profileSettingsSubtitle":  "All your account options in one place",
+    "profileRecentActivity":  "Recent activity",
+    "profileStatSwaps":  "swaps",
+    "profileActivityAdded":  "Added",
+    "profileMoreInSettings":  "More options in „⚙\" above",
+    "profileLibraryAvailable":  "{n} available",
+    "profileStatRating":  "rating",
+    "profileStatBooks":  "books",
+    "profileSettings":  "Settings"
 }

@@ -714,5 +714,14 @@
     "preRegisterSubmit":  "Felkerülök a listára",
     "preRegisterAndroidTitle":  "Előregisztráció Androidra",
     "preRegisterEmailHint":  "E-mail az értesítéshez",
-    "preRegisterError":  "Nem sikerült regisztrálni az e-mailt. Próbáld újra."
+    "preRegisterError":  "Nem sikerült regisztrálni az e-mailt. Próbáld újra.",
+    "profileSettingsSubtitle":  "Minden fiókbeállítás egy helyen",
+    "profileRecentActivity":  "Legutóbbi tevékenység",
+    "profileStatSwaps":  "csere",
+    "profileActivityAdded":  "Hozzáadva",
+    "profileMoreInSettings":  "További lehetőségek fent „⚙\"",
+    "profileLibraryAvailable":  "{n} elérhető",
+    "profileStatRating":  "értékelés",
+    "profileStatBooks":  "könyv",
+    "profileSettings":  "Beállítások"
 }

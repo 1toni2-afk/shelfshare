@@ -2355,4 +2355,33 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get preRegisterError =>
       'Konnte E-Mail nicht registrieren. Versuche es erneut.';
+
+  @override
+  String get profileSettingsSubtitle => 'Alle Kontooptionen an einem Ort';
+
+  @override
+  String get profileRecentActivity => 'Letzte Aktivität';
+
+  @override
+  String get profileStatSwaps => 'Tausche';
+
+  @override
+  String get profileActivityAdded => 'Hinzugefügt';
+
+  @override
+  String get profileMoreInSettings => 'Weitere Optionen in „⚙\" oben';
+
+  @override
+  String profileLibraryAvailable(int n) {
+    return '$n verfügbar';
+  }
+
+  @override
+  String get profileStatRating => 'Bewertung';
+
+  @override
+  String get profileStatBooks => 'Bücher';
+
+  @override
+  String get profileSettings => 'Einstellungen';
 }

@@ -1333,5 +1333,21 @@
     "preRegisterSubmit":  "Adaugă-mă pe listă",
     "preRegisterAndroidTitle":  "Pre-înscrie-te pentru Android",
     "preRegisterEmailHint":  "Email pentru anunț",
-    "preRegisterError":  "Nu am putut înregistra emailul. Încearcă din nou."
+    "preRegisterError":  "Nu am putut înregistra emailul. Încearcă din nou.",
+    "profileSettingsSubtitle":  "Toate opțiunile contului într-un singur loc",
+    "profileRecentActivity":  "Activitate recentă",
+    "profileStatSwaps":  "schimburi",
+    "profileActivityAdded":  "Ai adăugat",
+    "profileMoreInSettings":  "Mai multe opțiuni în „⚙\" sus",
+    "profileLibraryAvailable":  "{n} disponibile",
+    "profileStatRating":  "rating",
+    "profileStatBooks":  "cărți",
+    "profileSettings":  "Setări",
+    "@profileLibraryAvailable":  {
+                                     "placeholders":  {
+                                                          "n":  {
+                                                                    "type":  "int"
+                                                                }
+                                                      }
+                                 }
 }

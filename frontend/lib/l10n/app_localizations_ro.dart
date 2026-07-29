@@ -2320,4 +2320,34 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get preRegisterError =>
       'Nu am putut înregistra emailul. Încearcă din nou.';
+
+  @override
+  String get profileSettingsSubtitle =>
+      'Toate opțiunile contului într-un singur loc';
+
+  @override
+  String get profileRecentActivity => 'Activitate recentă';
+
+  @override
+  String get profileStatSwaps => 'schimburi';
+
+  @override
+  String get profileActivityAdded => 'Ai adăugat';
+
+  @override
+  String get profileMoreInSettings => 'Mai multe opțiuni în „⚙\" sus';
+
+  @override
+  String profileLibraryAvailable(int n) {
+    return '$n disponibile';
+  }
+
+  @override
+  String get profileStatRating => 'rating';
+
+  @override
+  String get profileStatBooks => 'cărți';
+
+  @override
+  String get profileSettings => 'Setări';
 }

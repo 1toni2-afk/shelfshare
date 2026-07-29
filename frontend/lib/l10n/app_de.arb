@@ -714,5 +714,14 @@
     "preRegisterSubmit":  "Auf die Liste setzen",
     "preRegisterAndroidTitle":  "Für Android vormerken",
     "preRegisterEmailHint":  "E-Mail für die Benachrichtigung",
-    "preRegisterError":  "Konnte E-Mail nicht registrieren. Versuche es erneut."
+    "preRegisterError":  "Konnte E-Mail nicht registrieren. Versuche es erneut.",
+    "profileSettingsSubtitle":  "Alle Kontooptionen an einem Ort",
+    "profileRecentActivity":  "Letzte Aktivität",
+    "profileStatSwaps":  "Tausche",
+    "profileActivityAdded":  "Hinzugefügt",
+    "profileMoreInSettings":  "Weitere Optionen in „⚙\" oben",
+    "profileLibraryAvailable":  "{n} verfügbar",
+    "profileStatRating":  "Bewertung",
+    "profileStatBooks":  "Bücher",
+    "profileSettings":  "Einstellungen"
 }

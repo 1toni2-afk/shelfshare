@@ -2330,4 +2330,33 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get preRegisterError =>
       'Nem sikerült regisztrálni az e-mailt. Próbáld újra.';
+
+  @override
+  String get profileSettingsSubtitle => 'Minden fiókbeállítás egy helyen';
+
+  @override
+  String get profileRecentActivity => 'Legutóbbi tevékenység';
+
+  @override
+  String get profileStatSwaps => 'csere';
+
+  @override
+  String get profileActivityAdded => 'Hozzáadva';
+
+  @override
+  String get profileMoreInSettings => 'További lehetőségek fent „⚙\"';
+
+  @override
+  String profileLibraryAvailable(int n) {
+    return '$n elérhető';
+  }
+
+  @override
+  String get profileStatRating => 'értékelés';
+
+  @override
+  String get profileStatBooks => 'könyv';
+
+  @override
+  String get profileSettings => 'Beállítások';
 }

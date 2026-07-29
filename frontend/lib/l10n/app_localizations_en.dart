@@ -2318,4 +2318,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get preRegisterError =>
       'Could not register your email. Please try again.';
+
+  @override
+  String get profileSettingsSubtitle => 'All your account options in one place';
+
+  @override
+  String get profileRecentActivity => 'Recent activity';
+
+  @override
+  String get profileStatSwaps => 'swaps';
+
+  @override
+  String get profileActivityAdded => 'Added';
+
+  @override
+  String get profileMoreInSettings => 'More options in „⚙\" above';
+
+  @override
+  String profileLibraryAvailable(int n) {
+    return '$n available';
+  }
+
+  @override
+  String get profileStatRating => 'rating';
+
+  @override
+  String get profileStatBooks => 'books';
+
+  @override
+  String get profileSettings => 'Settings';
 }

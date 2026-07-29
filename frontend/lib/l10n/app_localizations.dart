@@ -4205,6 +4205,60 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nu am putut înregistra emailul. Încearcă din nou.'**
   String get preRegisterError;
+
+  /// No description provided for @profileSettingsSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate opțiunile contului într-un singur loc'**
+  String get profileSettingsSubtitle;
+
+  /// No description provided for @profileRecentActivity.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activitate recentă'**
+  String get profileRecentActivity;
+
+  /// No description provided for @profileStatSwaps.
+  ///
+  /// In ro, this message translates to:
+  /// **'schimburi'**
+  String get profileStatSwaps;
+
+  /// No description provided for @profileActivityAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai adăugat'**
+  String get profileActivityAdded;
+
+  /// No description provided for @profileMoreInSettings.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai multe opțiuni în „⚙\" sus'**
+  String get profileMoreInSettings;
+
+  /// No description provided for @profileLibraryAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'{n} disponibile'**
+  String profileLibraryAvailable(int n);
+
+  /// No description provided for @profileStatRating.
+  ///
+  /// In ro, this message translates to:
+  /// **'rating'**
+  String get profileStatRating;
+
+  /// No description provided for @profileStatBooks.
+  ///
+  /// In ro, this message translates to:
+  /// **'cărți'**
+  String get profileStatBooks;
+
+  /// No description provided for @profileSettings.
+  ///
+  /// In ro, this message translates to:
+  /// **'Setări'**
+  String get profileSettings;
 }
 
 class _AppLocalizationsDelegate
