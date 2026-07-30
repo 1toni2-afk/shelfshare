@@ -204,7 +204,10 @@ class _BulkAddScreenState extends ConsumerState<BulkAddScreen> {
                                   color: entry.preview == null ? AppColors.mutedForeground : null,
                                 ),
                           title: Text(entry.preview?.title ?? entry.isbn),
-                          subtitle: entry.preview?.author != null ? Text(entry.preview!.author!) : null,
+                          subtitle: entry.preview?.author != null
+                              ? Text(entry.preview!.author!,
+                                  maxLines: 1, overflow: TextOverflow.ellipsis)
+                              : null,
                           trailing: IconButton(
                             icon: const Icon(Icons.close),
                             onPressed: () => _removeIsbn(entry.isbn),

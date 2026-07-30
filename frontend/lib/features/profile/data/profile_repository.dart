@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/user.dart';
+import '../../../shared/utils/image_upload.dart';
 
 class ProfileRepository {
   ProfileRepository(this._ref);
@@ -27,6 +28,8 @@ class ProfileRepository {
     bool? nameVisible,
     String? city,
     String? bio,
+    int? birthdayDay,
+    int? birthdayMonth,
     bool? showAcquisitionHistory,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
@@ -36,6 +39,8 @@ class ProfileRepository {
       'nameVisible': ?nameVisible,
       'city': ?city,
       'bio': ?bio,
+      'birthdayDay': ?birthdayDay,
+      'birthdayMonth': ?birthdayMonth,
       'showAcquisitionHistory': ?showAcquisitionHistory,
     });
     return getMyProfile();
@@ -73,7 +78,7 @@ class ProfileRepository {
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final formData = FormData.fromMap({
-      'photo': MultipartFile.fromBytes(bytes, filename: filename),
+      'photo': imageMultipartFile(bytes, filename),
     });
     await dio.post('/profile/me/photo', data: formData);
     return getMyProfile();

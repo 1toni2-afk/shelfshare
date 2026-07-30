@@ -4,20 +4,30 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/user.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Afișează scorul de încredere (0-100). Colapsat implicit - doar
-/// numărul + titlu; tap oriunde pe card extinde detaliile pe care e bazat.
+/// Afișează scorul de încredere (0-100). Inline (pe profilul public) e colapsat
+/// implicit și tap oriunde pe card extinde detaliile. Deschis dintr-un dialog -
+/// adică atunci când userul a apăsat deja pe scor - se construiește cu
+/// [initiallyExpanded] și [collapsible] `false`: detaliile apar direct, fără să
+/// mai fie nevoie de un al doilea tap.
 /// E doar un indicator calculat din activitatea din aplicație, nu o
 /// certificare de identitate.
 class TrustScoreCard extends StatefulWidget {
-  const TrustScoreCard({super.key, required this.trustScore});
+  const TrustScoreCard({
+    super.key,
+    required this.trustScore,
+    this.initiallyExpanded = false,
+    this.collapsible = true,
+  });
   final TrustScore trustScore;
+  final bool initiallyExpanded;
+  final bool collapsible;
 
   @override
   State<TrustScoreCard> createState() => _TrustScoreCardState();
 }
 
 class _TrustScoreCardState extends State<TrustScoreCard> {
-  bool _expanded = false;
+  late bool _expanded = widget.initiallyExpanded;
 
   Color _scoreColor() {
     if (widget.trustScore.score >= 70) return const Color(0xFF2E7D32);
@@ -33,7 +43,9 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => setState(() => _expanded = !_expanded),
+        onTap: widget.collapsible
+            ? () => setState(() => _expanded = !_expanded)
+            : null,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -73,14 +85,16 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                   ),
                   // Chevron care se rotește la extindere - semnalul vizual că
                   // e clickable, altfel cardul arată ca un simplu display.
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.expand_more,
-                      color: AppColors.mutedForeground,
+                  // Când cardul nu e colapsabil nu are ce semnala.
+                  if (widget.collapsible)
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.expand_more,
+                        color: AppColors.mutedForeground,
+                      ),
                     ),
-                  ),
                 ],
               ),
               // AnimatedSize + AnimatedCrossFade: schimbă între „vid" și

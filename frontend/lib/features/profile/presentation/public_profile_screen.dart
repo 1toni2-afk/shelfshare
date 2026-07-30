@@ -112,7 +112,7 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
           IconButton(
             icon: const Icon(Icons.share_outlined),
             tooltip: context.l10n.profileCopyLink,
-            onPressed: () => copyShareLink(context, '/users/${widget.userId}'),
+            onPressed: () => shareAppLink(context, '/users/${widget.userId}'),
           ),
         ],
       ),
@@ -256,10 +256,12 @@ class _Content extends StatelessWidget {
                 _StatChip(label: l10n.publicProfileBooksShared, value: '${user.booksSharedCount}'),
               if ((user.booksReceivedCount ?? 0) > 0)
                 _StatChip(label: l10n.publicProfileBooksReceived, value: '${user.booksReceivedCount}'),
+              // Doar numărul de pagini: titlul cărții făcea chipul de trei ori
+              // mai lat decât celelalte și rupea rândul.
               if (user.readingStats!.longestBookTitle != null)
                 _StatChip(
                   label: l10n.publicProfileLongestBook,
-                  value: '${user.readingStats!.longestBookTitle} (${user.readingStats!.longestBookPages}p)',
+                  value: '${user.readingStats!.longestBookPages}p',
                 ),
             ],
           ),
@@ -271,7 +273,8 @@ class _Content extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final entry in user.readingStats!.topGenres)
+                // Top 3, nu lista completă de genuri.
+                for (final entry in user.readingStats!.topGenres.take(3))
                   _StatChip(label: entry.genre, value: '${entry.count}'),
               ],
             ),
@@ -279,9 +282,10 @@ class _Content extends StatelessWidget {
         ],
         if (user.achievements != null && user.achievements!.isNotEmpty) ...[
           const SizedBox(height: 32),
-          Text(l10n.profileBadgesTitle, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          AchievementsGrid(achievements: user.achievements!),
+          AchievementsSection(
+            achievements: user.achievements!,
+            title: l10n.profileBadgesTitle,
+          ),
         ],
         if (user.impactStats != null) ...[
           const SizedBox(height: 32),

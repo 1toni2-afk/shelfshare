@@ -1418,11 +1418,123 @@
     "profileStatRating":  "rating",
     "profileStatBooks":  "cărți",
     "profileSettings":  "Setări",
+    "profileKeepAlive":  "Keep the app alive",
+    "profileKeepAliveSubtitle":  "ShelfShare rulează pe un server de acasă. Un cafea ajută.",
+    "aboutDevTitle":  "About dev",
+    "aboutDevHeadline":  "Omul din spatele ShelfShare",
+    "aboutDevBodyWho":  "Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.",
+    "aboutDevBodyWhy":  "Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.",
+    "aboutDevBodyHosting":  "Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️",
+    "aboutDevSupportTitle":  "Keep the app alive",
+    "aboutDevSupportSubtitle":  "Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.",
+    "aboutDevCoffeeButton":  "Buy me a coffee",
+    "aboutDevOpenError":  "Nu am putut deschide linkul. Încearcă din nou.",
+    "loginMadeWithLove":  "Made with ❤️ in Transilvanya",
+    "homeNearbyTitle":  "Cărți în jurul tău ({km} km)",
+    "@homeNearbyTitle":  {
+                             "placeholders":  {
+                                                  "km":  {
+                                                             "type":  "int"
+                                                         }
+                                              }
+                         },
+    "shareTagsSuggestions":  "Sugestii:",
+    "shareCityUnknown":  "Alege un oraș din listă",
+    "gamificationHowItWorks":  "Cum funcționează XP-ul",
+    "gamificationXpIntro":  "Fiecare {n} XP înseamnă un nivel nou. XP-ul se acordă automat, la acțiuni din aplicație:",
+    "@gamificationXpIntro":  {
+                                 "placeholders":  {
+                                                      "n":  {
+                                                                "type":  "int"
+                                                            }
+                                                  }
+                             },
+    "gamificationXpBookListed":  "Listezi o carte",
+    "gamificationXpExchangeCompleted":  "Finalizezi un schimb",
+    "gamificationXpSaleCompleted":  "Finalizezi o vânzare",
+    "gamificationXpReviewWritten":  "Scrii o recenzie",
+    "gamificationNoMaxLevel":  "Nu există nivel maxim - curba e liniară, poți urca oricât.",
     "@profileLibraryAvailable":  {
                                      "placeholders":  {
                                                           "n":  {
                                                                     "type":  "int"
                                                                 }
                                                       }
-                                 }
+                                 },
+    "profileBirthdayDay":  "Zi",
+    "profileBirthdayMonth":  "Luna nașterii",
+    "profileBirthdayNone":  "—",
+    "greetReaderFallback":  "Cititorule",
+    "greetMorningSun":  "Bună dimineața, Soare! ☀️",
+    "greetMorningNamed":  "Bună dimineața, {name}!",
+    "@greetMorningNamed":  {
+                     "placeholders":  {
+                                          "name":  {
+                                                       "type":  "String"
+                                                   }
+                                      }
+                 },
+    "greetMorningCoffeeBook":  "O cafea și o carte?",
+    "greetMorningCoffee":  "Bună dimineața la cafeluță! ☕",
+    "greetMorningStartStory":  "Începe ziua cu o poveste.",
+    "greetMorningAdventure":  "Răsare o nouă aventură.",
+    "greetMorningSleptWell":  "Sper că ai dormit bine!",
+    "greetMorningPerfectBook":  "Astăzi poate găsești cartea perfectă.",
+    "greetMorningNicer":  "Diminețile sunt mai frumoase cu o carte.",
+    "greetDayNamed":  "Salut, {name}!",
+    "@greetDayNamed":  {
+                     "placeholders":  {
+                                          "name":  {
+                                                       "type":  "String"
+                                                   }
+                                      }
+                 },
+    "greetDayDiscover":  "Ce carte descoperi astăzi?",
+    "greetDayAdventure":  "O nouă aventură te așteaptă.",
+    "greetDayLibrary":  "Biblioteca te așteaptă.",
+    "greetDayCorporateCoffee":  "Cafeluța corporatistă?",
+    "greetDayWhatsNext":  "Ce urmează pe lista ta?",
+    "greetDaySwappedToday":  "Ai schimbat o carte azi?",
+    "greetDayNewReader":  "Fiecare carte are un nou cititor.",
+    "greetDayFindNext":  "Găsește-ți următoarea lectură.",
+    "greetEveningHello":  "Bună seara!",
+    "greetEveningHowWasDay":  "Cum a fost ziua ta?",
+    "greetEveningPerfectNow":  "O carte merge perfect acum.",
+    "greetEveningFewPages":  "E timpul pentru câteva pagini.",
+    "greetEveningRelax":  "Relaxează-te cu o poveste.",
+    "greetEveningQuiet":  "O seară liniștită începe cu o carte.",
+    "greetEveningWhatTonight":  "Ce citești în seara asta?",
+    "greetEveningBeforeBed":  "Poate găsești ceva nou înainte de culcare.",
+    "greetNightGoodNight":  "Noapte bună! 🌙",
+    "greetNightSandman":  "Moș Ene pe la gene. 😴",
+    "greetNightCloseBook":  "E timpul să închidem cartea.",
+    "greetNightSleepWell":  "Somn ușor, {name}!",
+    "@greetNightSleepWell":  {
+                     "placeholders":  {
+                                          "name":  {
+                                                       "type":  "String"
+                                                   }
+                                      }
+                 },
+    "greetNightOneMoreChapter":  "Mai citești un capitol?",
+    "greetNightSeeYouTomorrow":  "Ne vedem mâine printre cărți.",
+    "greetNightNiceDay":  "Sper că ai avut o zi frumoasă.",
+    "greetNightQuiet":  "Noapte liniștită!",
+    "greetLateAwake":  "Încă treaz? 📖",
+    "greetLateNightOwl":  "Bufniță de noapte?",
+    "greetLateMidnightReads":  "Lecturile de la miezul nopții sunt speciale.",
+    "greetLateOneChapter":  "Mai e doar un capitol, nu?",
+    "greetLateNeverSleeps":  "ShelfShare nu doarme niciodată.",
+    "greetLateCompany":  "Cărțile țin companie și la ore târzii.",
+    "greetLateLastChapter":  "Noapte bună... când ajungi la ultimul capitol.",
+    "greetLateForgotSleep":  "Sperăm că nu ai uitat de somn.",
+    "greetWeekend":  "E weekend! Ce carte iei cu tine?",
+    "greetMonday":  "Luni... măcar ai o carte bună.",
+    "greetFridayEvening":  "Vineri seara? Perfect pentru citit.",
+    "greetBirthday":  "La mulți ani! 🎉",
+    "greetNationalDay":  "La mulți ani, România! 🇷🇴",
+    "greetChristmas":  "Crăciun fericit! 🎄",
+    "greetEaster":  "Paște fericit! 🐰",
+    "greetNewYear":  "An nou, cărți noi! 🎆",
+    "greetBookDay":  "Astăzi este Ziua Internațională a Cărții! 📚"
 }

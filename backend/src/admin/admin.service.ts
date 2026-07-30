@@ -108,6 +108,25 @@ export class AdminService {
     });
   }
 
+  /**
+   * Insigna „Supporter" - acordată manual până există integrarea de plăți
+   * (Google Play Billing pe Android, PayPal pe web). Când aceasta va exista,
+   * webhook-ul de plată va seta `supporterSince`, iar acest endpoint rămâne
+   * doar pentru corecții manuale.
+   */
+  async toggleSupporter(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { supporterSince: user.supporterSince ? null : new Date() },
+      select: { id: true, email: true, supporterSince: true },
+    });
+  }
+
   async deleteUser(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

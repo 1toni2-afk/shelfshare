@@ -54,6 +54,11 @@ export class AdminController {
     return this.adminService.togglePremium(id);
   }
 
+  @Post('users/:id/toggle-supporter')
+  toggleSupporter(@Param('id') id: string) {
+    return this.adminService.toggleSupporter(id);
+  }
+
   @Delete('users/:id')
   deleteUser(@Param('id') id: string) {
     return this.adminService.deleteUser(id);

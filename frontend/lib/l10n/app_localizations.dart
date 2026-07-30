@@ -4541,6 +4541,468 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Setări'**
   String get profileSettings;
+
+  /// No description provided for @profileKeepAlive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Keep the app alive'**
+  String get profileKeepAlive;
+
+  /// No description provided for @profileKeepAliveSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'ShelfShare rulează pe un server de acasă. Un cafea ajută.'**
+  String get profileKeepAliveSubtitle;
+
+  /// No description provided for @aboutDevTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'About dev'**
+  String get aboutDevTitle;
+
+  /// No description provided for @aboutDevHeadline.
+  ///
+  /// In ro, this message translates to:
+  /// **'Omul din spatele ShelfShare'**
+  String get aboutDevHeadline;
+
+  /// No description provided for @aboutDevBodyWho.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.'**
+  String get aboutDevBodyWho;
+
+  /// No description provided for @aboutDevBodyWhy.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.'**
+  String get aboutDevBodyWhy;
+
+  /// No description provided for @aboutDevBodyHosting.
+  ///
+  /// In ro, this message translates to:
+  /// **'Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️'**
+  String get aboutDevBodyHosting;
+
+  /// No description provided for @aboutDevSupportTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Keep the app alive'**
+  String get aboutDevSupportTitle;
+
+  /// No description provided for @aboutDevSupportSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.'**
+  String get aboutDevSupportSubtitle;
+
+  /// No description provided for @aboutDevCoffeeButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Buy me a coffee'**
+  String get aboutDevCoffeeButton;
+
+  /// No description provided for @aboutDevOpenError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut deschide linkul. Încearcă din nou.'**
+  String get aboutDevOpenError;
+
+  /// No description provided for @loginMadeWithLove.
+  ///
+  /// In ro, this message translates to:
+  /// **'Made with ❤️ in Transilvanya'**
+  String get loginMadeWithLove;
+
+  /// No description provided for @homeNearbyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți în jurul tău ({km} km)'**
+  String homeNearbyTitle(int km);
+
+  /// No description provided for @shareTagsSuggestions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sugestii:'**
+  String get shareTagsSuggestions;
+
+  /// No description provided for @shareCityUnknown.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege un oraș din listă'**
+  String get shareCityUnknown;
+
+  /// No description provided for @gamificationHowItWorks.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cum funcționează XP-ul'**
+  String get gamificationHowItWorks;
+
+  /// No description provided for @gamificationXpIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fiecare {n} XP înseamnă un nivel nou. XP-ul se acordă automat, la acțiuni din aplicație:'**
+  String gamificationXpIntro(int n);
+
+  /// No description provided for @gamificationXpBookListed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Listezi o carte'**
+  String get gamificationXpBookListed;
+
+  /// No description provided for @gamificationXpExchangeCompleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Finalizezi un schimb'**
+  String get gamificationXpExchangeCompleted;
+
+  /// No description provided for @gamificationXpSaleCompleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Finalizezi o vânzare'**
+  String get gamificationXpSaleCompleted;
+
+  /// No description provided for @gamificationXpReviewWritten.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrii o recenzie'**
+  String get gamificationXpReviewWritten;
+
+  /// No description provided for @gamificationNoMaxLevel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu există nivel maxim - curba e liniară, poți urca oricât.'**
+  String get gamificationNoMaxLevel;
+
+  /// No description provided for @profileBirthdayDay.
+  ///
+  /// In ro, this message translates to:
+  /// **'Zi'**
+  String get profileBirthdayDay;
+
+  /// No description provided for @profileBirthdayMonth.
+  ///
+  /// In ro, this message translates to:
+  /// **'Luna nașterii'**
+  String get profileBirthdayMonth;
+
+  /// No description provided for @profileBirthdayNone.
+  ///
+  /// In ro, this message translates to:
+  /// **'—'**
+  String get profileBirthdayNone;
+
+  /// No description provided for @greetReaderFallback.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cititorule'**
+  String get greetReaderFallback;
+
+  /// No description provided for @greetMorningSun.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bună dimineața, Soare! ☀️'**
+  String get greetMorningSun;
+
+  /// No description provided for @greetMorningNamed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bună dimineața, {name}!'**
+  String greetMorningNamed(String name);
+
+  /// No description provided for @greetMorningCoffeeBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'O cafea și o carte?'**
+  String get greetMorningCoffeeBook;
+
+  /// No description provided for @greetMorningCoffee.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bună dimineața la cafeluță! ☕'**
+  String get greetMorningCoffee;
+
+  /// No description provided for @greetMorningStartStory.
+  ///
+  /// In ro, this message translates to:
+  /// **'Începe ziua cu o poveste.'**
+  String get greetMorningStartStory;
+
+  /// No description provided for @greetMorningAdventure.
+  ///
+  /// In ro, this message translates to:
+  /// **'Răsare o nouă aventură.'**
+  String get greetMorningAdventure;
+
+  /// No description provided for @greetMorningSleptWell.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sper că ai dormit bine!'**
+  String get greetMorningSleptWell;
+
+  /// No description provided for @greetMorningPerfectBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Astăzi poate găsești cartea perfectă.'**
+  String get greetMorningPerfectBook;
+
+  /// No description provided for @greetMorningNicer.
+  ///
+  /// In ro, this message translates to:
+  /// **'Diminețile sunt mai frumoase cu o carte.'**
+  String get greetMorningNicer;
+
+  /// No description provided for @greetDayNamed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Salut, {name}!'**
+  String greetDayNamed(String name);
+
+  /// No description provided for @greetDayDiscover.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce carte descoperi astăzi?'**
+  String get greetDayDiscover;
+
+  /// No description provided for @greetDayAdventure.
+  ///
+  /// In ro, this message translates to:
+  /// **'O nouă aventură te așteaptă.'**
+  String get greetDayAdventure;
+
+  /// No description provided for @greetDayLibrary.
+  ///
+  /// In ro, this message translates to:
+  /// **'Biblioteca te așteaptă.'**
+  String get greetDayLibrary;
+
+  /// No description provided for @greetDayCorporateCoffee.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cafeluța corporatistă?'**
+  String get greetDayCorporateCoffee;
+
+  /// No description provided for @greetDayWhatsNext.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce urmează pe lista ta?'**
+  String get greetDayWhatsNext;
+
+  /// No description provided for @greetDaySwappedToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai schimbat o carte azi?'**
+  String get greetDaySwappedToday;
+
+  /// No description provided for @greetDayNewReader.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fiecare carte are un nou cititor.'**
+  String get greetDayNewReader;
+
+  /// No description provided for @greetDayFindNext.
+  ///
+  /// In ro, this message translates to:
+  /// **'Găsește-ți următoarea lectură.'**
+  String get greetDayFindNext;
+
+  /// No description provided for @greetEveningHello.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bună seara!'**
+  String get greetEveningHello;
+
+  /// No description provided for @greetEveningHowWasDay.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cum a fost ziua ta?'**
+  String get greetEveningHowWasDay;
+
+  /// No description provided for @greetEveningPerfectNow.
+  ///
+  /// In ro, this message translates to:
+  /// **'O carte merge perfect acum.'**
+  String get greetEveningPerfectNow;
+
+  /// No description provided for @greetEveningFewPages.
+  ///
+  /// In ro, this message translates to:
+  /// **'E timpul pentru câteva pagini.'**
+  String get greetEveningFewPages;
+
+  /// No description provided for @greetEveningRelax.
+  ///
+  /// In ro, this message translates to:
+  /// **'Relaxează-te cu o poveste.'**
+  String get greetEveningRelax;
+
+  /// No description provided for @greetEveningQuiet.
+  ///
+  /// In ro, this message translates to:
+  /// **'O seară liniștită începe cu o carte.'**
+  String get greetEveningQuiet;
+
+  /// No description provided for @greetEveningWhatTonight.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce citești în seara asta?'**
+  String get greetEveningWhatTonight;
+
+  /// No description provided for @greetEveningBeforeBed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poate găsești ceva nou înainte de culcare.'**
+  String get greetEveningBeforeBed;
+
+  /// No description provided for @greetNightGoodNight.
+  ///
+  /// In ro, this message translates to:
+  /// **'Noapte bună! 🌙'**
+  String get greetNightGoodNight;
+
+  /// No description provided for @greetNightSandman.
+  ///
+  /// In ro, this message translates to:
+  /// **'Moș Ene pe la gene. 😴'**
+  String get greetNightSandman;
+
+  /// No description provided for @greetNightCloseBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'E timpul să închidem cartea.'**
+  String get greetNightCloseBook;
+
+  /// No description provided for @greetNightSleepWell.
+  ///
+  /// In ro, this message translates to:
+  /// **'Somn ușor, {name}!'**
+  String greetNightSleepWell(String name);
+
+  /// No description provided for @greetNightOneMoreChapter.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai citești un capitol?'**
+  String get greetNightOneMoreChapter;
+
+  /// No description provided for @greetNightSeeYouTomorrow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ne vedem mâine printre cărți.'**
+  String get greetNightSeeYouTomorrow;
+
+  /// No description provided for @greetNightNiceDay.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sper că ai avut o zi frumoasă.'**
+  String get greetNightNiceDay;
+
+  /// No description provided for @greetNightQuiet.
+  ///
+  /// In ro, this message translates to:
+  /// **'Noapte liniștită!'**
+  String get greetNightQuiet;
+
+  /// No description provided for @greetLateAwake.
+  ///
+  /// In ro, this message translates to:
+  /// **'Încă treaz? 📖'**
+  String get greetLateAwake;
+
+  /// No description provided for @greetLateNightOwl.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bufniță de noapte?'**
+  String get greetLateNightOwl;
+
+  /// No description provided for @greetLateMidnightReads.
+  ///
+  /// In ro, this message translates to:
+  /// **'Lecturile de la miezul nopții sunt speciale.'**
+  String get greetLateMidnightReads;
+
+  /// No description provided for @greetLateOneChapter.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai e doar un capitol, nu?'**
+  String get greetLateOneChapter;
+
+  /// No description provided for @greetLateNeverSleeps.
+  ///
+  /// In ro, this message translates to:
+  /// **'ShelfShare nu doarme niciodată.'**
+  String get greetLateNeverSleeps;
+
+  /// No description provided for @greetLateCompany.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărțile țin companie și la ore târzii.'**
+  String get greetLateCompany;
+
+  /// No description provided for @greetLateLastChapter.
+  ///
+  /// In ro, this message translates to:
+  /// **'Noapte bună... când ajungi la ultimul capitol.'**
+  String get greetLateLastChapter;
+
+  /// No description provided for @greetLateForgotSleep.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sperăm că nu ai uitat de somn.'**
+  String get greetLateForgotSleep;
+
+  /// No description provided for @greetWeekend.
+  ///
+  /// In ro, this message translates to:
+  /// **'E weekend! Ce carte iei cu tine?'**
+  String get greetWeekend;
+
+  /// No description provided for @greetMonday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Luni... măcar ai o carte bună.'**
+  String get greetMonday;
+
+  /// No description provided for @greetFridayEvening.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vineri seara? Perfect pentru citit.'**
+  String get greetFridayEvening;
+
+  /// No description provided for @greetBirthday.
+  ///
+  /// In ro, this message translates to:
+  /// **'La mulți ani! 🎉'**
+  String get greetBirthday;
+
+  /// No description provided for @greetNationalDay.
+  ///
+  /// In ro, this message translates to:
+  /// **'La mulți ani, România! 🇷🇴'**
+  String get greetNationalDay;
+
+  /// No description provided for @greetChristmas.
+  ///
+  /// In ro, this message translates to:
+  /// **'Crăciun fericit! 🎄'**
+  String get greetChristmas;
+
+  /// No description provided for @greetEaster.
+  ///
+  /// In ro, this message translates to:
+  /// **'Paște fericit! 🐰'**
+  String get greetEaster;
+
+  /// No description provided for @greetNewYear.
+  ///
+  /// In ro, this message translates to:
+  /// **'An nou, cărți noi! 🎆'**
+  String get greetNewYear;
+
+  /// No description provided for @greetBookDay.
+  ///
+  /// In ro, this message translates to:
+  /// **'Astăzi este Ziua Internațională a Cărții! 📚'**
+  String get greetBookDay;
 }
 
 class _AppLocalizationsDelegate

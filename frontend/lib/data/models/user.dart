@@ -9,6 +9,12 @@ class AppUser {
   final bool nameVisible;
   final String? city;
   final String? bio;
+
+  /// Ziua de naștere, doar zi + lună (fără an) - folosită pentru mesajul
+  /// „La mulți ani" din salutul paginii principale. Vine doar pe profilul
+  /// propriu, nu și pe cel public.
+  final int? birthdayDay;
+  final int? birthdayMonth;
   final String? profileImage;
   final double rating;
   final int booksExchangedCount;
@@ -44,6 +50,8 @@ class AppUser {
     this.nameVisible = true,
     this.city,
     this.bio,
+    this.birthdayDay,
+    this.birthdayMonth,
     this.profileImage,
     this.rating = 0,
     this.booksExchangedCount = 0,
@@ -75,6 +83,8 @@ class AppUser {
       nameVisible: json['nameVisible'] as bool? ?? true,
       city: json['city'] as String?,
       bio: json['bio'] as String?,
+      birthdayDay: json['birthdayDay'] as int?,
+      birthdayMonth: json['birthdayMonth'] as int?,
       profileImage: json['profileImage'] as String?,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       booksExchangedCount: json['booksExchangedCount'] as int? ?? 0,
@@ -224,12 +234,22 @@ class GamificationStats {
   final int currentStreakDays;
   final int longestStreakDays;
 
+  /// Cât XP costă un nivel. Nu există nivel maxim - curba e liniară.
+  final int xpPerLevel;
+
+  /// Cât XP dă fiecare acțiune, cheie → valoare, exact cum îl calculează
+  /// backend-ul (`XP_REWARDS` din common/utils/xp.ts). Vine de la server ca să
+  /// nu ținem o copie a valorilor în Dart, care s-ar desincroniza.
+  final Map<String, int> xpRewards;
+
   const GamificationStats({
     required this.xp,
     required this.level,
     required this.xpToNextLevel,
     required this.currentStreakDays,
     required this.longestStreakDays,
+    this.xpPerLevel = 100,
+    this.xpRewards = const {},
   });
 
   factory GamificationStats.fromJson(Map<String, dynamic> json) {
@@ -239,6 +259,9 @@ class GamificationStats {
       xpToNextLevel: json['xpToNextLevel'] as int,
       currentStreakDays: json['currentStreakDays'] as int,
       longestStreakDays: json['longestStreakDays'] as int,
+      xpPerLevel: json['xpPerLevel'] as int? ?? 100,
+      xpRewards: (json['xpRewards'] as Map<String, dynamic>? ?? const {})
+          .map((key, value) => MapEntry(key, value as int)),
     );
   }
 }

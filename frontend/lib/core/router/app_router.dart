@@ -23,7 +23,10 @@ import '../../features/exchanges/presentation/exchange_confirm_screen.dart';
 import '../../features/exchanges/presentation/exchanges_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/profile/presentation/about_dev_screen.dart';
+import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
+import '../../features/profile/presentation/settings_screen.dart';
 import '../../features/profile/presentation/pre_registration_screen.dart';
 import '../../features/profile/presentation/leaderboard_screen.dart';
 import '../../features/profile/presentation/following_screen.dart';
@@ -222,7 +225,28 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/profile', builder: (context, state) => const MyProfileScreen()),
+            // Setările, editarea profilului și „About dev" sunt rute copil, nu
+            // bottom sheets suprapuse: doar așa back-ul de sistem pe Android
+            // întoarce un singur pas (edit → settings → profil) în loc să sară
+            // din stivă într-un alt tab.
+            GoRoute(
+              path: '/profile',
+              builder: (context, state) => const MyProfileScreen(),
+              routes: [
+                GoRoute(
+                  path: 'settings',
+                  builder: (context, state) => const SettingsScreen(),
+                ),
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => const EditProfileScreen(),
+                ),
+                GoRoute(
+                  path: 'about-dev',
+                  builder: (context, state) => const AboutDevScreen(),
+                ),
+              ],
+            ),
           ]),
         ],
       ),

@@ -2542,4 +2542,255 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileSettings => 'Einstellungen';
+
+  @override
+  String get profileKeepAlive => 'Keep the app alive';
+
+  @override
+  String get profileKeepAliveSubtitle =>
+      'ShelfShare rulează pe un server de acasă. Un cafea ajută.';
+
+  @override
+  String get aboutDevTitle => 'About dev';
+
+  @override
+  String get aboutDevHeadline => 'Omul din spatele ShelfShare';
+
+  @override
+  String get aboutDevBodyWho =>
+      'Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.';
+
+  @override
+  String get aboutDevBodyWhy =>
+      'Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.';
+
+  @override
+  String get aboutDevBodyHosting =>
+      'Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️';
+
+  @override
+  String get aboutDevSupportTitle => 'Keep the app alive';
+
+  @override
+  String get aboutDevSupportSubtitle =>
+      'Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.';
+
+  @override
+  String get aboutDevCoffeeButton => 'Buy me a coffee';
+
+  @override
+  String get aboutDevOpenError =>
+      'Nu am putut deschide linkul. Încearcă din nou.';
+
+  @override
+  String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
+
+  @override
+  String homeNearbyTitle(int km) {
+    return 'Cărți în jurul tău ($km km)';
+  }
+
+  @override
+  String get shareTagsSuggestions => 'Sugestii:';
+
+  @override
+  String get shareCityUnknown => 'Alege un oraș din listă';
+
+  @override
+  String get gamificationHowItWorks => 'Cum funcționează XP-ul';
+
+  @override
+  String gamificationXpIntro(int n) {
+    return 'Fiecare $n XP înseamnă un nivel nou. XP-ul se acordă automat, la acțiuni din aplicație:';
+  }
+
+  @override
+  String get gamificationXpBookListed => 'Listezi o carte';
+
+  @override
+  String get gamificationXpExchangeCompleted => 'Finalizezi un schimb';
+
+  @override
+  String get gamificationXpSaleCompleted => 'Finalizezi o vânzare';
+
+  @override
+  String get gamificationXpReviewWritten => 'Scrii o recenzie';
+
+  @override
+  String get gamificationNoMaxLevel =>
+      'Nu există nivel maxim - curba e liniară, poți urca oricât.';
+
+  @override
+  String get profileBirthdayDay => 'Zi';
+
+  @override
+  String get profileBirthdayMonth => 'Luna nașterii';
+
+  @override
+  String get profileBirthdayNone => '—';
+
+  @override
+  String get greetReaderFallback => 'Cititorule';
+
+  @override
+  String get greetMorningSun => 'Bună dimineața, Soare! ☀️';
+
+  @override
+  String greetMorningNamed(String name) {
+    return 'Bună dimineața, $name!';
+  }
+
+  @override
+  String get greetMorningCoffeeBook => 'O cafea și o carte?';
+
+  @override
+  String get greetMorningCoffee => 'Bună dimineața la cafeluță! ☕';
+
+  @override
+  String get greetMorningStartStory => 'Începe ziua cu o poveste.';
+
+  @override
+  String get greetMorningAdventure => 'Răsare o nouă aventură.';
+
+  @override
+  String get greetMorningSleptWell => 'Sper că ai dormit bine!';
+
+  @override
+  String get greetMorningPerfectBook => 'Astăzi poate găsești cartea perfectă.';
+
+  @override
+  String get greetMorningNicer => 'Diminețile sunt mai frumoase cu o carte.';
+
+  @override
+  String greetDayNamed(String name) {
+    return 'Salut, $name!';
+  }
+
+  @override
+  String get greetDayDiscover => 'Ce carte descoperi astăzi?';
+
+  @override
+  String get greetDayAdventure => 'O nouă aventură te așteaptă.';
+
+  @override
+  String get greetDayLibrary => 'Biblioteca te așteaptă.';
+
+  @override
+  String get greetDayCorporateCoffee => 'Cafeluța corporatistă?';
+
+  @override
+  String get greetDayWhatsNext => 'Ce urmează pe lista ta?';
+
+  @override
+  String get greetDaySwappedToday => 'Ai schimbat o carte azi?';
+
+  @override
+  String get greetDayNewReader => 'Fiecare carte are un nou cititor.';
+
+  @override
+  String get greetDayFindNext => 'Găsește-ți următoarea lectură.';
+
+  @override
+  String get greetEveningHello => 'Bună seara!';
+
+  @override
+  String get greetEveningHowWasDay => 'Cum a fost ziua ta?';
+
+  @override
+  String get greetEveningPerfectNow => 'O carte merge perfect acum.';
+
+  @override
+  String get greetEveningFewPages => 'E timpul pentru câteva pagini.';
+
+  @override
+  String get greetEveningRelax => 'Relaxează-te cu o poveste.';
+
+  @override
+  String get greetEveningQuiet => 'O seară liniștită începe cu o carte.';
+
+  @override
+  String get greetEveningWhatTonight => 'Ce citești în seara asta?';
+
+  @override
+  String get greetEveningBeforeBed =>
+      'Poate găsești ceva nou înainte de culcare.';
+
+  @override
+  String get greetNightGoodNight => 'Noapte bună! 🌙';
+
+  @override
+  String get greetNightSandman => 'Moș Ene pe la gene. 😴';
+
+  @override
+  String get greetNightCloseBook => 'E timpul să închidem cartea.';
+
+  @override
+  String greetNightSleepWell(String name) {
+    return 'Somn ușor, $name!';
+  }
+
+  @override
+  String get greetNightOneMoreChapter => 'Mai citești un capitol?';
+
+  @override
+  String get greetNightSeeYouTomorrow => 'Ne vedem mâine printre cărți.';
+
+  @override
+  String get greetNightNiceDay => 'Sper că ai avut o zi frumoasă.';
+
+  @override
+  String get greetNightQuiet => 'Noapte liniștită!';
+
+  @override
+  String get greetLateAwake => 'Încă treaz? 📖';
+
+  @override
+  String get greetLateNightOwl => 'Bufniță de noapte?';
+
+  @override
+  String get greetLateMidnightReads =>
+      'Lecturile de la miezul nopții sunt speciale.';
+
+  @override
+  String get greetLateOneChapter => 'Mai e doar un capitol, nu?';
+
+  @override
+  String get greetLateNeverSleeps => 'ShelfShare nu doarme niciodată.';
+
+  @override
+  String get greetLateCompany => 'Cărțile țin companie și la ore târzii.';
+
+  @override
+  String get greetLateLastChapter =>
+      'Noapte bună... când ajungi la ultimul capitol.';
+
+  @override
+  String get greetLateForgotSleep => 'Sperăm că nu ai uitat de somn.';
+
+  @override
+  String get greetWeekend => 'E weekend! Ce carte iei cu tine?';
+
+  @override
+  String get greetMonday => 'Luni... măcar ai o carte bună.';
+
+  @override
+  String get greetFridayEvening => 'Vineri seara? Perfect pentru citit.';
+
+  @override
+  String get greetBirthday => 'La mulți ani! 🎉';
+
+  @override
+  String get greetNationalDay => 'La mulți ani, România! 🇷🇴';
+
+  @override
+  String get greetChristmas => 'Crăciun fericit! 🎄';
+
+  @override
+  String get greetEaster => 'Paște fericit! 🐰';
+
+  @override
+  String get greetNewYear => 'An nou, cărți noi! 🎆';
+
+  @override
+  String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
 }

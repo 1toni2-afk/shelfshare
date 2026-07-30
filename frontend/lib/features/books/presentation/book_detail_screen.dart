@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
@@ -24,7 +23,6 @@ import '../../safety/data/safety_repository.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
 import '../data/books_repository.dart';
-import '../data/bookshelf_repository.dart';
 
 class BookDetailScreen extends ConsumerStatefulWidget {
   const BookDetailScreen({super.key, required this.userBookId, this.fallbackOwner});
@@ -118,7 +116,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           IconButton(
             icon: const Icon(Icons.share_outlined),
             tooltip: l10n.profileCopyLink,
-            onPressed: () => copyShareLink(context, '/books/${widget.userBookId}'),
+            onPressed: () => shareAppLink(context, '/books/${widget.userBookId}'),
           ),
           if (currentBook != null && currentOwner != null && !isOwnBook)
             IconButton(
@@ -252,31 +250,32 @@ class _BookDetailContent extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
           ),
-        const SizedBox(height: 16),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            Chip(label: Text(book.condition.label(l10n))),
-            if (book.language != null) Chip(label: Text(book.language!)),
-            if (book.isHardcover) Chip(label: Text(l10n.bookDetailHardcoverChip)),
-            if (owner?.city != null)
-              Chip(
-                avatar: const Icon(Icons.location_on_outlined, size: 16),
-                label: Text(owner!.city!),
-              ),
-            Chip(
-              label: Text(book.availableForSwap ? l10n.bookDetailAvailableChip : l10n.libraryUnavailable),
-              backgroundColor:
-                  book.availableForSwap ? AppColors.accent.withValues(alpha: 0.15) : AppColors.muted,
+        // Sub titlu și autor rămâne doar locația listării. Restul etichetelor
+        // (stare, limbă, copertă cartonată, disponibilitate) au coborât sub
+        // descriere - înainte erau șase chipuri deasupra ei și aglomerau tot
+        // ecranul înainte să apuci să citești ceva despre carte.
+        if (owner?.city != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.location_on_outlined, size: 15, color: AppColors.mutedForeground),
+                const SizedBox(width: 4),
+                Text(
+                  owner!.city!,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: AppColors.mutedForeground),
+                ),
+              ],
             ),
-            if (book.isForSale && !book.isNegotiable) Chip(label: Text(l10n.addBookNonNegotiable)),
-          ],
-        ),
+          ),
         const SizedBox(height: 16),
-        _ShelfStatusRow(bookId: book.book.id),
-        const SizedBox(height: 8),
+        // Un singur control pentru toate listele: rafturile fixe (citesc /
+        // vreau să citesc / citită) plus colecțiile proprii stau împreună în
+        // sheet-ul deschis de aici.
         _AddToCollectionButton(bookId: book.book.id),
         const SizedBox(height: 8),
         if (isOwnBook && authState is AuthAuthenticated && authState.user.isPremium)
@@ -312,6 +311,23 @@ class _BookDetailContent extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(book.book.description!),
         ],
+        // Etichetele listării, imediat sub descriere.
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            Chip(label: Text(book.condition.label(l10n))),
+            if (book.language != null) Chip(label: Text(book.language!)),
+            if (book.isHardcover) Chip(label: Text(l10n.bookDetailHardcoverChip)),
+            Chip(
+              label: Text(book.availableForSwap ? l10n.bookDetailAvailableChip : l10n.libraryUnavailable),
+              backgroundColor:
+                  book.availableForSwap ? AppColors.accent.withValues(alpha: 0.15) : AppColors.muted,
+            ),
+            if (book.isForSale && !book.isNegotiable) Chip(label: Text(l10n.addBookNonNegotiable)),
+          ],
+        ),
         if (book.book.genre != null ||
             book.book.publisher != null ||
             book.book.publishedYear != null ||
@@ -408,61 +424,9 @@ class _BookDetailContent extends ConsumerWidget {
   }
 }
 
-/// Status personal de citit (Public Bookshelf) - independent de a deține
-/// sau nu un exemplar fizic, deci vizibil doar dacă userul e autentificat
-/// (backend-ul cere JwtAuthGuard).
-class _ShelfStatusRow extends ConsumerWidget {
-  const _ShelfStatusRow({required this.bookId});
-  final String bookId;
-
-  Future<void> _toggle(WidgetRef ref, BookshelfStatus tapped, BookshelfStatus? current) async {
-    final repository = ref.read(bookshelfRepositoryProvider);
-    if (current == tapped) {
-      await repository.removeFromShelf(bookId);
-    } else {
-      await repository.setStatus(bookId, tapped);
-    }
-    ref.invalidate(bookshelfStatusProvider(bookId));
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authControllerProvider);
-    if (authState is! AuthAuthenticated) return const SizedBox.shrink();
-    final async = ref.watch(bookshelfStatusProvider(bookId));
-    final l10n = context.l10n;
-
-    return async.when(
-      data: (current) => Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final status in BookshelfStatus.values)
-            ChoiceChip(
-              label: Text(_labelFor(l10n, status)),
-              selected: current == status,
-              onSelected: (_) => _toggle(ref, status, current),
-            ),
-        ],
-      ),
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
-    );
-  }
-
-  String _labelFor(AppLocalizations l10n, BookshelfStatus status) {
-    switch (status) {
-      case BookshelfStatus.reading:
-        return l10n.bookshelfTabReading;
-      case BookshelfStatus.wantToRead:
-        return l10n.bookshelfTabWantToRead;
-      case BookshelfStatus.finished:
-        return l10n.bookshelfTabFinished;
-    }
-  }
-}
-
+/// Deschide sheet-ul cu toate listele în care poate intra cartea: rafturile
+/// fixe (citesc / vreau să citesc / citită) și colecțiile proprii. Ambele cer
+/// autentificare pe backend (JwtAuthGuard), deci butonul e ascuns altfel.
 class _AddToCollectionButton extends ConsumerWidget {
   const _AddToCollectionButton({required this.bookId});
   final String bookId;

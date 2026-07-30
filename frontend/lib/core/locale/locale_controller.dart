@@ -40,3 +40,22 @@ class LocaleController extends AsyncNotifier<AppLocale?> {
 final localeControllerProvider = AsyncNotifierProvider<LocaleController, AppLocale?>(
   LocaleController.new,
 );
+
+/// Limba pe care aplicația o folosește *efectiv*: alegerea salvată de user,
+/// altfel prima limbă a dispozitivului care e suportată, altfel română.
+///
+/// Există ca să nu mai mintă interfața: selectorul de limbă arăta „Română"
+/// bifat cât timp nu exista o alegere salvată (`null ?? AppLocale.ro`), în
+/// timp ce `MaterialApp` primea `locale: null` și urma limba telefonului -
+/// deci pe un telefon în engleză bifa spunea română, iar aplicația era în
+/// engleză. Acum atât `MaterialApp`, cât și selectorul citesc de aici.
+final effectiveLocaleProvider = Provider<AppLocale>((ref) {
+  final saved = ref.watch(localeControllerProvider).value;
+  if (saved != null) return saved;
+  for (final deviceLocale in WidgetsBinding.instance.platformDispatcher.locales) {
+    for (final supported in AppLocale.values) {
+      if (supported.code == deviceLocale.languageCode) return supported;
+    }
+  }
+  return AppLocale.ro;
+});

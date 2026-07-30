@@ -1,10 +1,13 @@
 import {
   IsBoolean,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
@@ -40,10 +43,27 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500, { message: 'Bio poate avea maxim 500 de caractere' })
+  // 20 de caractere - „About me" e o singură linie sub numele din profil, nu un
+  // paragraf. Ținut sincronizat cu kBioMaxLength din edit_profile_screen.dart.
+  @MaxLength(20, { message: 'Despre mine poate avea maxim 20 de caractere' })
   bio?: string;
 
   @IsOptional()
   @IsBoolean()
   showAcquisitionHistory?: boolean;
+
+  // Ziua de naștere, fără an - vezi comentariul de pe User.birthdayDay. Nu
+  // validăm aici combinația zi/lună (ex. 31 februarie): singurul efect al unei
+  // date imposibile e că mesajul „La mulți ani" nu apare niciodată.
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(31)
+  birthdayDay?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  birthdayMonth?: number;
 }

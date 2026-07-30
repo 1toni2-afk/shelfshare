@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/user_book.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/application/auth_state.dart';
 import '../../books/data/books_repository.dart';
 
 /// Feed-ul paginat al paginii principale: ultimele cărți postate (după
@@ -9,24 +11,31 @@ class HomeFeedState {
   const HomeFeedState({
     this.recent = const [],
     this.mostViewed = const [],
+    this.nearby = const [],
     this.isLoadingMore = false,
     this.hasMore = true,
   });
 
   final List<UserBook> recent;
   final List<UserBook> mostViewed;
+
+  /// Cărți disponibile la maxim [kNearbyRadiusKm] de orașul userului. Gol dacă
+  /// userul nu are oraș setat în profil sau dacă nu e nimic în raza asta.
+  final List<UserBook> nearby;
   final bool isLoadingMore;
   final bool hasMore;
 
   HomeFeedState copyWith({
     List<UserBook>? recent,
     List<UserBook>? mostViewed,
+    List<UserBook>? nearby,
     bool? isLoadingMore,
     bool? hasMore,
   }) {
     return HomeFeedState(
       recent: recent ?? this.recent,
       mostViewed: mostViewed ?? this.mostViewed,
+      nearby: nearby ?? this.nearby,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
     );
@@ -35,22 +44,45 @@ class HomeFeedState {
 
 const _pageSize = 12;
 
+/// Raza secțiunii „cărți în jurul tău". Distanța se calculează între centrele
+/// orașelor (vezi ROMANIAN_CITY_COORDINATES pe backend), deci e orientativă.
+const kNearbyRadiusKm = 50;
+
 class HomeController extends AsyncNotifier<HomeFeedState> {
   @override
   Future<HomeFeedState> build() => _loadInitial();
 
   Future<HomeFeedState> _loadInitial() async {
     final repository = ref.read(booksRepositoryProvider);
-    // Prima pagină de recente + trending, în paralel.
+    // Orașul din profil e originea pentru „în jurul tău". Fără oraș setat nu
+    // avem de unde calcula distanța, deci sărim peste cerere.
+    final auth = ref.read(authControllerProvider);
+    final me = auth is AuthAuthenticated ? auth.user : null;
+    final myCity = me?.city;
+
+    // Prima pagină de recente + trending + vecinătate, în paralel.
     final results = await Future.wait([
       repository.browse(sort: 'recent', limit: _pageSize, offset: 0),
       repository.browse(sort: 'mostViewed', limit: _pageSize, offset: 0),
+      if (myCity != null && myCity.isNotEmpty)
+        repository.browse(
+          sort: 'distance',
+          fromCity: myCity,
+          maxDistanceKm: kNearbyRadiusKm,
+          limit: _pageSize,
+          offset: 0,
+        ),
     ]);
     final recentResult = results[0];
     final mostViewedResult = results[1];
     return HomeFeedState(
       recent: recentResult.items,
       mostViewed: mostViewedResult.items,
+      // Fără propriile anunțuri: ele sunt la 0 km de userul însuși, deci ar
+      // ocupa începutul secțiunii „în jurul tău" fără să-i spună nimic nou.
+      nearby: results.length > 2
+          ? results[2].items.where((b) => b.userId != me?.id).toList()
+          : const [],
       hasMore: recentResult.items.length < recentResult.total,
     );
   }

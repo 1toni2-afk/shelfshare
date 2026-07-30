@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/conversation.dart';
 import '../../../data/models/message.dart';
+import '../../../shared/utils/image_upload.dart';
 import '../../safety/data/safety_repository.dart';
 
 class ChatRepository {
@@ -90,7 +91,7 @@ class ChatRepository {
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final formData = FormData.fromMap({
-      'photo': MultipartFile.fromBytes(bytes, filename: filename),
+      'photo': imageMultipartFile(bytes, filename),
       'replyToId': ?replyToId,
     });
     final response = await dio.post(

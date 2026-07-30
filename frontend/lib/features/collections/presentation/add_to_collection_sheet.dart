@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../data/models/book.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../books/application/book_detail_controller.dart';
+import '../../books/data/bookshelf_repository.dart';
 import '../data/collections_repository.dart';
 import 'my_collections_screen.dart';
 
-/// Deschide un bottom sheet cu colecțiile proprii ale userului, ca checkbox-
-/// uri de apartenență pentru o carte anume - vezi butonul "Adaugă în colecție"
-/// de pe ecranul de detaliu al cărții.
+/// Deschide un bottom sheet cu toate listele în care poate intra o carte:
+/// întâi cele trei rafturi fixe (citesc / vreau să citesc / citită), apoi
+/// colecțiile proprii ale userului, ca checkbox-uri de apartenență.
+///
+/// Înainte, rafturile erau un rând separat de `ChoiceChip` direct pe ecranul de
+/// detaliu, iar colecțiile un buton lângă el - două controale pentru aceeași
+/// idee, care aglomerau ecranul. Acum e un singur „Adaugă în listă".
 Future<void> showAddToCollectionSheet(BuildContext context, {required String bookId}) {
   return showModalBottomSheet<void>(
     context: context,
@@ -47,6 +56,18 @@ class _AddToCollectionSheetState extends ConsumerState<_AddToCollectionSheet> {
     }
   }
 
+  /// Rafturile sunt exclusive între ele: un tap pe raftul curent îl scoate,
+  /// un tap pe altul mută cartea acolo.
+  Future<void> _toggleShelf(BookshelfStatus tapped, BookshelfStatus? current) async {
+    final repository = ref.read(bookshelfRepositoryProvider);
+    if (current == tapped) {
+      await repository.removeFromShelf(widget.bookId);
+    } else {
+      await repository.setStatus(widget.bookId, tapped);
+    }
+    ref.invalidate(bookshelfStatusProvider(widget.bookId));
+  }
+
   Future<void> _createAndAdd() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
@@ -74,6 +95,28 @@ class _AddToCollectionSheetState extends ConsumerState<_AddToCollectionSheet> {
         children: [
           Text(l10n.collectionsAddToTitle, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
+          ref.watch(bookshelfStatusProvider(widget.bookId)).when(
+                data: (current) => Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final status in BookshelfStatus.values)
+                      ChoiceChip(
+                        label: Text(_shelfLabel(l10n, status)),
+                        selected: current == status,
+                        onSelected: (_) => _toggleShelf(status, current),
+                      ),
+                  ],
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.collectionsTitle,
+            style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+          ),
+          const SizedBox(height: 4),
           async.when(
             data: (collections) => ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 300),
@@ -120,5 +163,16 @@ class _AddToCollectionSheetState extends ConsumerState<_AddToCollectionSheet> {
         ],
       ),
     );
+  }
+
+  String _shelfLabel(AppLocalizations l10n, BookshelfStatus status) {
+    switch (status) {
+      case BookshelfStatus.reading:
+        return l10n.bookshelfTabReading;
+      case BookshelfStatus.wantToRead:
+        return l10n.bookshelfTabWantToRead;
+      case BookshelfStatus.finished:
+        return l10n.bookshelfTabFinished;
+    }
   }
 }

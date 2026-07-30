@@ -108,6 +108,18 @@
     // s-a încărcat corect dedesubt. Timeout-ul e doar o plasă de siguranță,
     // ca un splash să nu blocheze accesul la aplicație dacă evenimentul nu
     // ajunge să se declanșeze din vreun motiv neprevăzut.
+    // NU încerca să pornești aici semantica pentru autofill. Pe web, Flutter
+    // randează câmpurile în canvas și creează <input>-uri reale în DOM doar cu
+    // arborele de semantică activ, iar fără ele managerul de parole din Chrome
+    // nu vede formularul de login. Dar:
+    //   - SemanticsBinding.ensureSemantics() pornește doar partea de framework;
+    //     engine-ul aruncă arborele (verificat: 0 noduri <flt-semantics>);
+    //   - un click programatic pe <flt-semantics-placeholder> îl șterge din
+    //     pagină FĂRĂ să pornească semantica, adică strică butonul de care au
+    //     nevoie userii cu cititor de ecran, fără să rezolve autofill-ul.
+    // Engine-ul nu expune niciun API public pentru asta. Pe Android/iOS
+    // autofill-ul funcționează normal (AutofillGroup + autofillHints +
+    // TextInput.finishAutofillContext, vezi login_screen.dart).
     window.addEventListener('flutter-first-frame', function () {
       document.getElementById('splash')?.remove();
     });

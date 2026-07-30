@@ -104,6 +104,21 @@ model User {
   // fără procesare de plăți reale (vezi togglePremium în admin.service.ts).
   isPremium Boolean @default(false)
 
+  // Supporter (Milestone 13) - userii care au donat prin „Keep the app alive".
+  // Momentul donației, nu un boolean, ca să putem afișa „supporter din <lună>"
+  // și eventual să expirăm insigna pe viitor. Acordat manual din admin panel
+  // până există integrarea de plăți (Google Play Billing / PayPal); vezi
+  // toggleSupporter în admin.service.ts și badge-ul „supporter" din
+  // profile.service.ts.
+  supporterSince DateTime?
+
+  // Ziua de naștere, doar zi + lună (Milestone 14) - folosită exclusiv pentru
+  // mesajul „La mulți ani" din salutul paginii principale. Intenționat FĂRĂ an:
+  // pentru un salut nu ne trebuie vârsta, iar ce nu stocăm nu trebuie nici
+  // protejat, nici declarat la Data Safety. Ambele sunt setate sau ambele NULL.
+  birthdayDay   Int?
+  birthdayMonth Int?
+
   showAcquisitionHistory Boolean @default(false)
 
   referralCode String? @unique

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../core/constants/romanian_cities.dart';
+import '../../../shared/widgets/city_autocomplete.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
@@ -449,15 +449,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             ],
             const SizedBox(height: 20),
 
-            // 7. Localitate
-            DropdownButtonFormField<String>(
-              initialValue: _city,
-              decoration: InputDecoration(labelText: l10n.shareCityHint),
-              items: [
-                for (final c in kRomanianCities)
-                  DropdownMenuItem(value: c, child: Text(c)),
-              ],
-              onChanged: (v) => setState(() => _city = v),
+            // 7. Localitate - autocomplete peste toate orașele din România, nu
+            // dropdown cu reședințele de județ.
+            CityAutocomplete(
+              value: _city,
+              label: l10n.shareCityHint,
+              emptyLabel: l10n.shareCityUnknown,
+              onChanged: (value) => setState(() => _city = value),
             ),
             const SizedBox(height: 12),
 
@@ -667,7 +665,31 @@ class _PhotoPicker extends StatelessWidget {
   }
 }
 
-/// Câmp text + chip-uri; enter/virgulă adaugă tag-ul curent.
+/// Tag-uri propuse, ca punct de plecare pentru cine nu știe ce să scrie. Nu
+/// limitează nimic - userul poate în continuare adăuga orice tag manual.
+const _suggestedTags = [
+  'fantasy',
+  'SF',
+  'thriller',
+  'polițist',
+  'romantic',
+  'dezvoltare personală',
+  'biografie',
+  'istorie',
+  'copii',
+  'young adult',
+  'clasic',
+  'poezie',
+  'bestseller',
+  'ediție veche',
+  'carte rară',
+  'ilustrată',
+  'în engleză',
+  'serie completă',
+];
+
+/// Câmp text + chip-uri; enter/virgulă adaugă tag-ul curent. Sub câmp apar
+/// sugestii pe care userul le poate alege cu un tap.
 class _TagsInput extends StatelessWidget {
   const _TagsInput({
     required this.tags,
@@ -708,6 +730,28 @@ class _TagsInput extends StatelessWidget {
                 Chip(
                   label: Text(t),
                   onDeleted: () => onRemove(t),
+                ),
+            ],
+          ),
+        ],
+        // Doar sugestiile neadăugate încă, și doar cât timp mai e loc (max 5
+        // tag-uri) - altfel userul ar apăsa pe chipuri fără efect.
+        if (tags.length < 5) ...[
+          const SizedBox(height: 10),
+          Text(
+            context.l10n.shareTagsSuggestions,
+            style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final suggestion in _suggestedTags.where((s) => !tags.contains(s)))
+                ActionChip(
+                  label: Text(suggestion),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => onAdd(suggestion),
                 ),
             ],
           ),

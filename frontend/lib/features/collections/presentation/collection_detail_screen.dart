@@ -92,7 +92,9 @@ class CollectionDetailScreen extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: BookCover(url: book.coverUrl, width: 44, height: 62),
                   title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: book.author != null ? Text(book.author!) : null,
+                  subtitle: book.author != null
+                      ? Text(book.author!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                      : null,
                   trailing: isOwner
                       ? IconButton(
                           icon: const Icon(Icons.close),

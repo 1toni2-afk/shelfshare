@@ -2502,4 +2502,254 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileSettings => 'Settings';
+
+  @override
+  String get profileKeepAlive => 'Keep the app alive';
+
+  @override
+  String get profileKeepAliveSubtitle =>
+      'ShelfShare runs on a home server. A coffee helps.';
+
+  @override
+  String get aboutDevTitle => 'About dev';
+
+  @override
+  String get aboutDevHeadline => 'The person behind ShelfShare';
+
+  @override
+  String get aboutDevBodyWho =>
+      'I\'m a small developer working at an IT company in Transylvania.';
+
+  @override
+  String get aboutDevBodyWhy =>
+      'I made this app because I used to use an app just like this before, but it disappeared because… reasons? So I made one myself.';
+
+  @override
+  String get aboutDevBodyHosting =>
+      'Please don\'t get upset about the possible hickups of the app, because everything is hosted by myself on my small home server ☹️';
+
+  @override
+  String get aboutDevSupportTitle => 'Keep the app alive';
+
+  @override
+  String get aboutDevSupportSubtitle =>
+      'The server, the domain and the backups come out of my own pocket. Anything you chip in keeps the app running.';
+
+  @override
+  String get aboutDevCoffeeButton => 'Buy me a coffee';
+
+  @override
+  String get aboutDevOpenError => 'Couldn\'t open the link. Please try again.';
+
+  @override
+  String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
+
+  @override
+  String homeNearbyTitle(int km) {
+    return 'Books around you ($km km)';
+  }
+
+  @override
+  String get shareTagsSuggestions => 'Suggestions:';
+
+  @override
+  String get shareCityUnknown => 'Pick a city from the list';
+
+  @override
+  String get gamificationHowItWorks => 'How XP works';
+
+  @override
+  String gamificationXpIntro(int n) {
+    return 'Every $n XP is a new level. XP is awarded automatically for things you do in the app:';
+  }
+
+  @override
+  String get gamificationXpBookListed => 'List a book';
+
+  @override
+  String get gamificationXpExchangeCompleted => 'Complete a swap';
+
+  @override
+  String get gamificationXpSaleCompleted => 'Complete a sale';
+
+  @override
+  String get gamificationXpReviewWritten => 'Write a review';
+
+  @override
+  String get gamificationNoMaxLevel =>
+      'There is no max level - the curve is linear, so you can keep climbing.';
+
+  @override
+  String get profileBirthdayDay => 'Day';
+
+  @override
+  String get profileBirthdayMonth => 'Birth month';
+
+  @override
+  String get profileBirthdayNone => '—';
+
+  @override
+  String get greetReaderFallback => 'Reader';
+
+  @override
+  String get greetMorningSun => 'Good morning, sunshine! ☀️';
+
+  @override
+  String greetMorningNamed(String name) {
+    return 'Good morning, $name!';
+  }
+
+  @override
+  String get greetMorningCoffeeBook => 'A coffee and a book?';
+
+  @override
+  String get greetMorningCoffee => 'Good morning, coffee time! ☕';
+
+  @override
+  String get greetMorningStartStory => 'Start the day with a story.';
+
+  @override
+  String get greetMorningAdventure => 'A new adventure is rising.';
+
+  @override
+  String get greetMorningSleptWell => 'Hope you slept well!';
+
+  @override
+  String get greetMorningPerfectBook =>
+      'Today you might find the perfect book.';
+
+  @override
+  String get greetMorningNicer => 'Mornings are nicer with a book.';
+
+  @override
+  String greetDayNamed(String name) {
+    return 'Hi, $name!';
+  }
+
+  @override
+  String get greetDayDiscover => 'What book will you discover today?';
+
+  @override
+  String get greetDayAdventure => 'A new adventure awaits.';
+
+  @override
+  String get greetDayLibrary => 'The library is waiting.';
+
+  @override
+  String get greetDayCorporateCoffee => 'Time for the office coffee?';
+
+  @override
+  String get greetDayWhatsNext => 'What\'s next on your list?';
+
+  @override
+  String get greetDaySwappedToday => 'Swapped a book today?';
+
+  @override
+  String get greetDayNewReader => 'Every book has a new reader.';
+
+  @override
+  String get greetDayFindNext => 'Find your next read.';
+
+  @override
+  String get greetEveningHello => 'Good evening!';
+
+  @override
+  String get greetEveningHowWasDay => 'How was your day?';
+
+  @override
+  String get greetEveningPerfectNow => 'A book would be perfect right now.';
+
+  @override
+  String get greetEveningFewPages => 'Time for a few pages.';
+
+  @override
+  String get greetEveningRelax => 'Unwind with a story.';
+
+  @override
+  String get greetEveningQuiet => 'A quiet evening starts with a book.';
+
+  @override
+  String get greetEveningWhatTonight => 'What are you reading tonight?';
+
+  @override
+  String get greetEveningBeforeBed => 'Maybe find something new before bed.';
+
+  @override
+  String get greetNightGoodNight => 'Good night! 🌙';
+
+  @override
+  String get greetNightSandman => 'The sandman is on his way. 😴';
+
+  @override
+  String get greetNightCloseBook => 'Time to close the book.';
+
+  @override
+  String greetNightSleepWell(String name) {
+    return 'Sleep well, $name!';
+  }
+
+  @override
+  String get greetNightOneMoreChapter => 'One more chapter?';
+
+  @override
+  String get greetNightSeeYouTomorrow => 'See you tomorrow among the books.';
+
+  @override
+  String get greetNightNiceDay => 'Hope you had a lovely day.';
+
+  @override
+  String get greetNightQuiet => 'Have a peaceful night!';
+
+  @override
+  String get greetLateAwake => 'Still awake? 📖';
+
+  @override
+  String get greetLateNightOwl => 'Night owl?';
+
+  @override
+  String get greetLateMidnightReads => 'Midnight reads hit differently.';
+
+  @override
+  String get greetLateOneChapter => 'It\'s just one more chapter, right?';
+
+  @override
+  String get greetLateNeverSleeps => 'ShelfShare never sleeps.';
+
+  @override
+  String get greetLateCompany => 'Books keep you company at late hours too.';
+
+  @override
+  String get greetLateLastChapter =>
+      'Good night... once you reach the last chapter.';
+
+  @override
+  String get greetLateForgotSleep => 'We hope you did not forget to sleep.';
+
+  @override
+  String get greetWeekend =>
+      'It\'s the weekend! Which book are you taking along?';
+
+  @override
+  String get greetMonday => 'Monday... at least you have a good book.';
+
+  @override
+  String get greetFridayEvening => 'Friday evening? Perfect for reading.';
+
+  @override
+  String get greetBirthday => 'Happy birthday! 🎉';
+
+  @override
+  String get greetNationalDay => 'Happy National Day, Romania! 🇷🇴';
+
+  @override
+  String get greetChristmas => 'Merry Christmas! 🎄';
+
+  @override
+  String get greetEaster => 'Happy Easter! 🐰';
+
+  @override
+  String get greetNewYear => 'New year, new books! 🎆';
+
+  @override
+  String get greetBookDay => 'Today is World Book Day! 📚';
 }

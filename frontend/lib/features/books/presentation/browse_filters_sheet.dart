@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/romanian_cities.dart';
+import '../../../shared/widgets/city_autocomplete.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../data/models/book.dart';
 import '../application/browse_controller.dart';
@@ -217,14 +217,10 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String?>(
-              initialValue: _city,
-              decoration: InputDecoration(labelText: l10n.profileCityLabel),
-              items: [
-                DropdownMenuItem(value: null, child: Text(l10n.filtersAnyCity)),
-                for (final city in kRomanianCities)
-                  DropdownMenuItem(value: city, child: Text(city)),
-              ],
+            CityAutocomplete(
+              value: _city,
+              label: l10n.filtersAnyCity,
+              emptyLabel: l10n.shareCityUnknown,
               onChanged: (value) => setState(() => _city = value),
             ),
             const SizedBox(height: 16),

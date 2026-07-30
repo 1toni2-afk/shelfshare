@@ -140,7 +140,12 @@ class _ShelfList extends ConsumerWidget {
               child: ListTile(
                 leading: BookCover(url: book.coverUrl, width: 40, height: 56),
                 title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: book.author != null ? Text(book.author!) : null,
+                // Autorul pe o singură linie: un nume lung se rupea în două
+                // rânduri, tile-ul creștea peste înălțimea pe care ListTile o
+                // rezervă și apărea „BOTTOM OVERFLOWED BY 6.0 PIXELS".
+                subtitle: book.author != null
+                    ? Text(book.author!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                    : null,
                 trailing: IconButton(
                   icon: const Icon(Icons.close),
                   tooltip: l10n.bookDetailShelfRemove,

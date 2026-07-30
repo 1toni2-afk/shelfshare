@@ -6,6 +6,7 @@ import { WishlistService } from '../wishlist/wishlist.service';
 import { FollowService } from '../follow/follow.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookLookupService } from './book-lookup.service';
+import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 
 describe('BooksService', () => {
   let service: BooksService;
@@ -41,10 +42,21 @@ describe('BooksService', () => {
 
       const result = await service.getMapCities();
 
+      // Coordonatele vin din tabelul generat, nu scrise de mână aici: fișierul
+      // se regenerează din Wikidata, iar testul verifică agregarea per oraș,
+      // nu valorile exacte ale coordonatelor.
       expect(result).toEqual(
         expect.arrayContaining([
-          { city: 'Cluj-Napoca', lat: 46.7712, lng: 23.6236, count: 2 },
-          { city: 'București', lat: 44.4268, lng: 26.1025, count: 1 },
+          {
+            city: 'Cluj-Napoca',
+            ...ROMANIAN_CITY_COORDINATES['Cluj-Napoca'],
+            count: 2,
+          },
+          {
+            city: 'București',
+            ...ROMANIAN_CITY_COORDINATES['București'],
+            count: 1,
+          },
         ]),
       );
       expect(result).toHaveLength(2);

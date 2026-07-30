@@ -81,7 +81,9 @@ class _BookStatList extends ConsumerWidget {
                   child: Text('${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 title: Text(entry.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: entry.book.author != null ? Text(entry.book.author!) : null,
+                subtitle: entry.book.author != null
+                    ? Text(entry.book.author!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                    : null,
                 trailing: Text(
                   isTransferCount
                       ? l10n.globalStatsTransferCount(entry.count)

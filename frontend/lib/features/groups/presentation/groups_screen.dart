@@ -35,6 +35,7 @@ class GroupsScreen extends ConsumerWidget {
                 autofocus: true,
                 decoration: InputDecoration(labelText: l10n.groupsNameLabel),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
                 decoration: InputDecoration(labelText: l10n.groupsDescriptionLabel),

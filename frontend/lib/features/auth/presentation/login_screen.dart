@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/locale/locale_controller.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../profile/presentation/settings_screen.dart' show showLanguagePicker;
 import '../../../shared/widgets/google_sign_in_button.dart';
 import '../../support/presentation/support_dialog.dart';
 import '../application/auth_controller.dart';
@@ -219,6 +221,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: () => showSupportDialog(context),
                     icon: const Icon(Icons.help_outline, size: 18),
                     label: Text(l10n.supportContactButton),
+                  ),
+                  // Selectorul de limbă e disponibil și înainte de login: altfel
+                  // cineva care nu înțelege limba în care i-a pornit aplicația
+                  // nu are cum să o schimbe, fiind blocat pe acest ecran.
+                  TextButton.icon(
+                    onPressed: () => showLanguagePicker(context, ref),
+                    icon: const Icon(Icons.language_outlined, size: 18),
+                    label: Text(ref.watch(effectiveLocaleProvider).label),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.loginMadeWithLove,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.mutedForeground,
+                        ),
                   ),
                 ],
               ),

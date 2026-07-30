@@ -20,6 +20,8 @@ class ProfileController extends AsyncNotifier<AppUser> {
     bool? nameVisible,
     String? city,
     String? bio,
+    int? birthdayDay,
+    int? birthdayMonth,
     bool? showAcquisitionHistory,
   }) async {
     final updated = await ref.read(profileRepositoryProvider).updateProfile(
@@ -28,6 +30,8 @@ class ProfileController extends AsyncNotifier<AppUser> {
           nameVisible: nameVisible,
           city: city,
           bio: bio,
+          birthdayDay: birthdayDay,
+          birthdayMonth: birthdayMonth,
           showAcquisitionHistory: showAcquisitionHistory,
         );
     state = AsyncData(updated);

@@ -12,6 +12,7 @@ import { StorageService } from '../storage/storage.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
 import { publicName } from '../common/utils/user-visibility';
+import { XP_PER_LEVEL, XP_REWARDS } from '../common/utils/xp';
 
 @Injectable()
 export class ProfileService {
@@ -123,6 +124,8 @@ export class ProfileService {
       nameVisible: user.nameVisible,
       city: user.city,
       bio: user.bio,
+      birthdayDay: user.birthdayDay,
+      birthdayMonth: user.birthdayMonth,
       profileImage: user.profileImage,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
@@ -172,6 +175,8 @@ export class ProfileService {
       nameVisible: user.nameVisible,
       city: user.city,
       bio: user.bio,
+      birthdayDay: user.birthdayDay,
+      birthdayMonth: user.birthdayMonth,
       profileImage: user.profileImage,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
@@ -213,6 +218,8 @@ export class ProfileService {
       username: user.username,
       city: user.city,
       bio: user.bio,
+      // Fără zi de naștere aici: salutul e pentru userul propriu, deci nu are
+      // motiv să ajungă în profilul public al altcuiva.
       profileImage: user.profileImage,
       isPremium: user.isPremium,
       rating: user.rating,
@@ -808,6 +815,13 @@ export class ProfileService {
         description: 'Ai listat cărți în cel puțin 3 limbi diferite.',
         achieved: distinctLanguages >= 3,
       },
+      {
+        key: 'supporter',
+        label: 'Supporter',
+        description:
+          'Ai susținut aplicația prin „Keep the app alive". Mulțumim că ține serverul pornit!',
+        achieved: user.supporterSince !== null,
+      },
     ];
 
     return badges;
@@ -852,16 +866,20 @@ export class ProfileService {
 
   /**
    * XP & Levels - nivelul se calculează din xp total, nu se stochează
-   * (curbă simplă, liniară: 100 xp/nivel). Streak-ul (zile consecutive cu
-   * activitate) e actualizat din JwtAuthGuard, aici doar îl expunem.
+   * (curbă simplă, liniară: XP_PER_LEVEL xp/nivel, fără nivel maxim). Streak-ul
+   * (zile consecutive cu activitate) e actualizat din JwtAuthGuard, aici doar îl
+   * expunem. `xpRewards` și `xpPerLevel` merg spre client ca profilul să poată
+   * explica sistemul fără să dubleze valorile.
    */
   private getGamificationStats(user: User) {
     return {
       xp: user.xp,
-      level: Math.floor(user.xp / 100) + 1,
-      xpToNextLevel: 100 - (user.xp % 100),
+      level: Math.floor(user.xp / XP_PER_LEVEL) + 1,
+      xpToNextLevel: XP_PER_LEVEL - (user.xp % XP_PER_LEVEL),
       currentStreakDays: user.currentStreakDays,
       longestStreakDays: user.longestStreakDays,
+      xpPerLevel: XP_PER_LEVEL,
+      xpRewards: XP_REWARDS,
     };
   }
 

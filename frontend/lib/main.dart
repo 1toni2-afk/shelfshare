@@ -35,6 +35,13 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
   }
 
   @override
+  void didChangeLocales(List<Locale>? locales) {
+    // effectiveLocaleProvider citește limbile dispozitivului direct din
+    // platformDispatcher, deci are nevoie de un rebuild ca să le recitească.
+    setState(() {});
+  }
+
+  @override
   void didChangePlatformBrightness() {
     // Doar relevant când preferința e "system" - forțează un rebuild ca să
     // recitim WidgetsBinding.instance.platformDispatcher.platformBrightness.
@@ -44,7 +51,7 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-    final locale = ref.watch(localeControllerProvider).value;
+    final locale = ref.watch(effectiveLocaleProvider);
     final themeModePref = ref.watch(themeControllerProvider).value ?? AppThemeMode.system;
     final platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
     final isDark = themeModePref == AppThemeMode.dark ||
@@ -57,7 +64,7 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
       // Rezolvăm noi înșine system/light/dark mai sus - MaterialApp nu mai
       // trebuie să comute singur pe baza platformei.
       themeMode: ThemeMode.light,
-      locale: locale?.locale,
+      locale: locale.locale,
       supportedLocales: AppLocale.values.map((l) => l.locale),
       localizationsDelegates: const [
         AppLocalizations.delegate,

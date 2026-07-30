@@ -6,6 +6,7 @@ import '../../../data/models/external_book_result.dart';
 import '../../../data/models/map_city.dart';
 import '../../../data/models/price_offer.dart';
 import '../../../data/models/user.dart';
+import '../../../shared/utils/image_upload.dart';
 import '../../../data/models/user_book.dart';
 
 class BrowseResult {
@@ -530,7 +531,7 @@ class BooksRepository {
   Future<void> addPhoto(String userBookId, {required List<int> bytes, required String filename}) async {
     final dio = _ref.read(apiClientProvider).dio;
     final formData = FormData.fromMap({
-      'photo': MultipartFile.fromBytes(bytes, filename: filename.isEmpty ? 'photo.jpg' : filename),
+      'photo': imageMultipartFile(bytes, filename),
     });
     await dio.post('/books/$userBookId/photos', data: formData);
   }

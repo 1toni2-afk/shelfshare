@@ -8,6 +8,7 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/typewriter_text.dart';
+import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
@@ -50,7 +51,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final homeAsync = ref.watch(homeControllerProvider);
-    final name = authState is AuthAuthenticated ? authState.user.name : null;
+    final me = authState is AuthAuthenticated ? authState.user : null;
     final unreadCount =
         (ref.watch(notificationsControllerProvider).value ?? const []).where((n) => !n.isRead).length;
     final l10n = context.l10n;
@@ -58,7 +59,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: TypewriterText(
-          phrases: _greetings(name),
+          // `DateTime.now()` e ora locală a telefonului, adică exact ce ne
+          // trebuie: salutul urmează fusul userului, nu al serverului.
+          phrases: buildGreetings(
+            l10n: l10n,
+            now: DateTime.now(),
+            name: me?.name,
+            birthdayMonth: me?.birthdayMonth,
+            birthdayDay: me?.birthdayDay,
+          ),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -104,17 +113,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  List<TypewriterPhrase> _greetings(String? name) {
-    final username = (name != null && name.isNotEmpty) ? name : 'Cititorule';
-    return [
-      TypewriterPhrase('Salut, $username!', const Duration(seconds: 10)),
-      const TypewriterPhrase('Salut, Cititorule!', Duration(seconds: 3)),
-      const TypewriterPhrase('Ce mai citești azi?', Duration(seconds: 3)),
-      const TypewriterPhrase('Bine ai revenit!', Duration(seconds: 3)),
-      const TypewriterPhrase('Gata de-o carte nouă?', Duration(seconds: 3)),
-      const TypewriterPhrase('O poveste te așteaptă...', Duration(seconds: 3)),
-    ];
-  }
 }
 
 class _HomeFeed extends StatelessWidget {
@@ -132,12 +130,17 @@ class _HomeFeed extends StatelessWidget {
       );
     }
 
-    // Împărțim recentele în „înainte de carusel" (primele 12) și „după".
+    // Trei felii de recente, cu o secțiune tematică între ele: primele 12 →
+    // „Cele mai căutate" → următoarele 12 → „În jurul tău" → restul.
     final firstBatch = data.recent.take(_trendingInjectAfter).toList();
-    final rest = data.recent.length > _trendingInjectAfter
-        ? data.recent.sublist(_trendingInjectAfter)
+    final secondBatch = data.recent.length > _trendingInjectAfter
+        ? data.recent.skip(_trendingInjectAfter).take(_trendingInjectAfter).toList()
+        : const <UserBook>[];
+    final rest = data.recent.length > 2 * _trendingInjectAfter
+        ? data.recent.sublist(2 * _trendingInjectAfter)
         : const <UserBook>[];
     final showTrending = data.recent.length >= _trendingInjectAfter && data.mostViewed.isNotEmpty;
+    final showNearby = data.nearby.isNotEmpty;
 
     // Grilă responsivă: cardurile își păstrează lățimea (~220dp), deci pe
     // ecrane înguste ies 2 pe rând, iar pe desktop apar tot mai multe coloane
@@ -148,14 +151,23 @@ class _HomeFeed extends StatelessWidget {
     // îngust) - altfel wheel-ul de mouse și scroll-ul cu trackpad nu prind pe
     // zonele goale din stânga/dreapta grilei. Constrângerea de lățime e mutată
     // în padding-ul fiecărui sliver, calculat din lățimea ecranului.
-    return _buildScrollView(context, firstBatch, rest, showTrending);
+    return _buildScrollView(
+      context,
+      firstBatch,
+      secondBatch,
+      rest,
+      showTrending,
+      showNearby,
+    );
   }
 
   Widget _buildScrollView(
     BuildContext context,
     List<UserBook> firstBatch,
+    List<UserBook> secondBatch,
     List<UserBook> rest,
     bool showTrending,
+    bool showNearby,
   ) {
     final l10n = context.l10n;
     return CustomScrollView(
@@ -175,6 +187,25 @@ class _HomeFeed extends StatelessWidget {
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: side),
                   child: _TrendingCarousel(books: data.mostViewed),
+                );
+              },
+            ),
+          ),
+        if (secondBatch.isNotEmpty) _BookSliverGrid(books: secondBatch),
+        // „În jurul tău" - cărți disponibile la maxim 50 km de orașul din
+        // profil. Ascunsă complet dacă userul nu are oraș setat sau dacă nu e
+        // nimic în rază: un carusel gol nu spune nimic.
+        if (showNearby)
+          SliverToBoxAdapter(
+            child: Builder(
+              builder: (context) {
+                final screenWidth = MediaQuery.of(context).size.width;
+                final side = screenWidth > _feedMaxWidth
+                    ? (screenWidth - _feedMaxWidth) / 2
+                    : 0.0;
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: side),
+                  child: _NearbySection(books: data.nearby),
                 );
               },
             ),
@@ -242,6 +273,66 @@ class _BookSliverGrid extends StatelessWidget {
           },
           childCount: books.length,
         ),
+      ),
+    );
+  }
+}
+
+/// „În jurul tău" - carusel orizontal cu cărțile disponibile la maxim
+/// [kNearbyRadiusKm] de orașul userului. Aceeași formă vizuală ca „Cele mai
+/// căutate", dar cu iconiță de locație și un accent mai discret, ca să nu
+/// concureze cu secțiunea de trending.
+class _NearbySection extends StatelessWidget {
+  const _NearbySection({required this.books});
+  final List<UserBook> books;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      color: AppColors.muted.withValues(alpha: 0.6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
+            child: Row(
+              children: [
+                Icon(Icons.near_me_outlined, color: AppColors.primary, size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.homeNearbyTitle(kNearbyRadiusKm),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push('/map'),
+                  child: Text(l10n.homeSeeAll),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 290,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: books.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                final userBook = books[index];
+                return BookCard(
+                  userBook: userBook,
+                  width: 150,
+                  onTap: () => context.push('/books/${userBook.id}', extra: userBook.owner),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
