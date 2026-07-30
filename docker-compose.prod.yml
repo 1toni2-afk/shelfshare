@@ -87,11 +87,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    # crond din busybox, în prim-plan (-f), cu log la stdout (-d 8) ca
-    # `docker compose logs backup` să arate ce s-a întâmplat. Rulează la 03:15,
-    # o oră la care nimeni nu folosește aplicația.
+    # crond din busybox, în prim-plan (-f), la 03:15 ora locală (vezi TZ).
+    #
+    # Redirectarea către /proc/1/fd/1 e stdout-ul procesului crond, adică
+    # stdout-ul containerului: fără ea, busybox crond ar încerca să trimită
+    # ieșirea job-ului prin mail și, în lipsa unui sendmail, ar arunca-o.
+    # `docker logs backup` ar arăta doar că job-ul a pornit, nu ce a făcut -
+    # exact genul de eșec pe care nu l-ai observa decât când ai nevoie de un
+    # backup care nu există.
     command: >
-      sh -c "echo '15 3 * * * /scripts/backup.sh' > /etc/crontabs/root &&
+      sh -c "echo '15 3 * * * /scripts/backup.sh >> /proc/1/fd/1 2>&1' > /etc/crontabs/root &&
              crond -f -d 8"
 
   nginx-proxy-manager:

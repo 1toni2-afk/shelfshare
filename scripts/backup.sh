@@ -5,6 +5,13 @@
 # (vezi crontab-ul din compose). Poate fi rulat și manual:
 #   docker compose -f docker-compose.prod.yml exec backup /scripts/backup.sh
 #
+# Capcană la testare: busybox crond decide dacă recitește crontab-urile după
+# mtime-ul DIRECTORULUI /etc/crontabs, nu al fișierului. Dacă rescrii
+# /etc/crontabs/root în loc, cu crond deja pornit, modificarea e ignorată și
+# pare că cron nu funcționează. La un test manual, dă și `touch /etc/crontabs`
+# după ce scrii. În funcționare normală nu e o problemă: compose scrie
+# crontab-ul înainte de a porni crond.
+#
 # Ce salvează:
 #   - un dump SQL comprimat al bazei (pg_dump peste rețeaua internă Docker)
 #   - o arhivă cu volumul MinIO (coperte, avatare, transcripturi de chat)
