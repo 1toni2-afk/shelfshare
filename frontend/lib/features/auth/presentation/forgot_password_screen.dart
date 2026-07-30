@@ -209,6 +209,7 @@ class _EmailStep extends StatelessWidget {
                 TextFormField(
                   controller: controller,
                   keyboardType: TextInputType.emailAddress,
+                              textCapitalization: TextCapitalization.none,
                   decoration: InputDecoration(
                     labelText: l10n.commonEmailLabel,
                     prefixIcon: const Icon(Icons.mail_outline),

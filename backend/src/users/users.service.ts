@@ -9,8 +9,21 @@ const REFERRAL_CODE_LENGTH = 8;
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Căutarea normalizează la litere mici, iar `create` stochează la fel - deci
+   * adresele se compară case-insensitive fără să fie nevoie de un index
+   * funcțional sau de `mode: 'insensitive'`.
+   *
+   * Fără asta, login-ul era sensibil la majuscule: tastaturile de Android scriu
+   * automat prima literă cu majusculă, așa că un user care își tasta adresa pe
+   * telefon trimitea „Ion@exemplu.ro" și primea „Email sau parolă incorectă",
+   * fără să înțeleagă de ce. Partea de domeniu e case-insensitive prin
+   * standard, iar toți furnizorii mari tratează și partea locală la fel.
+   */
   findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+    });
   }
 
   findById(id: string): Promise<User | null> {
@@ -48,7 +61,11 @@ export class UsersService {
     invitedById?: string;
   }): Promise<User> {
     const referralCode = await this.generateReferralCode();
-    return this.prisma.user.create({ data: { ...data, referralCode } });
+    // Stocăm mereu cu litere mici, ca `findByEmail` (care normalizează la fel)
+    // să găsească contul indiferent cum a fost tastată adresa la înregistrare.
+    return this.prisma.user.create({
+      data: { ...data, email: data.email.trim().toLowerCase(), referralCode },
+    });
   }
 
   update(id: string, data: Partial<User>): Promise<User> {

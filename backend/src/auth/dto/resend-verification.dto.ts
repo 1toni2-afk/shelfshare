@@ -1,6 +1,5 @@
-import { IsEmail } from 'class-validator';
-
+import { IsNormalizedEmail } from '../../common/decorators/normalized-email.decorator';
 export class ResendVerificationDto {
-  @IsEmail({}, { message: 'Adresa de email nu este validă' })
+  @IsNormalizedEmail()
   email: string;
 }

@@ -1,7 +1,8 @@
-import { IsEmail, Length } from 'class-validator';
+import { Length } from 'class-validator';
+import { IsNormalizedEmail } from '../../common/decorators/normalized-email.decorator';
 
 export class VerifyResetCodeDto {
-  @IsEmail({}, { message: 'Adresa de email nu este validă' })
+  @IsNormalizedEmail()
   email: string;
 
   @Length(6, 6, { message: 'Codul trebuie să aibă 6 cifre' })

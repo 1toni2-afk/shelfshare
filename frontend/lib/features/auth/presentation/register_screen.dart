@@ -116,6 +116,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              textCapitalization: TextCapitalization.none,
                               autofillHints: const [AutofillHints.username, AutofillHints.email],
                               decoration: InputDecoration(
                                 labelText: l10n.commonEmailLabel,

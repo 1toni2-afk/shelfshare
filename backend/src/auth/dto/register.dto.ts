@@ -1,7 +1,8 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsNormalizedEmail } from '../../common/decorators/normalized-email.decorator';
 
 export class RegisterDto {
-  @IsEmail({}, { message: 'Adresa de email nu este validă' })
+  @IsNormalizedEmail()
   email: string;
 
   @IsString()
