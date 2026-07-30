@@ -17,9 +17,15 @@
 set -eu
 
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+EXTERNAL_KEEP="${BACKUP_EXTERNAL_KEEP:-10}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 DB_DIR=/backups/db
 FILES_DIR=/backups/files
+
+# Discul extern (E:\Backup ShelfShare), montat din compose. Dacă lipsește -
+# HDD deconectat, partajarea de drive oprită în Docker Desktop - continuăm
+# doar cu copia locală, dar o spunem în log în loc să tăcem.
+EXTERNAL_DIR=/backups-external
 
 mkdir -p "$DB_DIR" "$FILES_DIR"
 
@@ -55,12 +61,54 @@ tar czf "$FILES_FILE.partial" -C /minio-data . 2>/dev/null || {
 mv "$FILES_FILE.partial" "$FILES_FILE"
 log "fișiere: $(du -h "$FILES_FILE" | cut -f1)"
 
-# --- Retenție ---------------------------------------------------------------
-log "șterg backup-urile mai vechi de $RETENTION_DAYS zile"
+# --- Copie pe discul extern -------------------------------------------------
+# Volumul local stă pe același disc ca baza de date, deci nu acoperă o
+# defecțiune de disc. Copia de aici e pe alt HDD fizic.
+if [ -d "$EXTERNAL_DIR" ]; then
+  log "copiez pe discul extern"
+  mkdir -p "$EXTERNAL_DIR/db" "$EXTERNAL_DIR/files"
+
+  # Aceeași tehnică .partial: pe un disc extern (sau montat prin Docker
+  # Desktop) o copiere întreruptă ar lăsa altfel un fișier pe jumătate care
+  # arată ca un backup bun.
+  cp "$DB_FILE" "$EXTERNAL_DIR/db/$(basename "$DB_FILE").partial"
+  mv "$EXTERNAL_DIR/db/$(basename "$DB_FILE").partial" "$EXTERNAL_DIR/db/$(basename "$DB_FILE")"
+
+  cp "$FILES_FILE" "$EXTERNAL_DIR/files/$(basename "$FILES_FILE").partial"
+  mv "$EXTERNAL_DIR/files/$(basename "$FILES_FILE").partial" "$EXTERNAL_DIR/files/$(basename "$FILES_FILE")"
+
+  # Retenție pe număr de generații, nu pe zile: pe extern ținem ultimele
+  # $EXTERNAL_KEEP, indiferent cât de rar a rulat backup-ul. Dacă mașina a fost
+  # închisă o săptămână, o regulă pe zile ar fi șters copii pe care încă le vrem.
+  #
+  # Sortarea e pe NUME, nu pe dată de fișier: numele conține STAMP-ul
+  # (AAAALLZZ-HHMMSS), deci ordinea alfabetică e ordine cronologică, iar
+  # copierea pe alt volum poate schimba mtime-ul.
+  prune_external() {
+    dir="$1"
+    pattern="$2"
+    total=$(find "$dir" -maxdepth 1 -name "$pattern" -type f | wc -l)
+    excess=$((total - EXTERNAL_KEEP))
+    if [ "$excess" -gt 0 ]; then
+      log "  șterg $excess generații vechi din $(basename "$dir")"
+      find "$dir" -maxdepth 1 -name "$pattern" -type f | sort | head -n "$excess" |
+        while IFS= read -r old; do rm -f "$old"; done
+    fi
+  }
+  prune_external "$EXTERNAL_DIR/db" 'shelfshare-*.sql.gz'
+  prune_external "$EXTERNAL_DIR/files" 'minio-*.tar.gz'
+
+  log "  extern: $(find "$EXTERNAL_DIR/db" -name '*.sql.gz' | wc -l) generații, $(du -sh "$EXTERNAL_DIR" | cut -f1)"
+else
+  log "ATENȚIE: discul extern nu e montat ($EXTERNAL_DIR lipsește) - doar copie locală"
+fi
+
+# --- Retenție locală --------------------------------------------------------
+log "șterg backup-urile locale mai vechi de $RETENTION_DAYS zile"
 find "$DB_DIR" -name 'shelfshare-*.sql.gz' -type f -mtime "+$RETENTION_DAYS" -delete
 find "$FILES_DIR" -name 'minio-*.tar.gz' -type f -mtime "+$RETENTION_DAYS" -delete
 
 # Curățăm și eventualele .partial rămase de la rulări întrerupte.
 find /backups -name '*.partial' -type f -mtime +1 -delete
 
-log "gata. Total ocupat: $(du -sh /backups | cut -f1)"
+log "gata. Local: $(du -sh /backups | cut -f1)"
