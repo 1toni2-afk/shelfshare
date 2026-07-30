@@ -55,45 +55,49 @@ class MainScaffold extends ConsumerWidget {
       (icon: Icons.person_outline, activeIcon: Icons.person, label: l10n.navProfile, badge: 0),
     ];
 
+    // Bara nu se mai întinde pe toată lățimea ecranului: pe desktop, cele 5
+    // destinații erau împrăștiate la câteva sute de pixeli una de alta.
+    // Rămâne un bloc de lățime fixă, centrat prin padding orizontal calculat
+    // din lățimea reală a ecranului. NU folosim `Align` aici - `Align` cere
+    // maxHeight finit, iar slotul de `bottomNavigationBar` primește
+    // `maxHeight: infinity`, ceea ce dobora tot layout-ul și lăsa ecranul gol.
+    // Padding-ul păstrează înălțimea intrinsecă a `NavigationBar`.
     return Scaffold(
       body: navigationShell,
-      // Bara nu se mai întinde pe toată lățimea ecranului: pe desktop, cele 5
-      // destinații erau împrăștiate la câteva sute de pixeli una de alta.
-      // Rămâne un bloc de lățime fixă, centrat, cu fundalul barei păstrat pe
-      // toată lățimea ca să nu apară o dungă de altă culoare pe margini.
-      bottomNavigationBar: ColoredBox(
-        color: AppColors.card,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: kBottomNavMaxWidth),
+      bottomNavigationBar: LayoutBuilder(
+        builder: (context, constraints) {
+          final extra = constraints.maxWidth > kBottomNavMaxWidth
+              ? (constraints.maxWidth - kBottomNavMaxWidth) / 2
+              : 0.0;
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: extra),
             child: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
-        backgroundColor: AppColors.card,
-        indicatorColor: AppColors.accent.withValues(alpha: 0.15),
-        destinations: [
-          for (final d in destinations)
-            NavigationDestination(
-              icon: Badge(
-                label: Text('${d.badge}'),
-                isLabelVisible: d.badge > 0,
-                child: Icon(d.icon),
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
               ),
-              selectedIcon: Badge(
-                label: Text('${d.badge}'),
-                isLabelVisible: d.badge > 0,
-                child: Icon(d.activeIcon, color: AppColors.primary),
-              ),
-              label: d.label,
+              backgroundColor: AppColors.card,
+              indicatorColor: AppColors.accent.withValues(alpha: 0.15),
+              destinations: [
+                for (final d in destinations)
+                  NavigationDestination(
+                    icon: Badge(
+                      label: Text('${d.badge}'),
+                      isLabelVisible: d.badge > 0,
+                      child: Icon(d.icon),
+                    ),
+                    selectedIcon: Badge(
+                      label: Text('${d.badge}'),
+                      isLabelVisible: d.badge > 0,
+                      child: Icon(d.activeIcon, color: AppColors.primary),
+                    ),
+                    label: d.label,
+                  ),
+              ],
             ),
-        ],
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
