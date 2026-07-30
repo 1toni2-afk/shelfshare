@@ -28,7 +28,6 @@ class DiscoverScreen extends ConsumerWidget {
     final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         title: Text(l10n.navSearch),
         actions: [
           IconButton(

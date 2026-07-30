@@ -44,7 +44,10 @@ class NotificationsScreen extends ConsumerWidget {
           context.push('/users/$userId');
         }
       case NotificationType.nearbyBookListed:
+      case NotificationType.interestBookListed:
         context.push('/search');
+      case NotificationType.unknown:
+        break; // tip necunoscut clientului - afișăm textul, fără acțiune la tap
       case NotificationType.priceChanged:
         context.push('/wishlist');
       case NotificationType.outbid:
@@ -141,6 +144,10 @@ class NotificationsScreen extends ConsumerWidget {
         return Icons.person_add_alt_outlined;
       case NotificationType.nearbyBookListed:
         return Icons.location_on_outlined;
+      case NotificationType.interestBookListed:
+        return Icons.auto_awesome_outlined;
+      case NotificationType.unknown:
+        return Icons.notifications_outlined;
       case NotificationType.priceChanged:
         return Icons.price_change_outlined;
       case NotificationType.outbid:

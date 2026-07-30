@@ -55,6 +55,13 @@ model User {
 
   lastActiveAt DateTime?
 
+  // Momentul ultimei deconectări de la socket-ul de chat - baza pentru
+  // „Last seen" din conversație. Diferit de lastActiveAt, care se atinge la
+  // orice request HTTP autentificat (inclusiv polling de fundal) și deci e
+  // prea „optimist" ca să arate dacă omul chiar e la telefon acum.
+  // Prezența live (online/offline) NU se stochează - vezi ChatGateway.
+  lastSeenAt DateTime?
+
   // Reading Streak - zile consecutive cu activitate (vezi JwtAuthGuard),
   // calculat pe zi calendaristică, nu pe fereastră de 24h.
   currentStreakDays Int      @default(0)
@@ -71,6 +78,24 @@ model User {
   // se calculează din BookshelfEntry cu status FINISHED din anul curent,
   // nu e stocat separat.
   readingChallengeGoal Int?
+
+  // Profilul de cititor, completat la primul login (vezi ReadingSurveyService).
+  // Alimentează recomandările și notificarea „carte nouă pe gustul tău".
+  //
+  // Genurile sunt liste de text, nu un enum: valorile din `books.genre` vin din
+  // surse externe (OpenLibrary/Google Books) și nu putem garanta că se
+  // încadrează într-un set fix. Lista propusă în UI stă în
+  // common/constants/book-genres.ts.
+  favoriteGenres  String[] @default([])
+  favoriteAuthors String[] @default([])
+
+  // Câte cărți citește pe lună, ca text scurt („1", "2-3", "4+"). Momentan
+  // doar informativ pentru profil - nu intră în algoritmul de recomandare.
+  readingPace String?
+
+  // Marcat și când userul sare peste chestionar: altfel l-am întreba la
+  // fiecare pornire pe cineva care a refuzat deja o dată.
+  readingSurveyCompletedAt DateTime?
 
   isAdmin  Boolean @default(false)
   isBanned Boolean @default(false)
@@ -206,6 +231,14 @@ model Report {
 
   userBookId String?
   userBook   UserBook? @relation(fields: [userBookId], references: [id], onDelete: SetNull)
+
+  // Setate doar când raportul pleacă dintr-o conversație: la raportare
+  // exportăm transcriptul ca fișier text în storage (folderul chat-reports/)
+  // și păstrăm calea aici. Snapshot, nu link viu - dacă ulterior se șterge
+  // conversația, dovada rămâne. Vezi ConversationsService#reportConversation.
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  transcriptPath String?
 
   createdAt DateTime @default(now())
 
@@ -694,10 +727,25 @@ model Conversation {
   userBId String
   userB   User   @relation("ConversationUserB", fields: [userBId], references: [id], onDelete: Cascade)
 
+  // Arhivare și ștergere sunt per-participant, nu pentru toată conversația -
+  // dacă A își arhivează sau șterge chatul, B trebuie să îl vadă mai departe
+  // neatins. De aceea sunt câte două coloane, una pentru fiecare capăt.
+  //
+  // archivedAt = ascuns din lista principală, dar reapare la primul mesaj nou.
+  // clearedAt  = „șterge chatul": conversația dispare din listă și mesajele
+  //              de dinainte de acest moment nu se mai încarcă pentru el.
+  //              Nu ștergem rândurile - celălalt participant păstrează
+  //              istoricul complet, iar un chat raportat rămâne exportabil.
+  userAArchivedAt DateTime?
+  userBArchivedAt DateTime?
+  userAClearedAt  DateTime?
+  userBClearedAt  DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   messages Message[]
+  reports  Report[]
 
   @@unique([userAId, userBId])
   @@map("conversations")
@@ -728,10 +776,20 @@ model Message {
   priceOfferId String?
   priceOffer   PriceOffer? @relation(fields: [priceOfferId], references: [id], onDelete: SetNull)
 
+  // Reply la un mesaj anterior. SetNull, nu Cascade: dacă mesajul citat
+  // dispare, răspunsul rămâne - doar citatul se pierde (UI-ul afișează
+  // „mesaj șters" când replyTo e null dar replyToId era setat).
+  replyToId String?
+  replyTo   Message?  @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Message[] @relation("MessageReply")
+
   isRead Boolean @default(false)
 
   createdAt DateTime @default(now())
 
+  // Paginarea și căutarea în conversație merg mereu pe (conversationId,
+  // createdAt) - fără index, fiecare deschidere de chat scanează tot tabelul.
+  @@index([conversationId, createdAt])
   @@map("messages")
 }
 
@@ -762,6 +820,8 @@ enum NotificationType {
   PRICE_OFFER_REJECTED
   FOLLOWED_USER_NEW_BOOK
   NEARBY_BOOK_LISTED
+  // Carte listată într-un gen pe care userul l-a bifat în profilul de cititor.
+  INTEREST_BOOK_LISTED
   PRICE_CHANGED
   OUTBID
   AUCTION_WON

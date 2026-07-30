@@ -10,10 +10,16 @@ enum NotificationType {
   priceOfferRejected,
   followedUserNewBook,
   nearbyBookListed,
+  interestBookListed,
   priceChanged,
   outbid,
   auctionWon,
   auctionEnded,
+
+  /// Tip trimis de backend pe care versiunea asta de aplicație nu îl cunoaște.
+  /// Notificarea se afișează cu textul primit de la server și fără acțiune la
+  /// tap - important ca un backend mai nou să nu strice un client mai vechi.
+  unknown,
 }
 
 extension NotificationTypeX on NotificationType {
@@ -41,6 +47,8 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.followedUserNewBook;
       case 'NEARBY_BOOK_LISTED':
         return NotificationType.nearbyBookListed;
+      case 'INTEREST_BOOK_LISTED':
+        return NotificationType.interestBookListed;
       case 'PRICE_CHANGED':
         return NotificationType.priceChanged;
       case 'OUTBID':
@@ -50,7 +58,10 @@ extension NotificationTypeX on NotificationType {
       case 'AUCTION_ENDED':
         return NotificationType.auctionEnded;
       default:
-        throw ArgumentError('Tip necunoscut: $value');
+        // Deliberat NU aruncăm: un tip adăugat pe backend înaintea unui release
+        // de aplicație ar face să crape întreaga listă de notificări, nu doar
+        // rândul respectiv.
+        return NotificationType.unknown;
     }
   }
 }

@@ -32,4 +32,9 @@ export class SendMessageDto {
   @IsOptional()
   @IsDateString()
   meetingAt?: string;
+
+  /** Mesajul citat, dacă acesta e un răspuns. Trebuie din aceeași conversație. */
+  @IsOptional()
+  @IsUUID()
+  replyToId?: string;
 }

@@ -38,6 +38,7 @@ import '../../features/groups/presentation/groups_screen.dart';
 import '../../features/groups/presentation/group_detail_screen.dart';
 import '../../features/profile/presentation/seller_analytics_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
+import '../../features/profile/presentation/reading_survey_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
 import '../../features/safety/presentation/safety_center_screen.dart';
@@ -68,6 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoading = authState is AuthInitial || authState is AuthLoading;
       final goingToAuth = _publicRoutes.contains(state.matchedLocation);
       final goingToOnboarding = state.matchedLocation == '/onboarding';
+      final goingToSurvey = state.matchedLocation == '/reading-survey';
 
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
@@ -82,6 +84,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isAuthenticated &&
           authState.user.username != null &&
           goingToOnboarding) {
+        return '/';
+      }
+      // Imediat după onboarding: chestionarul de profil de cititor. Se poate
+      // sări peste, iar „sar peste" setează tot readingSurveyCompletedAt, deci
+      // condiția de aici nu se mai îndeplinește a doua oară.
+      if (isAuthenticated &&
+          authState.user.username != null &&
+          authState.user.readingSurveyCompletedAt == null &&
+          !goingToSurvey) {
+        return '/reading-survey';
+      }
+      if (isAuthenticated &&
+          authState.user.readingSurveyCompletedAt != null &&
+          goingToSurvey) {
         return '/';
       }
       return null;
@@ -101,6 +117,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
+      GoRoute(
+        path: '/reading-survey',
+        builder: (context, state) => const ReadingSurveyScreen(),
+      ),
       GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
       GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
       GoRoute(path: '/library/trash', builder: (context, state) => const TrashScreen()),
@@ -165,6 +185,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           userBookId: state.pathParameters['userBookId']!,
           fallbackOwner: state.extra as PublicUser?,
         ),
+      ),
+      // Înaintea rutei cu parametru: altfel „archived" ar fi interpretat ca
+      // un conversationId (go_router ia prima rută care se potrivește).
+      GoRoute(
+        path: '/chat/archived',
+        builder: (context, state) => const ConversationsListScreen(archived: true),
       ),
       GoRoute(
         path: '/chat/:conversationId',

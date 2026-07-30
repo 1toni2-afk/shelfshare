@@ -23,25 +23,152 @@ export class BookLookupService {
   /**
    * Caută o carte după ISBN. Încearcă Open Library întâi; dacă nu găsește
    * nimic sau eșuează, încearcă Google Books.
+   *
+   * Chiar dacă primul provider răspunde, completăm coperta din celălalt când
+   * lipsește: înainte, un rezultat Open Library fără copertă era acceptat ca
+   * final și Google Books nu mai era întrebat niciodată, deși de multe ori are
+   * imaginea. De aici veneau anunțurile fără copertă.
    */
   async lookupByIsbn(isbn: string): Promise<ExternalBookResult | null> {
     const cleanIsbn = isbn.replace(/[-\s]/g, '');
 
     const fromOpenLibrary = await this.tryOpenLibraryByIsbn(cleanIsbn);
-    if (fromOpenLibrary) return fromOpenLibrary;
+    if (fromOpenLibrary) {
+      return this.withCoverFallback(fromOpenLibrary, cleanIsbn);
+    }
 
-    return this.tryGoogleBooksByIsbn(cleanIsbn);
+    const fromGoogle = await this.tryGoogleBooksByIsbn(cleanIsbn);
+    return fromGoogle ? this.withCoverFallback(fromGoogle, cleanIsbn) : null;
   }
 
   /**
    * Căutare după titlu/text liber - întoarce mai multe rezultate,
    * ca utilizatorul să aleagă ediția corectă.
+   *
+   * Rezultatele fără copertă sunt completate din Open Library Covers (un URL
+   * direct pe ISBN, deci fără încă un apel de API). Facem asta doar pentru
+   * primele [_coverFallbackLimit] rezultate: userul alege aproape mereu din
+   * capul listei, iar o verificare pentru fiecare rezultat ar încetini căutarea.
    */
   async searchByTitle(query: string): Promise<ExternalBookResult[]> {
     const fromOpenLibrary = await this.tryOpenLibrarySearch(query);
-    if (fromOpenLibrary.length > 0) return fromOpenLibrary;
+    const results =
+      fromOpenLibrary.length > 0
+        ? fromOpenLibrary
+        : await this.tryGoogleBooksSearch(query);
 
-    return this.tryGoogleBooksSearch(query);
+    return Promise.all(
+      results.map((result, index) =>
+        index < BookLookupService._coverFallbackLimit
+          ? this.withCoverFallback(result, result.isbn)
+          : Promise.resolve(result),
+      ),
+    );
+  }
+
+  /** Câte rezultate de căutare primesc completare de copertă. */
+  private static readonly _coverFallbackLimit = 10;
+
+  /**
+   * Completează `coverUrl` când lipsește, în ordinea: Google Books (are
+   * metadate verificabile în JSON) → Open Library Covers pe ISBN.
+   *
+   * Pentru Open Library Covers folosim `default=false`, altfel serviciul
+   * întoarce o imagine-placeholder goală în loc de 404, iar noi am salva un
+   * URL care arată o copertă albă. Verificăm cu un HEAD înainte de a-l accepta.
+   */
+  private async withCoverFallback(
+    result: ExternalBookResult,
+    isbn: string | null,
+  ): Promise<ExternalBookResult> {
+    if (result.coverUrl || !isbn) return result;
+
+    const fromGoogle = await this.tryGoogleBooksCover(isbn);
+    if (fromGoogle) return { ...result, coverUrl: fromGoogle };
+
+    const openLibraryCover = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false`;
+    if (await this.urlExists(openLibraryCover)) {
+      return { ...result, coverUrl: openLibraryCover };
+    }
+
+    return result;
+  }
+
+  /**
+   * Coperta unei cărți fără ISBN, căutată pe titlu + autor.
+   *
+   * Măsurat pe cele 8 titluri fără copertă din baza de date (clasici români),
+   * asta recuperează ~3 din 8. Google Books nu are coperte pentru ediții
+   * românești, Open Library are pentru unele - de aceea încercăm Open Library
+   * întâi aici, invers față de restul serviciului. Restul cazurilor rămân pe
+   * seama pozei urcate de proprietar (vezi BookCover.fallbackUrl în client).
+   */
+  async lookupCoverByTitle(
+    title: string,
+    author: string | null,
+  ): Promise<string | null> {
+    const fromOpenLibrary = await this.tryOpenLibraryCoverByTitle(title, author);
+    if (fromOpenLibrary) return fromOpenLibrary;
+
+    const results = await this.tryGoogleBooksSearch(
+      author ? `${title} ${author}` : title,
+    );
+    return results.find((r) => r.coverUrl)?.coverUrl ?? null;
+  }
+
+  private async tryOpenLibraryCoverByTitle(
+    title: string,
+    author: string | null,
+  ): Promise<string | null> {
+    try {
+      const params = new URLSearchParams({ title, limit: '10' });
+      if (author) params.set('author', author);
+      const url = `https://openlibrary.org/search.json?${params.toString()}&fields=cover_i`;
+
+      const { data } = await firstValueFrom(
+        this.http.get<{ docs?: { cover_i?: number }[] }>(url),
+      );
+      const withCover = data.docs?.find((d) => d.cover_i != null);
+      return withCover
+        ? `https://covers.openlibrary.org/b/id/${withCover.cover_i}-L.jpg`
+        : null;
+    } catch (error) {
+      this.logger.warn(
+        `Open Library copertă pe titlu eșuată pentru "${title}": ${error}`,
+      );
+      return null;
+    }
+  }
+
+  /** Doar coperta de la Google Books, pentru completarea unui rezultat. */
+  private async tryGoogleBooksCover(isbn: string): Promise<string | null> {
+    try {
+      type GoogleVolume = {
+        volumeInfo?: { imageLinks?: { thumbnail?: string } };
+      };
+
+      const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+      const { data } = await firstValueFrom(
+        this.http.get<{ items?: GoogleVolume[] }>(url),
+      );
+      const thumbnail = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+      return thumbnail?.replace('http://', 'https://') ?? null;
+    } catch (error) {
+      this.logger.warn(`Google Books copertă eșuată pentru ISBN ${isbn}: ${error}`);
+      return null;
+    }
+  }
+
+  private async urlExists(url: string): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.http.head(url, { timeout: 4000 }),
+      );
+      return response.status >= 200 && response.status < 300;
+    } catch {
+      // 404 (nu există copertă) sau timeout - în ambele cazuri nu o folosim.
+      return false;
+    }
   }
 
   // ---------- Open Library ----------

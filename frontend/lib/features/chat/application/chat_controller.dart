@@ -14,6 +14,11 @@ class ChatState {
     this.isLoadingMore = false,
     this.hasMore = true,
     this.otherUserTyping = false,
+    this.otherUserOnline = false,
+    this.otherUserLastSeenAt,
+    this.replyTo,
+    this.isSendingPhoto = false,
+    this.sendFailed = false,
     this.error,
   });
 
@@ -22,6 +27,17 @@ class ChatState {
   final bool isLoadingMore;
   final bool hasMore;
   final bool otherUserTyping;
+  final bool otherUserOnline;
+  final DateTime? otherUserLastSeenAt;
+
+  /// Mesajul citat în bara de deasupra câmpului de scris, cât timp userul
+  /// compune un răspuns. Se golește după trimitere sau la anulare.
+  final ChatMessage? replyTo;
+  final bool isSendingPhoto;
+
+  /// Ultima trimitere nu a fost confirmată de server. Ecranul îl anunță pe
+  /// user, ca mesajul să nu pară plecat când de fapt s-a pierdut.
+  final bool sendFailed;
   final String? error;
 
   ChatState copyWith({
@@ -30,6 +46,12 @@ class ChatState {
     bool? isLoadingMore,
     bool? hasMore,
     bool? otherUserTyping,
+    bool? otherUserOnline,
+    DateTime? otherUserLastSeenAt,
+    ChatMessage? replyTo,
+    bool clearReplyTo = false,
+    bool? isSendingPhoto,
+    bool? sendFailed,
     String? error,
     bool clearError = false,
   }) {
@@ -39,6 +61,11 @@ class ChatState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
       otherUserTyping: otherUserTyping ?? this.otherUserTyping,
+      otherUserOnline: otherUserOnline ?? this.otherUserOnline,
+      otherUserLastSeenAt: otherUserLastSeenAt ?? this.otherUserLastSeenAt,
+      replyTo: clearReplyTo ? null : (replyTo ?? this.replyTo),
+      isSendingPhoto: isSendingPhoto ?? this.isSendingPhoto,
+      sendFailed: sendFailed ?? this.sendFailed,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -53,6 +80,11 @@ class ChatController extends Notifier<ChatState> {
   late final ChatRepository _repository;
   late final ChatSocketService _socketService;
   Timer? _typingResetTimer;
+
+  /// Setat de ecran imediat după build, ca prezența primită pe socket să fie
+  /// filtrată după persoana potrivită (aceeași cameră `user:<id>` primește
+  /// prezența tuturor partenerilor de discuție).
+  String? otherUserId;
 
   @override
   ChatState build() {
@@ -72,21 +104,25 @@ class ChatController extends Notifier<ChatState> {
     }
 
     await _socketService.connect();
-    _socketService.joinConversation(conversationId);
+    _socketService.joinConversation(
+      conversationId,
+      onJoined: (online) => state = state.copyWith(otherUserOnline: online),
+    );
     _socketService.onNewMessage(_handleNewMessage);
     _socketService.onUserTyping(_handleUserTyping);
-    unawaited(_repository.markAsRead(conversationId));
+    _socketService.onMessagesRead(_handleMessagesRead);
+    _socketService.onUserPresence(_handlePresence);
+    _markRead();
   }
 
   void _handleNewMessage(ChatMessage message) {
     if (message.conversationId != conversationId) return;
+    // Pozele proprii sunt deja adăugate optimist la finalul upload-ului, deci
+    // difuzarea de pe server ar produce un duplicat.
+    if (state.messages.any((m) => m.id == message.id)) return;
     state = state.copyWith(messages: [...state.messages, message]);
 
-    final authState = ref.read(authControllerProvider);
-    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
-    if (message.senderId != currentUserId) {
-      unawaited(_repository.markAsRead(conversationId));
-    }
+    if (message.senderId != _currentUserId) _markRead();
   }
 
   void _handleUserTyping(String forConversationId) {
@@ -98,10 +134,81 @@ class ChatController extends Notifier<ChatState> {
     });
   }
 
+  /// Celălalt a deschis conversația: toate mesajele mele de până acum sunt
+  /// citite, deci bifa „Văzut" de sub ultimul mesaj propriu devine activă.
+  void _handleMessagesRead(String forConversationId) {
+    if (forConversationId != conversationId) return;
+    final me = _currentUserId;
+    state = state.copyWith(
+      messages: [
+        for (final m in state.messages)
+          m.senderId == me && !m.isRead ? m.copyWith(isRead: true) : m,
+      ],
+    );
+  }
+
+  void _handlePresence(String userId, bool isOnline, DateTime? lastSeenAt) {
+    if (userId != otherUserId) return;
+    state = state.copyWith(otherUserOnline: isOnline, otherUserLastSeenAt: lastSeenAt);
+  }
+
+  String? get _currentUserId {
+    final authState = ref.read(authControllerProvider);
+    return authState is AuthAuthenticated ? authState.user.id : null;
+  }
+
+  /// Marcăm și pe socket (pentru bifa instantanee a expeditorului), și pe HTTP
+  /// (sursa de adevăr pentru badge-ul din lista de conversații).
+  void _markRead() {
+    _socketService.markRead(conversationId);
+    unawaited(_repository.markAsRead(conversationId));
+  }
+
+  void setReplyTo(ChatMessage? message) {
+    state = message == null
+        ? state.copyWith(clearReplyTo: true)
+        : state.copyWith(replyTo: message);
+  }
+
   void sendMessage(String content) {
     final trimmed = content.trim();
     if (trimmed.isEmpty) return;
-    _socketService.sendMessage(conversationId: conversationId, content: trimmed);
+    _socketService.sendMessage(
+      conversationId: conversationId,
+      content: trimmed,
+      replyToId: state.replyTo?.id,
+      onFailed: _markSendFailed,
+    );
+    state = state.copyWith(clearReplyTo: true, sendFailed: false);
+  }
+
+  void _markSendFailed() {
+    state = state.copyWith(sendFailed: true);
+  }
+
+  void clearSendFailed() {
+    if (state.sendFailed) state = state.copyWith(sendFailed: false);
+  }
+
+  Future<bool> sendPhoto(List<int> bytes, String filename) async {
+    state = state.copyWith(isSendingPhoto: true);
+    try {
+      final message = await _repository.sendPhoto(
+        conversationId,
+        bytes: bytes,
+        filename: filename,
+        replyToId: state.replyTo?.id,
+      );
+      state = state.copyWith(
+        messages: [...state.messages, message],
+        isSendingPhoto: false,
+        clearReplyTo: true,
+      );
+      return true;
+    } catch (_) {
+      state = state.copyWith(isSendingPhoto: false);
+      return false;
+    }
   }
 
   void sendLocation(
@@ -118,7 +225,10 @@ class ChatController extends Notifier<ChatState> {
       locationLat: lat,
       locationLng: lng,
       meetingAt: meetingAt.toIso8601String(),
+      replyToId: state.replyTo?.id,
+      onFailed: _markSendFailed,
     );
+    state = state.copyWith(clearReplyTo: true, sendFailed: false);
   }
 
   /// Actualizare optimistă imediat după accept/refuz dintr-un card de ofertă
@@ -171,6 +281,8 @@ class ChatController extends Notifier<ChatState> {
     _typingResetTimer?.cancel();
     _socketService.offNewMessage();
     _socketService.offUserTyping();
+    _socketService.offMessagesRead();
+    _socketService.offUserPresence();
   }
 }
 

@@ -28,6 +28,14 @@ class AppUser {
   /// la această dată dacă nu anulează între timp. Vezi AccountDeletionService.
   final DateTime? deletionScheduledAt;
 
+  /// Profilul de cititor (chestionarul de la primul login).
+  /// `readingSurveyCompletedAt` e setat și când userul a sărit peste el, ca
+  /// să nu îl mai întrebăm - vezi redirect-ul din app_router.dart.
+  final List<String> favoriteGenres;
+  final List<String> favoriteAuthors;
+  final String? readingPace;
+  final DateTime? readingSurveyCompletedAt;
+
   const AppUser({
     required this.id,
     required this.email,
@@ -52,6 +60,10 @@ class AppUser {
     this.impactStats,
     this.gamification,
     this.deletionScheduledAt,
+    this.favoriteGenres = const [],
+    this.favoriteAuthors = const [],
+    this.readingPace,
+    this.readingSurveyCompletedAt,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -88,6 +100,14 @@ class AppUser {
           : null,
       deletionScheduledAt: json['deletionScheduledAt'] != null
           ? DateTime.parse(json['deletionScheduledAt'] as String)
+          : null,
+      favoriteGenres:
+          (json['favoriteGenres'] as List<dynamic>?)?.cast<String>() ?? const [],
+      favoriteAuthors:
+          (json['favoriteAuthors'] as List<dynamic>?)?.cast<String>() ?? const [],
+      readingPace: json['readingPace'] as String?,
+      readingSurveyCompletedAt: json['readingSurveyCompletedAt'] != null
+          ? DateTime.parse(json['readingSurveyCompletedAt'] as String)
           : null,
     );
   }
@@ -598,6 +618,11 @@ class PublicUser {
   final Bookshelf? bookshelf;
   final GamificationStats? gamification;
 
+  /// Prezență în chat - vin doar din endpoint-urile de conversații, nu de pe
+  /// profilul public (vezi PARTICIPANT_SELECT în conversations.service.ts).
+  final bool isOnline;
+  final DateTime? lastSeenAt;
+
   const PublicUser({
     required this.id,
     this.name,
@@ -621,7 +646,38 @@ class PublicUser {
     this.impactStats,
     this.bookshelf,
     this.gamification,
+    this.isOnline = false,
+    this.lastSeenAt,
   });
+
+  PublicUser copyWithPresence({required bool isOnline, DateTime? lastSeenAt}) {
+    return PublicUser(
+      id: id,
+      name: name,
+      username: username,
+      city: city,
+      profileImage: profileImage,
+      isPremium: isPremium,
+      rating: rating,
+      bio: bio,
+      booksExchangedCount: booksExchangedCount,
+      booksSharedCount: booksSharedCount,
+      booksReceivedCount: booksReceivedCount,
+      memberSince: memberSince,
+      listedBooks: listedBooks,
+      listingsCount: listingsCount,
+      acquisitionHistory: acquisitionHistory,
+      trustScore: trustScore,
+      reviews: reviews,
+      readingStats: readingStats,
+      achievements: achievements,
+      impactStats: impactStats,
+      bookshelf: bookshelf,
+      gamification: gamification,
+      isOnline: isOnline,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+    );
+  }
 
   factory PublicUser.fromJson(Map<String, dynamic> json) {
     return PublicUser(
@@ -666,6 +722,10 @@ class PublicUser {
           : null,
       gamification: json['gamification'] != null
           ? GamificationStats.fromJson(json['gamification'] as Map<String, dynamic>)
+          : null,
+      isOnline: json['isOnline'] as bool? ?? false,
+      lastSeenAt: json['lastSeenAt'] != null
+          ? DateTime.parse(json['lastSeenAt'] as String)
           : null,
     );
   }

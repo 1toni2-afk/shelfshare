@@ -234,7 +234,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               items: [
                 DropdownMenuItem(value: null, child: Text(l10n.filtersAnyCondition)),
                 for (final condition in BookCondition.values)
-                  DropdownMenuItem(value: condition, child: Text(condition.label)),
+                  DropdownMenuItem(value: condition, child: Text(condition.label(l10n))),
               ],
               onChanged: (value) => setState(() => _condition = value),
             ),

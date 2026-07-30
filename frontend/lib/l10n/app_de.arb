@@ -105,6 +105,28 @@
     "onboardingNameVisibleSwitch":  "Meinen Namen öffentlich sichtbar machen",
     "onboardingUsernameAlwaysVisible":  "Dein Benutzername bleibt immer sichtbar",
     "profileTitle":  "Mein Profil",
+    "surveyTitle":  "Was liest du gern?",
+    "surveySubtitle":  "Mit ein paar Antworten können wir dir passende Bücher empfehlen und dich benachrichtigen, wenn eines nach deinem Geschmack auftaucht.",
+    "surveyGenresQuestion":  "Welche Genres sprechen dich an?",
+    "surveyGenresLoadError":  "Die Genre-Liste konnte nicht geladen werden.",
+    "surveyAuthorsQuestion":  "Lieblingsautoren (optional)",
+    "surveyAuthorsHint":  "z. B. Mihail Sadoveanu, Ursula K. Le Guin",
+    "surveyPaceQuestion":  "Wie viele Bücher liest du pro Monat?",
+    "surveySubmit":  "Speichern",
+    "surveySkip":  "Später",
+    "surveySaveError":  "Die Antworten konnten nicht gespeichert werden. Bitte erneut versuchen.",
+    "surveyChangeLaterHint":  "Du kannst deine Antworten jederzeit im Profil ändern.",
+    "surveyPaceOption":  "{pace} Bücher pro Monat",
+    "@surveyPaceOption":  {
+        "placeholders":  {
+            "pace":  {
+                "type":  "String"
+            }
+        }
+    },
+    "profilePhotoChoose":  "Foto auswählen",
+    "profilePhotoRemove":  "Foto entfernen",
+    "profilePhotoError":  "Das Profilfoto konnte nicht aktualisiert werden.",
     "profileCopyLink":  "Link kopieren",
     "profileLoadError":  "Dein Profil konnte nicht geladen werden.",
     "profileAboutMe":  "Über mich",
@@ -261,6 +283,10 @@
     "filtersLanguage":  "Sprache",
     "filtersAnyCity":  "Beliebige Stadt",
     "filtersCondition":  "Zustand",
+    "bookConditionNew":  "Neu",
+    "bookConditionVeryGood":  "Sehr gut",
+    "bookConditionGood":  "Gut",
+    "bookConditionAcceptable":  "Akzeptabel",
     "filtersAnyCondition":  "Beliebiger Zustand",
     "filtersListingType":  "Anzeigenart",
     "filtersListingTypeSwap":  "Tausch",
@@ -454,6 +480,55 @@
     "chatUserBlocked":  "Nutzer blockiert",
     "chatBlockUpdateError":  "Die Blockierung konnte nicht aktualisiert werden",
     "chatTyping":  "schreibt...",
+    "chatSendFailed":  "Die Nachricht konnte nicht gesendet werden. Prüfe deine Verbindung.",
+    "chatOnline":  "online",
+    "chatOffline":  "offline",
+    "chatLastSeenJustNow":  "gerade eben zuletzt online",
+    "chatLastSeenMinutes":  "zuletzt online vor {minutes} Min.",
+    "@chatLastSeenMinutes":  {
+        "placeholders":  {
+            "minutes":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenHours":  "zuletzt online vor {hours} Std.",
+    "@chatLastSeenHours":  {
+        "placeholders":  {
+            "hours":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenDays":  "zuletzt online vor {days} T.",
+    "@chatLastSeenDays":  {
+        "placeholders":  {
+            "days":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatSeen":  "Gelesen",
+    "chatSent":  "Gesendet",
+    "chatReply":  "Antworten",
+    "chatCopyMessage":  "Nachricht kopieren",
+    "chatMessageCopied":  "Nachricht kopiert",
+    "chatReplyToYou":  "Du",
+    "chatReplyToThem":  "Zitierte Nachricht",
+    "chatAttachPhoto":  "Foto senden",
+    "chatPhotoSendError":  "Das Foto konnte nicht gesendet werden.",
+    "chatSearchInConversation":  "In der Unterhaltung suchen",
+    "chatSearchNoResults":  "Keine Nachrichten gefunden.",
+    "chatArchive":  "Archivieren",
+    "chatUnarchive":  "Aus Archiv holen",
+    "chatArchived":  "Unterhaltung archiviert",
+    "chatArchivedTitle":  "Archiviert",
+    "chatEmptyArchived":  "Du hast keine archivierten Unterhaltungen.",
+    "chatDeleteTitle":  "Chat löschen",
+    "chatDeleteConfirm":  "Die Unterhaltung verschwindet nur für dich. Die andere Person behält ihre Nachrichten.",
+    "chatActionError":  "Das hat nicht geklappt. Bitte versuche es erneut.",
+    "chatReportConversation":  "Unterhaltung melden",
+    "chatConversationReported":  "Die Unterhaltung wurde gemeldet. Unser Team prüft sie.",
     "chatBlockedNotice":  "Du kannst diesem Nutzer keine Nachrichten senden - die Unterhaltung ist blockiert.",
     "chatShareLocationTooltip":  "Treffpunkt senden",
     "chatMessageHint":  "Schreibe eine Nachricht...",
@@ -669,7 +744,7 @@
     "discoverQuickFilters":  "Schnellfilter",
     "discoverNearYou":  "In deiner Stadt",
     "inventorySelectAll":  "Alle auswählen",
-    "myShelfShare":  "+ Teilen",
+    "myShelfShare":  "Teilen",
     "inventoryMarkAvailable":  "Verfügbar markieren",
     "libraryTrashEmpty":  "Papierkorb ist leer",
     "inventoryAppendText":  "Am Ende hinzufügen",

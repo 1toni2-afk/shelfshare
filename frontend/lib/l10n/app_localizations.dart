@@ -690,6 +690,96 @@ abstract class AppLocalizations {
   /// **'Profilul meu'**
   String get profileTitle;
 
+  /// No description provided for @surveyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce îți place să citești?'**
+  String get surveyTitle;
+
+  /// No description provided for @surveySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.'**
+  String get surveySubtitle;
+
+  /// No description provided for @surveyGenresQuestion.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce genuri te atrag?'**
+  String get surveyGenresQuestion;
+
+  /// No description provided for @surveyGenresLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca lista de genuri.'**
+  String get surveyGenresLoadError;
+
+  /// No description provided for @surveyAuthorsQuestion.
+  ///
+  /// In ro, this message translates to:
+  /// **'Autori preferați (opțional)'**
+  String get surveyAuthorsQuestion;
+
+  /// No description provided for @surveyAuthorsHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ex.: Mihail Sadoveanu, Ursula K. Le Guin'**
+  String get surveyAuthorsHint;
+
+  /// No description provided for @surveyPaceQuestion.
+  ///
+  /// In ro, this message translates to:
+  /// **'Câte cărți citești pe lună?'**
+  String get surveyPaceQuestion;
+
+  /// No description provided for @surveySubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Salvează'**
+  String get surveySubmit;
+
+  /// No description provided for @surveySkip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sar peste deocamdată'**
+  String get surveySkip;
+
+  /// No description provided for @surveySaveError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva răspunsurile. Încearcă din nou.'**
+  String get surveySaveError;
+
+  /// No description provided for @surveyChangeLaterHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți schimba oricând răspunsurile din profil.'**
+  String get surveyChangeLaterHint;
+
+  /// No description provided for @surveyPaceOption.
+  ///
+  /// In ro, this message translates to:
+  /// **'{pace} cărți pe lună'**
+  String surveyPaceOption(String pace);
+
+  /// No description provided for @profilePhotoChoose.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege o poză'**
+  String get profilePhotoChoose;
+
+  /// No description provided for @profilePhotoRemove.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge poza'**
+  String get profilePhotoRemove;
+
+  /// No description provided for @profilePhotoError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut actualiza poza de profil.'**
+  String get profilePhotoError;
+
   /// No description provided for @profileCopyLink.
   ///
   /// In ro, this message translates to:
@@ -1583,6 +1673,30 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Stare'**
   String get filtersCondition;
+
+  /// No description provided for @bookConditionNew.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nouă'**
+  String get bookConditionNew;
+
+  /// No description provided for @bookConditionVeryGood.
+  ///
+  /// In ro, this message translates to:
+  /// **'Foarte bună'**
+  String get bookConditionVeryGood;
+
+  /// No description provided for @bookConditionGood.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bună'**
+  String get bookConditionGood;
+
+  /// No description provided for @bookConditionAcceptable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acceptabilă'**
+  String get bookConditionAcceptable;
 
   /// No description provided for @filtersAnyCondition.
   ///
@@ -2741,6 +2855,174 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'scrie...'**
   String get chatTyping;
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesajul nu a putut fi trimis. Verifică conexiunea.'**
+  String get chatSendFailed;
+
+  /// No description provided for @chatOnline.
+  ///
+  /// In ro, this message translates to:
+  /// **'online'**
+  String get chatOnline;
+
+  /// No description provided for @chatOffline.
+  ///
+  /// In ro, this message translates to:
+  /// **'offline'**
+  String get chatOffline;
+
+  /// No description provided for @chatLastSeenJustNow.
+  ///
+  /// In ro, this message translates to:
+  /// **'văzut adineauri'**
+  String get chatLastSeenJustNow;
+
+  /// No description provided for @chatLastSeenMinutes.
+  ///
+  /// In ro, this message translates to:
+  /// **'văzut acum {minutes} min'**
+  String chatLastSeenMinutes(int minutes);
+
+  /// No description provided for @chatLastSeenHours.
+  ///
+  /// In ro, this message translates to:
+  /// **'văzut acum {hours} h'**
+  String chatLastSeenHours(int hours);
+
+  /// No description provided for @chatLastSeenDays.
+  ///
+  /// In ro, this message translates to:
+  /// **'văzut acum {days} z'**
+  String chatLastSeenDays(int days);
+
+  /// No description provided for @chatSeen.
+  ///
+  /// In ro, this message translates to:
+  /// **'Văzut'**
+  String get chatSeen;
+
+  /// No description provided for @chatSent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimis'**
+  String get chatSent;
+
+  /// No description provided for @chatReply.
+  ///
+  /// In ro, this message translates to:
+  /// **'Răspunde'**
+  String get chatReply;
+
+  /// No description provided for @chatCopyMessage.
+  ///
+  /// In ro, this message translates to:
+  /// **'Copiază mesajul'**
+  String get chatCopyMessage;
+
+  /// No description provided for @chatMessageCopied.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj copiat'**
+  String get chatMessageCopied;
+
+  /// No description provided for @chatReplyToYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tu'**
+  String get chatReplyToYou;
+
+  /// No description provided for @chatReplyToThem.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj citat'**
+  String get chatReplyToThem;
+
+  /// No description provided for @chatAttachPhoto.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite o poză'**
+  String get chatAttachPhoto;
+
+  /// No description provided for @chatPhotoSendError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut trimite poza.'**
+  String get chatPhotoSendError;
+
+  /// No description provided for @chatSearchInConversation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută în conversație'**
+  String get chatSearchInConversation;
+
+  /// No description provided for @chatSearchNoResults.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun mesaj găsit.'**
+  String get chatSearchNoResults;
+
+  /// No description provided for @chatArchive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Arhivează'**
+  String get chatArchive;
+
+  /// No description provided for @chatUnarchive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dezarhivează'**
+  String get chatUnarchive;
+
+  /// No description provided for @chatArchived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversație arhivată'**
+  String get chatArchived;
+
+  /// No description provided for @chatArchivedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Arhivate'**
+  String get chatArchivedTitle;
+
+  /// No description provided for @chatEmptyArchived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai nicio conversație arhivată.'**
+  String get chatEmptyArchived;
+
+  /// No description provided for @chatDeleteTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge chatul'**
+  String get chatDeleteTitle;
+
+  /// No description provided for @chatDeleteConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversația dispare doar pentru tine. Celălalt utilizator își păstrează mesajele.'**
+  String get chatDeleteConfirm;
+
+  /// No description provided for @chatActionError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut face asta. Încearcă din nou.'**
+  String get chatActionError;
+
+  /// No description provided for @chatReportConversation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raportează conversația'**
+  String get chatReportConversation;
+
+  /// No description provided for @chatConversationReported.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversația a fost raportată. Echipa o va analiza.'**
+  String get chatConversationReported;
 
   /// No description provided for @chatBlockedNotice.
   ///
@@ -3933,7 +4215,7 @@ abstract class AppLocalizations {
   /// No description provided for @myShelfShare.
   ///
   /// In ro, this message translates to:
-  /// **'+ Împarte'**
+  /// **'Împarte'**
   String get myShelfShare;
 
   /// No description provided for @inventoryMarkAvailable.

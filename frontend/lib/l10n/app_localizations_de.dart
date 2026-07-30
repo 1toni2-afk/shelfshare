@@ -345,6 +345,58 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileTitle => 'Mein Profil';
 
   @override
+  String get surveyTitle => 'Was liest du gern?';
+
+  @override
+  String get surveySubtitle =>
+      'Mit ein paar Antworten können wir dir passende Bücher empfehlen und dich benachrichtigen, wenn eines nach deinem Geschmack auftaucht.';
+
+  @override
+  String get surveyGenresQuestion => 'Welche Genres sprechen dich an?';
+
+  @override
+  String get surveyGenresLoadError =>
+      'Die Genre-Liste konnte nicht geladen werden.';
+
+  @override
+  String get surveyAuthorsQuestion => 'Lieblingsautoren (optional)';
+
+  @override
+  String get surveyAuthorsHint => 'z. B. Mihail Sadoveanu, Ursula K. Le Guin';
+
+  @override
+  String get surveyPaceQuestion => 'Wie viele Bücher liest du pro Monat?';
+
+  @override
+  String get surveySubmit => 'Speichern';
+
+  @override
+  String get surveySkip => 'Später';
+
+  @override
+  String get surveySaveError =>
+      'Die Antworten konnten nicht gespeichert werden. Bitte erneut versuchen.';
+
+  @override
+  String get surveyChangeLaterHint =>
+      'Du kannst deine Antworten jederzeit im Profil ändern.';
+
+  @override
+  String surveyPaceOption(String pace) {
+    return '$pace Bücher pro Monat';
+  }
+
+  @override
+  String get profilePhotoChoose => 'Foto auswählen';
+
+  @override
+  String get profilePhotoRemove => 'Foto entfernen';
+
+  @override
+  String get profilePhotoError =>
+      'Das Profilfoto konnte nicht aktualisiert werden.';
+
+  @override
   String get profileCopyLink => 'Link kopieren';
 
   @override
@@ -851,6 +903,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get filtersCondition => 'Zustand';
+
+  @override
+  String get bookConditionNew => 'Neu';
+
+  @override
+  String get bookConditionVeryGood => 'Sehr gut';
+
+  @override
+  String get bookConditionGood => 'Gut';
+
+  @override
+  String get bookConditionAcceptable => 'Akzeptabel';
 
   @override
   String get filtersAnyCondition => 'Beliebiger Zustand';
@@ -1514,6 +1578,100 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatTyping => 'schreibt...';
+
+  @override
+  String get chatSendFailed =>
+      'Die Nachricht konnte nicht gesendet werden. Prüfe deine Verbindung.';
+
+  @override
+  String get chatOnline => 'online';
+
+  @override
+  String get chatOffline => 'offline';
+
+  @override
+  String get chatLastSeenJustNow => 'gerade eben zuletzt online';
+
+  @override
+  String chatLastSeenMinutes(int minutes) {
+    return 'zuletzt online vor $minutes Min.';
+  }
+
+  @override
+  String chatLastSeenHours(int hours) {
+    return 'zuletzt online vor $hours Std.';
+  }
+
+  @override
+  String chatLastSeenDays(int days) {
+    return 'zuletzt online vor $days T.';
+  }
+
+  @override
+  String get chatSeen => 'Gelesen';
+
+  @override
+  String get chatSent => 'Gesendet';
+
+  @override
+  String get chatReply => 'Antworten';
+
+  @override
+  String get chatCopyMessage => 'Nachricht kopieren';
+
+  @override
+  String get chatMessageCopied => 'Nachricht kopiert';
+
+  @override
+  String get chatReplyToYou => 'Du';
+
+  @override
+  String get chatReplyToThem => 'Zitierte Nachricht';
+
+  @override
+  String get chatAttachPhoto => 'Foto senden';
+
+  @override
+  String get chatPhotoSendError => 'Das Foto konnte nicht gesendet werden.';
+
+  @override
+  String get chatSearchInConversation => 'In der Unterhaltung suchen';
+
+  @override
+  String get chatSearchNoResults => 'Keine Nachrichten gefunden.';
+
+  @override
+  String get chatArchive => 'Archivieren';
+
+  @override
+  String get chatUnarchive => 'Aus Archiv holen';
+
+  @override
+  String get chatArchived => 'Unterhaltung archiviert';
+
+  @override
+  String get chatArchivedTitle => 'Archiviert';
+
+  @override
+  String get chatEmptyArchived => 'Du hast keine archivierten Unterhaltungen.';
+
+  @override
+  String get chatDeleteTitle => 'Chat löschen';
+
+  @override
+  String get chatDeleteConfirm =>
+      'Die Unterhaltung verschwindet nur für dich. Die andere Person behält ihre Nachrichten.';
+
+  @override
+  String get chatActionError =>
+      'Das hat nicht geklappt. Bitte versuche es erneut.';
+
+  @override
+  String get chatReportConversation => 'Unterhaltung melden';
+
+  @override
+  String get chatConversationReported =>
+      'Die Unterhaltung wurde gemeldet. Unser Team prüft sie.';
 
   @override
   String get chatBlockedNotice =>
@@ -2208,7 +2366,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventorySelectAll => 'Alle auswählen';
 
   @override
-  String get myShelfShare => '+ Teilen';
+  String get myShelfShare => 'Teilen';
 
   @override
   String get inventoryMarkAvailable => 'Verfügbar markieren';

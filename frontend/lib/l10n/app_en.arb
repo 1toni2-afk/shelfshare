@@ -105,6 +105,28 @@
     "onboardingNameVisibleSwitch":  "Make my name publicly visible",
     "onboardingUsernameAlwaysVisible":  "Your username always stays visible",
     "profileTitle":  "My profile",
+    "surveyTitle":  "What do you like to read?",
+    "surveySubtitle":  "A few answers let us recommend listed books that suit you, plus a heads-up when one shows up in your taste.",
+    "surveyGenresQuestion":  "Which genres appeal to you?",
+    "surveyGenresLoadError":  "We could not load the genre list.",
+    "surveyAuthorsQuestion":  "Favourite authors (optional)",
+    "surveyAuthorsHint":  "e.g. Mihail Sadoveanu, Ursula K. Le Guin",
+    "surveyPaceQuestion":  "How many books do you read a month?",
+    "surveySubmit":  "Save",
+    "surveySkip":  "Skip for now",
+    "surveySaveError":  "We could not save your answers. Please try again.",
+    "surveyChangeLaterHint":  "You can change your answers anytime from your profile.",
+    "surveyPaceOption":  "{pace} books a month",
+    "@surveyPaceOption":  {
+        "placeholders":  {
+            "pace":  {
+                "type":  "String"
+            }
+        }
+    },
+    "profilePhotoChoose":  "Choose a photo",
+    "profilePhotoRemove":  "Remove photo",
+    "profilePhotoError":  "We could not update your profile photo.",
     "profileCopyLink":  "Copy link",
     "profileLoadError":  "We couldn\u0027t load your profile.",
     "profileAboutMe":  "About me",
@@ -261,6 +283,10 @@
     "filtersLanguage":  "Language",
     "filtersAnyCity":  "Any city",
     "filtersCondition":  "Condition",
+    "bookConditionNew":  "New",
+    "bookConditionVeryGood":  "Very good",
+    "bookConditionGood":  "Good",
+    "bookConditionAcceptable":  "Acceptable",
     "filtersAnyCondition":  "Any condition",
     "filtersListingType":  "Listing type",
     "filtersListingTypeSwap":  "Swap",
@@ -454,6 +480,55 @@
     "chatUserBlocked":  "User blocked",
     "chatBlockUpdateError":  "We couldn\u0027t update the block status",
     "chatTyping":  "typing...",
+    "chatSendFailed":  "The message could not be sent. Check your connection.",
+    "chatOnline":  "online",
+    "chatOffline":  "offline",
+    "chatLastSeenJustNow":  "last seen just now",
+    "chatLastSeenMinutes":  "last seen {minutes} min ago",
+    "@chatLastSeenMinutes":  {
+        "placeholders":  {
+            "minutes":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenHours":  "last seen {hours} h ago",
+    "@chatLastSeenHours":  {
+        "placeholders":  {
+            "hours":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenDays":  "last seen {days} d ago",
+    "@chatLastSeenDays":  {
+        "placeholders":  {
+            "days":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatSeen":  "Seen",
+    "chatSent":  "Sent",
+    "chatReply":  "Reply",
+    "chatCopyMessage":  "Copy message",
+    "chatMessageCopied":  "Message copied",
+    "chatReplyToYou":  "You",
+    "chatReplyToThem":  "Quoted message",
+    "chatAttachPhoto":  "Send a photo",
+    "chatPhotoSendError":  "We could not send the photo.",
+    "chatSearchInConversation":  "Search in conversation",
+    "chatSearchNoResults":  "No messages found.",
+    "chatArchive":  "Archive",
+    "chatUnarchive":  "Unarchive",
+    "chatArchived":  "Conversation archived",
+    "chatArchivedTitle":  "Archived",
+    "chatEmptyArchived":  "You have no archived conversations.",
+    "chatDeleteTitle":  "Delete chat",
+    "chatDeleteConfirm":  "The conversation disappears only for you. The other person keeps their messages.",
+    "chatActionError":  "We could not do that. Please try again.",
+    "chatReportConversation":  "Report conversation",
+    "chatConversationReported":  "The conversation was reported. Our team will review it.",
     "chatBlockedNotice":  "You can\u0027t send messages to this user - the conversation is blocked.",
     "chatShareLocationTooltip":  "Send meeting location",
     "chatMessageHint":  "Write a message...",
@@ -669,7 +744,7 @@
     "discoverQuickFilters":  "Quick filters",
     "discoverNearYou":  "In your city",
     "inventorySelectAll":  "Select all",
-    "myShelfShare":  "+ Share",
+    "myShelfShare":  "Share",
     "inventoryMarkAvailable":  "Mark available",
     "libraryTrashEmpty":  "Trash is empty",
     "inventoryAppendText":  "Append to end",

@@ -469,7 +469,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   InputDecoration(labelText: l10n.filtersCondition),
               items: [
                 for (final c in BookCondition.values)
-                  DropdownMenuItem(value: c, child: Text(c.label)),
+                  DropdownMenuItem(value: c, child: Text(c.label(l10n))),
               ],
               onChanged: (v) => setState(() => _condition = v ?? _condition),
             ),

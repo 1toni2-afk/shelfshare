@@ -8,7 +8,9 @@ import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { BookshelfService } from '../bookshelf/bookshelf.service';
+import { StorageService } from '../storage/storage.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ReadingSurveyDto } from './dto/reading-survey.dto';
 import { publicName } from '../common/utils/user-visibility';
 
 @Injectable()
@@ -17,7 +19,91 @@ export class ProfileService {
     private users: UsersService,
     private prisma: PrismaService,
     private bookshelf: BookshelfService,
+    private storage: StorageService,
   ) {}
+
+  /**
+   * Poza veche se șterge din storage după ce cea nouă e salvată în DB - în
+   * ordinea asta, o eroare la ștergere lasă un fișier orfan, dar userul are
+   * poza nouă. Invers, am fi riscat un profil fără poză deloc.
+   */
+  async setProfilePhoto(userId: string, fileBuffer: Buffer) {
+    const current = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { profileImage: true },
+    });
+
+    const path = await this.storage.uploadImage(fileBuffer, 'avatars');
+    const url = this.storage.getPublicUrl(path);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: url },
+    });
+
+    const previous = current?.profileImage;
+    // Doar pozele urcate de noi se șterg. Avatarele din datele demo sunt
+    // URL-uri externe (pravatar.cc), iar Google trimite poza contului - nici
+    // unele, nici altele nu sunt în bucket-ul nostru.
+    if (previous && previous.includes('/avatars/')) {
+      await this.storage.deleteImage(
+        previous.slice(previous.indexOf('avatars/')),
+      );
+    }
+
+    return { profileImage: url };
+  }
+
+  /**
+   * Salvează profilul de cititor. Se apelează și la „sar peste": în cazul ăla
+   * vine fără câmpuri, dar tot marcăm chestionarul ca parcurs, altfel l-am
+   * arăta din nou la fiecare pornire cuiva care l-a refuzat o dată.
+   */
+  async saveReadingSurvey(userId: string, dto: ReadingSurveyDto) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        // Normalizăm ca potrivirea cu `books.genre` să nu rateze din cauza
+        // spațiilor și eliminăm duplicatele venite din UI.
+        favoriteGenres: dto.favoriteGenres
+          ? [...new Set(dto.favoriteGenres.map((g) => g.trim()).filter(Boolean))]
+          : undefined,
+        favoriteAuthors: dto.favoriteAuthors
+          ? [...new Set(dto.favoriteAuthors.map((a) => a.trim()).filter(Boolean))]
+          : undefined,
+        readingPace: dto.readingPace,
+        readingSurveyCompletedAt: new Date(),
+      },
+    });
+
+    return {
+      favoriteGenres: user.favoriteGenres,
+      favoriteAuthors: user.favoriteAuthors,
+      readingPace: user.readingPace,
+      readingSurveyCompletedAt: user.readingSurveyCompletedAt,
+    };
+  }
+
+  async removeProfilePhoto(userId: string) {
+    const current = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { profileImage: true },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: null },
+    });
+
+    const previous = current?.profileImage;
+    if (previous && previous.includes('/avatars/')) {
+      await this.storage.deleteImage(
+        previous.slice(previous.indexOf('avatars/')),
+      );
+    }
+
+    return { profileImage: null };
+  }
 
   async getMyProfile(userId: string) {
     const user = await this.users.findById(userId);
@@ -50,6 +136,12 @@ export class ProfileService {
       referralCount,
       createdAt: user.createdAt,
       deletionScheduledAt: user.deletionScheduledAt,
+      favoriteGenres: user.favoriteGenres,
+      favoriteAuthors: user.favoriteAuthors,
+      readingPace: user.readingPace,
+      // Frontend-ul decide pe baza asta dacă mai arată chestionarul (vezi
+      // redirect-ul din app_router.dart).
+      readingSurveyCompletedAt: user.readingSurveyCompletedAt,
       trustScore: await this.computeTrustScore(user),
       achievements: await this.getAchievements(user),
       impactStats: await this.getImpactStats(userId),

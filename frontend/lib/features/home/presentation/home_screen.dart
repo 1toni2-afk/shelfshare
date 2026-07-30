@@ -5,6 +5,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/book_card.dart';
+import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/typewriter_text.dart';
 import '../../auth/application/auth_controller.dart';
@@ -56,7 +57,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         title: TypewriterText(
           phrases: _greetings(name),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -203,17 +203,9 @@ class _HomeFeed extends StatelessWidget {
 /// ferestrei și un singur card ajungea la ~950px. Aici lățimea unui card e
 /// plafonată, deci pe ecrane late apar pur și simplu mai multe coloane.
 ///
-/// 220 e ales ca orice telefon să rămână pe 2 coloane: la 430dp (cel mai lat
-/// telefon uzual) rămân 398dp utili, iar 398/220 se rotunjește tot la 2. Cu
-/// 190 ar fi ieșit 3 coloane pe telefoanele late.
-const _cardMaxWidth = 220.0;
+/// Metricile cardului stau în book_grid_metrics.dart, ca Raftul meu să
+/// folosească exact aceeași grilă.
 const _feedMaxWidth = 1350.0;
-
-/// Înălțimea celulei = lățime / raport. Coperta e 2:3 (deci 1.5×lățime), plus
-/// ~62dp pentru titlu + autor + oraș. La 156dp lățime (telefon, 2 coloane)
-/// conținutul cere ~296dp, iar 0.50 dă 312dp - marjă suficientă cât să nu
-/// apară overflow, fără spațiu gol vizibil.
-const _cardAspectRatio = 0.50;
 
 /// Centrează conținutul lăsând margini egale în stânga/dreapta când ecranul
 /// e mai lat decât [_feedMaxWidth] - grila devine „centered" pe monitoare
@@ -235,10 +227,10 @@ class _BookSliverGrid extends StatelessWidget {
       padding: _centeringPadding(context),
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: _cardMaxWidth,
+          maxCrossAxisExtent: kBookCardMaxWidth,
           mainAxisSpacing: 20,
           crossAxisSpacing: 16,
-          childAspectRatio: _cardAspectRatio,
+          childAspectRatio: kBookCardAspectRatio,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {

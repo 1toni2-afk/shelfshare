@@ -106,13 +106,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
-                        child: Column(
+                        // Vezi login_screen.dart pentru de ce e nevoie de
+                        // AutofillGroup peste câmpuri.
+                        child: AutofillGroup(
+                          child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              autofillHints: const [AutofillHints.username, AutofillHints.email],
                               decoration: InputDecoration(
                                 labelText: l10n.commonEmailLabel,
                                 prefixIcon: const Icon(Icons.mail_outline),
@@ -125,6 +129,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              // newPassword, nu password: altfel managerul de
+                              // parole ar propune o parolă existentă în loc să
+                              // ofere generarea uneia noi.
+                              autofillHints: const [AutofillHints.newPassword],
                               decoration: InputDecoration(
                                 labelText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
@@ -146,6 +154,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             TextFormField(
                               controller: _confirmController,
                               obscureText: _obscurePassword,
+                              autofillHints: const [AutofillHints.newPassword],
                               decoration: InputDecoration(
                                 labelText: l10n.authConfirmPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
@@ -197,6 +206,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             const SizedBox(height: 20),
                             const GoogleSignInButton(),
                           ],
+                          ),
                         ),
                       ),
                     ),

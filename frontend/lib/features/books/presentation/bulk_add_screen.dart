@@ -176,7 +176,7 @@ class _BulkAddScreenState extends ConsumerState<BulkAddScreen> {
                 decoration: InputDecoration(labelText: l10n.filtersCondition),
                 items: [
                   for (final condition in BookCondition.values)
-                    DropdownMenuItem(value: condition, child: Text(condition.label)),
+                    DropdownMenuItem(value: condition, child: Text(condition.label(l10n))),
                 ],
                 onChanged: (value) {
                   if (value != null) setState(() => _condition = value);

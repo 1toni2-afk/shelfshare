@@ -43,7 +43,11 @@ class BookCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  BookCover.expand(url: userBook.book.coverUrl),
+                  BookCover.expand(
+                    url: userBook.book.coverUrl,
+                    fallbackUrl:
+                        userBook.photos.isNotEmpty ? userBook.photos.first : null,
+                  ),
                   Positioned(
                     top: 6,
                     right: 6,

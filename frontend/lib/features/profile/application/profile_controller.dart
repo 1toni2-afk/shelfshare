@@ -33,6 +33,39 @@ class ProfileController extends AsyncNotifier<AppUser> {
     state = AsyncData(updated);
     ref.read(authControllerProvider.notifier).setUser(updated);
   }
+
+  /// Salvează chestionarul de cititor. `authController` trebuie actualizat și
+  /// el: routerul decide pe baza lui dacă mai afișează chestionarul, deci fără
+  /// asta userul ar rămâne blocat pe ecranul de survey după ce l-a trimis.
+  Future<void> saveReadingSurvey({
+    List<String>? favoriteGenres,
+    List<String>? favoriteAuthors,
+    String? readingPace,
+  }) async {
+    final updated = await ref.read(profileRepositoryProvider).saveReadingSurvey(
+          favoriteGenres: favoriteGenres,
+          favoriteAuthors: favoriteAuthors,
+          readingPace: readingPace,
+        );
+    state = AsyncData(updated);
+    ref.read(authControllerProvider.notifier).setUser(updated);
+  }
+
+  /// Poza apare și în header, și în bara de navigare, deci profilul actualizat
+  /// se propagă și în authController, ca la orice altă modificare de profil.
+  Future<void> uploadPhoto(List<int> bytes, String filename) async {
+    final updated = await ref
+        .read(profileRepositoryProvider)
+        .uploadProfilePhoto(bytes: bytes, filename: filename);
+    state = AsyncData(updated);
+    ref.read(authControllerProvider.notifier).setUser(updated);
+  }
+
+  Future<void> removePhoto() async {
+    final updated = await ref.read(profileRepositoryProvider).removeProfilePhoto();
+    state = AsyncData(updated);
+    ref.read(authControllerProvider.notifier).setUser(updated);
+  }
 }
 
 final profileControllerProvider = AsyncNotifierProvider<ProfileController, AppUser>(

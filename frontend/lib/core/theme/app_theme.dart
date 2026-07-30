@@ -117,7 +117,9 @@ class AppTheme {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.foreground,
         elevation: 0,
-        centerTitle: false,
+        // Titlu centrat pe toate ecranele. Înainte era pe stânga, iar Home și
+        // Discover și-l centrau local - de unde inconsecvența dintre taburi.
+        centerTitle: true,
       ),
       cardTheme: CardThemeData(
         color: AppColors.card,
@@ -130,11 +132,21 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.muted,
-        border: OutlineInputBorder(
+        // UnderlineInputBorder, nu OutlineInputBorder, deși chenarul e invizibil
+        // în ambele cazuri: cu un border "outline", Flutter așază eticheta
+        // flotantă exact PE linia de chenar, adică pe muchia de sus a
+        // dreptunghiului colorat - jumătate din text cade în câmp, jumătate în
+        // afara lui („Condition" tăiat pe orizontală). La un border care nu e
+        // outline, eticheta stă în interiorul câmpului, deasupra valorii, care
+        // e și comportamentul corect de Material pentru câmpurile "filled".
+        // borderRadius se păstrează, deci forma rotunjită rămâne neschimbată.
+        border: UnderlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        // Sus mai mult decât jos: eticheta flotantă are nevoie de loc deasupra
+        // textului, altfel se lipesc una de alta.
+        contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

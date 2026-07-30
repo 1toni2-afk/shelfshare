@@ -1,3 +1,5 @@
+import '../../l10n/app_localizations.dart';
+
 class BookGenre {
   final String genre;
   final int count;
@@ -143,16 +145,19 @@ extension BookConditionX on BookCondition {
     }
   }
 
-  String get label {
+  /// Eticheta tradusă. Numele intern al enum-ului rămâne în română fiindcă
+  /// oglindește valorile din baza de date (NOUA, FOARTE_BUNA, ...), dar textul
+  /// afișat trebuie să urmeze limba aplicației.
+  String label(AppLocalizations l10n) {
     switch (this) {
       case BookCondition.noua:
-        return 'Nouă';
+        return l10n.bookConditionNew;
       case BookCondition.foarteBuna:
-        return 'Foarte bună';
+        return l10n.bookConditionVeryGood;
       case BookCondition.buna:
-        return 'Bună';
+        return l10n.bookConditionGood;
       case BookCondition.acceptabila:
-        return 'Acceptabilă';
+        return l10n.bookConditionAcceptable;
     }
   }
 }

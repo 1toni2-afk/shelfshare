@@ -100,4 +100,51 @@ export class MailService {
       throw new Error('Nu am putut trimite notificarea de support');
     }
   }
+
+  /**
+   * Notificare de moderare pentru o conversație raportată din chat.
+   * Transcriptul complet e deja salvat în storage (vezi
+   * ConversationsService#reportConversation) - aici trimitem doar linkul plus
+   * ultimele mesaje, ca să se poată tria raportul fără a deschide fișierul.
+   */
+  async sendChatReportNotification(data: {
+    reportId: string;
+    reporter: string;
+    reported: string;
+    reason: string;
+    details?: string | null;
+    messageCount: number;
+    transcriptUrl: string;
+    excerpt: string;
+  }) {
+    const to = this.config.get<string>(
+      'SUPPORT_NOTIFICATION_EMAIL',
+      SUPPORT_NOTIFICATION_EMAIL_DEFAULT,
+    );
+
+    const { error } = await this.resend.emails.send({
+      from: this.fromEmail,
+      to,
+      subject: `CHAT RAPORTAT SHELFSHARE - ${data.reason}`,
+      html: `
+        <p><strong>Raport:</strong> ${escapeHtml(data.reportId)}</p>
+        <p><strong>Reclamant:</strong> ${escapeHtml(data.reporter)}</p>
+        <p><strong>Reclamat:</strong> ${escapeHtml(data.reported)}</p>
+        <p><strong>Motiv:</strong> ${escapeHtml(data.reason)}</p>
+        <p><strong>Detalii:</strong> ${data.details ? escapeHtml(data.details) : '-'}</p>
+        <p><strong>Mesaje în transcript:</strong> ${data.messageCount}</p>
+        <p><strong>Transcript complet:</strong> <a href="${escapeHtml(data.transcriptUrl)}">${escapeHtml(data.transcriptUrl)}</a></p>
+        <p><strong>Ultimele mesaje:</strong></p>
+        <pre style="background:#f4f4f4;padding:12px;white-space:pre-wrap;">${escapeHtml(data.excerpt)}</pre>
+      `,
+    });
+
+    if (error) {
+      this.logger.error(
+        `Eroare trimitere notificare chat raportat (${data.reportId})`,
+        error,
+      );
+      throw new Error('Nu am putut trimite notificarea de raportare');
+    }
+  }
 }

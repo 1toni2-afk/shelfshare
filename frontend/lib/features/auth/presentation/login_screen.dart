@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
@@ -63,6 +64,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SnackBar(content: Text(next.message)),
         );
       }
+      // Abia după un login reușit închidem contextul de autofill - asta e
+      // ce declanșează în Chrome (și în managerele de parole de pe mobil)
+      // întrebarea „vrei să salvez parola?". Dacă l-am închide la apăsarea
+      // butonului, s-ar oferi salvarea și pentru credențiale greșite.
+      if (next is AuthAuthenticated) {
+        TextInput.finishAutofillContext();
+      }
     });
 
     return Scaffold(
@@ -104,13 +112,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       padding: const EdgeInsets.all(24),
                       child: Form(
                         key: _formKey,
-                        child: Column(
+                        // AutofillGroup + autofillHints sunt ce transformă cele
+                        // două câmpuri într-un formular de login recognoscibil
+                        // pentru Chrome și pentru managerele de parole: fără
+                        // ele, browserul nu completează nimic și nici nu se
+                        // oferă să salveze credențialele. Vezi și
+                        // TextInput.finishAutofillContext() din _submit.
+                        child: AutofillGroup(
+                          child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              autofillHints: const [AutofillHints.username, AutofillHints.email],
                               decoration: InputDecoration(
                                 labelText: l10n.commonEmailLabel,
                                 prefixIcon: const Icon(Icons.mail_outline),
@@ -123,6 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              autofillHints: const [AutofillHints.password],
                               decoration: InputDecoration(
                                 labelText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
@@ -181,6 +198,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: 20),
                             const GoogleSignInButton(),
                           ],
+                          ),
                         ),
                       ),
                     ),

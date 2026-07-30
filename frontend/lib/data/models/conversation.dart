@@ -7,6 +7,7 @@ class Conversation {
   final ChatMessage? lastMessage;
   final DateTime updatedAt;
   final int unreadCount;
+  final bool isArchived;
 
   const Conversation({
     required this.id,
@@ -14,6 +15,7 @@ class Conversation {
     this.lastMessage,
     required this.updatedAt,
     this.unreadCount = 0,
+    this.isArchived = false,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class Conversation {
           : null,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       unreadCount: json['unreadCount'] as int? ?? 0,
+      isArchived: json['isArchived'] as bool? ?? false,
     );
   }
 }

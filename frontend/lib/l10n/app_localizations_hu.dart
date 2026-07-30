@@ -343,6 +343,57 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileTitle => 'Profilom';
 
   @override
+  String get surveyTitle => 'Mit szeretsz olvasni?';
+
+  @override
+  String get surveySubtitle =>
+      'Néhány válasz alapján ajánlani tudunk hozzád illő könyveket, és szólunk, ha felkerül egy a kedvedre való.';
+
+  @override
+  String get surveyGenresQuestion => 'Mely műfajok vonzanak?';
+
+  @override
+  String get surveyGenresLoadError =>
+      'Nem sikerült betölteni a műfajok listáját.';
+
+  @override
+  String get surveyAuthorsQuestion => 'Kedvenc szerzők (opcionális)';
+
+  @override
+  String get surveyAuthorsHint => 'Pl.: Mihail Sadoveanu, Ursula K. Le Guin';
+
+  @override
+  String get surveyPaceQuestion => 'Hány könyvet olvasol havonta?';
+
+  @override
+  String get surveySubmit => 'Mentés';
+
+  @override
+  String get surveySkip => 'Most kihagyom';
+
+  @override
+  String get surveySaveError =>
+      'Nem sikerült elmenteni a válaszokat. Próbáld újra.';
+
+  @override
+  String get surveyChangeLaterHint =>
+      'A válaszaidat bármikor módosíthatod a profilodban.';
+
+  @override
+  String surveyPaceOption(String pace) {
+    return '$pace könyv havonta';
+  }
+
+  @override
+  String get profilePhotoChoose => 'Válassz fényképet';
+
+  @override
+  String get profilePhotoRemove => 'Fénykép eltávolítása';
+
+  @override
+  String get profilePhotoError => 'Nem sikerült frissíteni a profilképet.';
+
+  @override
   String get profileCopyLink => 'Link másolása';
 
   @override
@@ -846,6 +897,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get filtersCondition => 'Állapot';
+
+  @override
+  String get bookConditionNew => 'Új';
+
+  @override
+  String get bookConditionVeryGood => 'Nagyon jó';
+
+  @override
+  String get bookConditionGood => 'Jó';
+
+  @override
+  String get bookConditionAcceptable => 'Elfogadható';
 
   @override
   String get filtersAnyCondition => 'Bármilyen állapot';
@@ -1494,6 +1557,99 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get chatTyping => 'gépel...';
+
+  @override
+  String get chatSendFailed =>
+      'Az üzenetet nem sikerült elküldeni. Ellenőrizd a kapcsolatot.';
+
+  @override
+  String get chatOnline => 'online';
+
+  @override
+  String get chatOffline => 'offline';
+
+  @override
+  String get chatLastSeenJustNow => 'az imént volt online';
+
+  @override
+  String chatLastSeenMinutes(int minutes) {
+    return '$minutes perce volt online';
+  }
+
+  @override
+  String chatLastSeenHours(int hours) {
+    return '$hours órája volt online';
+  }
+
+  @override
+  String chatLastSeenDays(int days) {
+    return '$days napja volt online';
+  }
+
+  @override
+  String get chatSeen => 'Látta';
+
+  @override
+  String get chatSent => 'Elküldve';
+
+  @override
+  String get chatReply => 'Válasz';
+
+  @override
+  String get chatCopyMessage => 'Üzenet másolása';
+
+  @override
+  String get chatMessageCopied => 'Üzenet másolva';
+
+  @override
+  String get chatReplyToYou => 'Te';
+
+  @override
+  String get chatReplyToThem => 'Idézett üzenet';
+
+  @override
+  String get chatAttachPhoto => 'Fénykép küldése';
+
+  @override
+  String get chatPhotoSendError => 'Nem sikerült elküldeni a fényképet.';
+
+  @override
+  String get chatSearchInConversation => 'Keresés a beszélgetésben';
+
+  @override
+  String get chatSearchNoResults => 'Nincs találat.';
+
+  @override
+  String get chatArchive => 'Archiválás';
+
+  @override
+  String get chatUnarchive => 'Kivétel az archívumból';
+
+  @override
+  String get chatArchived => 'Beszélgetés archiválva';
+
+  @override
+  String get chatArchivedTitle => 'Archivált';
+
+  @override
+  String get chatEmptyArchived => 'Nincs archivált beszélgetésed.';
+
+  @override
+  String get chatDeleteTitle => 'Csevegés törlése';
+
+  @override
+  String get chatDeleteConfirm =>
+      'A beszélgetés csak nálad tűnik el. A másik fél megtartja az üzeneteit.';
+
+  @override
+  String get chatActionError => 'Nem sikerült. Próbáld újra.';
+
+  @override
+  String get chatReportConversation => 'Beszélgetés jelentése';
+
+  @override
+  String get chatConversationReported =>
+      'A beszélgetést jelentetted. A csapatunk átnézi.';
 
   @override
   String get chatBlockedNotice =>
@@ -2186,7 +2342,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get inventorySelectAll => 'Összes kijelölése';
 
   @override
-  String get myShelfShare => '+ Megosztás';
+  String get myShelfShare => 'Megosztás';
 
   @override
   String get inventoryMarkAvailable => 'Elérhetőnek jelöl';

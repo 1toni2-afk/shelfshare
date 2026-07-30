@@ -11,6 +11,7 @@ import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/my_library_controller.dart';
 import '../data/books_repository.dart';
@@ -178,7 +179,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         [
           _csvEscape(b.book.title),
           _csvEscape(b.book.author ?? ''),
-          b.condition.label,
+          b.condition.label(l10n),
           b.language ?? '',
           b.availableForSwap ? l10n.commonYes : l10n.commonNo,
           b.isForSale ? l10n.commonYes : l10n.commonNo,
@@ -301,8 +302,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 ),
               ],
             ),
-      // FAB extended = iconă + label „+ Share" (cerință Milestone 10). Icon-ul
-      // simplu era greu de descifrat pentru useri noi.
+      // FAB extended = iconă + label (cerință Milestone 10). Icon-ul simplu era
+      // greu de descifrat pentru useri noi. Labelul NU conține „+" - plusul e
+      // deja în iconiță, iar împreună apăreau două.
       floatingActionButton: _selectionMode
           ? null
           : FloatingActionButton.extended(
@@ -363,22 +365,33 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   ),
                 );
               }
+              // Aceeași grilă ca pe Home (vezi book_grid_metrics.dart). Înainte
+              // era un Wrap cu cardul fix pe 160dp, care pe telefoanele de
+              // 360dp nu încăpea de două ori pe rând și lăsa toate cărțile pe o
+              // singură coloană, lipite la stânga.
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 20,
-                    children: [
-                      for (final userBook in books)
-                        _MyLibraryCard(
-                          userBook: userBook,
-                          selected: _selectedIds.contains(userBook.id),
-                          onTap: () => _handleTap(userBook),
-                          onLongPress: () => _toggleSelected(userBook.id),
-                        ),
-                    ],
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: kBookCardMaxWidth,
+                      mainAxisSpacing: kBookGridMainAxisSpacing,
+                      crossAxisSpacing: kBookGridCrossAxisSpacing,
+                      childAspectRatio: kBookCardAspectRatio,
+                    ),
+                    itemCount: books.length,
+                    itemBuilder: (context, index) {
+                      final userBook = books[index];
+                      return _MyLibraryCard(
+                        userBook: userBook,
+                        selected: _selectedIds.contains(userBook.id),
+                        onTap: () => _handleTap(userBook),
+                        onLongPress: () => _toggleSelected(userBook.id),
+                      );
+                    },
                   ),
                   const SizedBox(height: 32),
                   const _EmptiedShelvesSection(),
@@ -428,12 +441,12 @@ class _MyLibraryListRow extends StatelessWidget {
         onLongPress: onLongPress,
         leading: selected
             ? const Icon(Icons.check_circle, color: AppColors.accent)
-            : BookCover(url: userBook.book.coverUrl, width: 44, height: 62),
+            : BookCover(url: userBook.book.coverUrl, fallbackUrl: userBook.photos.isNotEmpty ? userBook.photos.first : null, width: 44, height: 62),
         title: Text(userBook.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(
           [
             if (userBook.book.author != null) userBook.book.author!,
-            userBook.condition.label,
+            userBook.condition.label(context.l10n),
             if (userBook.isForSale && userBook.salePrice != null)
               context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
           ].join(' · '),
@@ -475,42 +488,46 @@ class _MyLibraryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 160,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final l10n = context.l10n;
+
+    // Fără lățime fixă: cardul umple celula grilei, ca pe Home. Eticheta de
+    // disponibilitate stă peste copertă, nu sub card - dedesubt ar fi depășit
+    // înălțimea celulei (kBookCardAspectRatio e calculat pentru copertă +
+    // titlu + autor, atât).
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Stack(
         children: [
-          GestureDetector(
-            onLongPress: onLongPress,
-            child: Stack(
-              children: [
-                BookCard(userBook: userBook, onTap: onTap, width: 160),
-                if (selected)
-                  const Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Icon(Icons.check_circle, color: AppColors.accent),
-                  ),
-              ],
+          BookCard(userBook: userBook, onTap: onTap),
+          Positioned(
+            top: 6,
+            left: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: userBook.availableForSwap
+                    ? AppColors.accent.withValues(alpha: 0.9)
+                    : AppColors.muted.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                userBook.availableForSwap ? l10n.libraryAvailable : l10n.libraryUnavailable,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: userBook.availableForSwap
+                          ? AppColors.primaryForeground
+                          : AppColors.mutedForeground,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
+              ),
             ),
           ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: userBook.availableForSwap
-                  ? AppColors.accent.withValues(alpha: 0.15)
-                  : AppColors.muted,
-              borderRadius: BorderRadius.circular(8),
+          if (selected)
+            const Positioned(
+              top: 6,
+              right: 6,
+              child: Icon(Icons.check_circle, color: AppColors.accent),
             ),
-            child: Text(
-              userBook.availableForSwap ? 'Disponibilă' : 'Indisponibilă',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: userBook.availableForSwap ? AppColors.accent : AppColors.mutedForeground,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ),
         ],
       ),
     );
@@ -685,7 +702,7 @@ class _EditListingSheetState extends ConsumerState<_EditListingSheet> {
               decoration: InputDecoration(labelText: l10n.filtersCondition),
               items: [
                 for (final condition in BookCondition.values)
-                  DropdownMenuItem(value: condition, child: Text(condition.label)),
+                  DropdownMenuItem(value: condition, child: Text(condition.label(l10n))),
               ],
               onChanged: (value) {
                 if (value != null) setState(() => _condition = value);
@@ -811,7 +828,7 @@ class _EmptiedShelfCard extends StatelessWidget {
               // Cover afișat cu opacitate redusă ca să indice „nu mai e activă".
               Opacity(
                 opacity: 0.55,
-                child: BookCover(url: userBook.book.coverUrl, width: 120, height: 168),
+                child: BookCover(url: userBook.book.coverUrl, fallbackUrl: userBook.photos.isNotEmpty ? userBook.photos.first : null, width: 120, height: 168),
               ),
               Positioned(
                 left: 4,

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/user.dart';
@@ -37,6 +38,50 @@ class ProfileRepository {
       'bio': ?bio,
       'showAcquisitionHistory': ?showAcquisitionHistory,
     });
+    return getMyProfile();
+  }
+
+  /// Genurile propuse în chestionar vin de la backend, ca lista să fie una
+  /// singură pentru ambele părți (vezi common/constants/book-genres.ts).
+  Future<List<String>> getSurveyGenres() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/profile/reading-survey/genres');
+    return ((response.data as Map<String, dynamic>)['genres'] as List<dynamic>)
+        .cast<String>();
+  }
+
+  /// Salvează chestionarul. Apelat și la „sar peste", cu liste goale - backend-ul
+  /// marchează oricum chestionarul ca parcurs.
+  Future<AppUser> saveReadingSurvey({
+    List<String>? favoriteGenres,
+    List<String>? favoriteAuthors,
+    String? readingPace,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.put('/profile/me/reading-survey', data: {
+      'favoriteGenres': ?favoriteGenres,
+      'favoriteAuthors': ?favoriteAuthors,
+      'readingPace': ?readingPace,
+    });
+    return getMyProfile();
+  }
+
+  /// Încarcă o poză de profil nouă și întoarce profilul reîmprospătat.
+  Future<AppUser> uploadProfilePhoto({
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final formData = FormData.fromMap({
+      'photo': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    await dio.post('/profile/me/photo', data: formData);
+    return getMyProfile();
+  }
+
+  Future<AppUser> removeProfilePhoto() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.delete('/profile/me/photo');
     return getMyProfile();
   }
 

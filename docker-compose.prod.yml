@@ -58,6 +58,33 @@ services:
     # din afara rețelei Docker - Nginx Proxy Manager de mai jos nu e folosit
     # de fapt (routarea reală se face prin Cloudflare Tunnel).
 
+  # Backup zilnic al bazei de date și al fișierelor urcate (vezi scripts/backup.sh).
+  # Folosim imaginea de postgres fiindcă aduce deja `pg_dump` de versiunea
+  # potrivită - un dump făcut cu un client mai vechi decât serverul eșuează.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./scripts:/scripts:ro
+      # Read-only: procesul de backup nu are niciun motiv să poată scrie în
+      # datele live. Dacă scriptul o ia razna, nu poate distruge originalul.
+      - minio_data:/minio-data:ro
+      - backups_data:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # crond din busybox, în prim-plan (-f), cu log la stdout (-d 8) ca
+    # `docker compose logs backup` să arate ce s-a întâmplat. Rulează la 03:15,
+    # o oră la care nimeni nu folosește aplicația.
+    command: >
+      sh -c "echo '15 3 * * * /scripts/backup.sh' > /etc/crontabs/root &&
+             crond -f -d 8"
+
   nginx-proxy-manager:
     image: jc21/nginx-proxy-manager:latest
     restart: unless-stopped
@@ -72,5 +99,6 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  backups_data:
   npm_data:
   npm_letsencrypt:

@@ -7,13 +7,20 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ROMANIAN_CITIES } from '../../common/constants/romanian-cities';
+import { capitalizeName } from '../../common/utils/capitalize-name';
 
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   @MinLength(2, { message: 'Numele trebuie să aibă minim 2 caractere' })
   @MaxLength(50, { message: 'Numele poate avea maxim 50 de caractere' })
+  // Normalizarea stă pe DTO, nu în service: se aplică pe orice cale care ajunge
+  // la actualizarea profilului, inclusiv pe cele adăugate ulterior.
+  @Transform(({ value }) =>
+    typeof value === 'string' ? capitalizeName(value) : value,
+  )
   name?: string;
 
   @IsOptional()

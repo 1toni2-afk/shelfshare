@@ -233,7 +233,7 @@ class _BookDetailContent extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Center(child: BookCover(url: book.book.coverUrl, width: 180, height: 252)),
+        Center(child: BookCover(url: book.book.coverUrl, fallbackUrl: book.photos.isNotEmpty ? book.photos.first : null, width: 180, height: 252)),
         const SizedBox(height: 20),
         Text(
           book.book.title,
@@ -258,7 +258,7 @@ class _BookDetailContent extends ConsumerWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            Chip(label: Text(book.condition.label)),
+            Chip(label: Text(book.condition.label(l10n))),
             if (book.language != null) Chip(label: Text(book.language!)),
             if (book.isHardcover) Chip(label: Text(l10n.bookDetailHardcoverChip)),
             if (owner?.city != null)
@@ -565,7 +565,7 @@ class _HistoryHop extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  '${entry.condition.label} · ${l10n.bookDetailHistoryListedOn(_formatDate(entry.listedAt))}'
+                  '${entry.condition.label(l10n)} · ${l10n.bookDetailHistoryListedOn(_formatDate(entry.listedAt))}'
                   '${entry.transferredAt != null ? l10n.bookDetailHistoryTransferredOn(entry.transferType == 'sale' ? l10n.bookDetailHistorySold : l10n.bookDetailHistoryExchanged, _formatDate(entry.transferredAt!)) : entry.isCurrent ? l10n.bookDetailHistoryCurrentlyOwned : ''}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
                 ),

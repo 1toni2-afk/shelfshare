@@ -98,7 +98,7 @@ class _TrashRow extends ConsumerWidget {
     final l10n = context.l10n;
     return Card(
       child: ListTile(
-        leading: BookCover(url: userBook.book.coverUrl, width: 40, height: 56),
+        leading: BookCover(url: userBook.book.coverUrl, fallbackUrl: userBook.photos.isNotEmpty ? userBook.photos.first : null, width: 40, height: 56),
         title: Text(userBook.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(
           l10n.inventoryDeletedDaysLeft(_daysLeft),

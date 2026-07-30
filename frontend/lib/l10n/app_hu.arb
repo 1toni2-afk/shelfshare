@@ -105,6 +105,28 @@
     "onboardingNameVisibleSwitch":  "Legyen a nevem nyilvánosan látható",
     "onboardingUsernameAlwaysVisible":  "A felhasználóneved mindig látható marad",
     "profileTitle":  "Profilom",
+    "surveyTitle":  "Mit szeretsz olvasni?",
+    "surveySubtitle":  "Néhány válasz alapján ajánlani tudunk hozzád illő könyveket, és szólunk, ha felkerül egy a kedvedre való.",
+    "surveyGenresQuestion":  "Mely műfajok vonzanak?",
+    "surveyGenresLoadError":  "Nem sikerült betölteni a műfajok listáját.",
+    "surveyAuthorsQuestion":  "Kedvenc szerzők (opcionális)",
+    "surveyAuthorsHint":  "Pl.: Mihail Sadoveanu, Ursula K. Le Guin",
+    "surveyPaceQuestion":  "Hány könyvet olvasol havonta?",
+    "surveySubmit":  "Mentés",
+    "surveySkip":  "Most kihagyom",
+    "surveySaveError":  "Nem sikerült elmenteni a válaszokat. Próbáld újra.",
+    "surveyChangeLaterHint":  "A válaszaidat bármikor módosíthatod a profilodban.",
+    "surveyPaceOption":  "{pace} könyv havonta",
+    "@surveyPaceOption":  {
+        "placeholders":  {
+            "pace":  {
+                "type":  "String"
+            }
+        }
+    },
+    "profilePhotoChoose":  "Válassz fényképet",
+    "profilePhotoRemove":  "Fénykép eltávolítása",
+    "profilePhotoError":  "Nem sikerült frissíteni a profilképet.",
     "profileCopyLink":  "Link másolása",
     "profileLoadError":  "Nem sikerült betölteni a profilt.",
     "profileAboutMe":  "Bemutatkozás",
@@ -261,6 +283,10 @@
     "filtersLanguage":  "Nyelv",
     "filtersAnyCity":  "Bármelyik város",
     "filtersCondition":  "Állapot",
+    "bookConditionNew":  "Új",
+    "bookConditionVeryGood":  "Nagyon jó",
+    "bookConditionGood":  "Jó",
+    "bookConditionAcceptable":  "Elfogadható",
     "filtersAnyCondition":  "Bármilyen állapot",
     "filtersListingType":  "Hirdetés típusa",
     "filtersListingTypeSwap":  "Csere",
@@ -454,6 +480,55 @@
     "chatUserBlocked":  "Felhasználó letiltva",
     "chatBlockUpdateError":  "Nem sikerült frissíteni a letiltást",
     "chatTyping":  "gépel...",
+    "chatSendFailed":  "Az üzenetet nem sikerült elküldeni. Ellenőrizd a kapcsolatot.",
+    "chatOnline":  "online",
+    "chatOffline":  "offline",
+    "chatLastSeenJustNow":  "az imént volt online",
+    "chatLastSeenMinutes":  "{minutes} perce volt online",
+    "@chatLastSeenMinutes":  {
+        "placeholders":  {
+            "minutes":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenHours":  "{hours} órája volt online",
+    "@chatLastSeenHours":  {
+        "placeholders":  {
+            "hours":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenDays":  "{days} napja volt online",
+    "@chatLastSeenDays":  {
+        "placeholders":  {
+            "days":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatSeen":  "Látta",
+    "chatSent":  "Elküldve",
+    "chatReply":  "Válasz",
+    "chatCopyMessage":  "Üzenet másolása",
+    "chatMessageCopied":  "Üzenet másolva",
+    "chatReplyToYou":  "Te",
+    "chatReplyToThem":  "Idézett üzenet",
+    "chatAttachPhoto":  "Fénykép küldése",
+    "chatPhotoSendError":  "Nem sikerült elküldeni a fényképet.",
+    "chatSearchInConversation":  "Keresés a beszélgetésben",
+    "chatSearchNoResults":  "Nincs találat.",
+    "chatArchive":  "Archiválás",
+    "chatUnarchive":  "Kivétel az archívumból",
+    "chatArchived":  "Beszélgetés archiválva",
+    "chatArchivedTitle":  "Archivált",
+    "chatEmptyArchived":  "Nincs archivált beszélgetésed.",
+    "chatDeleteTitle":  "Csevegés törlése",
+    "chatDeleteConfirm":  "A beszélgetés csak nálad tűnik el. A másik fél megtartja az üzeneteit.",
+    "chatActionError":  "Nem sikerült. Próbáld újra.",
+    "chatReportConversation":  "Beszélgetés jelentése",
+    "chatConversationReported":  "A beszélgetést jelentetted. A csapatunk átnézi.",
     "chatBlockedNotice":  "Nem küldhetsz üzenetet ennek a felhasználónak - a beszélgetés le van tiltva.",
     "chatShareLocationTooltip":  "Találkozó helyszínének küldése",
     "chatMessageHint":  "Írj egy üzenetet...",
@@ -669,7 +744,7 @@
     "discoverQuickFilters":  "Gyors szűrők",
     "discoverNearYou":  "A városodban",
     "inventorySelectAll":  "Összes kijelölése",
-    "myShelfShare":  "+ Megosztás",
+    "myShelfShare":  "Megosztás",
     "inventoryMarkAvailable":  "Elérhetőnek jelöl",
     "libraryTrashEmpty":  "A kuka üres",
     "inventoryAppendText":  "Hozzáfűz a végéhez",

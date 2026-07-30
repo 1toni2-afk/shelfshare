@@ -75,6 +75,12 @@ flutter_launcher_icons:
   image_path: "assets/icon/icon-square.png"
   adaptive_icon_background: "#7C3A1E"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
+  # Desenul din icon-foreground.png ocupă ~67% din pânză, adică exact cât zona
+  # sigură a unei iconițe adaptive Android (72dp din 108dp = 66,7%). La limita
+  # aia, măștile rotunde ale launcher-elor taie fix pe marginea desenului și
+  # iconița pare umflată. Inset-ul o micșorează la ~52% din pânză, deci rămâne
+  # centrată, cu spațiu de respirație în orice formă de mască.
+  adaptive_icon_foreground_inset: 12
 
 flutter_native_splash:
   color: "#F8F4EC"

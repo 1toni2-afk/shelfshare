@@ -339,6 +339,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileTitle => 'My profile';
 
   @override
+  String get surveyTitle => 'What do you like to read?';
+
+  @override
+  String get surveySubtitle =>
+      'A few answers let us recommend listed books that suit you, plus a heads-up when one shows up in your taste.';
+
+  @override
+  String get surveyGenresQuestion => 'Which genres appeal to you?';
+
+  @override
+  String get surveyGenresLoadError => 'We could not load the genre list.';
+
+  @override
+  String get surveyAuthorsQuestion => 'Favourite authors (optional)';
+
+  @override
+  String get surveyAuthorsHint => 'e.g. Mihail Sadoveanu, Ursula K. Le Guin';
+
+  @override
+  String get surveyPaceQuestion => 'How many books do you read a month?';
+
+  @override
+  String get surveySubmit => 'Save';
+
+  @override
+  String get surveySkip => 'Skip for now';
+
+  @override
+  String get surveySaveError =>
+      'We could not save your answers. Please try again.';
+
+  @override
+  String get surveyChangeLaterHint =>
+      'You can change your answers anytime from your profile.';
+
+  @override
+  String surveyPaceOption(String pace) {
+    return '$pace books a month';
+  }
+
+  @override
+  String get profilePhotoChoose => 'Choose a photo';
+
+  @override
+  String get profilePhotoRemove => 'Remove photo';
+
+  @override
+  String get profilePhotoError => 'We could not update your profile photo.';
+
+  @override
   String get profileCopyLink => 'Copy link';
 
   @override
@@ -841,6 +891,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filtersCondition => 'Condition';
+
+  @override
+  String get bookConditionNew => 'New';
+
+  @override
+  String get bookConditionVeryGood => 'Very good';
+
+  @override
+  String get bookConditionGood => 'Good';
+
+  @override
+  String get bookConditionAcceptable => 'Acceptable';
 
   @override
   String get filtersAnyCondition => 'Any condition';
@@ -1489,6 +1551,99 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatTyping => 'typing...';
+
+  @override
+  String get chatSendFailed =>
+      'The message could not be sent. Check your connection.';
+
+  @override
+  String get chatOnline => 'online';
+
+  @override
+  String get chatOffline => 'offline';
+
+  @override
+  String get chatLastSeenJustNow => 'last seen just now';
+
+  @override
+  String chatLastSeenMinutes(int minutes) {
+    return 'last seen $minutes min ago';
+  }
+
+  @override
+  String chatLastSeenHours(int hours) {
+    return 'last seen $hours h ago';
+  }
+
+  @override
+  String chatLastSeenDays(int days) {
+    return 'last seen $days d ago';
+  }
+
+  @override
+  String get chatSeen => 'Seen';
+
+  @override
+  String get chatSent => 'Sent';
+
+  @override
+  String get chatReply => 'Reply';
+
+  @override
+  String get chatCopyMessage => 'Copy message';
+
+  @override
+  String get chatMessageCopied => 'Message copied';
+
+  @override
+  String get chatReplyToYou => 'You';
+
+  @override
+  String get chatReplyToThem => 'Quoted message';
+
+  @override
+  String get chatAttachPhoto => 'Send a photo';
+
+  @override
+  String get chatPhotoSendError => 'We could not send the photo.';
+
+  @override
+  String get chatSearchInConversation => 'Search in conversation';
+
+  @override
+  String get chatSearchNoResults => 'No messages found.';
+
+  @override
+  String get chatArchive => 'Archive';
+
+  @override
+  String get chatUnarchive => 'Unarchive';
+
+  @override
+  String get chatArchived => 'Conversation archived';
+
+  @override
+  String get chatArchivedTitle => 'Archived';
+
+  @override
+  String get chatEmptyArchived => 'You have no archived conversations.';
+
+  @override
+  String get chatDeleteTitle => 'Delete chat';
+
+  @override
+  String get chatDeleteConfirm =>
+      'The conversation disappears only for you. The other person keeps their messages.';
+
+  @override
+  String get chatActionError => 'We could not do that. Please try again.';
+
+  @override
+  String get chatReportConversation => 'Report conversation';
+
+  @override
+  String get chatConversationReported =>
+      'The conversation was reported. Our team will review it.';
 
   @override
   String get chatBlockedNotice =>
@@ -2173,7 +2328,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventorySelectAll => 'Select all';
 
   @override
-  String get myShelfShare => '+ Share';
+  String get myShelfShare => 'Share';
 
   @override
   String get inventoryMarkAvailable => 'Mark available';

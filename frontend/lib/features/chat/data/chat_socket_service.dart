@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/network/api_client.dart';
@@ -9,6 +11,10 @@ import '../../../data/models/message.dart';
 class ChatSocketService {
   ChatSocketService(this._ref);
   final Ref _ref;
+
+  /// Cât așteptăm confirmarea serverului înainte să considerăm mesajul pierdut.
+  static const _ackTimeout = Duration(seconds: 8);
+
   io.Socket? _socket;
   Future<io.Socket>? _connecting;
 
@@ -22,7 +28,12 @@ class ChatSocketService {
     final socket = io.io(
       '${ApiConfig.baseUrl}/chat',
       io.OptionBuilder()
-          .setTransports(['websocket'])
+          // Polling ca rezervă, nu doar websocket: pe date mobile și în
+          // spatele unor proxy-uri (inclusiv Cloudflare Tunnel) upgrade-ul la
+          // websocket poate fi blocat, iar cu o listă doar-websocket socket.io
+          // nu are unde să cadă înapoi - chatul pur și simplu nu se conectează,
+          // fără nicio eroare vizibilă în aplicație.
+          .setTransports(['websocket', 'polling'])
           // Funcție, nu un Map static - se apelează din nou la fiecare
           // (re)conectare, inclusiv reconectările automate ale socket.io.
           // Cu un token static, dacă access token-ul expiră (15 minute)
@@ -50,10 +61,26 @@ class ChatSocketService {
     callback({'token': token});
   }
 
-  void joinConversation(String conversationId) {
-    _socket?.emit('join_conversation', conversationId);
+  /// Serverul răspunde cu starea curentă de prezență a celuilalt participant,
+  /// ca antetul să nu aștepte până la următorul lui connect/disconnect.
+  void joinConversation(
+    String conversationId, {
+    void Function(bool otherUserOnline)? onJoined,
+  }) {
+    _socket?.emitWithAck(
+      'join_conversation',
+      conversationId,
+      ack: (data) {
+        if (onJoined == null || data is! Map) return;
+        onJoined(data['otherUserOnline'] as bool? ?? false);
+      },
+    );
   }
 
+  /// [onFailed] se apelează dacă serverul nu confirmă mesajul: fie nu există
+  /// socket, fie a răspuns cu o eroare, fie n-a răspuns deloc în [_ackTimeout].
+  /// Fără el, un `emit` pe un socket mort dispare în tăcere, iar userul crede
+  /// că a trimis mesajul.
   void sendMessage({
     required String conversationId,
     String? content,
@@ -61,15 +88,44 @@ class ChatSocketService {
     double? locationLat,
     double? locationLng,
     String? meetingAt,
+    String? replyToId,
+    void Function()? onFailed,
   }) {
-    _socket?.emit('send_message', {
-      'conversationId': conversationId,
-      'content': ?content,
-      'location': ?location,
-      'locationLat': ?locationLat,
-      'locationLng': ?locationLng,
-      'meetingAt': ?meetingAt,
+    final socket = _socket;
+    if (socket == null) {
+      onFailed?.call();
+      return;
+    }
+
+    var acknowledged = false;
+    socket.emitWithAck(
+      'send_message',
+      {
+        'conversationId': conversationId,
+        'content': ?content,
+        'location': ?location,
+        'locationLat': ?locationLat,
+        'locationLng': ?locationLng,
+        'meetingAt': ?meetingAt,
+        'replyToId': ?replyToId,
+      },
+      ack: (data) {
+        acknowledged = true;
+        // Gateway-ul întoarce mesajul salvat; orice altceva (inclusiv forma
+        // `{status, message}` a filtrului de excepții) înseamnă eșec.
+        final isMessage = data is Map && data['id'] != null;
+        if (!isMessage) onFailed?.call();
+      },
+    );
+
+    Timer(_ackTimeout, () {
+      if (!acknowledged) onFailed?.call();
     });
+  }
+
+  /// Dublează POST /read, dar pe socket - expeditorul vede „Văzut" imediat.
+  void markRead(String conversationId) {
+    _socket?.emit('mark_read', conversationId);
   }
 
   void notifyTyping(String conversationId) {
@@ -95,6 +151,33 @@ class ChatSocketService {
   }
 
   void offUserTyping() => _socket?.off('user_typing');
+
+  void onMessagesRead(void Function(String conversationId) handler) {
+    _socket?.on('messages_read', (data) {
+      final map = Map<String, dynamic>.from(data as Map);
+      handler(map['conversationId'] as String);
+    });
+  }
+
+  void offMessagesRead() => _socket?.off('messages_read');
+
+  /// Prezența vine pe camera personală (`user:<id>`), nu pe cea a conversației -
+  /// e utilă și în lista de conversații, nu doar în chatul deschis.
+  void onUserPresence(
+    void Function(String userId, bool isOnline, DateTime? lastSeenAt) handler,
+  ) {
+    _socket?.on('user_presence', (data) {
+      final map = Map<String, dynamic>.from(data as Map);
+      final lastSeen = map['lastSeenAt'] as String?;
+      handler(
+        map['userId'] as String,
+        map['isOnline'] as bool? ?? false,
+        lastSeen != null ? DateTime.parse(lastSeen) : null,
+      );
+    });
+  }
+
+  void offUserPresence() => _socket?.off('user_presence');
 
   void onMessageNotification(void Function(String conversationId) handler) {
     _socket?.on('message_notification', (data) {

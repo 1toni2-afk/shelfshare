@@ -196,6 +196,28 @@
     "onboardingNameVisibleSwitch":  "Fă numele vizibil public",
     "onboardingUsernameAlwaysVisible":  "Username-ul rămâne mereu vizibil",
     "profileTitle":  "Profilul meu",
+    "surveyTitle":  "Ce îți place să citești?",
+    "surveySubtitle":  "Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.",
+    "surveyGenresQuestion":  "Ce genuri te atrag?",
+    "surveyGenresLoadError":  "Nu am putut încărca lista de genuri.",
+    "surveyAuthorsQuestion":  "Autori preferați (opțional)",
+    "surveyAuthorsHint":  "Ex.: Mihail Sadoveanu, Ursula K. Le Guin",
+    "surveyPaceQuestion":  "Câte cărți citești pe lună?",
+    "surveySubmit":  "Salvează",
+    "surveySkip":  "Sar peste deocamdată",
+    "surveySaveError":  "Nu am putut salva răspunsurile. Încearcă din nou.",
+    "surveyChangeLaterHint":  "Poți schimba oricând răspunsurile din profil.",
+    "surveyPaceOption":  "{pace} cărți pe lună",
+    "@surveyPaceOption":  {
+        "placeholders":  {
+            "pace":  {
+                "type":  "String"
+            }
+        }
+    },
+    "profilePhotoChoose":  "Alege o poză",
+    "profilePhotoRemove":  "Șterge poza",
+    "profilePhotoError":  "Nu am putut actualiza poza de profil.",
     "profileCopyLink":  "Copiază linkul",
     "profileLoadError":  "Nu am putut încărca profilul.",
     "profileAboutMe":  "Despre mine",
@@ -508,6 +530,10 @@
     "filtersLanguage":  "Limbă",
     "filtersAnyCity":  "Orice oraș",
     "filtersCondition":  "Stare",
+    "bookConditionNew":  "Nouă",
+    "bookConditionVeryGood":  "Foarte bună",
+    "bookConditionGood":  "Bună",
+    "bookConditionAcceptable":  "Acceptabilă",
     "filtersAnyCondition":  "Orice stare",
     "filtersListingType":  "Tip de anunț",
     "filtersListingTypeSwap":  "Schimb",
@@ -861,6 +887,55 @@
     "chatUserBlocked":  "Utilizator blocat",
     "chatBlockUpdateError":  "Nu am putut actualiza blocarea",
     "chatTyping":  "scrie...",
+    "chatSendFailed":  "Mesajul nu a putut fi trimis. Verifică conexiunea.",
+    "chatOnline":  "online",
+    "chatOffline":  "offline",
+    "chatLastSeenJustNow":  "văzut adineauri",
+    "chatLastSeenMinutes":  "văzut acum {minutes} min",
+    "@chatLastSeenMinutes":  {
+        "placeholders":  {
+            "minutes":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenHours":  "văzut acum {hours} h",
+    "@chatLastSeenHours":  {
+        "placeholders":  {
+            "hours":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatLastSeenDays":  "văzut acum {days} z",
+    "@chatLastSeenDays":  {
+        "placeholders":  {
+            "days":  {
+                "type":  "int"
+            }
+        }
+    },
+    "chatSeen":  "Văzut",
+    "chatSent":  "Trimis",
+    "chatReply":  "Răspunde",
+    "chatCopyMessage":  "Copiază mesajul",
+    "chatMessageCopied":  "Mesaj copiat",
+    "chatReplyToYou":  "Tu",
+    "chatReplyToThem":  "Mesaj citat",
+    "chatAttachPhoto":  "Trimite o poză",
+    "chatPhotoSendError":  "Nu am putut trimite poza.",
+    "chatSearchInConversation":  "Caută în conversație",
+    "chatSearchNoResults":  "Niciun mesaj găsit.",
+    "chatArchive":  "Arhivează",
+    "chatUnarchive":  "Dezarhivează",
+    "chatArchived":  "Conversație arhivată",
+    "chatArchivedTitle":  "Arhivate",
+    "chatEmptyArchived":  "Nu ai nicio conversație arhivată.",
+    "chatDeleteTitle":  "Șterge chatul",
+    "chatDeleteConfirm":  "Conversația dispare doar pentru tine. Celălalt utilizator își păstrează mesajele.",
+    "chatActionError":  "Nu am putut face asta. Încearcă din nou.",
+    "chatReportConversation":  "Raportează conversația",
+    "chatConversationReported":  "Conversația a fost raportată. Echipa o va analiza.",
     "chatBlockedNotice":  "Nu poți trimite mesaje acestui utilizator - conversația este blocată.",
     "chatShareLocationTooltip":  "Trimite locația întâlnirii",
     "chatMessageHint":  "Scrie un mesaj...",
@@ -1274,7 +1349,7 @@
     "discoverQuickFilters":  "Filtre rapide",
     "discoverNearYou":  "În orașul tău",
     "inventorySelectAll":  "Selectează toate",
-    "myShelfShare":  "+ Împarte",
+    "myShelfShare":  "Împarte",
     "inventoryMarkAvailable":  "Marchează disponibile",
     "libraryTrashEmpty":  "Coșul de gunoi e gol",
     "inventoryAppendText":  "Adaugă la sfârșit",

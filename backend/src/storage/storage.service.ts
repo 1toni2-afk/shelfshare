@@ -82,6 +82,28 @@ export class StorageService implements OnModuleInit {
     return filename;
   }
 
+  /**
+   * Fișiere text generate de server (momentan doar transcripturile de chat
+   * raportate, folderul `chat-reports`). Spre deosebire de imagini, astea nu
+   * sunt destinate afișării publice - bucket-ul e citibil de oricine care
+   * ghicește calea, așa că numele conține un UUID, iar linkul ajunge doar în
+   * emailul intern de moderare.
+   */
+  async uploadTextFile(
+    content: string,
+    folder: string,
+    basename: string,
+  ): Promise<string> {
+    const buffer = Buffer.from(content, 'utf-8');
+    const filename = `${folder}/${basename}-${randomUUID()}.txt`;
+
+    await this.client.putObject(this.bucket, filename, buffer, buffer.length, {
+      'Content-Type': 'text/plain; charset=utf-8',
+    });
+
+    return filename;
+  }
+
   async deleteImage(path: string): Promise<void> {
     await this.client.removeObject(this.bucket, path).catch((error) => {
       this.logger.warn(`Nu am putut șterge ${path}: ${error}`);

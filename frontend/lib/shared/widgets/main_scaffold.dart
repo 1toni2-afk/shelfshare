@@ -23,8 +23,7 @@ class MainScaffold extends ConsumerWidget {
 
     // Urmărite direct din shell (mereu montat) ca badge-urile să fie corecte
     // indiferent de tab-ul curent, nu doar după ce userul deschide Chat/Library.
-    final chatUnread = (ref.watch(conversationsControllerProvider).value ?? const [])
-        .fold<int>(0, (sum, c) => sum + c.unreadCount);
+    final chatUnread = ref.watch(unreadMessagesCountProvider);
     final libraryPending =
         (ref.watch(exchangesControllerProvider).value?.received ?? const [])
                 .where((r) => r.status == ExchangeStatus.pending)

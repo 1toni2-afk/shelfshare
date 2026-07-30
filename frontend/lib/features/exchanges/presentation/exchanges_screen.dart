@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import '../../../shared/widgets/scannable_qr.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
@@ -165,7 +165,7 @@ class _ExchangeCard extends ConsumerWidget {
                     '/books/${exchange.requestedBook.id}',
                     extra: isReceived ? null : exchange.owner,
                   ),
-                  child: BookCover(url: exchange.requestedBook.book.coverUrl, width: 56, height: 78),
+                  child: BookCover(url: exchange.requestedBook.book.coverUrl, fallbackUrl: exchange.requestedBook.photos.isNotEmpty ? exchange.requestedBook.photos.first : null, width: 56, height: 78),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -559,7 +559,7 @@ class _ExchangeQrDialog extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          QrImageView(data: link, size: 200),
+          ScannableQr(data: link),
         ],
       ),
       actions: [
@@ -781,7 +781,7 @@ class _OfferCard extends ConsumerWidget {
               children: [
                 GestureDetector(
                   onTap: () => context.push('/books/${offer.userBook.id}'),
-                  child: BookCover(url: offer.userBook.book.coverUrl, width: 56, height: 78),
+                  child: BookCover(url: offer.userBook.book.coverUrl, fallbackUrl: offer.userBook.photos.isNotEmpty ? offer.userBook.photos.first : null, width: 56, height: 78),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

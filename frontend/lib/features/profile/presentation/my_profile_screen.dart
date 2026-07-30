@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/romanian_cities.dart';
@@ -441,9 +442,18 @@ class _SheetTile extends StatelessWidget {
 /// Header compact: avatar (56dp) + nume/username·oraș pe centru + trust score
 /// compact pe dreapta. Trust score-ul afișează doar numărul + cuvânt „trust";
 /// tap deschide un dialog cu detaliile (aceleași chip-uri de pe cardul mare).
-class _CompactHeader extends StatelessWidget {
+class _CompactHeader extends ConsumerStatefulWidget {
   const _CompactHeader({required this.user});
   final AppUser user;
+
+  @override
+  ConsumerState<_CompactHeader> createState() => _CompactHeaderState();
+}
+
+class _CompactHeaderState extends ConsumerState<_CompactHeader> {
+  bool _uploadingPhoto = false;
+
+  AppUser get user => widget.user;
 
   void _openTrustDetails(BuildContext context) {
     if (user.trustScore == null) return;
@@ -458,6 +468,54 @@ class _CompactHeader extends StatelessWidget {
     );
   }
 
+  /// Tap pe avatar: alege o poză nouă sau șterge-o pe cea existentă.
+  Future<void> _changePhoto() async {
+    final l10n = context.l10n;
+    final hasPhoto = user.profileImage != null;
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.profilePhotoChoose),
+              onTap: () => Navigator.of(sheetContext).pop('pick'),
+            ),
+            if (hasPhoto)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: AppColors.destructive),
+                title: Text(l10n.profilePhotoRemove),
+                onTap: () => Navigator.of(sheetContext).pop('remove'),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      final notifier = ref.read(profileControllerProvider.notifier);
+      if (action == 'remove') {
+        await notifier.removePhoto();
+      } else {
+        final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+        if (picked == null) return;
+        await notifier.uploadPhoto(await picked.readAsBytes(), picked.name);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.profilePhotoError)));
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayName = user.name?.trim().isNotEmpty == true ? user.name! : user.email;
@@ -469,15 +527,47 @@ class _CompactHeader extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: AppColors.muted,
-          backgroundImage: user.profileImage != null
-              ? NetworkImage(user.profileImage!)
-              : null,
-          child: user.profileImage == null
-              ? Icon(Icons.person, color: AppColors.mutedForeground, size: 32)
-              : null,
+        // Avatarul e și butonul de schimbare a pozei - insigna cu creion e
+        // singurul indiciu vizual că se poate apăsa.
+        GestureDetector(
+          onTap: _uploadingPhoto ? null : _changePhoto,
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: AppColors.muted,
+                backgroundImage: user.profileImage != null
+                    ? NetworkImage(user.profileImage!)
+                    : null,
+                child: _uploadingPhoto
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : (user.profileImage == null
+                        ? Icon(Icons.person, color: AppColors.mutedForeground, size: 32)
+                        : null),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.background, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.photo_camera,
+                    size: 12,
+                    color: AppColors.primaryForeground,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(width: 14),
         Expanded(

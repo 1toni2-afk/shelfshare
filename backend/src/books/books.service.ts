@@ -194,6 +194,7 @@ export class BooksService {
     this.wishlist.notifyWishlistedUsers(book.id, userId).catch(() => {});
     this.follow.notifyFollowersOfNewBook(userId, book.title).catch(() => {});
     this.notifyNearbyUsers(userId, book.title).catch(() => {});
+    this.notifyInterestedUsers(userId, book.title, book.genre).catch(() => {});
     awardXp(this.prisma, userId, XP_BOOK_LISTED);
 
     return userBook;
@@ -334,6 +335,55 @@ export class BooksService {
     );
   }
 
+  /**
+   * „Carte nouă pe gustul tău" - anunță userii care au genul cărții între
+   * preferințele din profilul de cititor (vezi ReadingSurveyDto).
+   *
+   * Complementară cu notifyNearbyUsers, care merge pe oraș: aici contează ce
+   * vrea să citească omul, nu unde stă. Excludem userii din același oraș ca
+   * proprietarul, fiindcă ei primesc deja NEARBY_BOOK_LISTED pentru aceeași
+   * carte - două notificări pentru un singur anunț ar fi spam.
+   */
+  private async notifyInterestedUsers(
+    ownerId: string,
+    bookTitle: string,
+    genre: string | null,
+  ) {
+    if (!genre) return;
+
+    const owner = await this.prisma.user.findUnique({
+      where: { id: ownerId },
+      select: { city: true },
+    });
+
+    const interestedUsers = await this.prisma.user.findMany({
+      where: {
+        id: { not: ownerId },
+        favoriteGenres: { has: genre },
+        // Cei din orașul proprietarului au fost deja anunțați de
+        // notifyNearbyUsers. `city: null` nu se potrivește cu `not`, deci
+        // userii fără oraș setat rămân incluși - corect, ei nu primesc
+        // notificarea „din orașul tău".
+        ...(owner?.city ? { OR: [{ city: null }, { city: { not: owner.city } }] } : {}),
+      },
+      select: { id: true },
+      take: 200, // aceeași plasă de siguranță ca la notificarea pe oraș
+    });
+
+    await Promise.all(
+      interestedUsers.map((u) =>
+        this.notifications
+          .create(
+            u.id,
+            'INTEREST_BOOK_LISTED',
+            `S-a listat o carte de ${genre}, gen care te interesează: „${bookTitle}"`,
+            { ownerId, genre },
+          )
+          .catch(() => {}),
+      ),
+    );
+  }
+
   private async findOrCreateBook(dto: AddBookDto) {
     if (dto.isbn) {
       const cleanIsbn = dto.isbn.replace(/[-\s]/g, '');
@@ -391,6 +441,17 @@ export class BooksService {
     // pe același titlu - preferăm o carte nouă, ca metadata (genre, publisher,
     // etc.) userului nou să nu suprascrie cea a altui user (proprietar
     // efectiv al entry-ului). Deduplication reală se face doar pe ISBN.
+    //
+    // Coperta se caută pe titlu + autor: până acum, o carte adăugată fără ISBN
+    // rămânea garantat fără copertă, fiindcă tot lookup-ul mergea pe ISBN.
+    // Acoperirea nu e totală (titlurile românești lipsesc în bună parte din
+    // cataloagele internaționale), de asta clientul mai are și fallback pe poza
+    // urcată de proprietar - vezi BookCover.fallbackUrl.
+    const coverUrl = await this.lookup.lookupCoverByTitle(
+      dto.title,
+      dto.author ?? null,
+    );
+
     return this.prisma.book.create({
       data: {
         title: dto.title,
@@ -399,6 +460,7 @@ export class BooksService {
         publisher: dto.publisher,
         publishedYear: dto.publishedYear,
         pageCount: dto.pageCount,
+        coverUrl,
         source: 'manual',
       },
     });
@@ -750,7 +812,7 @@ export class BooksService {
    * anunțuri, ca să nu vadă o listă goală.
    */
   async getRecommendedForYou(userId: string) {
-    const [myBooks, myWishlist] = await Promise.all([
+    const [myBooks, myWishlist, me] = await Promise.all([
       this.prisma.userBook.findMany({
         where: { userId },
         select: { book: { select: { genre: true } } },
@@ -759,12 +821,20 @@ export class BooksService {
         where: { userId },
         select: { book: { select: { genre: true } } },
       }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { favoriteGenres: true },
+      }),
     ]);
 
     const genres = new Set<string>();
     for (const row of [...myBooks, ...myWishlist]) {
       if (row.book.genre) genres.add(row.book.genre);
     }
+    // Genurile declarate în chestionarul de cititor contează la fel de mult ca
+    // cele deduse din cărțile deja listate - de fapt sunt singurul semnal
+    // pentru un user nou, care n-a listat încă nimic și n-are wishlist.
+    for (const genre of me?.favoriteGenres ?? []) genres.add(genre);
 
     if (genres.size === 0) {
       const fallback = await this.prisma.userBook.findMany({

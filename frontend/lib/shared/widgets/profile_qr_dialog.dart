@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'scannable_qr.dart';
 import '../../core/locale/l10n_extensions.dart';
 
 /// Cod QR care duce direct la profilul public al userului - la fel ca la
@@ -24,7 +24,7 @@ class ProfileQrDialog extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          QrImageView(data: link, size: 200),
+          ScannableQr(data: link),
         ],
       ),
       actions: [

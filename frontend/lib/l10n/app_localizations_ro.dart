@@ -341,6 +341,56 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileTitle => 'Profilul meu';
 
   @override
+  String get surveyTitle => 'Ce îți place să citești?';
+
+  @override
+  String get surveySubtitle =>
+      'Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.';
+
+  @override
+  String get surveyGenresQuestion => 'Ce genuri te atrag?';
+
+  @override
+  String get surveyGenresLoadError => 'Nu am putut încărca lista de genuri.';
+
+  @override
+  String get surveyAuthorsQuestion => 'Autori preferați (opțional)';
+
+  @override
+  String get surveyAuthorsHint => 'Ex.: Mihail Sadoveanu, Ursula K. Le Guin';
+
+  @override
+  String get surveyPaceQuestion => 'Câte cărți citești pe lună?';
+
+  @override
+  String get surveySubmit => 'Salvează';
+
+  @override
+  String get surveySkip => 'Sar peste deocamdată';
+
+  @override
+  String get surveySaveError =>
+      'Nu am putut salva răspunsurile. Încearcă din nou.';
+
+  @override
+  String get surveyChangeLaterHint =>
+      'Poți schimba oricând răspunsurile din profil.';
+
+  @override
+  String surveyPaceOption(String pace) {
+    return '$pace cărți pe lună';
+  }
+
+  @override
+  String get profilePhotoChoose => 'Alege o poză';
+
+  @override
+  String get profilePhotoRemove => 'Șterge poza';
+
+  @override
+  String get profilePhotoError => 'Nu am putut actualiza poza de profil.';
+
+  @override
   String get profileCopyLink => 'Copiază linkul';
 
   @override
@@ -842,6 +892,18 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get filtersCondition => 'Stare';
+
+  @override
+  String get bookConditionNew => 'Nouă';
+
+  @override
+  String get bookConditionVeryGood => 'Foarte bună';
+
+  @override
+  String get bookConditionGood => 'Bună';
+
+  @override
+  String get bookConditionAcceptable => 'Acceptabilă';
 
   @override
   String get filtersAnyCondition => 'Orice stare';
@@ -1489,6 +1551,99 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get chatTyping => 'scrie...';
+
+  @override
+  String get chatSendFailed =>
+      'Mesajul nu a putut fi trimis. Verifică conexiunea.';
+
+  @override
+  String get chatOnline => 'online';
+
+  @override
+  String get chatOffline => 'offline';
+
+  @override
+  String get chatLastSeenJustNow => 'văzut adineauri';
+
+  @override
+  String chatLastSeenMinutes(int minutes) {
+    return 'văzut acum $minutes min';
+  }
+
+  @override
+  String chatLastSeenHours(int hours) {
+    return 'văzut acum $hours h';
+  }
+
+  @override
+  String chatLastSeenDays(int days) {
+    return 'văzut acum $days z';
+  }
+
+  @override
+  String get chatSeen => 'Văzut';
+
+  @override
+  String get chatSent => 'Trimis';
+
+  @override
+  String get chatReply => 'Răspunde';
+
+  @override
+  String get chatCopyMessage => 'Copiază mesajul';
+
+  @override
+  String get chatMessageCopied => 'Mesaj copiat';
+
+  @override
+  String get chatReplyToYou => 'Tu';
+
+  @override
+  String get chatReplyToThem => 'Mesaj citat';
+
+  @override
+  String get chatAttachPhoto => 'Trimite o poză';
+
+  @override
+  String get chatPhotoSendError => 'Nu am putut trimite poza.';
+
+  @override
+  String get chatSearchInConversation => 'Caută în conversație';
+
+  @override
+  String get chatSearchNoResults => 'Niciun mesaj găsit.';
+
+  @override
+  String get chatArchive => 'Arhivează';
+
+  @override
+  String get chatUnarchive => 'Dezarhivează';
+
+  @override
+  String get chatArchived => 'Conversație arhivată';
+
+  @override
+  String get chatArchivedTitle => 'Arhivate';
+
+  @override
+  String get chatEmptyArchived => 'Nu ai nicio conversație arhivată.';
+
+  @override
+  String get chatDeleteTitle => 'Șterge chatul';
+
+  @override
+  String get chatDeleteConfirm =>
+      'Conversația dispare doar pentru tine. Celălalt utilizator își păstrează mesajele.';
+
+  @override
+  String get chatActionError => 'Nu am putut face asta. Încearcă din nou.';
+
+  @override
+  String get chatReportConversation => 'Raportează conversația';
+
+  @override
+  String get chatConversationReported =>
+      'Conversația a fost raportată. Echipa o va analiza.';
 
   @override
   String get chatBlockedNotice =>
@@ -2175,7 +2330,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get inventorySelectAll => 'Selectează toate';
 
   @override
-  String get myShelfShare => '+ Împarte';
+  String get myShelfShare => 'Împarte';
 
   @override
   String get inventoryMarkAvailable => 'Marchează disponibile';
