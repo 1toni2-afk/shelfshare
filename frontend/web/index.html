@@ -18,6 +18,14 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <!-- Fără cache pentru HTML: bundle-urile Flutter au filename hash-uit și pot
+       fi cache-uite eternic, dar index.html trebuie mereu să vină de la server
+       ca să pointeze spre bundle-ul curent. Fără asta, browserul (și
+       Cloudflare) pot servi un index.html vechi care încarcă bundle-ul vechi
+       - efectul e „am dat refresh și tot văd bug-ul reparat". -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <!-- Google Analytics (GA4) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-36HN8BM30V"></script>
@@ -126,6 +134,23 @@
     setTimeout(function () {
       document.getElementById('splash')?.remove();
     }, 15000);
+
+    // Dezînregistrăm orice service worker Flutter deja instalat și golim
+    // cache-urile lui. Am avut două runde de bug-uri unde o versiune veche
+    // rămânea servită din cache după ce am publicat un fix - inclusiv în
+    // incognito, dacă exista o altă fereastră incognito activă. Aplicația
+    // nu depinde de service worker pentru funcționare (nu avem mod offline);
+    // costul e neglijabil, câștigul e că un release nou intră imediat.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        for (const r of regs) r.unregister();
+      });
+      if (typeof caches !== 'undefined') {
+        caches.keys().then(function (keys) {
+          for (const k of keys) caches.delete(k);
+        });
+      }
+    }
   </script>
 
   <!--

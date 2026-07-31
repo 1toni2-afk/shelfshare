@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,9 +12,23 @@ import 'core/theme/theme_controller.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting();
-  runApp(const ProviderScope(child: ShelfShareApp()));
+  // Redirecționăm erorile de framework și de zonă către print, ca stack
+  // trace-urile să apară în consola browserului chiar și în release web.
+  // Fără asta, o excepție într-un build widget lasă tot ecranul negru fără
+  // niciun indiciu (Flutter nu afișează ErrorWidget-ul roșu în release).
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    // ignore: avoid_print
+    print('FlutterError: ${details.exception}\n${details.stack}');
+  };
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await initializeDateFormatting();
+    runApp(const ProviderScope(child: ShelfShareApp()));
+  }, (error, stack) {
+    // ignore: avoid_print
+    print('ZoneError: $error\n$stack');
+  });
 }
 
 class ShelfShareApp extends ConsumerStatefulWidget {
