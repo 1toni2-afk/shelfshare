@@ -52,7 +52,15 @@ class HomeFeedState {
   }
 }
 
-const _pageSize = 12;
+/// Suficient cât să acoperim toate cele 8 rânduri de recente dintre cele 3
+/// secțiuni tematice (2+3+3) chiar și pe un ecran de 6 coloane: 8 × 6 = 48.
+/// Pe telefon cu 2 coloane sunt 24 de rânduri - mult mai mult decât încape pe
+/// un viewport, dar `loadMore` oricum le va cere pe rând.
+///
+/// Înainte era 12: pe desktop, cele 12 cărți umpleau exact 2 rânduri la 6
+/// coloane, deci Most Sought After apărea la marginea de jos și părea că nu
+/// exista deloc dacă userul nu scrolla.
+const _pageSize = 48;
 
 /// Raza secțiunii „Close Near You". Distanța se calculează între centrele
 /// orașelor (vezi ROMANIAN_CITY_COORDINATES pe backend), deci e orientativă.
