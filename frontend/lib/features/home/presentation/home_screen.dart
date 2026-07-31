@@ -18,7 +18,13 @@ import '../application/home_controller.dart';
 /// Calculăm coloanele reale din lățimea disponibilă, ca „N rânduri" să însemne
 /// N rânduri afișate - nu un număr fix de cărți: pe desktop 3 rânduri = 15
 /// cărți, pe telefon aceleași 3 rânduri = 6 cărți.
+///
+/// Trebuie tratată explicit lățimea infinită: `LayoutBuilder` poate cere o
+/// pasă de măsurare cu constraint neconstrans (ex. în interior de
+/// `RefreshIndicator`), iar `infinity.floor()` aruncă `UnsupportedError` -
+/// care în release ascunde tot ecranul.
 int _computeColumns(double availableWidth) {
+  if (!availableWidth.isFinite || availableWidth <= 0) return 2;
   const spacing = 16.0;
   final n = ((availableWidth + spacing) / (kBookCardMaxWidth + spacing)).floor();
   return n.clamp(2, 8);
@@ -138,18 +144,16 @@ class _HomeFeed extends StatelessWidget {
     }
 
     // Numărul de coloane și felierea în rânduri se calculează din lățimea
-    // reală a ecranului: pe desktop cu 5 coloane, [2, 3, 3] înseamnă 10, 15,
-    // 15 cărți între secțiuni; pe telefon cu 2 coloane, aceleași rânduri
-    // înseamnă 4, 6, 6 cărți. Astfel „două rânduri" e mereu două rânduri
-    // afișate, indiferent de ecran.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final horizontalPadding = _centeringPadding(context).horizontal;
-        final gridWidth = (constraints.maxWidth - horizontalPadding).clamp(0.0, double.infinity);
-        final columns = _computeColumns(gridWidth);
-        return _buildScrollView(context, columns);
-      },
-    );
+    // ecranului: pe desktop cu 5 coloane, [2, 3, 3] înseamnă 10, 15, 15 cărți
+    // între secțiuni; pe telefon cu 2 coloane, aceleași rânduri = 4, 6, 6.
+    // Folosim MediaQuery, nu LayoutBuilder - LayoutBuilder poate cere o pasă
+    // de măsurare cu constraint infinit când e wrap-uit în RefreshIndicator,
+    // ceea ce forța _computeColumns cu infinity și rupea tot ecranul în
+    // release. Lățimea ecranului e ce ne trebuia de fapt.
+    final horizontalPadding = _centeringPadding(context).horizontal;
+    final gridWidth = MediaQuery.of(context).size.width - horizontalPadding;
+    final columns = _computeColumns(gridWidth);
+    return _buildScrollView(context, columns);
   }
 
   /// Construiește lista de slivers alternând grile de recente cu secțiunile
