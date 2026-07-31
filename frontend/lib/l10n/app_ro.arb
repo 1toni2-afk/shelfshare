@@ -1430,7 +1430,8 @@
     "aboutDevCoffeeButton":  "Buy me a coffee",
     "aboutDevOpenError":  "Nu am putut deschide linkul. Încearcă din nou.",
     "loginMadeWithLove":  "Made with ❤️ in Transilvanya",
-    "homeNearbyTitle":  "Cărți în jurul tău ({km} km)",
+    "homeRecommendedTitle":  "Recomandate pentru tine",
+    "homeNearbyTitle":  "Aproape de tine ({km} km)",
     "@homeNearbyTitle":  {
                              "placeholders":  {
                                                   "km":  {

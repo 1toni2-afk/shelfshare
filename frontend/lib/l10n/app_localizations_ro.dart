@@ -2549,8 +2549,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
 
   @override
+  String get homeRecommendedTitle => 'Recomandate pentru tine';
+
+  @override
   String homeNearbyTitle(int km) {
-    return 'Cărți în jurul tău ($km km)';
+    return 'Aproape de tine ($km km)';
   }
 
   @override

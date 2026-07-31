@@ -6,12 +6,15 @@ import '../../books/data/books_repository.dart';
 
 /// Feed-ul paginat al paginii principale: ultimele cărți postate (după
 /// `createdAt`, NU `updatedAt` - ca userii să nu-și boosteze anunțul printr-un
-/// simplu edit) + un carusel „Cele mai căutate" injectat după primele 12.
+/// simplu edit) cu trei secțiuni tematice injectate ca ancore vizuale între
+/// rânduri: „Most Sought After" după 2 rânduri, „Close Near You" după alte 3,
+/// „Recommended for you" după încă 3. Vezi kHomeSectionSlots.
 class HomeFeedState {
   const HomeFeedState({
     this.recent = const [],
     this.mostViewed = const [],
     this.nearby = const [],
+    this.recommended = const [],
     this.isLoadingMore = false,
     this.hasMore = true,
   });
@@ -22,6 +25,11 @@ class HomeFeedState {
   /// Cărți disponibile la maxim [kNearbyRadiusKm] de orașul userului. Gol dacă
   /// userul nu are oraș setat în profil sau dacă nu e nimic în raza asta.
   final List<UserBook> nearby;
+
+  /// Cărți recomandate content-based (genuri/autori derivați din profil și
+  /// din bibliotecă). Gol dacă nu avem semnal - vezi endpointul.
+  final List<UserBook> recommended;
+
   final bool isLoadingMore;
   final bool hasMore;
 
@@ -29,6 +37,7 @@ class HomeFeedState {
     List<UserBook>? recent,
     List<UserBook>? mostViewed,
     List<UserBook>? nearby,
+    List<UserBook>? recommended,
     bool? isLoadingMore,
     bool? hasMore,
   }) {
@@ -36,6 +45,7 @@ class HomeFeedState {
       recent: recent ?? this.recent,
       mostViewed: mostViewed ?? this.mostViewed,
       nearby: nearby ?? this.nearby,
+      recommended: recommended ?? this.recommended,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
     );
@@ -44,9 +54,17 @@ class HomeFeedState {
 
 const _pageSize = 12;
 
-/// Raza secțiunii „cărți în jurul tău". Distanța se calculează între centrele
+/// Raza secțiunii „Close Near You". Distanța se calculează între centrele
 /// orașelor (vezi ROMANIAN_CITY_COORDINATES pe backend), deci e orientativă.
-const kNearbyRadiusKm = 50;
+/// Am scăzut de la 50 km la 25 km ca „close" să însemne cu adevărat aproape,
+/// nu jumătate de județ.
+const kNearbyRadiusKm = 25;
+
+/// Câte rânduri de „recent" preced fiecare secțiune tematică, în ordine.
+/// Rândurile sunt calculate din numărul real de coloane afișate, deci pe
+/// desktop cu 5 coloane [2, 3, 3] înseamnă 10, 15, 15 cărți; pe telefon cu 2
+/// coloane, aceleași rânduri = 4, 6, 6 cărți.
+const kHomeSectionSlots = [2, 3, 3];
 
 class HomeController extends AsyncNotifier<HomeFeedState> {
   @override
@@ -60,29 +78,38 @@ class HomeController extends AsyncNotifier<HomeFeedState> {
     final me = auth is AuthAuthenticated ? auth.user : null;
     final myCity = me?.city;
 
-    // Prima pagină de recente + trending + vecinătate, în paralel.
-    final results = await Future.wait([
-      repository.browse(sort: 'recent', limit: _pageSize, offset: 0),
-      repository.browse(sort: 'mostViewed', limit: _pageSize, offset: 0),
-      if (myCity != null && myCity.isNotEmpty)
-        repository.browse(
-          sort: 'distance',
-          fromCity: myCity,
-          maxDistanceKm: kNearbyRadiusKm,
-          limit: _pageSize,
-          offset: 0,
-        ),
-    ]);
-    final recentResult = results[0];
-    final mostViewedResult = results[1];
+    // Fiecare secțiune se cere în paralel; dacă una pică (ex. recommended
+    // fără chestionar completat pe un backend vechi), restul feed-ului se
+    // afișează normal iar secțiunea respectivă rămâne ascunsă. Cererile stau
+    // pe futures separate ca `Future.wait` să nu împartă un tip generic.
+    final hasCity = myCity != null && myCity.isNotEmpty;
+    final recentFuture = repository.browse(sort: 'recent', limit: _pageSize, offset: 0);
+    final trendingFuture = repository.browse(sort: 'mostViewed', limit: _pageSize, offset: 0)
+        .then((r) => r.items)
+        .catchError((_) => <UserBook>[]);
+    final nearbyFuture = hasCity
+        ? repository
+            .browse(
+              sort: 'distance',
+              fromCity: myCity,
+              maxDistanceKm: kNearbyRadiusKm,
+              limit: _pageSize,
+              offset: 0,
+            )
+            // Fără propriile anunțuri: sunt la 0 km de userul însuși, deci ar
+            // ocupa începutul secțiunii fără să-i spună nimic nou.
+            .then((r) => r.items.where((b) => b.userId != me?.id).toList())
+            .catchError((_) => <UserBook>[])
+        : Future.value(const <UserBook>[]);
+    final recommendedFuture =
+        repository.getRecommendedForYou().catchError((_) => <UserBook>[]);
+
+    final recentResult = await recentFuture;
     return HomeFeedState(
       recent: recentResult.items,
-      mostViewed: mostViewedResult.items,
-      // Fără propriile anunțuri: ele sunt la 0 km de userul însuși, deci ar
-      // ocupa începutul secțiunii „în jurul tău" fără să-i spună nimic nou.
-      nearby: results.length > 2
-          ? results[2].items.where((b) => b.userId != me?.id).toList()
-          : const [],
+      mostViewed: await trendingFuture,
+      nearby: await nearbyFuture,
+      recommended: await recommendedFuture,
       hasMore: recentResult.items.length < recentResult.total,
     );
   }

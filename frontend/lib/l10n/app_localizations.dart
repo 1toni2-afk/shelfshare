@@ -4614,10 +4614,16 @@ abstract class AppLocalizations {
   /// **'Made with ❤️ in Transilvanya'**
   String get loginMadeWithLove;
 
+  /// No description provided for @homeRecommendedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recomandate pentru tine'**
+  String get homeRecommendedTitle;
+
   /// No description provided for @homeNearbyTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Cărți în jurul tău ({km} km)'**
+  /// **'Aproape de tine ({km} km)'**
   String homeNearbyTitle(int km);
 
   /// No description provided for @shareTagsSuggestions.

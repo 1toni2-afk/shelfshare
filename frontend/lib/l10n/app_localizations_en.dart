@@ -2545,8 +2545,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
 
   @override
+  String get homeRecommendedTitle => 'Recommended for you';
+
+  @override
   String homeNearbyTitle(int km) {
-    return 'Books around you ($km km)';
+    return 'Close near you ($km km)';
   }
 
   @override

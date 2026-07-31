@@ -14,8 +14,15 @@ import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
 import '../application/home_controller.dart';
 
-/// Câte cărți recente afișăm înainte de a injecta caruselul „Cele mai căutate".
-const _trendingInjectAfter = 12;
+/// Metricile grilei sunt aceleași ca ale delegate-ului (vezi [_BookSliverGrid]).
+/// Calculăm coloanele reale din lățimea disponibilă, ca „N rânduri" să însemne
+/// N rânduri afișate - nu un număr fix de cărți: pe desktop 3 rânduri = 15
+/// cărți, pe telefon aceleași 3 rânduri = 6 cărți.
+int _computeColumns(double availableWidth) {
+  const spacing = 16.0;
+  final n = ((availableWidth + spacing) / (kBookCardMaxWidth + spacing)).floor();
+  return n.clamp(2, 8);
+}
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -130,100 +137,106 @@ class _HomeFeed extends StatelessWidget {
       );
     }
 
-    // Trei felii de recente, cu o secțiune tematică între ele: primele 12 →
-    // „Cele mai căutate" → următoarele 12 → „În jurul tău" → restul.
-    final firstBatch = data.recent.take(_trendingInjectAfter).toList();
-    final secondBatch = data.recent.length > _trendingInjectAfter
-        ? data.recent.skip(_trendingInjectAfter).take(_trendingInjectAfter).toList()
-        : const <UserBook>[];
-    final rest = data.recent.length > 2 * _trendingInjectAfter
-        ? data.recent.sublist(2 * _trendingInjectAfter)
-        : const <UserBook>[];
-    final showTrending = data.recent.length >= _trendingInjectAfter && data.mostViewed.isNotEmpty;
-    final showNearby = data.nearby.isNotEmpty;
-
-    // Grilă responsivă: cardurile își păstrează lățimea (~220dp), deci pe
-    // ecrane înguste ies 2 pe rând, iar pe desktop apar tot mai multe coloane
-    // pe măsură ce se lățește fereastra. Plafonat la 1350px (~6 coloane) ca
-    // pe monitoare 4K să nu se răsfire pe 10+ coloane.
-    //
-    // ScrollView-ul ocupă TOATĂ lățimea (chiar dacă vizual conținutul e mai
-    // îngust) - altfel wheel-ul de mouse și scroll-ul cu trackpad nu prind pe
-    // zonele goale din stânga/dreapta grilei. Constrângerea de lățime e mutată
-    // în padding-ul fiecărui sliver, calculat din lățimea ecranului.
-    return _buildScrollView(
-      context,
-      firstBatch,
-      secondBatch,
-      rest,
-      showTrending,
-      showNearby,
+    // Numărul de coloane și felierea în rânduri se calculează din lățimea
+    // reală a ecranului: pe desktop cu 5 coloane, [2, 3, 3] înseamnă 10, 15,
+    // 15 cărți între secțiuni; pe telefon cu 2 coloane, aceleași rânduri
+    // înseamnă 4, 6, 6 cărți. Astfel „două rânduri" e mereu două rânduri
+    // afișate, indiferent de ecran.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = _centeringPadding(context).horizontal;
+        final gridWidth = (constraints.maxWidth - horizontalPadding).clamp(0.0, double.infinity);
+        final columns = _computeColumns(gridWidth);
+        return _buildScrollView(context, columns);
+      },
     );
   }
 
-  Widget _buildScrollView(
-    BuildContext context,
-    List<UserBook> firstBatch,
-    List<UserBook> secondBatch,
-    List<UserBook> rest,
-    bool showTrending,
-    bool showNearby,
-  ) {
+  /// Construiește lista de slivers alternând grile de recente cu secțiunile
+  /// tematice care au conținut. O secțiune fără date se sare cu totul, iar
+  /// slot-ul ei nu mai consumă rânduri - feed-ul continuă neîntrerupt.
+  Widget _buildScrollView(BuildContext context, int columns) {
     final l10n = context.l10n;
+    // Definim în ordine secțiunile candidate, cu câte rânduri să le preceadă
+    // și cu widget-ul pe care îl injectăm în locul lor. Cele goale se filtrează
+    // înainte să atribuim slot-urile - astfel „recomandate" ajunge la locul 2
+    // dacă „nearby" e gol, în loc să lase un gol vizual.
+    final sections = <_SectionSpec>[
+      if (data.mostViewed.isNotEmpty)
+        _SectionSpec(
+          builder: (_) => _HomeSection(
+            title: l10n.homeMostSearched,
+            icon: Icons.local_fire_department,
+            accent: AppColors.accent,
+            books: data.mostViewed,
+            seeAllRoute: '/browse',
+          ),
+        ),
+      if (data.nearby.isNotEmpty)
+        _SectionSpec(
+          builder: (_) => _HomeSection(
+            title: l10n.homeNearbyTitle(kNearbyRadiusKm),
+            icon: Icons.near_me_outlined,
+            accent: AppColors.primary,
+            books: data.nearby,
+            seeAllRoute: '/map',
+          ),
+        ),
+      if (data.recommended.isNotEmpty)
+        _SectionSpec(
+          builder: (_) => _HomeSection(
+            title: l10n.homeRecommendedTitle,
+            icon: Icons.auto_awesome_outlined,
+            accent: AppColors.accent,
+            books: data.recommended,
+            seeAllRoute: '/smart-matches',
+          ),
+        ),
+    ];
+
+    // Cum împărțim feed-ul: `kHomeSectionSlots` = [2, 3, 3] rânduri, deci
+    // primele două rânduri → secțiunea 0, următoarele trei → secțiunea 1 etc.
+    // Convertim rândurile în număr de cărți folosind numărul de coloane.
+    final slivers = <Widget>[const SliverToBoxAdapter(child: SizedBox(height: 12))];
+    var cursor = 0;
+    for (var i = 0; i < sections.length; i++) {
+      final rows = i < kHomeSectionSlots.length ? kHomeSectionSlots[i] : kHomeSectionSlots.last;
+      final take = (rows * columns).clamp(0, data.recent.length - cursor);
+      if (take > 0) {
+        slivers.add(_BookSliverGrid(books: data.recent.sublist(cursor, cursor + take)));
+        cursor += take;
+      }
+      slivers.add(SliverToBoxAdapter(child: sections[i].builder(context)));
+    }
+    if (cursor < data.recent.length) {
+      slivers.add(_BookSliverGrid(books: data.recent.sublist(cursor)));
+    }
+    slivers.add(
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Center(
+            child: data.isLoadingMore
+                ? const CircularProgressIndicator()
+                : (data.hasMore ? const SizedBox.shrink() : Text(l10n.homeFeedEnd)),
+          ),
+        ),
+      ),
+    );
+
     return CustomScrollView(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        const SliverToBoxAdapter(child: SizedBox(height: 12)),
-        _BookSliverGrid(books: firstBatch),
-        if (showTrending)
-          SliverToBoxAdapter(
-            child: Builder(
-              builder: (context) {
-                final screenWidth = MediaQuery.of(context).size.width;
-                final side = screenWidth > _feedMaxWidth
-                    ? (screenWidth - _feedMaxWidth) / 2
-                    : 0.0;
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: side),
-                  child: _TrendingCarousel(books: data.mostViewed),
-                );
-              },
-            ),
-          ),
-        if (secondBatch.isNotEmpty) _BookSliverGrid(books: secondBatch),
-        // „În jurul tău" - cărți disponibile la maxim 50 km de orașul din
-        // profil. Ascunsă complet dacă userul nu are oraș setat sau dacă nu e
-        // nimic în rază: un carusel gol nu spune nimic.
-        if (showNearby)
-          SliverToBoxAdapter(
-            child: Builder(
-              builder: (context) {
-                final screenWidth = MediaQuery.of(context).size.width;
-                final side = screenWidth > _feedMaxWidth
-                    ? (screenWidth - _feedMaxWidth) / 2
-                    : 0.0;
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: side),
-                  child: _NearbySection(books: data.nearby),
-                );
-              },
-            ),
-          ),
-        if (rest.isNotEmpty) _BookSliverGrid(books: rest),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: data.isLoadingMore
-                  ? const CircularProgressIndicator()
-                  : (data.hasMore ? const SizedBox.shrink() : Text(l10n.homeFeedEnd)),
-            ),
-          ),
-        ),
-      ],
+      slivers: slivers,
     );
   }
+}
+
+/// Ce inserăm între felii de „recent". Wrapper minimalist ca lista din
+/// [_HomeFeed._buildScrollView] să rămână citibilă.
+class _SectionSpec {
+  const _SectionSpec({required this.builder});
+  final WidgetBuilder builder;
 }
 
 /// Grilă responsivă. Pe telefon (~360-430dp) iese exact pe 2 coloane, cu ~2
@@ -278,124 +291,81 @@ class _BookSliverGrid extends StatelessWidget {
   }
 }
 
-/// „În jurul tău" - carusel orizontal cu cărțile disponibile la maxim
-/// [kNearbyRadiusKm] de orașul userului. Aceeași formă vizuală ca „Cele mai
-/// căutate", dar cu iconiță de locație și un accent mai discret, ca să nu
-/// concureze cu secțiunea de trending.
-class _NearbySection extends StatelessWidget {
-  const _NearbySection({required this.books});
+/// Bloc tematic pe Home - fundal decupat cu accent, un titlu cu iconiță, un
+/// carusel orizontal de coperți și un buton „vezi toate". Same shape pentru
+/// toate cele trei secțiuni („Most Sought After", „Close Near You",
+/// „Recommended"), doar culoarea de accent și iconița diferă.
+class _HomeSection extends StatelessWidget {
+  const _HomeSection({
+    required this.title,
+    required this.icon,
+    required this.accent,
+    required this.books,
+    required this.seeAllRoute,
+  });
+
+  final String title;
+  final IconData icon;
+  final Color accent;
   final List<UserBook> books;
+  final String seeAllRoute;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      color: AppColors.muted.withValues(alpha: 0.6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
-            child: Row(
-              children: [
-                Icon(Icons.near_me_outlined, color: AppColors.primary, size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n.homeNearbyTitle(kNearbyRadiusKm),
-                    style: Theme.of(context).textTheme.titleLarge,
+    // Fundalul e o benzii care traversează întreaga lățime a ScrollView-ului
+    // (ca hardcode-ul de dinainte de refactor) - încadrarea vizuală vine
+    // exact de aici, nu din spațiul dintre grile. Padding orizontal se
+    // aplică pe titlu și pe listă, nu pe fundal.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final side = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: side),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        color: accent.withValues(alpha: 0.08),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
+              child: Row(
+                children: [
+                  Icon(icon, color: accent, size: 22),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(color: accent),
+                    ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => context.push('/map'),
-                  child: Text(l10n.homeSeeAll),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 290,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: books.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final userBook = books[index];
-                return BookCard(
-                  userBook: userBook,
-                  width: 150,
-                  onTap: () => context.push('/books/${userBook.id}', extra: userBook.owner),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Caruselul orizontal „Cele mai căutate" injectat după primele 12 recente,
-/// cu buton „Vezi toate" către Discover.
-class _TrendingCarousel extends StatelessWidget {
-  const _TrendingCarousel({required this.books});
-  final List<UserBook> books;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    // Fundal ușor „faded" cu tent de accent, ca secțiunea să se detașeze
-    // vizual de grila principală (cerință explicită - fără el, caruselul
-    // se pierdea între rândurile de deasupra și dedesubt).
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      color: AppColors.accent.withValues(alpha: 0.08),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
-            child: Row(
-              children: [
-                Icon(Icons.local_fire_department, color: AppColors.accent, size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n.homeMostSearched,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppColors.accent,
-                        ),
+                  TextButton(
+                    onPressed: () => context.push(seeAllRoute),
+                    child: Text(l10n.homeSeeAll),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => context.push('/browse'),
-                  child: Text(l10n.homeSeeAll),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: 290,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: books.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final userBook = books[index];
-                return BookCard(
-                  userBook: userBook,
-                  width: 150,
-                  onTap: () => context.push('/books/${userBook.id}', extra: userBook.owner),
-                );
-              },
+            SizedBox(
+              height: 290,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: books.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final userBook = books[index];
+                  return BookCard(
+                    userBook: userBook,
+                    width: 150,
+                    onTap: () => context.push('/books/${userBook.id}', extra: userBook.owner),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
