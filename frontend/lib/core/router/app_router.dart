@@ -26,10 +26,10 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/about_dev_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
-import '../../features/profile/presentation/settings_screen.dart';
 import '../../features/profile/presentation/pre_registration_screen.dart';
 import '../../features/profile/presentation/leaderboard_screen.dart';
 import '../../features/profile/presentation/following_screen.dart';
+import '../../features/profile/presentation/settings_screen.dart';
 import '../../features/books/presentation/global_stats_screen.dart';
 import '../../features/books/presentation/my_bookshelf_screen.dart';
 import '../../features/profile/presentation/activity_feed_screen.dart';
@@ -41,7 +41,6 @@ import '../../features/groups/presentation/groups_screen.dart';
 import '../../features/groups/presentation/group_detail_screen.dart';
 import '../../features/profile/presentation/seller_analytics_screen.dart';
 import '../../features/profile/presentation/onboarding_screen.dart';
-import '../../features/profile/presentation/reading_survey_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
 import '../../features/safety/presentation/safety_center_screen.dart';
@@ -58,9 +57,21 @@ const _publicRoutes = {
   '/auth/google/callback',
 };
 
+/// Rutele fiecărui branch din tab-uri, în ordinea din sidebar. Folosit atât de
+/// router pentru StatefulShellRoute cât și de MainScaffold ca să știe pe ce
+/// tab e user-ul curent (bazat pe URL).
+const kBranchPaths = ['/', '/search', '/library', '/chat', '/profile'];
+
+/// Chei separate pentru navigator-ele nested - fără ele, `context.pop()` din
+/// interiorul unei rute standalone (ex. /wishlist) încearcă să scoată de pe
+/// stiva root și ecranul se umple cu blank.
+final _rootKey = GlobalKey<NavigatorState>();
+final _shellKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
+    navigatorKey: _rootKey,
     redirect: (context, state) {
       // Citim starea curentă la fiecare evaluare (nu o captăm o singură
       // dată la construirea routerului) - altfel router-ul s-ar recrea la
@@ -72,7 +83,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoading = authState is AuthInitial || authState is AuthLoading;
       final goingToAuth = _publicRoutes.contains(state.matchedLocation);
       final goingToOnboarding = state.matchedLocation == '/onboarding';
-      final goingToSurvey = state.matchedLocation == '/reading-survey';
 
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
@@ -89,24 +99,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           goingToOnboarding) {
         return '/';
       }
-      // Imediat după onboarding: chestionarul de profil de cititor. Se poate
-      // sări peste, iar „sar peste" setează tot readingSurveyCompletedAt, deci
-      // condiția de aici nu se mai îndeplinește a doua oară.
-      if (isAuthenticated &&
-          authState.user.username != null &&
-          authState.user.readingSurveyCompletedAt == null &&
-          !goingToSurvey) {
-        return '/reading-survey';
-      }
-      if (isAuthenticated &&
-          authState.user.readingSurveyCompletedAt != null &&
-          goingToSurvey) {
-        return '/';
-      }
       return null;
     },
     refreshListenable: _AuthStateListenable(ref),
     routes: [
+      // Rutele publice și onboarding rămân la nivel root (NU au sidebar-ul).
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       GoRoute(
@@ -120,134 +117,134 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
-      GoRoute(
-        path: '/reading-survey',
-        builder: (context, state) => const ReadingSurveyScreen(),
-      ),
-      GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
-      GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
-      GoRoute(path: '/library/trash', builder: (context, state) => const TrashScreen()),
-      GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
-      GoRoute(
-        path: '/browse',
-        builder: (context, state) {
-          final args = state.extra as SearchScreenArgs?;
-          return BrowseScreen(
-            initialTitle: args?.title,
-            initialGenre: args?.genre,
-            initialListingType: args?.listingType,
-            initialCity: args?.city,
-          );
-        },
-      ),
-      GoRoute(path: '/map', builder: (context, state) => const BooksMapScreen()),
-      GoRoute(path: '/exchanges', builder: (context, state) => const ExchangesScreen()),
-      GoRoute(
-        path: '/exchanges/:id/confirm',
-        builder: (context, state) => ExchangeConfirmScreen(exchangeId: state.pathParameters['id']!),
-      ),
-      GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
-      GoRoute(path: '/safety-center', builder: (context, state) => const SafetyCenterScreen()),
-      GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
-      GoRoute(path: '/help-center', builder: (context, state) => const HelpCenterScreen()),
-      GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
-      GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),
-      GoRoute(path: '/global-stats', builder: (context, state) => const GlobalStatsScreen()),
-      GoRoute(path: '/bookshelf', builder: (context, state) => const MyBookshelfScreen()),
-      GoRoute(path: '/activity-feed', builder: (context, state) => const ActivityFeedScreen()),
-      GoRoute(path: '/smart-matches', builder: (context, state) => const SmartMatchesScreen()),
-      GoRoute(
-        path: '/auctions/:id',
-        builder: (context, state) => AuctionDetailScreen(auctionId: state.pathParameters['id']!),
-      ),
-      GoRoute(path: '/collections', builder: (context, state) => const MyCollectionsScreen()),
-      GoRoute(path: '/groups', builder: (context, state) => const GroupsScreen()),
-      GoRoute(path: '/seller-analytics', builder: (context, state) => const SellerAnalyticsScreen()),
-      GoRoute(
-        path: '/groups/:id',
-        builder: (context, state) => GroupDetailScreen(groupId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/collections/:id',
-        builder: (context, state) => CollectionDetailScreen(
-          collectionId: state.pathParameters['id']!,
-          ownerId: state.uri.queryParameters['ownerId'],
+
+      // ShellRoute exterior - toate rutele autentificate stau înăuntru. Aici
+      // se randează MainScaffold cu sidebar-ul. Când user-ul navighează între
+      // rute standalone (ex. /wishlist → /notifications), sidebar-ul rămâne
+      // vizibil pentru că doar child-ul se schimbă, MainScaffold e stabil.
+      ShellRoute(
+        parentNavigatorKey: _rootKey,
+        navigatorKey: _shellKey,
+        builder: (context, state, child) => MainScaffold(
+          currentLocation: state.matchedLocation,
+          child: child,
         ),
-      ),
-      GoRoute(
-        path: '/users/:userId',
-        builder: (context, state) => PublicProfileScreen(
-          userId: state.pathParameters['userId']!,
-          fallback: state.extra as PublicUser?,
-        ),
-      ),
-      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
-      GoRoute(
-        path: '/books/:userBookId',
-        builder: (context, state) => BookDetailScreen(
-          userBookId: state.pathParameters['userBookId']!,
-          fallbackOwner: state.extra as PublicUser?,
-        ),
-      ),
-      // Înaintea rutei cu parametru: altfel „archived" ar fi interpretat ca
-      // un conversationId (go_router ia prima rută care se potrivește).
-      GoRoute(
-        path: '/chat/archived',
-        builder: (context, state) => const ConversationsListScreen(archived: true),
-      ),
-      GoRoute(
-        path: '/chat/:conversationId',
-        builder: (context, state) => ConversationScreen(
-          conversationId: state.pathParameters['conversationId']!,
-          otherUser: state.extra as PublicUser?,
-        ),
-      ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            MainScaffold(navigationShell: navigationShell),
-        branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/search',
-              builder: (context, state) => const DiscoverScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/library', builder: (context, state) => const MyLibraryScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/chat',
-              builder: (context, state) => const ConversationsListScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            // Setările, editarea profilului și „About dev" sunt rute copil, nu
-            // bottom sheets suprapuse: doar așa back-ul de sistem pe Android
-            // întoarce un singur pas (edit → settings → profil) în loc să sară
-            // din stivă într-un alt tab.
-            GoRoute(
-              path: '/profile',
-              builder: (context, state) => const MyProfileScreen(),
-              routes: [
+        routes: [
+          // Tab-urile propriu-zise. StatefulShellRoute păstrează starea
+          // fiecărui branch (scroll position, sub-navigations).
+          //
+          // Rutele „secundare" (settings, wishlist, notifications etc.) NU mai
+          // stau în branch-uri - sunt în afara StatefulShellRoute, la același
+          // nivel cu el. Așa, tab-ul curent nu-și mai amintește o vizită la
+          // Settings când user-ul se întoarce la Chat (bug-ul cu tab-uri
+          // „lipite" pe Settings).
+          StatefulShellRoute.indexedStack(
+            builder: (context, state, navigationShell) => navigationShell,
+            branches: [
+              StatefulShellBranch(routes: [
+                GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+              ]),
+              StatefulShellBranch(routes: [
                 GoRoute(
-                  path: 'settings',
-                  builder: (context, state) => const SettingsScreen(),
+                  path: '/search',
+                  builder: (context, state) => const DiscoverScreen(),
                 ),
+              ]),
+              StatefulShellBranch(routes: [
+                GoRoute(path: '/library', builder: (context, state) => const MyLibraryScreen()),
+              ]),
+              StatefulShellBranch(routes: [
                 GoRoute(
-                  path: 'edit',
-                  builder: (context, state) => const EditProfileScreen(),
+                  path: '/chat',
+                  builder: (context, state) => const ConversationsListScreen(),
                 ),
+              ]),
+              StatefulShellBranch(routes: [
                 GoRoute(
-                  path: 'about-dev',
-                  builder: (context, state) => const AboutDevScreen(),
+                  path: '/profile',
+                  builder: (context, state) => const MyProfileScreen(),
                 ),
-              ],
+              ]),
+            ],
+          ),
+
+          // Rute standalone - toate acestea afișează sidebar-ul din
+          // MainScaffold și schimbă doar zona de conținut din dreapta.
+          GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
+          GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+          GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+          GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
+          GoRoute(path: '/about-dev', builder: (context, state) => const AboutDevScreen()),
+          GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
+          GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
+          GoRoute(path: '/library/trash', builder: (context, state) => const TrashScreen()),
+          GoRoute(
+            path: '/browse',
+            builder: (context, state) {
+              final args = state.extra as SearchScreenArgs?;
+              return BrowseScreen(
+                initialTitle: args?.title,
+                initialGenre: args?.genre,
+                initialListingType: args?.listingType,
+                initialCity: args?.city,
+              );
+            },
+          ),
+          GoRoute(path: '/map', builder: (context, state) => const BooksMapScreen()),
+          GoRoute(path: '/exchanges', builder: (context, state) => const ExchangesScreen()),
+          GoRoute(
+            path: '/exchanges/:id/confirm',
+            builder: (context, state) => ExchangeConfirmScreen(exchangeId: state.pathParameters['id']!),
+          ),
+          GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
+          GoRoute(path: '/safety-center', builder: (context, state) => const SafetyCenterScreen()),
+          GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
+          GoRoute(path: '/help-center', builder: (context, state) => const HelpCenterScreen()),
+          GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
+          GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),
+          GoRoute(path: '/global-stats', builder: (context, state) => const GlobalStatsScreen()),
+          GoRoute(path: '/bookshelf', builder: (context, state) => const MyBookshelfScreen()),
+          GoRoute(path: '/activity-feed', builder: (context, state) => const ActivityFeedScreen()),
+          GoRoute(path: '/smart-matches', builder: (context, state) => const SmartMatchesScreen()),
+          GoRoute(
+            path: '/auctions/:id',
+            builder: (context, state) => AuctionDetailScreen(auctionId: state.pathParameters['id']!),
+          ),
+          GoRoute(path: '/collections', builder: (context, state) => const MyCollectionsScreen()),
+          GoRoute(path: '/groups', builder: (context, state) => const GroupsScreen()),
+          GoRoute(path: '/seller-analytics', builder: (context, state) => const SellerAnalyticsScreen()),
+          GoRoute(
+            path: '/groups/:id',
+            builder: (context, state) => GroupDetailScreen(groupId: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: '/collections/:id',
+            builder: (context, state) => CollectionDetailScreen(
+              collectionId: state.pathParameters['id']!,
+              ownerId: state.uri.queryParameters['ownerId'],
             ),
-          ]),
+          ),
+          GoRoute(
+            path: '/users/:userId',
+            builder: (context, state) => PublicProfileScreen(
+              userId: state.pathParameters['userId']!,
+              fallback: state.extra as PublicUser?,
+            ),
+          ),
+          GoRoute(
+            path: '/books/:userBookId',
+            builder: (context, state) => BookDetailScreen(
+              userBookId: state.pathParameters['userBookId']!,
+              fallbackOwner: state.extra as PublicUser?,
+            ),
+          ),
+          GoRoute(
+            path: '/chat/:conversationId',
+            builder: (context, state) => ConversationScreen(
+              conversationId: state.pathParameters['conversationId']!,
+              otherUser: state.extra as PublicUser?,
+            ),
+          ),
         ],
       ),
     ],

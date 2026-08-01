@@ -129,10 +129,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               textCapitalization: TextCapitalization.none,
+                              // Enter merge la câmpul următor pe email.
+                              // Milestone 16: userii se așteaptă să poată
+                              // completa formularul cu tastatura.
+                              textInputAction: TextInputAction.next,
                               autofillHints: const [AutofillHints.username, AutofillHints.email],
                               decoration: InputDecoration(
                                 labelText: l10n.commonEmailLabel,
                                 prefixIcon: const Icon(Icons.mail_outline),
+                                // Etichetele dispar la focus în loc să urce -
+                                // altfel câmpul cere loc rezervat deasupra și
+                                // pare că sare vertical când începi să scrii.
+                                floatingLabelBehavior: FloatingLabelBehavior.never,
                               ),
                               validator: (value) => (value == null || !value.contains('@'))
                                   ? l10n.commonEmailInvalid
@@ -142,10 +150,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              // Enter pe parolă trimite formularul - același
+                              // efect cu apăsarea butonului „Sign in".
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) {
+                                if (!isLoading) _submit();
+                              },
                               autofillHints: const [AutofillHints.password],
                               decoration: InputDecoration(
                                 labelText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
+                                floatingLabelBehavior: FloatingLabelBehavior.never,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword
@@ -199,7 +214,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ],
                             ),
                             const SizedBox(height: 20),
-                            const GoogleSignInButton(),
+                            // WIP peste butonul Google până când configurarea
+                            // OAuth e completă (Milestone 16 QOL #2).
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                const Opacity(
+                                  opacity: 0.4,
+                                  child: IgnorePointer(child: GoogleSignInButton()),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Work in progress',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                           ),
                         ),

@@ -28,14 +28,16 @@ class MyProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        // Milestone 16 QOL: titlul „My Profile" era împins spre stânga pe
+        // desktop din cauza sidebar-ului; centrarea îl aliniază cu conținutul
+        // profilului dedesubt.
+        centerTitle: true,
         title: Text(l10n.profileTitle),
-        // Un singur buton de share pe profil - cel din rândul de acțiuni de sub
-        // statistici. Iconița duplicată din AppBar a fost eliminată.
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: l10n.profileSettings,
-            onPressed: () => context.push('/profile/settings'),
+            onPressed: () => context.go('/settings'),
           ),
         ],
       ),

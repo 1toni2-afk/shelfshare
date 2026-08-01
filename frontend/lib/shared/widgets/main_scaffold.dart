@@ -21,17 +21,27 @@ const kSidebarWidth = 240.0;
 
 /// Shell principal al aplicației după autentificare: pe desktop sidebar
 /// permanent stânga, pe mobil același conținut într-un `Drawer` (hamburger
-/// în AppBar). Am renunțat la `NavigationBar` de jos - Milestone 17: sidebar
-/// peste tot, cum e în mockup.
+/// în AppBar).
+///
+/// Randăm sidebar-ul în afara `StatefulShellRoute` (vezi app_router.dart):
+/// pentru orice rută autentificată, sidebar-ul rămâne vizibil și doar zona
+/// dreaptă (child) se schimbă. Milestone 16: bug-ul „meniul dispare când dau
+/// click pe Notificări" era exact asta - notificările erau pe o rută
+/// standalone care înlocuia tot MainScaffold.
 class MainScaffold extends ConsumerWidget {
-  const MainScaffold({super.key, required this.navigationShell});
+  const MainScaffold({
+    super.key,
+    required this.child,
+    required this.currentLocation,
+  });
 
-  final StatefulNavigationShell navigationShell;
+  final Widget child;
+  final String currentLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = MediaQuery.of(context).size.width >= kSidebarBreakpoint;
-    final sidebar = _Sidebar(navigationShell: navigationShell);
+    final sidebar = _Sidebar(currentLocation: currentLocation);
 
     if (isDesktop) {
       return Scaffold(
@@ -39,17 +49,17 @@ class MainScaffold extends ConsumerWidget {
           children: [
             SizedBox(width: kSidebarWidth, child: sidebar),
             const VerticalDivider(width: 1, thickness: 1),
-            Expanded(child: navigationShell),
+            Expanded(child: child),
           ],
         ),
       );
     }
 
-    // Pe mobil: același sidebar într-un drawer. Nav-ul e ce vine implicit
-    // în AppBar-ul fiecărui ecran (Scaffold.drawer face automat hamburger).
+    // Pe mobil: același sidebar într-un drawer. Nav-ul se deschide din
+    // hamburger-ul AppBar-ului fiecărui ecran (Scaffold.drawer face automat).
     return Scaffold(
       drawer: SizedBox(width: kSidebarWidth, child: Drawer(child: sidebar)),
-      body: navigationShell,
+      body: child,
     );
   }
 }
@@ -59,16 +69,15 @@ class MainScaffold extends ConsumerWidget {
 /// Chat, Notificări), secțiune „Scurtături" (linkuri către pagini legate),
 /// și un footer (Settings, Help, avatarul userului).
 class _Sidebar extends ConsumerWidget {
-  const _Sidebar({required this.navigationShell});
-  final StatefulNavigationShell navigationShell;
+  const _Sidebar({required this.currentLocation});
+  final String currentLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
 
-    // Badge-uri urmărite direct din shell (mereu montat), ca numerele să fie
-    // corecte indiferent de tab-ul curent - nu doar după ce userul deschide
-    // ecranul respectiv.
+    // Badge-uri urmărite direct - MainScaffold e mereu montat, deci numerele
+    // sunt corecte indiferent de tab-ul curent.
     final chatUnread = ref.watch(unreadMessagesCountProvider);
     final libraryPending =
         (ref.watch(exchangesControllerProvider).value?.received ?? const [])
@@ -87,26 +96,26 @@ class _Sidebar extends ConsumerWidget {
         icon: Icons.home_outlined,
         activeIcon: Icons.home,
         label: l10n.navHome,
-        branchIndex: 0,
+        route: '/',
       ),
       _NavItem(
         icon: Icons.explore_outlined,
         activeIcon: Icons.explore,
         label: l10n.navSearch,
-        branchIndex: 1,
+        route: '/search',
       ),
       _NavItem(
         icon: Icons.menu_book_outlined,
         activeIcon: Icons.menu_book,
         label: l10n.navLibrary,
-        branchIndex: 2,
+        route: '/library',
         badge: libraryPending,
       ),
       _NavItem(
         icon: Icons.chat_bubble_outline,
         activeIcon: Icons.chat_bubble,
         label: l10n.navChat,
-        branchIndex: 3,
+        route: '/chat',
         badge: chatUnread,
       ),
       _NavItem(
@@ -201,22 +210,22 @@ class _Sidebar extends ConsumerWidget {
                   for (final item in shortcuts)
                     _SidebarTile(
                       item: item,
-                      isActive: false,
+                      isActive: _isActive(item),
                       onTap: () => _navigate(context, item),
                     ),
                 ],
               ),
             ),
-            // Footer: Setări, Help, avatarul userului (ultimul deschide profilul).
+            // Footer: Setări, Help, avatarul userului.
             _SidebarTile(
               item: _NavItem(
                 icon: Icons.settings_outlined,
                 activeIcon: Icons.settings,
                 label: l10n.profileSettings,
-                route: '/profile/settings',
+                route: '/settings',
               ),
-              isActive: false,
-              onTap: () => context.push('/profile/settings'),
+              isActive: currentLocation == '/settings',
+              onTap: () => _goTo(context, '/settings'),
             ),
             _SidebarTile(
               item: _NavItem(
@@ -225,36 +234,40 @@ class _Sidebar extends ConsumerWidget {
                 label: l10n.profileHelpCenter,
                 route: '/help-center',
               ),
-              isActive: false,
-              onTap: () => context.push('/help-center'),
+              isActive: currentLocation == '/help-center',
+              onTap: () => _goTo(context, '/help-center'),
             ),
             const Divider(height: 1),
-            _ProfileFooter(navigationShell: navigationShell),
+            _ProfileFooter(currentLocation: currentLocation),
           ],
         ),
       ),
     );
   }
 
+  /// Marchează tile-ul activ dacă ruta curentă începe cu ruta lui - astfel
+  /// sub-navigările din interiorul unui branch păstrează evidențierea (ex.
+  /// când user-ul e pe /library/add, tile-ul „Raftul meu" rămâne activ).
   bool _isActive(_NavItem item) {
-    if (item.branchIndex == null) return false;
-    return item.branchIndex == navigationShell.currentIndex;
+    if (item.route == '/') return currentLocation == '/';
+    return currentLocation == item.route ||
+        currentLocation.startsWith('${item.route}/');
   }
 
   void _navigate(BuildContext context, _NavItem item) {
-    // Închide drawer-ul dacă suntem pe mobil - altfel după tap ar rămâne
-    // deschis peste noul ecran.
-    if (Scaffold.of(context).hasDrawer && Scaffold.of(context).isDrawerOpen) {
+    _goTo(context, item.route);
+  }
+
+  /// Închidem drawer-ul dacă suntem pe mobil (altfel după tap ar rămâne
+  /// deschis peste noul ecran), apoi `go` la rută. `go`, nu `push`: sidebar-ul
+  /// e la nivel de shell exterior, deci URL-ul se înlocuiește curat și
+  /// tab-urile Home/Discover/Chat nu-și mai amintesc o vizită la Settings.
+  void _goTo(BuildContext context, String route) {
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold != null && scaffold.hasDrawer && scaffold.isDrawerOpen) {
       Navigator.of(context).pop();
     }
-    if (item.branchIndex != null) {
-      navigationShell.goBranch(
-        item.branchIndex!,
-        initialLocation: item.branchIndex == navigationShell.currentIndex,
-      );
-    } else if (item.route != null) {
-      context.push(item.route!);
-    }
+    context.go(route);
   }
 }
 
@@ -263,21 +276,14 @@ class _NavItem {
     required this.icon,
     required this.activeIcon,
     required this.label,
-    this.branchIndex,
-    this.route,
+    required this.route,
     this.badge = 0,
   });
 
   final IconData icon;
   final IconData activeIcon;
   final String label;
-
-  /// Tab-ul (0-4) dacă e o destinație principală din shell. Exclusiv cu [route].
-  final int? branchIndex;
-
-  /// Rută push dacă e o legătură secundară. Exclusiv cu [branchIndex].
-  final String? route;
-
+  final String route;
   final int badge;
 }
 
@@ -342,11 +348,10 @@ class _SidebarTile extends StatelessWidget {
   }
 }
 
-/// Footer-ul cu avatarul userului - tap îi duce în tab-ul de profil. Reia
-/// datele din providerul de profil, deci imaginea se schimbă live după upload.
+/// Footer-ul cu avatarul userului - tap îi duce în tab-ul de profil.
 class _ProfileFooter extends ConsumerWidget {
-  const _ProfileFooter({required this.navigationShell});
-  final StatefulNavigationShell navigationShell;
+  const _ProfileFooter({required this.currentLocation});
+  final String currentLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -356,15 +361,19 @@ class _ProfileFooter extends ConsumerWidget {
             : null);
     if (user == null) return const SizedBox.shrink();
 
-    // Tab-ul de profil e index 4 în shell.
-    const profileBranch = 4;
-    final isActive = navigationShell.currentIndex == profileBranch;
+    final isActive = currentLocation.startsWith('/profile');
 
     return InkWell(
-      onTap: () => navigationShell.goBranch(profileBranch,
-          initialLocation: isActive),
-      child: Padding(
+      onTap: () {
+        final scaffold = Scaffold.maybeOf(context);
+        if (scaffold != null && scaffold.hasDrawer && scaffold.isDrawerOpen) {
+          Navigator.of(context).pop();
+        }
+        context.go('/profile');
+      },
+      child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        color: isActive ? AppColors.accent.withValues(alpha: 0.08) : null,
         child: Row(
           children: [
             CircleAvatar(
