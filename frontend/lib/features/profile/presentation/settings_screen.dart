@@ -137,7 +137,7 @@ class _SettingsList extends ConsumerWidget {
             onTap: () => context.push('/global-stats')),
         _SettingsTile(
           icon: Icons.insights_outlined,
-          iconColor: user.isPremium ? Colors.amber : null,
+          iconColor: user.isPremium ? AppColors.warning : null,
           label: l10n.premiumAnalyticsTitle,
           onTap: () => context.push('/seller-analytics'),
         ),

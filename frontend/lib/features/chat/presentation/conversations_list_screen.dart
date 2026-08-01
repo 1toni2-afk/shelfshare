@@ -127,7 +127,7 @@ class _ConversationTile extends ConsumerWidget {
       ),
       secondaryBackground: const _SwipeBackground(
         alignment: Alignment.centerRight,
-        color: Colors.redAccent,
+        color: AppColors.destructive,
         icon: Icons.delete_outline,
         label: null,
       ),
@@ -162,7 +162,7 @@ class _ConversationTile extends ConsumerWidget {
                   width: 12,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: AppColors.success,
                     shape: BoxShape.circle,
                     border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
                   ),

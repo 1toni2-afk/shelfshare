@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsIn,
   IsInt,
@@ -66,4 +68,13 @@ export class UpdateProfileDto {
   @Min(1)
   @Max(12)
   birthdayMonth?: number;
+
+  // Lista de limbi în care userul citește (Milestone 18). Doar informativ pe
+  // profil, nu are impact funcțional. Fără validare pe conținut (o listă
+  // liberă), doar limita ca să nu ajungem cu 200 de intrări.
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  languages?: string[];
 }

@@ -460,7 +460,7 @@ class _PromoteButton extends ConsumerWidget {
           await ref.read(booksRepositoryProvider).togglePromoted(userBookId);
           ref.invalidate(bookDetailProvider(userBookId));
         },
-        icon: Icon(Icons.trending_up, size: 18, color: isPromoted ? Colors.amber : null),
+        icon: Icon(Icons.trending_up, size: 18, color: isPromoted ? AppColors.warning : null),
         label: Text(isPromoted ? l10n.premiumUnpromoteListing : l10n.premiumPromoteListing),
       ),
     );

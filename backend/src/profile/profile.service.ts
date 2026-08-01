@@ -126,6 +126,7 @@ export class ProfileService {
       bio: user.bio,
       birthdayDay: user.birthdayDay,
       birthdayMonth: user.birthdayMonth,
+      languages: user.languages,
       profileImage: user.profileImage,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
@@ -148,6 +149,10 @@ export class ProfileService {
       trustScore: await this.computeTrustScore(user),
       achievements: await this.getAchievements(user),
       impactStats: await this.getImpactStats(userId),
+      // Milestone 17: profilul propriu are nevoie de readingStats pentru
+      // cardul „Top genuri" din coloana laterală (același pe care profilul
+      // public îl afișa de mult).
+      readingStats: await this.getReadingStats(userId),
       gamification: this.getGamificationStats(user),
     };
   }
@@ -177,6 +182,7 @@ export class ProfileService {
       bio: user.bio,
       birthdayDay: user.birthdayDay,
       birthdayMonth: user.birthdayMonth,
+      languages: user.languages,
       profileImage: user.profileImage,
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
@@ -220,6 +226,7 @@ export class ProfileService {
       bio: user.bio,
       // Fără zi de naștere aici: salutul e pentru userul propriu, deci nu are
       // motiv să ajungă în profilul public al altcuiva.
+      languages: user.languages,
       profileImage: user.profileImage,
       isPremium: user.isPremium,
       rating: user.rating,

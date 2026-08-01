@@ -112,12 +112,12 @@ class _BulkAddScreenState extends ConsumerState<BulkAddScreen> {
               const SizedBox(height: 16),
               for (final created in _result!.created)
                 ListTile(
-                  leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                  leading: Icon(Icons.check_circle_outline, color: AppColors.success),
                   title: Text(created.title),
                 ),
               for (final failed in _result!.failed)
                 ListTile(
-                  leading: const Icon(Icons.error_outline, color: Colors.red),
+                  leading: Icon(Icons.error_outline, color: AppColors.destructive),
                   title: Text(failed.isbn),
                   subtitle: Text(failed.reason),
                 ),

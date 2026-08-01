@@ -119,6 +119,12 @@ model User {
   birthdayDay   Int?
   birthdayMonth Int?
 
+  // Limbile în care userul citește (Milestone 18) - afișate pe card-ul „Despre"
+  // din profilul lateral. Nu au impact funcțional (nu filtrează căutări),
+  // sunt doar informative, deci lista e liberă. Default „Română" ca 99% din
+  // userii țintă să nu trebuiască să seteze nimic manual.
+  languages String[] @default(["Română"])
+
   showAcquisitionHistory Boolean @default(false)
 
   referralCode String? @unique

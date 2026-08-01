@@ -381,7 +381,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.chatSendFailed),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.destructive,
           ),
         );
         ref.read(chatControllerProvider(widget.conversationId).notifier).clearSendFailed();
@@ -956,8 +956,8 @@ class _ConversationTitle extends StatelessWidget {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.green,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
                             shape: BoxShape.circle,
                           ),
                         ),

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../data/exchanges_repository.dart';
 
@@ -53,14 +54,14 @@ class _ExchangeConfirmScreenState extends ConsumerState<ExchangeConfirmScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_done) ...[
-                const Icon(Icons.check_circle, size: 48, color: Color(0xFF2E7D32)),
+                Icon(Icons.check_circle, size: 48, color: AppColors.success),
                 const SizedBox(height: 12),
                 Text(l10n.exchangeConfirmDone),
               ] else ...[
                 Text(l10n.exchangeConfirmQuestion),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(_error!, style: TextStyle(color: AppColors.dangerText)),
                 ],
                 const SizedBox(height: 16),
                 ElevatedButton(

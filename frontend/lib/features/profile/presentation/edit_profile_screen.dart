@@ -54,6 +54,7 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
   late String? _city = widget.user.city;
   late int? _birthdayDay = widget.user.birthdayDay;
   late int? _birthdayMonth = widget.user.birthdayMonth;
+  late final Set<String> _languages = widget.user.languages.toSet();
   late bool _nameVisible = widget.user.nameVisible;
   late bool _showAcquisitionHistory = widget.user.showAcquisitionHistory;
   bool _isSubmitting = false;
@@ -64,6 +65,15 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
     _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  /// Preset-ul de limbi propuse. Dacă userul are deja o limbă în afara listei
+  /// (ex. „Latină"), o afișăm și pe aia ca chip - altfel n-ar avea cum s-o
+  /// menține odată ce a intrat în editor.
+  Iterable<String> _availableLanguages(Set<String> selected) {
+    const preset = ['Română', 'English', 'Magyar', 'Deutsch', 'Français', 'Español', 'Italiano'];
+    final extras = selected.where((l) => !preset.contains(l));
+    return [...preset, ...extras];
   }
 
   /// Numele lunii în limba curentă, luat din intl - nu are rost să ținem 12
@@ -86,6 +96,7 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
             bio: _bioController.text.trim(),
             birthdayDay: _birthdayDay,
             birthdayMonth: _birthdayMonth,
+            languages: _languages.toList(),
             showAcquisitionHistory: _showAcquisitionHistory,
           );
       if (mounted) context.pop();
@@ -188,6 +199,33 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              Text(l10n.profileLanguagesTitle,
+                  style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 8),
+              // Alege limbile din setul comun (RO/EN/HU/DE/FR/ES/IT) plus,
+              // dacă userul are altă limbă deja salvată, o afișăm ca chip
+              // suplimentar. Nu adăugăm un câmp text - lista fixă e suficient
+              // și evită typo-uri care ar fragmenta datele („română" vs „RO").
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final lang in _availableLanguages(_languages))
+                    FilterChip(
+                      label: Text(lang),
+                      selected: _languages.contains(lang),
+                      onSelected: (selected) => setState(() {
+                        if (selected) {
+                          _languages.add(lang);
+                        } else {
+                          _languages.remove(lang);
+                        }
+                      }),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(l10n.profileShowAcquisitionHistory),

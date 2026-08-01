@@ -15,6 +15,12 @@ class AppUser {
   /// propriu, nu și pe cel public.
   final int? birthdayDay;
   final int? birthdayMonth;
+
+  /// Limbile în care userul citește. Doar informativ pe cardul „Despre" din
+  /// profilul lateral. Default „Română" pe backend, deci lista nu e niciodată
+  /// null - dar poate fi goală dacă userul le-a șters explicit.
+  final List<String> languages;
+
   final String? profileImage;
   final double rating;
   final int booksExchangedCount;
@@ -26,9 +32,20 @@ class AppUser {
   final bool showAcquisitionHistory;
   final String? referralCode;
   final int referralCount;
+
+  /// Când s-a înregistrat contul. Folosit pentru cardul „Membru din" din
+  /// coloana laterală a profilului. Vine ca ISO de la backend.
+  final DateTime? createdAt;
+
   final TrustScore? trustScore;
   final List<Achievement>? achievements;
   final ImpactStats? impactStats;
+
+  /// Statistici derivate din biblioteca proprie (top genuri, total pagini,
+  /// cea mai lungă carte). Milestone 17 le folosește pe cardul „Top genuri"
+  /// din coloana laterală a profilului propriu.
+  final ReadingStats? readingStats;
+
   final GamificationStats? gamification;
   /// Setat dacă userul a cerut ștergerea contului - contul se șterge efectiv
   /// la această dată dacă nu anulează între timp. Vezi AccountDeletionService.
@@ -52,6 +69,7 @@ class AppUser {
     this.bio,
     this.birthdayDay,
     this.birthdayMonth,
+    this.languages = const ['Română'],
     this.profileImage,
     this.rating = 0,
     this.booksExchangedCount = 0,
@@ -63,9 +81,11 @@ class AppUser {
     this.showAcquisitionHistory = false,
     this.referralCode,
     this.referralCount = 0,
+    this.createdAt,
     this.trustScore,
     this.achievements,
     this.impactStats,
+    this.readingStats,
     this.gamification,
     this.deletionScheduledAt,
     this.favoriteGenres = const [],
@@ -85,6 +105,9 @@ class AppUser {
       bio: json['bio'] as String?,
       birthdayDay: json['birthdayDay'] as int?,
       birthdayMonth: json['birthdayMonth'] as int?,
+      languages: (json['languages'] as List<dynamic>? ?? const ['Română'])
+          .map((e) => e as String)
+          .toList(),
       profileImage: json['profileImage'] as String?,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       booksExchangedCount: json['booksExchangedCount'] as int? ?? 0,
@@ -96,6 +119,9 @@ class AppUser {
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
       referralCode: json['referralCode'] as String?,
       referralCount: json['referralCount'] as int? ?? 0,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : null,
       trustScore: json['trustScore'] != null
           ? TrustScore.fromJson(json['trustScore'] as Map<String, dynamic>)
           : null,
@@ -104,6 +130,9 @@ class AppUser {
           .toList(),
       impactStats: json['impactStats'] != null
           ? ImpactStats.fromJson(json['impactStats'] as Map<String, dynamic>)
+          : null,
+      readingStats: json['readingStats'] != null
+          ? ReadingStats.fromJson(json['readingStats'] as Map<String, dynamic>)
           : null,
       gamification: json['gamification'] != null
           ? GamificationStats.fromJson(json['gamification'] as Map<String, dynamic>)
@@ -626,6 +655,11 @@ class PublicUser {
   final bool isPremium;
   final double rating;
   final String? bio;
+
+  /// Limbile în care userul citește - vin doar de pe profilul public complet
+  /// (/profile/:userId), nu din relațiile scurte. Gol dacă lipsește.
+  final List<String> languages;
+
   final int? booksExchangedCount;
   final int? booksSharedCount;
   final int? booksReceivedCount;
@@ -655,6 +689,7 @@ class PublicUser {
     this.isPremium = false,
     this.rating = 0,
     this.bio,
+    this.languages = const [],
     this.booksExchangedCount,
     this.booksSharedCount,
     this.booksReceivedCount,
@@ -683,6 +718,7 @@ class PublicUser {
       isPremium: isPremium,
       rating: rating,
       bio: bio,
+      languages: languages,
       booksExchangedCount: booksExchangedCount,
       booksSharedCount: booksSharedCount,
       booksReceivedCount: booksReceivedCount,
@@ -712,6 +748,9 @@ class PublicUser {
       isPremium: json['isPremium'] as bool? ?? false,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       bio: json['bio'] as String?,
+      languages: (json['languages'] as List<dynamic>? ?? const [])
+          .map((e) => e as String)
+          .toList(),
       booksExchangedCount: json['booksExchangedCount'] as int?,
       booksSharedCount: json['booksSharedCount'] as int?,
       booksReceivedCount: json['booksReceivedCount'] as int?,

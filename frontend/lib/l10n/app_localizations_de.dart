@@ -2633,6 +2633,62 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileBirthdayNone => '—';
 
   @override
+  String get profileLanguagesTitle => 'Limbile în care citești';
+
+  @override
+  String get profileAboutEmpty =>
+      'Spune ceva despre tine — de exemplu ce genuri îți plac.';
+
+  @override
+  String get profileMemberSince => 'Membru din';
+
+  @override
+  String get profileLocation => 'Locație';
+
+  @override
+  String get profileLanguages => 'Limbi';
+
+  @override
+  String get countryRomania => 'România';
+
+  @override
+  String get profileStatsTitle => 'Statistici';
+
+  @override
+  String get profileStatBooksRead => 'Cărți citite';
+
+  @override
+  String get profileStatBooksShared => 'Cărți oferite';
+
+  @override
+  String get profileStatWishlisted => 'Cărți dorite';
+
+  @override
+  String get profileTopGenresTitle => 'Top genuri';
+
+  @override
+  String get profileTopGenresEmpty =>
+      'Genurile vor apărea aici pe măsură ce citești și adaugi cărți.';
+
+  @override
+  String get navNotifications => 'Notificări';
+
+  @override
+  String get navShortcuts => 'SCURTĂTURI';
+
+  @override
+  String get navMyBooks => 'Cărțile mele';
+
+  @override
+  String get navMyExchanges => 'Schimburile mele';
+
+  @override
+  String get navWishlist => 'Lista de dorințe';
+
+  @override
+  String get navMyCollections => 'Colecțiile mele';
+
+  @override
   String get greetReaderFallback => 'Cititorule';
 
   @override

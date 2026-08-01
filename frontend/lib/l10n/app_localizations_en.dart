@@ -2592,6 +2592,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileBirthdayNone => '—';
 
   @override
+  String get profileLanguagesTitle => 'Languages you read in';
+
+  @override
+  String get profileAboutEmpty =>
+      'Say something about yourself — like which genres you love.';
+
+  @override
+  String get profileMemberSince => 'Member since';
+
+  @override
+  String get profileLocation => 'Location';
+
+  @override
+  String get profileLanguages => 'Languages';
+
+  @override
+  String get countryRomania => 'Romania';
+
+  @override
+  String get profileStatsTitle => 'Stats';
+
+  @override
+  String get profileStatBooksRead => 'Books read';
+
+  @override
+  String get profileStatBooksShared => 'Books offered';
+
+  @override
+  String get profileStatWishlisted => 'Wishlisted';
+
+  @override
+  String get profileTopGenresTitle => 'Top genres';
+
+  @override
+  String get profileTopGenresEmpty =>
+      'Genres will appear here as you read and add books.';
+
+  @override
+  String get navNotifications => 'Notifications';
+
+  @override
+  String get navShortcuts => 'SHORTCUTS';
+
+  @override
+  String get navMyBooks => 'My books';
+
+  @override
+  String get navMyExchanges => 'My exchanges';
+
+  @override
+  String get navWishlist => 'Wishlist';
+
+  @override
+  String get navMyCollections => 'My collections';
+
+  @override
   String get greetReaderFallback => 'Reader';
 
   @override

@@ -243,7 +243,7 @@ class _StatusChip extends StatelessWidget {
     final (color, bg) = switch (status) {
       ExchangeStatus.pending => (AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
       ExchangeStatus.accepted => (AppColors.primary, AppColors.primary.withValues(alpha: 0.15)),
-      ExchangeStatus.completed => (const Color(0xFF2E7D32), const Color(0xFF2E7D32).withValues(alpha: 0.12)),
+      ExchangeStatus.completed => (AppColors.success, AppColors.success.withValues(alpha: 0.12)),
       ExchangeStatus.rejected => (AppColors.destructive, AppColors.destructive.withValues(alpha: 0.12)),
       ExchangeStatus.cancelled => (AppColors.mutedForeground, AppColors.muted),
       ExchangeStatus.expired => (AppColors.mutedForeground, AppColors.muted),
@@ -355,9 +355,9 @@ class _Actions extends ConsumerWidget {
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, size: 16, color: Color(0xFF2E7D32)),
+                    Icon(Icons.check_circle, size: 16, color: AppColors.success),
                     const SizedBox(width: 4),
-                    Text(l10n.exchangeRated, style: const TextStyle(color: Color(0xFF2E7D32))),
+                    Text(l10n.exchangeRated, style: TextStyle(color: AppColors.success)),
                   ],
                 )
               : OutlinedButton.icon(
@@ -881,7 +881,7 @@ class _OfferStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, bg) = switch (status) {
       OfferStatus.pending => (AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
-      OfferStatus.accepted => (const Color(0xFF2E7D32), const Color(0xFF2E7D32).withValues(alpha: 0.12)),
+      OfferStatus.accepted => (AppColors.success, AppColors.success.withValues(alpha: 0.12)),
       OfferStatus.rejected => (AppColors.destructive, AppColors.destructive.withValues(alpha: 0.12)),
       OfferStatus.cancelled => (AppColors.mutedForeground, AppColors.muted),
       OfferStatus.expired => (AppColors.mutedForeground, AppColors.muted),

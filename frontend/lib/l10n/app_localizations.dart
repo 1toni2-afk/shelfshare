@@ -4698,6 +4698,114 @@ abstract class AppLocalizations {
   /// **'—'**
   String get profileBirthdayNone;
 
+  /// No description provided for @profileLanguagesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Limbile în care citești'**
+  String get profileLanguagesTitle;
+
+  /// No description provided for @profileAboutEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Spune ceva despre tine — de exemplu ce genuri îți plac.'**
+  String get profileAboutEmpty;
+
+  /// No description provided for @profileMemberSince.
+  ///
+  /// In ro, this message translates to:
+  /// **'Membru din'**
+  String get profileMemberSince;
+
+  /// No description provided for @profileLocation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locație'**
+  String get profileLocation;
+
+  /// No description provided for @profileLanguages.
+  ///
+  /// In ro, this message translates to:
+  /// **'Limbi'**
+  String get profileLanguages;
+
+  /// No description provided for @countryRomania.
+  ///
+  /// In ro, this message translates to:
+  /// **'România'**
+  String get countryRomania;
+
+  /// No description provided for @profileStatsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici'**
+  String get profileStatsTitle;
+
+  /// No description provided for @profileStatBooksRead.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți citite'**
+  String get profileStatBooksRead;
+
+  /// No description provided for @profileStatBooksShared.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți oferite'**
+  String get profileStatBooksShared;
+
+  /// No description provided for @profileStatWishlisted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți dorite'**
+  String get profileStatWishlisted;
+
+  /// No description provided for @profileTopGenresTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Top genuri'**
+  String get profileTopGenresTitle;
+
+  /// No description provided for @profileTopGenresEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Genurile vor apărea aici pe măsură ce citești și adaugi cărți.'**
+  String get profileTopGenresEmpty;
+
+  /// No description provided for @navNotifications.
+  ///
+  /// In ro, this message translates to:
+  /// **'Notificări'**
+  String get navNotifications;
+
+  /// No description provided for @navShortcuts.
+  ///
+  /// In ro, this message translates to:
+  /// **'SCURTĂTURI'**
+  String get navShortcuts;
+
+  /// No description provided for @navMyBooks.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărțile mele'**
+  String get navMyBooks;
+
+  /// No description provided for @navMyExchanges.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimburile mele'**
+  String get navMyExchanges;
+
+  /// No description provided for @navWishlist.
+  ///
+  /// In ro, this message translates to:
+  /// **'Lista de dorințe'**
+  String get navWishlist;
+
+  /// No description provided for @navMyCollections.
+  ///
+  /// In ro, this message translates to:
+  /// **'Colecțiile mele'**
+  String get navMyCollections;
+
   /// No description provided for @greetReaderFallback.
   ///
   /// In ro, this message translates to:

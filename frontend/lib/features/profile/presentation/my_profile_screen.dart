@@ -16,6 +16,7 @@ import '../../books/application/my_library_controller.dart';
 import '../../collections/data/collections_repository.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
+import 'profile_side_cards.dart';
 
 class MyProfileScreen extends ConsumerWidget {
   const MyProfileScreen({super.key});
@@ -91,47 +92,70 @@ class _ProfileContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Pe desktop (≥ 900 px) avem 2 coloane: cea centrală cu conținutul actual
+    // limitat la kProfileContentMaxWidth, iar în dreapta cardurile
+    // „Despre / Info / Statistici / Top genuri" (vezi profile_side_cards.dart).
+    // Pe mobil rămâne layout-ul single-column existent.
+    return MediaQuery.of(context).size.width >= kProfileDesktopBreakpoint
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _centerColumn(context)),
+              SizedBox(
+                width: kProfileSideColumnWidth,
+                child: ProfileSideColumn(user: user),
+              ),
+            ],
+          )
+        : _centerColumn(context);
+  }
+
+  Widget _centerColumn(BuildContext context) {
     final l10n = context.l10n;
-    // Toate secțiunile stau într-o coloană de lățime fixă, centrată: pe desktop
-    // butonul de editare, bara de challenge și rândul de coperte se întindeau
-    // pe toată lățimea ecranului, cu spații mari și goale între ele.
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: kProfileContentMaxWidth),
         child: ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      children: [
-        _CompactHeader(user: user),
-        if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Text(
-            user.bio!.trim(),
-            style: TextStyle(color: AppColors.mutedForeground, fontSize: 13, height: 1.35),
-          ),
-        ],
-        const SizedBox(height: 16),
-        _StatsRow(user: user),
-        const SizedBox(height: 20),
-        _PrimaryActions(user: user, onEdit: onEdit),
-        const SizedBox(height: 24),
-        const _ReadingChallengeMini(),
-        const SizedBox(height: 24),
-        const _LibraryPreview(),
-        const SizedBox(height: 24),
-        const _CollectionsPreview(),
-        const SizedBox(height: 24),
-        const _RecentActivityPreview(),
-        // Fallback pentru useri care nu au deschis niciodată setările:
-        // avem o mențiune vizuală discretă că restul stă în „⚙".
-        const SizedBox(height: 32),
-        Center(
-          child: Text(
-            l10n.profileMoreInSettings,
-            style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
-          ),
-        ),
-      ],
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          children: [
+            _CompactHeader(user: user),
+            // Bio-ul rămâne inline pe mobil (unde n-avem card lateral).
+            // Pe desktop, e afișat pe cardul _AboutCard, deci îl scoatem
+            // din coloana centrală ca să nu apară de două ori.
+            if (MediaQuery.of(context).size.width < kProfileDesktopBreakpoint &&
+                user.bio != null &&
+                user.bio!.trim().isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                user.bio!.trim(),
+                style: TextStyle(
+                  color: AppColors.mutedForeground,
+                  fontSize: 13,
+                  height: 1.35,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            _StatsRow(user: user),
+            const SizedBox(height: 20),
+            _PrimaryActions(user: user, onEdit: onEdit),
+            const SizedBox(height: 24),
+            const _ReadingChallengeMini(),
+            const SizedBox(height: 24),
+            const _LibraryPreview(),
+            const SizedBox(height: 24),
+            const _CollectionsPreview(),
+            const SizedBox(height: 24),
+            const _RecentActivityPreview(),
+            const SizedBox(height: 32),
+            Center(
+              child: Text(
+                l10n.profileMoreInSettings,
+                style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -544,7 +568,15 @@ class _LibraryPreview extends ConsumerWidget {
               LayoutBuilder(
                 builder: (context, constraints) {
                   const gap = 7.0;
-                  final slots = ((constraints.maxWidth + gap) / (kCoverTileWidth + gap))
+                  // Guard pentru infinity: dacă părintele ne dă lățime
+                  // neconstrânsă (ex. o pasă de măsurare), `.floor()` pe
+                  // infinity aruncă UnsupportedError - același bug care în
+                  // release lasă ecranul negru. Vezi _computeColumns din home.
+                  final safeWidth =
+                      constraints.maxWidth.isFinite && constraints.maxWidth > 0
+                          ? constraints.maxWidth
+                          : 300.0;
+                  final slots = ((safeWidth + gap) / (kCoverTileWidth + gap))
                       .floor()
                       .clamp(2, 12);
                   final covers = active.take(slots - 1).toList();

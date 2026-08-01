@@ -531,9 +531,9 @@ class _UserTile extends ConsumerWidget {
                 child: Icon(Icons.block, size: 16, color: AppColors.destructive),
               ),
             if (user.isPremium)
-              const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Icon(Icons.workspace_premium, size: 16, color: Colors.amber),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Icon(Icons.workspace_premium, size: 16, color: AppColors.warning),
               ),
           ],
         ),

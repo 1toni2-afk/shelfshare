@@ -38,7 +38,7 @@ class MonthlyChallengesCard extends ConsumerWidget {
                     Icon(
                       challenge.completed ? Icons.check_circle : Icons.radio_button_unchecked,
                       size: 18,
-                      color: challenge.completed ? const Color(0xFF2E7D32) : AppColors.mutedForeground,
+                      color: challenge.completed ? AppColors.success : AppColors.mutedForeground,
                     ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(challenge.label, style: Theme.of(context).textTheme.bodyMedium)),

@@ -70,3 +70,10 @@ class BookshelfRepository {
 final bookshelfRepositoryProvider = Provider<BookshelfRepository>((ref) {
   return BookshelfRepository(ref);
 });
+
+/// Raftul propriu al userului curent (READING / WANT_TO_READ / FINISHED).
+/// Cache-uit prin FutureProvider - se auto-invalidează când `ProviderScope`
+/// se rebuiește (ex. la logout/login).
+final myBookshelfProvider = FutureProvider<Bookshelf>((ref) {
+  return ref.watch(bookshelfRepositoryProvider).getMyShelf();
+});

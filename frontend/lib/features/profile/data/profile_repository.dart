@@ -30,6 +30,7 @@ class ProfileRepository {
     String? bio,
     int? birthdayDay,
     int? birthdayMonth,
+    List<String>? languages,
     bool? showAcquisitionHistory,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
@@ -41,6 +42,7 @@ class ProfileRepository {
       'bio': ?bio,
       'birthdayDay': ?birthdayDay,
       'birthdayMonth': ?birthdayMonth,
+      'languages': ?languages,
       'showAcquisitionHistory': ?showAcquisitionHistory,
     });
     return getMyProfile();

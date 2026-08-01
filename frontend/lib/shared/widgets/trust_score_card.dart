@@ -30,7 +30,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
   late bool _expanded = widget.initiallyExpanded;
 
   Color _scoreColor() {
-    if (widget.trustScore.score >= 70) return const Color(0xFF2E7D32);
+    if (widget.trustScore.score >= 70) return AppColors.success;
     if (widget.trustScore.score >= 40) return AppColors.accent;
     return AppColors.destructive;
   }
@@ -156,7 +156,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
           ),
         if (t.lastActiveAt != null)
           Chip(
-            avatar: const Icon(Icons.circle, size: 10, color: Color(0xFF2E7D32)),
+            avatar: Icon(Icons.circle, size: 10, color: AppColors.success),
             label: Text(_lastActiveLabel(l10n, t.lastActiveAt!)),
             visualDensity: VisualDensity.compact,
           ),

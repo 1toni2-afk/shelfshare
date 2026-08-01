@@ -185,9 +185,19 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(book.title, style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    book.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   if (book.author != null)
-                    Text(book.author!, style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      book.author!,
+                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   const SizedBox(height: 8),
                   if (auction.userBook.owner != null)
                     GestureDetector(
@@ -256,7 +266,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
                   Text(
                     auction.reserveMet ? l10n.auctionReserveMet : l10n.auctionReserveNotMet,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: auction.reserveMet ? Colors.green : AppColors.mutedForeground,
+                          color: auction.reserveMet ? AppColors.success : AppColors.mutedForeground,
                         ),
                   ),
                 ],

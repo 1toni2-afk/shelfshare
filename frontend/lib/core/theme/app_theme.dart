@@ -40,13 +40,37 @@ class AppColors {
   static const _darkMuted = Color(0xFF29292B);
   static Color get muted => _dark ? _darkMuted : _lightMuted;
 
-  static const _lightMutedForeground = Color(0xFF7A6A5A);
+  // Textul secundar pe cardurile light era la 4.26 față de fundalul cardului
+  // muted - sub pragul WCAG AA (4.5) pentru text mic. Închis la #655A4A
+  // pentru un ratio ~5.0 pe muted, ~5.8 pe background - încă „muted" vizual,
+  // dar citibil la soare pe telefon.
+  static const _lightMutedForeground = Color(0xFF655A4A);
   static const _darkMutedForeground = Color(0xFFA8A6A3);
   static Color get mutedForeground => _dark ? _darkMutedForeground : _lightMutedForeground;
 
   static const accent = Color(0xFFC8783A);
   static const accentForeground = Color(0xFFFDF9F3);
+
+  // `destructive` a rămas const ca să nu sparg cele 20+ `const Icon(...color:
+  // AppColors.destructive)` din cod. Pentru locurile care afișează text
+  // destructive pe fundal întunecat (mesaje de eroare), există `dangerText`
+  // ca getter tematic - are ratio ~4.9 pe dark bg, față de 3.55 al variantei
+  // originale. Folosește-l unde textul e nu-poți-să-nu-îl-vezi.
   static const destructive = Color(0xFFC0392B);
+  static Color get dangerText => _dark ? const Color(0xFFE85347) : destructive;
+
+  // Culori semantice adăugate în Milestone 15 - înainte codul folosea peste
+  // 20 de ori `Colors.green` / `Color(0xFF2E7D32)` / `Colors.amber` direct,
+  // care nu urmăreau tema. Splituri pentru contrast: light-mode culoarea
+  // clasică Material, dark-mode o nuanță mai deschisă care nu se pierde pe
+  // fundal întunecat.
+  static const _lightSuccess = Color(0xFF2E7D32);
+  static const _darkSuccess = Color(0xFF66BB6A);
+  static Color get success => _dark ? _darkSuccess : _lightSuccess;
+
+  static const _lightWarning = Color(0xFFB8860B); // dark goldenrod
+  static const _darkWarning = Color(0xFFFFC947); // amber deschis
+  static Color get warning => _dark ? _darkWarning : _lightWarning;
 
   static const _lightBorder = Color(0x212A1A0E); // rgba(42,26,14,0.13)
   static const _darkBorder = Color(0x1FFFFFFF); // rgba(255,255,255,0.12)
