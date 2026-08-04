@@ -2650,6 +2650,33 @@ class AppLocalizationsHu extends AppLocalizations {
   String get navShortcuts => 'SCURTĂTURI';
 
   @override
+  String get shortcutsEditTooltip => 'Parancsikonok szerkesztése';
+
+  @override
+  String get shortcutsDoneTooltip => 'Kész';
+
+  @override
+  String get shortcutsAddTitle => 'Parancsikon hozzáadása';
+
+  @override
+  String get shortcutsAllAdded => 'Az összes parancsikon már hozzá van adva.';
+
+  @override
+  String get shortcutFollowing => 'Követett';
+
+  @override
+  String get shortcutLeaderboard => 'Ranglista';
+
+  @override
+  String get shortcutSellerAnalytics => 'Eladói analitika';
+
+  @override
+  String get shortcutPreRegister => 'Előregisztráció';
+
+  @override
+  String get shortcutTrash => 'Kuka';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

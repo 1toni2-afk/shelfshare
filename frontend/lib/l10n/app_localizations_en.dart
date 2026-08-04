@@ -2636,6 +2636,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navShortcuts => 'SHORTCUTS';
 
   @override
+  String get shortcutsEditTooltip => 'Edit shortcuts';
+
+  @override
+  String get shortcutsDoneTooltip => 'Done';
+
+  @override
+  String get shortcutsAddTitle => 'Add shortcut';
+
+  @override
+  String get shortcutsAllAdded => 'All shortcuts are already added.';
+
+  @override
+  String get shortcutFollowing => 'Following';
+
+  @override
+  String get shortcutLeaderboard => 'Leaderboard';
+
+  @override
+  String get shortcutSellerAnalytics => 'Seller analytics';
+
+  @override
+  String get shortcutPreRegister => 'Pre-register';
+
+  @override
+  String get shortcutTrash => 'Trash';
+
+  @override
   String get navMyBooks => 'My books';
 
   @override

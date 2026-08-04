@@ -4782,6 +4782,60 @@ abstract class AppLocalizations {
   /// **'SCURTĂTURI'**
   String get navShortcuts;
 
+  /// No description provided for @shortcutsEditTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează scurtăturile'**
+  String get shortcutsEditTooltip;
+
+  /// No description provided for @shortcutsDoneTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gata'**
+  String get shortcutsDoneTooltip;
+
+  /// No description provided for @shortcutsAddTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă scurtătură'**
+  String get shortcutsAddTitle;
+
+  /// No description provided for @shortcutsAllAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate scurtăturile sunt deja adăugate.'**
+  String get shortcutsAllAdded;
+
+  /// No description provided for @shortcutFollowing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Urmăriți'**
+  String get shortcutFollowing;
+
+  /// No description provided for @shortcutLeaderboard.
+  ///
+  /// In ro, this message translates to:
+  /// **'Clasament'**
+  String get shortcutLeaderboard;
+
+  /// No description provided for @shortcutSellerAnalytics.
+  ///
+  /// In ro, this message translates to:
+  /// **'Analize vânzător'**
+  String get shortcutSellerAnalytics;
+
+  /// No description provided for @shortcutPreRegister.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pre-înregistrare'**
+  String get shortcutPreRegister;
+
+  /// No description provided for @shortcutTrash.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coș'**
+  String get shortcutTrash;
+
   /// No description provided for @navMyBooks.
   ///
   /// In ro, this message translates to:

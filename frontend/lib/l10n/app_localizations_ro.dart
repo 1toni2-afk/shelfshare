@@ -2640,6 +2640,33 @@ class AppLocalizationsRo extends AppLocalizations {
   String get navShortcuts => 'SCURTĂTURI';
 
   @override
+  String get shortcutsEditTooltip => 'Editează scurtăturile';
+
+  @override
+  String get shortcutsDoneTooltip => 'Gata';
+
+  @override
+  String get shortcutsAddTitle => 'Adaugă scurtătură';
+
+  @override
+  String get shortcutsAllAdded => 'Toate scurtăturile sunt deja adăugate.';
+
+  @override
+  String get shortcutFollowing => 'Urmăriți';
+
+  @override
+  String get shortcutLeaderboard => 'Clasament';
+
+  @override
+  String get shortcutSellerAnalytics => 'Analize vânzător';
+
+  @override
+  String get shortcutPreRegister => 'Pre-înregistrare';
+
+  @override
+  String get shortcutTrash => 'Coș';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

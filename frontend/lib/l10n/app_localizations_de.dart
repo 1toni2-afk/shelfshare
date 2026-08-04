@@ -2677,6 +2677,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navShortcuts => 'SCURTĂTURI';
 
   @override
+  String get shortcutsEditTooltip => 'Verknüpfungen bearbeiten';
+
+  @override
+  String get shortcutsDoneTooltip => 'Fertig';
+
+  @override
+  String get shortcutsAddTitle => 'Verknüpfung hinzufügen';
+
+  @override
+  String get shortcutsAllAdded =>
+      'Alle Verknüpfungen sind bereits hinzugefügt.';
+
+  @override
+  String get shortcutFollowing => 'Gefolgt';
+
+  @override
+  String get shortcutLeaderboard => 'Bestenliste';
+
+  @override
+  String get shortcutSellerAnalytics => 'Verkäufer-Analytik';
+
+  @override
+  String get shortcutPreRegister => 'Vorregistrierung';
+
+  @override
+  String get shortcutTrash => 'Papierkorb';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override
