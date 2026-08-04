@@ -12,6 +12,7 @@ import '../../features/exchanges/application/exchanges_controller.dart';
 import '../../features/notifications/application/notifications_controller.dart';
 import '../../features/offers/application/offers_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
+import 'sidebar_shortcuts.dart';
 
 /// Ecran mai lat de-atât înseamnă „desktop" - sub, sidebar-ul devine drawer.
 const kSidebarBreakpoint = 900.0;
@@ -68,12 +69,25 @@ class MainScaffold extends ConsumerWidget {
 /// mobil. Structurat pe trei zone: nav principal (Home, Discover, My Shelf,
 /// Chat, Notificări), secțiune „Scurtături" (linkuri către pagini legate),
 /// și un footer (Settings, Help, avatarul userului).
-class _Sidebar extends ConsumerWidget {
+class _Sidebar extends ConsumerStatefulWidget {
   const _Sidebar({required this.currentLocation});
   final String currentLocation;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends ConsumerState<_Sidebar> {
+  /// Modul de editare a secțiunii „Scurtături". Nu se persistă - user-ul iese
+  /// din el fie prin butonul „Gata", fie navigând la altă rută (montarea se
+  /// rezetează). Un flag pe StatefulWidget e mai simplu decât un provider
+  /// dedicat pentru ceva ce ține doar de sesiunea vizuală curentă.
+  bool _editingShortcuts = false;
+
+  String get currentLocation => widget.currentLocation;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
 
     // Badge-uri urmărite direct - MainScaffold e mereu montat, deci numerele
@@ -127,31 +141,21 @@ class _Sidebar extends ConsumerWidget {
       ),
     ];
 
-    final shortcuts = <_NavItem>[
-      _NavItem(
-        icon: Icons.auto_stories_outlined,
-        activeIcon: Icons.auto_stories,
-        label: l10n.navMyBooks,
-        route: '/bookshelf',
-      ),
-      _NavItem(
-        icon: Icons.swap_horiz_outlined,
-        activeIcon: Icons.swap_horiz,
-        label: l10n.navMyExchanges,
-        route: '/exchanges',
-      ),
-      _NavItem(
-        icon: Icons.favorite_border,
-        activeIcon: Icons.favorite,
-        label: l10n.navWishlist,
-        route: '/wishlist',
-      ),
-      _NavItem(
-        icon: Icons.collections_bookmark_outlined,
-        activeIcon: Icons.collections_bookmark,
-        label: l10n.navMyCollections,
-        route: '/collections',
-      ),
+    // Lista de scurtături e alegerea userului (persistată în secure storage).
+    // Ordinea corespunde cu ordinea de adăugare - noile scurtături apar la
+    // capăt, nu se re-sortează după enum.
+    final shortcutKeys = ref.watch(sidebarShortcutsProvider);
+    final shortcuts = [
+      for (final key in shortcutKeys)
+        () {
+          final spec = specFor(key);
+          return _NavItem(
+            icon: spec.icon,
+            activeIcon: spec.activeIcon,
+            label: spec.labelOf(l10n),
+            route: spec.route,
+          );
+        }(),
     ];
 
     return Container(
@@ -195,23 +199,56 @@ class _Sidebar extends ConsumerWidget {
                     ),
                   const SizedBox(height: 20),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      l10n.navShortcuts,
-                      style: TextStyle(
-                        color: AppColors.mutedForeground,
-                        fontSize: 11,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.navShortcuts,
+                            style: TextStyle(
+                              color: AppColors.mutedForeground,
+                              fontSize: 11,
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          iconSize: 16,
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                              minWidth: 32, minHeight: 32),
+                          tooltip: _editingShortcuts
+                              ? l10n.shortcutsDoneTooltip
+                              : l10n.shortcutsEditTooltip,
+                          icon: Icon(
+                            _editingShortcuts ? Icons.check : Icons.edit_outlined,
+                            color: AppColors.mutedForeground,
+                          ),
+                          onPressed: () => setState(
+                              () => _editingShortcuts = !_editingShortcuts),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  for (final item in shortcuts)
+                  const SizedBox(height: 4),
+                  for (var i = 0; i < shortcuts.length; i++)
                     _SidebarTile(
-                      item: item,
-                      isActive: _isActive(item),
-                      onTap: () => _navigate(context, item),
+                      item: shortcuts[i],
+                      isActive: _isActive(shortcuts[i]),
+                      onTap: _editingShortcuts
+                          ? () {}
+                          : () => _navigate(context, shortcuts[i]),
+                      onRemove: _editingShortcuts
+                          ? () => ref
+                              .read(sidebarShortcutsProvider.notifier)
+                              .remove(shortcutKeys[i])
+                          : null,
+                    ),
+                  if (_editingShortcuts)
+                    _AddShortcutTile(
+                      onTap: () => showAddShortcutSheet(context, ref),
                     ),
                 ],
               ),
@@ -302,11 +339,17 @@ class _SidebarTile extends StatelessWidget {
     required this.item,
     required this.isActive,
     required this.onTap,
+    this.onRemove,
   });
 
   final _NavItem item;
   final bool isActive;
   final VoidCallback onTap;
+
+  /// Când e setat, arătăm un buton X în colțul din dreapta al tile-ului.
+  /// Modul de editare al secțiunii „Scurtături" îl folosește pentru a scoate
+  /// scurtătura din listă. Când e null, tile-ul are aspectul obișnuit.
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +378,7 @@ class _SidebarTile extends StatelessWidget {
                 ),
               ),
             ),
-            if (item.badge > 0)
+            if (onRemove == null && item.badge > 0)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -351,6 +394,57 @@ class _SidebarTile extends StatelessWidget {
                   ),
                 ),
               ),
+            if (onRemove != null)
+              InkWell(
+                onTap: onRemove,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: AppColors.mutedForeground,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tile-ul „+" afișat sub scurtături în mod editare - deschide selectorul cu
+/// scurtăturile care nu sunt încă în listă.
+class _AddShortcutTile extends StatelessWidget {
+  const _AddShortcutTile({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.muted.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.add, size: 20, color: AppColors.mutedForeground),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                context.l10n.shortcutsAddTitle,
+                style: TextStyle(
+                  color: AppColors.mutedForeground,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -798,5 +798,14 @@
     "profileLibraryAvailable":  "{n} verfügbar",
     "profileStatRating":  "Bewertung",
     "profileStatBooks":  "Bücher",
-    "profileSettings":  "Einstellungen"
+    "profileSettings":  "Einstellungen",
+    "shortcutsEditTooltip":  "Verknüpfungen bearbeiten",
+    "shortcutsDoneTooltip":  "Fertig",
+    "shortcutsAddTitle":  "Verknüpfung hinzufügen",
+    "shortcutsAllAdded":  "Alle Verknüpfungen sind bereits hinzugefügt.",
+    "shortcutFollowing":  "Gefolgt",
+    "shortcutLeaderboard":  "Bestenliste",
+    "shortcutSellerAnalytics":  "Verkäufer-Analytik",
+    "shortcutPreRegister":  "Vorregistrierung",
+    "shortcutTrash":  "Papierkorb"
 }

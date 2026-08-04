@@ -798,5 +798,14 @@
     "profileLibraryAvailable":  "{n} elérhető",
     "profileStatRating":  "értékelés",
     "profileStatBooks":  "könyv",
-    "profileSettings":  "Beállítások"
+    "profileSettings":  "Beállítások",
+    "shortcutsEditTooltip":  "Parancsikonok szerkesztése",
+    "shortcutsDoneTooltip":  "Kész",
+    "shortcutsAddTitle":  "Parancsikon hozzáadása",
+    "shortcutsAllAdded":  "Az összes parancsikon már hozzá van adva.",
+    "shortcutFollowing":  "Követett",
+    "shortcutLeaderboard":  "Ranglista",
+    "shortcutSellerAnalytics":  "Eladói analitika",
+    "shortcutPreRegister":  "Előregisztráció",
+    "shortcutTrash":  "Kuka"
 }
