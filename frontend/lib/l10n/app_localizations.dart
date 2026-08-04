@@ -4806,6 +4806,228 @@ abstract class AppLocalizations {
   /// **'Colecțiile mele'**
   String get navMyCollections;
 
+  /// No description provided for @navAboutApp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Despre aplicație'**
+  String get navAboutApp;
+
+  /// No description provided for @aboutAppTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Despre aplicație'**
+  String get aboutAppTitle;
+
+  /// No description provided for @aboutAppIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.'**
+  String get aboutAppIntro;
+
+  /// No description provided for @aboutAppXpTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'XP și niveluri'**
+  String get aboutAppXpTitle;
+
+  /// No description provided for @aboutAppTrustTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trust Score'**
+  String get aboutAppTrustTitle;
+
+  /// No description provided for @aboutAppTrustBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.'**
+  String get aboutAppTrustBody;
+
+  /// No description provided for @aboutAppShelvesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raftul meu (Public Bookshelf)'**
+  String get aboutAppShelvesTitle;
+
+  /// No description provided for @aboutAppShelvesBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raftul e statusul tău personal de citit pentru o carte, indiferent dacă o deții fizic sau nu.\n\n• Citesc — cartea la care lucrezi acum\n• Vreau să citesc — lista ta de dorințe pentru viitor\n• Citită — cărțile pe care le-ai terminat\n\nCărțile pe care le poți da la schimb sau vinde sunt separate - stau în „Biblioteca mea\" (My Shelf din meniu). O carte poate fi și pe raft (ex. „Vreau să citesc\") și în bibliotecă (ex. „Am un exemplar de vânzare\") - sunt două noțiuni diferite.'**
+  String get aboutAppShelvesBody;
+
+  /// No description provided for @aboutAppHomeSectionsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele 3 secțiuni de pe Home'**
+  String get aboutAppHomeSectionsTitle;
+
+  /// No description provided for @aboutAppHomeSectionsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare'**
+  String get aboutAppHomeSectionsBody;
+
+  /// No description provided for @aboutAppExchangesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimburi și oferte'**
+  String get aboutAppExchangesTitle;
+
+  /// No description provided for @aboutAppExchangesBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunt două căi de a obține o carte de la altcineva:\n\n• Schimb — propui o carte din biblioteca ta în schimbul uneia din biblioteca altui user. E gratuit, doar cu costul expedierii\n• Ofertă de preț — dacă o carte e listată la vânzare și marcată „negociabil\", poți trimite o ofertă cu preț diferit. Vânzătorul acceptă, respinge sau vine cu contra-ofertă'**
+  String get aboutAppExchangesBody;
+
+  /// No description provided for @aboutAppBadgesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Insigne (Achievements)'**
+  String get aboutAppBadgesTitle;
+
+  /// No description provided for @aboutAppBadgesBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Insignele se acordă automat când atingi anumite praguri: primul schimb, 10 schimburi, 50 de schimburi, primul review scris, primul cont al comunității, insigna de supporter (dacă susții proiectul prin „Keep the app alive\"), etc.\n\nSunt vizibile pe profilul tău public. Nu au impact funcțional - doar recunosc contribuția.'**
+  String get aboutAppBadgesBody;
+
+  /// No description provided for @aboutAppChatTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat'**
+  String get aboutAppChatTitle;
+
+  /// No description provided for @aboutAppChatBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți începe o conversație direct din pagina unei cărți sau din profilul altui user. Toate mesajele sunt criptate în timpul transmiterii.\n\nRegulă simplă de siguranță: nu da niciodată date personale (CNP, număr de card, adresa completă) în chat. Pentru schimburi, folosește adresa poștală doar când ești sigur de partener.'**
+  String get aboutAppChatBody;
+
+  /// No description provided for @aboutAppAccountDeletionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergerea contului'**
+  String get aboutAppAccountDeletionTitle;
+
+  /// No description provided for @aboutAppAccountDeletionBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.'**
+  String get aboutAppAccountDeletionBody;
+
+  /// No description provided for @chatNewConversationTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversație nouă'**
+  String get chatNewConversationTooltip;
+
+  /// No description provided for @chatSearchHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută în conversații…'**
+  String get chatSearchHint;
+
+  /// No description provided for @chatFilterAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate'**
+  String get chatFilterAll;
+
+  /// No description provided for @chatFilterUnread.
+  ///
+  /// In ro, this message translates to:
+  /// **'Necitite'**
+  String get chatFilterUnread;
+
+  /// No description provided for @chatFilterArchived.
+  ///
+  /// In ro, this message translates to:
+  /// **'Arhivate'**
+  String get chatFilterArchived;
+
+  /// No description provided for @chatEmptySearch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio conversație nu se potrivește căutării.'**
+  String get chatEmptySearch;
+
+  /// No description provided for @chatEmptyUnread.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate conversațiile sunt citite.'**
+  String get chatEmptyUnread;
+
+  /// No description provided for @chatSafetyHeadline.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bine ai venit în Chat'**
+  String get chatSafetyHeadline;
+
+  /// No description provided for @chatSafetyIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aici discuți cu ceilalți cititori despre schimburi, oferte și cărți. Alege o conversație din stânga sau ține minte câteva reguli înainte să începi.'**
+  String get chatSafetyIntro;
+
+  /// No description provided for @chatSafetyPersonalTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu da date personale'**
+  String get chatSafetyPersonalTitle;
+
+  /// No description provided for @chatSafetyPersonalBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'CNP, număr de card, adresa exactă sau parole — niciodată în chat. Nici măcar dacă „e nevoie pentru livrare\" sau dacă cineva insistă.'**
+  String get chatSafetyPersonalBody;
+
+  /// No description provided for @chatSafetyPaymentTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Plăți sigure'**
+  String get chatSafetyPaymentTitle;
+
+  /// No description provided for @chatSafetyPaymentBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pentru vânzări, folosește metode cu protecție (transfer bancar cu factură, ramburs). Evită plățile în avans către useri fără istoric.'**
+  String get chatSafetyPaymentBody;
+
+  /// No description provided for @chatSafetyMeetupTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Întâlnește-te în loc public'**
+  String get chatSafetyMeetupTitle;
+
+  /// No description provided for @chatSafetyMeetupBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pentru schimburi în persoană, alege o cafenea, o bibliotecă sau piața centrală. Nu invita pe cineva acasă la primul schimb.'**
+  String get chatSafetyMeetupBody;
+
+  /// No description provided for @chatSafetyReportTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raportează ce ți se pare suspect'**
+  String get chatSafetyReportTitle;
+
+  /// No description provided for @chatSafetyReportBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Un utilizator care cere date personale, care insistă cu plăți neobișnuite sau al cărui profil e gol — apasă pe „…\" din header și raportează.'**
+  String get chatSafetyReportBody;
+
+  /// No description provided for @chatSafetyOpenCenter.
+  ///
+  /// In ro, this message translates to:
+  /// **'Deschide Centrul de siguranță'**
+  String get chatSafetyOpenCenter;
+
+  /// No description provided for @chatSafetyHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.'**
+  String get chatSafetyHint;
+
   /// No description provided for @greetReaderFallback.
   ///
   /// In ro, this message translates to:

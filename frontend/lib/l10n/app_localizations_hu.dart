@@ -2662,6 +2662,131 @@ class AppLocalizationsHu extends AppLocalizations {
   String get navMyCollections => 'Colecțiile mele';
 
   @override
+  String get navAboutApp => 'Despre aplicație';
+
+  @override
+  String get aboutAppTitle => 'Despre aplicație';
+
+  @override
+  String get aboutAppIntro =>
+      'Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.';
+
+  @override
+  String get aboutAppXpTitle => 'XP și niveluri';
+
+  @override
+  String get aboutAppTrustTitle => 'Trust Score';
+
+  @override
+  String get aboutAppTrustBody =>
+      'Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.';
+
+  @override
+  String get aboutAppShelvesTitle => 'Raftul meu (Public Bookshelf)';
+
+  @override
+  String get aboutAppShelvesBody =>
+      'Raftul e statusul tău personal de citit pentru o carte, indiferent dacă o deții fizic sau nu.\n\n• Citesc — cartea la care lucrezi acum\n• Vreau să citesc — lista ta de dorințe pentru viitor\n• Citită — cărțile pe care le-ai terminat\n\nCărțile pe care le poți da la schimb sau vinde sunt separate - stau în „Biblioteca mea\" (My Shelf din meniu). O carte poate fi și pe raft (ex. „Vreau să citesc\") și în bibliotecă (ex. „Am un exemplar de vânzare\") - sunt două noțiuni diferite.';
+
+  @override
+  String get aboutAppHomeSectionsTitle => 'Cele 3 secțiuni de pe Home';
+
+  @override
+  String get aboutAppHomeSectionsBody =>
+      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
+
+  @override
+  String get aboutAppExchangesTitle => 'Schimburi și oferte';
+
+  @override
+  String get aboutAppExchangesBody =>
+      'Sunt două căi de a obține o carte de la altcineva:\n\n• Schimb — propui o carte din biblioteca ta în schimbul uneia din biblioteca altui user. E gratuit, doar cu costul expedierii\n• Ofertă de preț — dacă o carte e listată la vânzare și marcată „negociabil\", poți trimite o ofertă cu preț diferit. Vânzătorul acceptă, respinge sau vine cu contra-ofertă';
+
+  @override
+  String get aboutAppBadgesTitle => 'Insigne (Achievements)';
+
+  @override
+  String get aboutAppBadgesBody =>
+      'Insignele se acordă automat când atingi anumite praguri: primul schimb, 10 schimburi, 50 de schimburi, primul review scris, primul cont al comunității, insigna de supporter (dacă susții proiectul prin „Keep the app alive\"), etc.\n\nSunt vizibile pe profilul tău public. Nu au impact funcțional - doar recunosc contribuția.';
+
+  @override
+  String get aboutAppChatTitle => 'Chat';
+
+  @override
+  String get aboutAppChatBody =>
+      'Poți începe o conversație direct din pagina unei cărți sau din profilul altui user. Toate mesajele sunt criptate în timpul transmiterii.\n\nRegulă simplă de siguranță: nu da niciodată date personale (CNP, număr de card, adresa completă) în chat. Pentru schimburi, folosește adresa poștală doar când ești sigur de partener.';
+
+  @override
+  String get aboutAppAccountDeletionTitle => 'Ștergerea contului';
+
+  @override
+  String get aboutAppAccountDeletionBody =>
+      'Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.';
+
+  @override
+  String get chatNewConversationTooltip => 'Conversație nouă';
+
+  @override
+  String get chatSearchHint => 'Caută în conversații…';
+
+  @override
+  String get chatFilterAll => 'Toate';
+
+  @override
+  String get chatFilterUnread => 'Necitite';
+
+  @override
+  String get chatFilterArchived => 'Arhivate';
+
+  @override
+  String get chatEmptySearch => 'Nicio conversație nu se potrivește căutării.';
+
+  @override
+  String get chatEmptyUnread => 'Toate conversațiile sunt citite.';
+
+  @override
+  String get chatSafetyHeadline => 'Bine ai venit în Chat';
+
+  @override
+  String get chatSafetyIntro =>
+      'Aici discuți cu ceilalți cititori despre schimburi, oferte și cărți. Alege o conversație din stânga sau ține minte câteva reguli înainte să începi.';
+
+  @override
+  String get chatSafetyPersonalTitle => 'Nu da date personale';
+
+  @override
+  String get chatSafetyPersonalBody =>
+      'CNP, număr de card, adresa exactă sau parole — niciodată în chat. Nici măcar dacă „e nevoie pentru livrare\" sau dacă cineva insistă.';
+
+  @override
+  String get chatSafetyPaymentTitle => 'Plăți sigure';
+
+  @override
+  String get chatSafetyPaymentBody =>
+      'Pentru vânzări, folosește metode cu protecție (transfer bancar cu factură, ramburs). Evită plățile în avans către useri fără istoric.';
+
+  @override
+  String get chatSafetyMeetupTitle => 'Întâlnește-te în loc public';
+
+  @override
+  String get chatSafetyMeetupBody =>
+      'Pentru schimburi în persoană, alege o cafenea, o bibliotecă sau piața centrală. Nu invita pe cineva acasă la primul schimb.';
+
+  @override
+  String get chatSafetyReportTitle => 'Raportează ce ți se pare suspect';
+
+  @override
+  String get chatSafetyReportBody =>
+      'Un utilizator care cere date personale, care insistă cu plăți neobișnuite sau al cărui profil e gol — apasă pe „…\" din header și raportează.';
+
+  @override
+  String get chatSafetyOpenCenter => 'Deschide Centrul de siguranță';
+
+  @override
+  String get chatSafetyHint =>
+      'Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.';
+
+  @override
   String get greetReaderFallback => 'Cititorule';
 
   @override

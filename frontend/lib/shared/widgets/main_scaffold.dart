@@ -229,6 +229,16 @@ class _Sidebar extends ConsumerWidget {
             ),
             _SidebarTile(
               item: _NavItem(
+                icon: Icons.info_outline,
+                activeIcon: Icons.info,
+                label: l10n.navAboutApp,
+                route: '/about-app',
+              ),
+              isActive: currentLocation == '/about-app',
+              onTap: () => _goTo(context, '/about-app'),
+            ),
+            _SidebarTile(
+              item: _NavItem(
                 icon: Icons.help_outline,
                 activeIcon: Icons.help,
                 label: l10n.profileHelpCenter,

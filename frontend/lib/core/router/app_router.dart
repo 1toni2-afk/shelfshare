@@ -23,6 +23,7 @@ import '../../features/exchanges/presentation/exchange_confirm_screen.dart';
 import '../../features/exchanges/presentation/exchanges_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/profile/presentation/about_app_screen.dart';
 import '../../features/profile/presentation/about_dev_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
@@ -175,6 +176,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
           GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
           GoRoute(path: '/about-dev', builder: (context, state) => const AboutDevScreen()),
+          GoRoute(path: '/about-app', builder: (context, state) => const AboutAppScreen()),
           GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
           GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
           GoRoute(path: '/library/trash', builder: (context, state) => const TrashScreen()),
