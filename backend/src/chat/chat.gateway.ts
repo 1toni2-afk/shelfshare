@@ -100,27 +100,91 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() dto: SendMessageDto,
   ) {
-    const message = await this.conversations.sendMessage(
-      client.data.userId,
-      dto,
-    );
-
-    this.server
-      .to(`conversation:${dto.conversationId}`)
-      .emit('new_message', message);
-
-    const participants = await this.conversations.getParticipants(
-      dto.conversationId,
-    );
-    const otherUserId = participants.find((id) => id !== client.data.userId);
-    if (otherUserId) {
-      this.server.to(`user:${otherUserId}`).emit('message_notification', {
-        conversationId: dto.conversationId,
-        message,
-      });
+    // Global ValidationPipe nu se aplică peste gateway-urile WS din NestJS,
+    // așa că validăm manual câmpurile cheie. Fără asta, un `locationLat`
+    // trimis ca string (din browser) sau lipsa unuia dintre lat/lng ar cădea
+    // la insert Prisma cu o eroare generică pe care clientul o vede doar ca
+    // „Verifică conexiunea".
+    const validationError = this.validateSendMessage(dto);
+    if (validationError) {
+      this.logger.warn(
+        `send_message respins pentru user ${client.data.userId}: ${validationError}`,
+      );
+      return { error: validationError };
     }
 
-    return message;
+    try {
+      const message = await this.conversations.sendMessage(
+        client.data.userId,
+        dto,
+      );
+
+      this.server
+        .to(`conversation:${dto.conversationId}`)
+        .emit('new_message', message);
+
+      const participants = await this.conversations.getParticipants(
+        dto.conversationId,
+      );
+      const otherUserId = participants.find((id) => id !== client.data.userId);
+      if (otherUserId) {
+        this.server.to(`user:${otherUserId}`).emit('message_notification', {
+          conversationId: dto.conversationId,
+          message,
+        });
+      }
+
+      return message;
+    } catch (error) {
+      // Prinderea explicită a excepțiilor face diferența între „a picat rețeaua"
+      // și „serverul a refuzat mesajul" pentru client - și lasă un log utilizabil.
+      const detail =
+        error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      this.logger.error(
+        `send_message a eșuat pentru user ${client.data.userId} (conv ${dto.conversationId}): ${detail}`,
+      );
+      return { error: 'Serverul nu a putut salva mesajul' };
+    }
+  }
+
+  /**
+   * Verificări minime pe payload-ul de send_message. Returnează un mesaj de
+   * eroare dacă ceva e greșit; null dacă e valid.
+   */
+  private validateSendMessage(dto: SendMessageDto): string | null {
+    if (!dto.conversationId || typeof dto.conversationId !== 'string') {
+      return 'conversationId lipsă';
+    }
+    if (!dto.content && !dto.location) {
+      return 'Mesaj gol: nici text, nici locație';
+    }
+    // Locația trebuie completă: nume + coordonate. Fără asta, harta nu ar
+    // funcționa iar întâlnirea nu ar putea fi găsită.
+    if (dto.location) {
+      if (
+        typeof dto.locationLat !== 'number' ||
+        typeof dto.locationLng !== 'number' ||
+        Number.isNaN(dto.locationLat) ||
+        Number.isNaN(dto.locationLng)
+      ) {
+        return 'Locația nu are coordonate valide';
+      }
+      if (
+        dto.locationLat < -90 ||
+        dto.locationLat > 90 ||
+        dto.locationLng < -180 ||
+        dto.locationLng > 180
+      ) {
+        return 'Coordonatele locației sunt în afara intervalului';
+      }
+    }
+    if (dto.meetingAt) {
+      const parsed = new Date(dto.meetingAt);
+      if (Number.isNaN(parsed.getTime())) {
+        return 'meetingAt nu este o dată validă';
+      }
+    }
+    return null;
   }
 
   /**

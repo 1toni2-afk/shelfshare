@@ -182,7 +182,14 @@ class ChatController extends Notifier<ChatState> {
     state = state.copyWith(clearReplyTo: true, sendFailed: false);
   }
 
-  void _markSendFailed() {
+  void _markSendFailed([String? reason]) {
+    // Loghez motivul primit de la server, ca să avem o urmă când user
+    // raportează „nu s-a trimis" - snackbar-ul generic se afișează în
+    // conversation_screen.dart în funcție de flagul `sendFailed`.
+    if (reason != null && reason.isNotEmpty) {
+      // ignore: avoid_print
+      print('[chat] send_message respins de server: $reason');
+    }
     state = state.copyWith(sendFailed: true);
   }
 

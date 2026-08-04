@@ -80,7 +80,8 @@ class ChatSocketService {
   /// [onFailed] se apelează dacă serverul nu confirmă mesajul: fie nu există
   /// socket, fie a răspuns cu o eroare, fie n-a răspuns deloc în [_ackTimeout].
   /// Fără el, un `emit` pe un socket mort dispare în tăcere, iar userul crede
-  /// că a trimis mesajul.
+  /// că a trimis mesajul. `onFailed` primește mesajul de eroare de la server
+  /// când e disponibil; null pentru „timeout / fără conexiune".
   void sendMessage({
     required String conversationId,
     String? content,
@@ -89,7 +90,7 @@ class ChatSocketService {
     double? locationLng,
     String? meetingAt,
     String? replyToId,
-    void Function()? onFailed,
+    void Function([String? reason])? onFailed,
   }) {
     final socket = _socket;
     if (socket == null) {
@@ -112,9 +113,12 @@ class ChatSocketService {
       ack: (data) {
         acknowledged = true;
         // Gateway-ul întoarce mesajul salvat; orice altceva (inclusiv forma
-        // `{status, message}` a filtrului de excepții) înseamnă eșec.
+        // `{error: '…'}` a validării noastre) înseamnă eșec.
         final isMessage = data is Map && data['id'] != null;
-        if (!isMessage) onFailed?.call();
+        if (!isMessage) {
+          final reason = data is Map ? data['error']?.toString() : null;
+          onFailed?.call(reason);
+        }
       },
     );
 
