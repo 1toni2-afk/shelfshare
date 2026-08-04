@@ -45,29 +45,54 @@ export class BookLookupService {
    * Căutare după titlu/text liber - întoarce mai multe rezultate,
    * ca utilizatorul să aleagă ediția corectă.
    *
-   * Rezultatele fără copertă sunt completate din Open Library Covers (un URL
-   * direct pe ISBN, deci fără încă un apel de API). Facem asta doar pentru
-   * primele [_coverFallbackLimit] rezultate: userul alege aproape mereu din
-   * capul listei, iar o verificare pentru fiecare rezultat ar încetini căutarea.
+   * Apelăm Open Library și Google Books în paralel: dacă Open Library
+   * răspunde cu rezultate, o folosim (are cover_i inclus, mai bogată pe
+   * clasici). Altfel folosim Google Books. Astfel, când Open Library e
+   * lentă/goală, nu mai plătim latența ei în serie.
+   *
+   * Rezultat cache-uit 5 min per query (LRU simplu) - autocomplete cu
+   * aceleași litere nu re-apelează API-urile externe.
    */
   async searchByTitle(query: string): Promise<ExternalBookResult[]> {
-    const fromOpenLibrary = await this.tryOpenLibrarySearch(query);
-    const results =
-      fromOpenLibrary.length > 0
-        ? fromOpenLibrary
-        : await this.tryGoogleBooksSearch(query);
+    const cacheKey = query.trim().toLowerCase();
+    const cached = this._searchCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && now - cached.at < BookLookupService._cacheTtlMs) {
+      return cached.results;
+    }
 
-    return Promise.all(
+    const [fromOpenLibrary, fromGoogle] = await Promise.all([
+      this.tryOpenLibrarySearch(query),
+      this.tryGoogleBooksSearch(query),
+    ]);
+    const results = fromOpenLibrary.length > 0 ? fromOpenLibrary : fromGoogle;
+
+    const withCovers = await Promise.all(
       results.map((result, index) =>
         index < BookLookupService._coverFallbackLimit
           ? this.withCoverFallback(result, result.isbn)
           : Promise.resolve(result),
       ),
     );
+
+    this._searchCache.set(cacheKey, { at: now, results: withCovers });
+    if (this._searchCache.size > BookLookupService._cacheMaxEntries) {
+      const oldestKey = this._searchCache.keys().next().value;
+      if (oldestKey !== undefined) this._searchCache.delete(oldestKey);
+    }
+    return withCovers;
   }
 
   /** Câte rezultate de căutare primesc completare de copertă. */
-  private static readonly _coverFallbackLimit = 10;
+  private static readonly _coverFallbackLimit = 5;
+
+  /** Cache in-memory pentru searchByTitle: TTL 5 min, ~200 chei. */
+  private static readonly _cacheTtlMs = 5 * 60 * 1000;
+  private static readonly _cacheMaxEntries = 200;
+  private readonly _searchCache = new Map<
+    string,
+    { at: number; results: ExternalBookResult[] }
+  >();
 
   /**
    * Completează `coverUrl` când lipsește, în ordinea: Google Books (are

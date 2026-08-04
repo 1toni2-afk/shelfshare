@@ -132,7 +132,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     // o anulăm - nu vrem 10 request-uri pentru „Harry Potter".
     _searchDebounce?.cancel();
     final completer = Completer<Iterable<ExternalBookResult>>();
-    _searchDebounce = Timer(const Duration(milliseconds: 350), () async {
+    _searchDebounce = Timer(const Duration(milliseconds: 200), () async {
       try {
         final results =
             await ref.read(booksRepositoryProvider).searchExternal(query.trim());
