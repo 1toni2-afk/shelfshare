@@ -2677,6 +2677,16 @@ class AppLocalizationsHu extends AppLocalizations {
   String get shortcutTrash => 'Kuka';
 
   @override
+  String get shareCoverSelected => 'Könyv borító';
+
+  @override
+  String get shareCoverRecommended => 'Ajánlott borítók';
+
+  @override
+  String get shareMainPhotoHint =>
+      'Érintsd meg a csillagot a főkép beállításához (a feed-ben jelenik meg).';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

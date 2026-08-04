@@ -472,6 +472,12 @@ model UserBook {
 
   photos String[]
 
+  /// URL-ul pozei principale afișate în feed/carduri. Poate fi una din
+  /// `photos[]`, coperta oficială (`book.coverUrl`), sau o copertă externă
+  /// aleasă din selectorul „Coperte recomandate" la add book. Null =>
+  /// fallback pe prima poză, apoi pe coperta cărții. Vezi Batch 8.
+  mainPhotoUrl String?
+
   /// Descriere per exemplar (Milestone 10) - independent de Book.description
   /// care e a operei. Max 256 char, validat în DTO.
   description String?

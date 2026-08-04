@@ -2705,6 +2705,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shortcutTrash => 'Papierkorb';
 
   @override
+  String get shareCoverSelected => 'Buchcover';
+
+  @override
+  String get shareCoverRecommended => 'Empfohlene Cover';
+
+  @override
+  String get shareMainPhotoHint =>
+      'Tippe auf den Stern, um das Hauptfoto festzulegen (erscheint im Feed).';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

@@ -39,6 +39,19 @@ export class BooksController {
     return this.booksService.searchExternal(query.q);
   }
 
+  /**
+   * Coperte candidate pentru un titlu + autor (Batch 8). Folosite în ecranul
+   * „Adaugă carte" când user tastează manual (fără să aleagă din autocomplete);
+   * întoarcem un array plat de URL-uri unice de copertă, până la 4.
+   */
+  @Get('covers')
+  async suggestCovers(
+    @Query('title') title?: string,
+    @Query('author') author?: string,
+  ) {
+    return this.booksService.suggestCovers(title, author);
+  }
+
   // Căutare printre cărțile deja oferite de utilizatori, cu filtre.
   // Plasată înainte de :userBookId, altfel "browse" ar fi interpretat ca ID.
   @Get('browse')

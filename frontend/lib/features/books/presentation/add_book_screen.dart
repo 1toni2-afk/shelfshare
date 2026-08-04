@@ -65,12 +65,33 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
   Timer? _searchDebounce;
 
+  // ---------- Batch 8: cover recomandat + poză principală ----------
+  /// URL-ul coperții alese: fie coperta oficială din rezultatul de
+  /// autocomplete, fie una dintre cele „recomandate". Se trimite ca
+  /// `mainPhotoUrl` la creare - pozele urcate ulterior pot suprascrie
+  /// alegerea prin selectorul de mai jos.
+  String? _selectedCoverUrl;
+
+  /// Cele 3-4 coperte candidate pentru titlul+autorul curent, când user nu
+  /// a ales din autocomplete. Refetch cu debounce la fiecare modificare.
+  List<String> _recommendedCovers = const [];
+  Timer? _coverSearchDebounce;
+
+  /// Indexul pozei urcate marcate ca „principală" (0-based). Null = nu am
+  /// bifat manual nicio poză; UI-ul folosește atunci coperta selectată sau
+  /// pica pe fallbackul din UserBook.primaryImageUrl.
+  int? _mainPhotoIndex;
+
   static const _maxPhotos = 5;
 
   @override
   void initState() {
     super.initState();
     _descriptionController.addListener(() => setState(() {}));
+    // Când user modifică manual titlul/autorul (și nu a ales din
+    // autocomplete), refetch la coperte după 500ms - vezi Batch 8.
+    _titleController.addListener(_scheduleCoverSearch);
+    _authorController.addListener(_scheduleCoverSearch);
     // Preselect city din profil, dacă există - user o poate schimba.
     final auth = ref.read(authControllerProvider);
     if (auth is AuthAuthenticated) {
@@ -78,9 +99,38 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     }
   }
 
+  /// Programăm o interogare la /books/covers cu 500ms debounce. Nu apelăm
+  /// dacă user tocmai a ales din autocomplete (`_isbnFromAutocomplete != null`)
+  /// - are deja coperta oficială.
+  void _scheduleCoverSearch() {
+    _coverSearchDebounce?.cancel();
+    if (_isbnFromAutocomplete != null) return;
+    final title = _titleController.text.trim();
+    if (title.length < 2) {
+      if (_recommendedCovers.isNotEmpty) {
+        setState(() => _recommendedCovers = const []);
+      }
+      return;
+    }
+    _coverSearchDebounce = Timer(const Duration(milliseconds: 500), () async {
+      try {
+        final covers = await ref.read(booksRepositoryProvider).suggestCovers(
+              title: title,
+              author: _authorController.text.trim(),
+            );
+        if (!mounted) return;
+        setState(() => _recommendedCovers = covers);
+      } catch (_) {
+        // Ignoră - o eroare de rețea la coperte nu trebuie să blocheze
+        // ecranul de adăugare.
+      }
+    });
+  }
+
   @override
   void dispose() {
     _searchDebounce?.cancel();
+    _coverSearchDebounce?.cancel();
     _titleController.dispose();
     _authorController.dispose();
     _genreController.dispose();
@@ -161,6 +211,12 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         _publisherController.text = result.publisher!;
       }
       _isbnFromAutocomplete = result.isbn;
+      // La alegerea unei ediții de autocomplete, folosim coperta ei oficială
+      // - nu mai are sens să căutăm recomandări suplimentare. Batch 8.
+      if (result.coverUrl != null && result.coverUrl!.isNotEmpty) {
+        _selectedCoverUrl = result.coverUrl;
+      }
+      _recommendedCovers = const [];
     });
   }
 
@@ -219,13 +275,28 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             publishedYear: int.tryParse(_publishedYearController.text.trim()),
             editionYear: int.tryParse(_editionYearController.text.trim()),
             pageCount: int.tryParse(_pageCountController.text.trim()),
+            mainPhotoUrl: _selectedCoverUrl,
           );
+      // Reținem URL-urile pozelor urcate, ca să putem seta ulterior
+      // `mainPhotoUrl` pe una anume dacă user a bifat-o ca principală.
+      final uploadedUrls = <String?>[];
       for (final photo in _photos) {
-        await ref.read(booksRepositoryProvider).addPhoto(
+        final url = await ref.read(booksRepositoryProvider).addPhoto(
               userBook.id,
               bytes: await photo.readAsBytes(),
               filename: photo.name,
             );
+        uploadedUrls.add(url);
+      }
+      // Dacă user a bifat o poză urcată drept „principală", suprascrie orice
+      // copertă externă aleasă anterior. Batch 8.
+      final pickedIndex = _mainPhotoIndex;
+      if (pickedIndex != null &&
+          pickedIndex >= 0 &&
+          pickedIndex < uploadedUrls.length &&
+          uploadedUrls[pickedIndex] != null) {
+        await ref.read(booksRepositoryProvider)
+            .setMainPhoto(userBook.id, uploadedUrls[pickedIndex]);
       }
       if (_listingMode == _ListingMode.sale) {
         await ref.read(booksRepositoryProvider).markForSale(
@@ -286,8 +357,18 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             _PhotoPicker(
               photos: _photos,
               maxPhotos: _maxPhotos,
+              mainPhotoIndex: _mainPhotoIndex,
               onPick: _pickPhotos,
-              onRemove: _removePhoto,
+              onRemove: (i) {
+                _removePhoto(i);
+                // Dacă poza scoasă era cea principală, resetăm indexul.
+                if (_mainPhotoIndex == i) {
+                  setState(() => _mainPhotoIndex = null);
+                } else if (_mainPhotoIndex != null && _mainPhotoIndex! > i) {
+                  setState(() => _mainPhotoIndex = _mainPhotoIndex! - 1);
+                }
+              },
+              onSetMain: (i) => setState(() => _mainPhotoIndex = i),
             ),
             const SizedBox(height: 24),
 
@@ -351,6 +432,15 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               decoration: InputDecoration(labelText: l10n.shareAuthorHint),
             ),
             const SizedBox(height: 12),
+
+            // 3b. Copertă recomandată (Batch 8) - vizibilă doar când user nu
+            // a ales din autocomplete (n-are deja coperta oficială).
+            _CoverPicker(
+              selectedUrl: _selectedCoverUrl,
+              recommended: _recommendedCovers,
+              onSelect: (url) => setState(() => _selectedCoverUrl = url),
+              onClear: () => setState(() => _selectedCoverUrl = null),
+            ),
 
             // 4. Gen + taguri
             TextField(
@@ -562,11 +652,18 @@ class _PhotoPicker extends StatelessWidget {
     required this.maxPhotos,
     required this.onPick,
     required this.onRemove,
+    this.mainPhotoIndex,
+    this.onSetMain,
   });
   final List<XFile> photos;
   final int maxPhotos;
   final VoidCallback onPick;
   final void Function(int) onRemove;
+
+  /// Indexul pozei bifate ca „principală". Când e null și există poze, tap
+  /// pe steaua unei poze o marchează.
+  final int? mainPhotoIndex;
+  final void Function(int)? onSetMain;
 
   @override
   Widget build(BuildContext context) {
@@ -654,11 +751,44 @@ class _PhotoPicker extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (onSetMain != null)
+                      Positioned(
+                        left: 2,
+                        bottom: 2,
+                        child: GestureDetector(
+                          onTap: () => onSetMain!(index),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: mainPhotoIndex == index
+                                  ? AppColors.accent
+                                  : Colors.black.withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(3),
+                            child: Icon(
+                              mainPhotoIndex == index
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },
             ),
           ),
+          if (onSetMain != null && photos.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                context.l10n.shareMainPhotoHint,
+                style: TextStyle(
+                    fontSize: 11, color: AppColors.mutedForeground),
+              ),
+            ),
         ],
       ],
     );
@@ -787,6 +917,116 @@ class _ListingModePicker extends StatelessWidget {
             onSelected: (_) => onChanged(m),
           ),
       ],
+    );
+  }
+}
+
+/// Selector „Coperta cărții" (Batch 8): dacă user a ales deja o copertă,
+/// o afișăm mare cu buton X pentru dezalegere. Altfel, arătăm până la 4
+/// miniaturi „recomandate" (returnate de /books/covers pe baza titlului
+/// și autorului tastate). Fără copertă selectată și fără recomandări nu
+/// randăm nimic - secțiunea rămâne invizibilă.
+class _CoverPicker extends StatelessWidget {
+  const _CoverPicker({
+    required this.selectedUrl,
+    required this.recommended,
+    required this.onSelect,
+    required this.onClear,
+  });
+
+  final String? selectedUrl;
+  final List<String> recommended;
+  final void Function(String url) onSelect;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    if (selectedUrl == null && recommended.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            selectedUrl != null
+                ? l10n.shareCoverSelected
+                : l10n.shareCoverRecommended,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: 6),
+          if (selectedUrl != null)
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    selectedUrl!,
+                    width: 96,
+                    height: 128,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 96,
+                      height: 128,
+                      color: AppColors.muted,
+                      child: Icon(Icons.broken_image,
+                          color: AppColors.mutedForeground),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: GestureDetector(
+                    onTap: onClear,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.destructive,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: const Icon(Icons.close,
+                          size: 14, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            SizedBox(
+              height: 128,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: recommended.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final url = recommended[index];
+                  return GestureDetector(
+                    onTap: () => onSelect(url),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        url,
+                        width: 90,
+                        height: 128,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 90,
+                          height: 128,
+                          color: AppColors.muted,
+                          child: Icon(Icons.broken_image,
+                              color: AppColors.mutedForeground),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

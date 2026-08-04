@@ -102,4 +102,13 @@ export class AddBookDto {
   @IsString()
   @MaxLength(100)
   city?: string;
+
+  /// URL-ul pozei principale ales de user în ecranul „Adaugă carte" (Batch 8).
+  /// Poate fi o copertă externă (Open Library/Google Books) sau coperta
+  /// oficială a cărții. Pozele urcate ulterior de user pot suprascrie
+  /// această alegere prin PATCH /books/:id.
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  mainPhotoUrl?: string;
 }

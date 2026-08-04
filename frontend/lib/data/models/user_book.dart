@@ -22,6 +22,11 @@ class UserBook {
   final int viewCount;
   final double? distanceKm;
   final List<String> photos;
+  /// URL-ul pozei principale (Batch 8) - afișat cu prioritate în feed/carduri.
+  /// Poate fi o intrare din `photos`, o copertă externă sau `book.coverUrl`.
+  /// Când e null, se cade pe [primaryImageUrl] care alege pe rând: prima poză,
+  /// apoi coperta cărții.
+  final String? mainPhotoUrl;
   final DateTime createdAt;
   /// Setat true când un exchange s-a completat pe această listare - carte
   /// „plecată permanent", nu mai poate fi făcută disponibilă. Vezi Milestone 10.
@@ -56,6 +61,7 @@ class UserBook {
     this.viewCount = 0,
     this.distanceKm,
     this.photos = const [],
+    this.mainPhotoUrl,
     required this.createdAt,
     this.permanentlyTransferred = false,
     this.deletedAt,
@@ -93,6 +99,7 @@ class UserBook {
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      mainPhotoUrl: json['mainPhotoUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       permanentlyTransferred: json['permanentlyTransferred'] as bool? ?? false,
       deletedAt: json['deletedAt'] != null
@@ -102,6 +109,18 @@ class UserBook {
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
       city: json['city'] as String?,
     );
+  }
+
+  /// Imaginea de afișat în feed/carduri (Batch 8). Ordinea de fallback:
+  /// 1. `mainPhotoUrl` (alegerea explicită a userului),
+  /// 2. prima poză urcată,
+  /// 3. coperta oficială a cărții.
+  /// Poate fi null dacă niciuna nu e disponibilă - callerul afișează atunci
+  /// propriul placeholder.
+  String? get primaryImageUrl {
+    if (mainPhotoUrl != null && mainPhotoUrl!.isNotEmpty) return mainPhotoUrl;
+    if (photos.isNotEmpty) return photos.first;
+    return book.coverUrl;
   }
 }
 

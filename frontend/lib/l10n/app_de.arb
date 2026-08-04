@@ -807,5 +807,8 @@
     "shortcutLeaderboard":  "Bestenliste",
     "shortcutSellerAnalytics":  "Verkäufer-Analytik",
     "shortcutPreRegister":  "Vorregistrierung",
-    "shortcutTrash":  "Papierkorb"
+    "shortcutTrash":  "Papierkorb",
+    "shareCoverSelected":  "Buchcover",
+    "shareCoverRecommended":  "Empfohlene Cover",
+    "shareMainPhotoHint":  "Tippe auf den Stern, um das Hauptfoto festzulegen (erscheint im Feed)."
 }

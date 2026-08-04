@@ -2667,6 +2667,16 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shortcutTrash => 'Coș';
 
   @override
+  String get shareCoverSelected => 'Coperta cărții';
+
+  @override
+  String get shareCoverRecommended => 'Coperte recomandate';
+
+  @override
+  String get shareMainPhotoHint =>
+      'Apasă pe stea pentru a marca poza principală (apare în feed).';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

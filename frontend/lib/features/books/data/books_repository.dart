@@ -398,6 +398,7 @@ class BooksRepository {
     String? description,
     List<String>? tags,
     String? city,
+    String? mainPhotoUrl,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books', data: {
@@ -416,8 +417,24 @@ class BooksRepository {
       if (description != null && description.isNotEmpty) 'description': description,
       if (tags != null && tags.isNotEmpty) 'tags': tags,
       if (city != null && city.isNotEmpty) 'city': city,
+      if (mainPhotoUrl != null && mainPhotoUrl.isNotEmpty) 'mainPhotoUrl': mainPhotoUrl,
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Coperte candidate (Batch 8) - listă de URL-uri afișate în ecranul „Adaugă
+  /// carte" când user tastează manual și nu alege din autocomplete. Returnează
+  /// până la 4 URL-uri distincte, sau lista goală dacă titlul e prea scurt.
+  Future<List<String>> suggestCovers({
+    required String title,
+    String? author,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/covers', queryParameters: {
+      'title': title,
+      if (author != null && author.isNotEmpty) 'author': author,
+    });
+    return (response.data as List<dynamic>).map((e) => e as String).toList();
   }
 
   /// Previzualizare (fără să creeze nimic) pentru un ISBN scanat - vezi Bulk ISBN Scan.
@@ -528,12 +545,25 @@ class BooksRepository {
     return UserBook.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> addPhoto(String userBookId, {required List<int> bytes, required String filename}) async {
+  /// Returnează URL-ul public al pozei urcate (Batch 8: e nevoie pentru
+  /// selectorul „poză principală" post-upload).
+  Future<String?> addPhoto(String userBookId, {required List<int> bytes, required String filename}) async {
     final dio = _ref.read(apiClientProvider).dio;
     final formData = FormData.fromMap({
       'photo': imageMultipartFile(bytes, filename),
     });
-    await dio.post('/books/$userBookId/photos', data: formData);
+    final response = await dio.post('/books/$userBookId/photos', data: formData);
+    final data = response.data;
+    return data is Map ? data['photoUrl'] as String? : null;
+  }
+
+  /// Setează poza principală a anunțului (Batch 8). URL-ul poate fi o poză
+  /// urcată sau o copertă externă; `null` resetează la fallback.
+  Future<void> setMainPhoto(String userBookId, String? mainPhotoUrl) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.patch('/books/$userBookId', data: {
+      'mainPhotoUrl': mainPhotoUrl,
+    });
   }
 }
 

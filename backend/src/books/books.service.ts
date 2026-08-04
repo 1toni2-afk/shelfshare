@@ -54,6 +54,27 @@ export class BooksService {
     return this.lookup.searchByTitle(query);
   }
 
+  /**
+   * Coperte sugerate (Batch 8) - folosit când user tastează titlu+autor
+   * fără să aleagă din autocomplete. Reutilizează searchByTitle (deja
+   * cache-uit 5 min) și extrage doar URL-urile de copertă, deduplicate,
+   * maxim 4. Titlul e obligatoriu, autorul opțional.
+   */
+  async suggestCovers(title?: string, author?: string): Promise<string[]> {
+    const cleanTitle = title?.trim();
+    if (!cleanTitle || cleanTitle.length < 2) return [];
+    const query = author?.trim()
+      ? `${cleanTitle} ${author.trim()}`
+      : cleanTitle;
+    const results = await this.lookup.searchByTitle(query);
+    const covers = new Set<string>();
+    for (const r of results) {
+      if (r.coverUrl) covers.add(r.coverUrl);
+      if (covers.size >= 4) break;
+    }
+    return [...covers];
+  }
+
   async searchLibrary(filters: SearchLibraryDto) {
     if (filters.title) this.logSearch(filters.title);
 
@@ -187,6 +208,7 @@ export class BooksService {
         description: dto.description,
         tags: dto.tags ?? [],
         city: dto.city,
+        mainPhotoUrl: dto.mainPhotoUrl,
       },
       include: { book: true },
     });

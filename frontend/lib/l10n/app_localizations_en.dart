@@ -2663,6 +2663,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shortcutTrash => 'Trash';
 
   @override
+  String get shareCoverSelected => 'Book cover';
+
+  @override
+  String get shareCoverRecommended => 'Recommended covers';
+
+  @override
+  String get shareMainPhotoHint =>
+      'Tap the star to mark the main photo (shown in the feed).';
+
+  @override
   String get navMyBooks => 'My books';
 
   @override

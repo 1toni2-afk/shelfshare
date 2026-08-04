@@ -64,4 +64,12 @@ export class UpdateUserBookDto {
   @IsString()
   @MaxLength(100)
   city?: string;
+
+  /// Setează poza principală afișată în feed/carduri (Batch 8). Poate fi
+  /// una din pozele urcate (`photos[]`) sau o copertă externă. `null`
+  /// resetează la fallback (prima poză, apoi coperta cărții).
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  mainPhotoUrl?: string | null;
 }

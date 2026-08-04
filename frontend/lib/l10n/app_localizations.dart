@@ -4836,6 +4836,24 @@ abstract class AppLocalizations {
   /// **'Coș'**
   String get shortcutTrash;
 
+  /// No description provided for @shareCoverSelected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coperta cărții'**
+  String get shareCoverSelected;
+
+  /// No description provided for @shareCoverRecommended.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coperte recomandate'**
+  String get shareCoverRecommended;
+
+  /// No description provided for @shareMainPhotoHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Apasă pe stea pentru a marca poza principală (apare în feed).'**
+  String get shareMainPhotoHint;
+
   /// No description provided for @navMyBooks.
   ///
   /// In ro, this message translates to:
