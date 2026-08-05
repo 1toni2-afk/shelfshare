@@ -105,6 +105,9 @@ class _TrashRow extends ConsumerWidget {
           style: TextStyle(color: AppColors.mutedForeground),
         ),
         trailing: TextButton.icon(
+          // Text + iconiță albe (Milestone 18) - erau în culoarea de accent,
+          // greu de citit pe cardul din coșul de gunoi.
+          style: TextButton.styleFrom(foregroundColor: Colors.white),
           icon: const Icon(Icons.restore),
           label: Text(l10n.libraryRestore),
           onPressed: () => _restore(context, ref),

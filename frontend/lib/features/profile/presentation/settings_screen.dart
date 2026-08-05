@@ -29,12 +29,10 @@ class SettingsScreen extends ConsumerWidget {
       body: SafeArea(
         child: user == null
             ? const CenteredScrollable(child: CircularProgressIndicator())
-            : Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
-                  child: _SettingsList(user: user),
-                ),
-              ),
+            // Centrarea + limita de 560px se fac ACUM în interiorul ListView-ului
+            // (vezi _SettingsList), ca lista să ocupe toată lățimea și scroll-ul
+            // cu rotița să meargă oriunde pe pagină, nu doar peste coloană.
+            : _SettingsList(user: user),
       ),
     );
   }
@@ -47,22 +45,38 @@ class _SettingsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // ListView pe toată lățimea viewport-ului (fără ConstrainedBox în jur) =>
+    // scroll cu rotița funcționează oriunde pe pagină, nu doar peste coloana de
+    // 560px. Conținutul rămâne centrat și îngustat prin Center + ConstrainedBox
+    // de mai jos, într-un singur Column. (Milestone 18)
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       children: [
-        Text(
-          l10n.profileSettingsSubtitle,
-          style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
-        ),
-        const SizedBox(height: 12),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.profileSettingsSubtitle,
+                    style:
+                        TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
         // Donațiile stau sus, ca prim element vizibil: aplicația e găzduită pe
         // un server personal, deci e singura sursă de finanțare.
         _KeepAliveCard(onTap: () => context.push('/profile/about-dev')),
         const SizedBox(height: 16),
-        if (user.referralCode != null) ...[
-          _ReferralCard(code: user.referralCode!, count: user.referralCount),
-          const SizedBox(height: 16),
-        ],
+        // Codul de referral e ascuns deocamdată (Milestone 18) - programul nu e
+        // activ. Cardul rămâne în cod (`_ReferralCard`) ca să poată fi reactivat
+        // ușor, reintroducând blocul de mai jos.
+        // if (user.referralCode != null) ...[
+        //   _ReferralCard(code: user.referralCode!, count: user.referralCount),
+        //   const SizedBox(height: 16),
+        // ],
         Card(
           child: ListTile(
             leading: const Icon(Icons.qr_code_2),
@@ -179,6 +193,11 @@ class _SettingsList extends ConsumerWidget {
         const SizedBox(height: 12),
         _DeleteAccountSection(user: user),
         const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -350,6 +369,8 @@ Future<void> showThemePicker(BuildContext context, WidgetRef ref) async {
   }
 }
 
+// Ascuns temporar în Milestone 18 (vezi mai sus) - păstrat pentru reactivare.
+// ignore: unused_element
 class _ReferralCard extends StatelessWidget {
   const _ReferralCard({required this.code, required this.count});
   final String code;

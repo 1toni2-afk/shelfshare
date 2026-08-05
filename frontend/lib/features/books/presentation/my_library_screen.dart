@@ -545,11 +545,15 @@ class _BookActionsSheet extends ConsumerWidget {
         title: Text(context.l10n.libraryDeleteConfirmTitle),
         content: Text(context.l10n.libraryDeleteConfirmBody(userBook.book.title)),
         actions: [
+          // Ambele butoane albe (Milestone 18) - implicit erau în culoarea de
+          // accent, greu de citit pe fundalul dialogului.
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(context.l10n.commonGiveUp),
           ),
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(context.l10n.commonDelete),
           ),
