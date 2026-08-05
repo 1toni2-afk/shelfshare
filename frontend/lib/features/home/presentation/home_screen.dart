@@ -8,10 +8,12 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/typewriter_text.dart';
+import '../../../shared/widgets/notification_halo.dart';
 import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
+import '../../notifications/presentation/notification_routing.dart';
 import '../application/home_controller.dart';
 
 /// Metricile grilei sunt aceleași ca ale delegate-ului (vezi [_BookSliverGrid]).
@@ -201,7 +203,10 @@ class _HomeFeed extends StatelessWidget {
     // Cum împărțim feed-ul: `kHomeSectionSlots` = [2, 3, 3] rânduri, deci
     // primele două rânduri → secțiunea 0, următoarele trei → secțiunea 1 etc.
     // Convertim rândurile în număr de cărți folosind numărul de coloane.
-    final slivers = <Widget>[const SliverToBoxAdapter(child: SizedBox(height: 12))];
+    final slivers = <Widget>[
+      const SliverToBoxAdapter(child: _NotificationHaloHeader()),
+      const SliverToBoxAdapter(child: SizedBox(height: 12)),
+    ];
     var cursor = 0;
     for (var i = 0; i < sections.length; i++) {
       final rows = i < kHomeSectionSlots.length ? kHomeSectionSlots[i] : kHomeSectionSlots.last;
@@ -232,6 +237,49 @@ class _HomeFeed extends StatelessWidget {
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: slivers,
+    );
+  }
+}
+
+/// Header cu avatarul userului și notificările necitite dispuse ca buline
+/// în arc deasupra lui (Batch 7). Tap pe o bulină deschide notificarea; tap
+/// pe „+N" duce la lista completă. Când nu e nimic necitit, apare doar
+/// avatarul.
+class _NotificationHaloHeader extends ConsumerWidget {
+  const _NotificationHaloHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authControllerProvider);
+    final user = auth is AuthAuthenticated ? auth.user : null;
+    final unread = (ref.watch(notificationsControllerProvider).value ?? const [])
+        .where((n) => !n.isRead)
+        .toList();
+
+    final avatar = GestureDetector(
+      onTap: () => context.push('/notifications'),
+      child: CircleAvatar(
+        radius: 28,
+        backgroundColor: AppColors.muted,
+        backgroundImage: user?.profileImage != null
+            ? NetworkImage(user!.profileImage!)
+            : null,
+        child: user?.profileImage == null
+            ? Icon(Icons.person, color: AppColors.mutedForeground, size: 28)
+            : null,
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Center(
+        child: NotificationHalo(
+          notifications: unread,
+          avatar: avatar,
+          onBubbleTap: (n) => openNotification(context, ref, n),
+          onOverflowTap: () => context.push('/notifications'),
+        ),
+      ),
     );
   }
 }

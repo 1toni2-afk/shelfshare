@@ -1,64 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../data/models/app_notification.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/notifications_controller.dart';
+import 'notification_routing.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
-
-  void _openNotification(BuildContext context, WidgetRef ref, AppNotification notification) {
-    ref.read(notificationsControllerProvider.notifier).markAsRead(notification.id);
-    switch (notification.type) {
-      case NotificationType.wishlistBookAvailable:
-        context.push('/wishlist');
-      case NotificationType.newMessage:
-        final conversationId = notification.data?['conversationId'] as String?;
-        if (conversationId != null) {
-          context.push('/chat/$conversationId');
-        }
-      case NotificationType.exchangeRequestReceived:
-      case NotificationType.exchangeRequestAccepted:
-      case NotificationType.exchangeRequestRejected:
-      case NotificationType.exchangeMeetingScheduled:
-        context.push('/exchanges');
-      case NotificationType.priceOfferReceived:
-      case NotificationType.priceOfferAccepted:
-      case NotificationType.priceOfferRejected:
-        // Oferta e vizibilă și acționabilă direct în chat (vezi Message.priceOfferId) -
-        // trimitem acolo, nu la ecranul separat de schimburi. Notificările vechi
-        // (create înainte de acest fix) n-au conversationId - fallback la /exchanges.
-        final conversationId = notification.data?['conversationId'] as String?;
-        if (conversationId != null) {
-          context.push('/chat/$conversationId');
-        } else {
-          context.push('/exchanges');
-        }
-      case NotificationType.followedUserNewBook:
-        final userId = notification.data?['userId'] as String?;
-        if (userId != null) {
-          context.push('/users/$userId');
-        }
-      case NotificationType.nearbyBookListed:
-      case NotificationType.interestBookListed:
-        context.push('/search');
-      case NotificationType.unknown:
-        break; // tip necunoscut clientului - afișăm textul, fără acțiune la tap
-      case NotificationType.priceChanged:
-        context.push('/wishlist');
-      case NotificationType.outbid:
-      case NotificationType.auctionWon:
-      case NotificationType.auctionEnded:
-        final auctionId = notification.data?['auctionId'] as String?;
-        if (auctionId != null) {
-          context.push('/auctions/$auctionId');
-        }
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,7 +50,7 @@ class NotificationsScreen extends ConsumerWidget {
                     trailing: notification.isRead
                         ? null
                         : const Icon(Icons.circle, size: 10, color: AppColors.accent),
-                    onTap: () => _openNotification(context, ref, notification),
+                    onTap: () => openNotification(context, ref, notification),
                   );
                 },
               );
