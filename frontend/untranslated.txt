@@ -1,5 +1,6 @@
 {
   "de": [
+    "commonEdit",
     "profileKeepAlive",
     "profileKeepAliveSubtitle",
     "aboutDevTitle",
@@ -136,6 +137,7 @@
   ],
 
   "hu": [
+    "commonEdit",
     "profileKeepAlive",
     "profileKeepAliveSubtitle",
     "aboutDevTitle",

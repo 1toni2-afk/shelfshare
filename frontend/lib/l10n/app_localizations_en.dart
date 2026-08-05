@@ -60,6 +60,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDelete => 'Delete';
 
   @override
+  String get commonEdit => 'Edit';
+
+  @override
   String get commonConfirm => 'Confirm';
 
   @override

@@ -113,7 +113,7 @@ class _ConversationsListScreenState
 
 /// Coloana din stânga (sau întreg ecranul pe mobil): search bar + filtre +
 /// lista de conversații.
-class _ConversationsPane extends ConsumerWidget {
+class _ConversationsPane extends ConsumerStatefulWidget {
   const _ConversationsPane({
     required this.filter,
     required this.onFilterChange,
@@ -133,8 +133,73 @@ class _ConversationsPane extends ConsumerWidget {
   final ValueChanged<Conversation> onConversationTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final archived = filter == _ConversationsFilter.archived;
+  ConsumerState<_ConversationsPane> createState() => _ConversationsPaneState();
+}
+
+class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
+  // Modul de editare în masă (Milestone 18): butonul de edit din dreapta sus
+  // intră aici; tile-urile capătă bifă, iar antetul arată acțiunile bulk
+  // (arhivează/dezarhivează + șterge) pe conversațiile selectate.
+  bool _selectionMode = false;
+  final Set<String> _selected = {};
+
+  void _exitSelection() {
+    setState(() {
+      _selectionMode = false;
+      _selected.clear();
+    });
+  }
+
+  void _toggle(String id) {
+    setState(() {
+      if (!_selected.remove(id)) _selected.add(id);
+    });
+  }
+
+  Future<void> _bulkArchive(bool archived) async {
+    if (_selected.isEmpty) return;
+    final notifier =
+        ref.read(conversationsControllerProvider(archived).notifier);
+    for (final id in _selected.toList()) {
+      await notifier.setArchived(id, !archived);
+    }
+    _exitSelection();
+  }
+
+  Future<void> _bulkDelete(bool archived) async {
+    if (_selected.isEmpty) return;
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.chatDeleteTitle),
+        content: Text(l10n.chatDeleteConfirm),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final notifier =
+        ref.read(conversationsControllerProvider(archived).notifier);
+    for (final id in _selected.toList()) {
+      await notifier.delete(id);
+    }
+    _exitSelection();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final archived = widget.filter == _ConversationsFilter.archived;
     final state = ref.watch(conversationsControllerProvider(archived));
     final l10n = context.l10n;
 
@@ -152,40 +217,85 @@ class _ConversationsPane extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.navChat,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+            child: _selectionMode
+                ? Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: _exitSelection,
+                      ),
+                      Expanded(
+                        child: Text(
+                          '${_selected.length}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
+                      ),
+                      IconButton(
+                        icon: Icon(archived
+                            ? Icons.unarchive_outlined
+                            : Icons.archive_outlined),
+                        tooltip:
+                            archived ? l10n.chatUnarchive : l10n.chatArchive,
+                        onPressed: _selected.isEmpty
+                            ? null
+                            : () => _bulkArchive(archived),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline,
+                            color: AppColors.destructive),
+                        tooltip: l10n.chatDeleteTitle,
+                        onPressed: _selected.isEmpty
+                            ? null
+                            : () => _bulkDelete(archived),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.navChat,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      // Editare în masă: selectează conversații ca să le
+                      // arhivezi/ștergi împreună. Înlocuiește vechiul creion
+                      // (care doar deschidea o conversație nouă - mutat lângă).
+                      IconButton(
+                        icon: const Icon(Icons.checklist_rounded),
+                        tooltip: l10n.commonEdit,
+                        onPressed: () => setState(() => _selectionMode = true),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_comment_outlined),
+                        tooltip: l10n.chatNewConversationTooltip,
+                        onPressed: () => context.push('/search'),
+                      ),
+                    ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  tooltip: l10n.chatNewConversationTooltip,
-                  onPressed: () => context.push('/search'),
-                ),
-              ],
-            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
-              controller: searchController,
-              onChanged: onSearchChange,
+              controller: widget.searchController,
+              onChanged: widget.onSearchChange,
               decoration: InputDecoration(
                 hintText: l10n.chatSearchHint,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
-                suffixIcon: searchQuery.isEmpty
+                suffixIcon: widget.searchQuery.isEmpty
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.clear, size: 18),
                         onPressed: () {
-                          searchController.clear();
-                          onSearchChange('');
+                          widget.searchController.clear();
+                          widget.onSearchChange('');
                         },
                       ),
               ),
@@ -197,21 +307,23 @@ class _ConversationsPane extends ConsumerWidget {
               children: [
                 _FilterChip(
                   label: l10n.chatFilterAll,
-                  selected: filter == _ConversationsFilter.all,
-                  onTap: () => onFilterChange(_ConversationsFilter.all),
+                  selected: widget.filter == _ConversationsFilter.all,
+                  onTap: () => widget.onFilterChange(_ConversationsFilter.all),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
                   label: l10n.chatFilterUnread,
                   badge: unreadCount > 0 ? unreadCount : null,
-                  selected: filter == _ConversationsFilter.unread,
-                  onTap: () => onFilterChange(_ConversationsFilter.unread),
+                  selected: widget.filter == _ConversationsFilter.unread,
+                  onTap: () =>
+                      widget.onFilterChange(_ConversationsFilter.unread),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
                   label: l10n.chatFilterArchived,
-                  selected: filter == _ConversationsFilter.archived,
-                  onTap: () => onFilterChange(_ConversationsFilter.archived),
+                  selected: widget.filter == _ConversationsFilter.archived,
+                  onTap: () =>
+                      widget.onFilterChange(_ConversationsFilter.archived),
                 ),
               ],
             ),
@@ -238,13 +350,31 @@ class _ConversationsPane extends ConsumerWidget {
                     itemCount: filtered.length,
                     separatorBuilder: (_, _) =>
                         const Divider(height: 1, indent: 76),
-                    itemBuilder: (context, index) => _ConversationTile(
-                      conversation: filtered[index],
-                      archived: archived,
-                      isSelected:
-                          filtered[index].id == selectedConversationId,
-                      onTap: () => onConversationTap(filtered[index]),
-                    ),
+                    itemBuilder: (context, index) {
+                      final conv = filtered[index];
+                      return _ConversationTile(
+                        conversation: conv,
+                        archived: archived,
+                        isSelected: conv.id == widget.selectedConversationId,
+                        selectionMode: _selectionMode,
+                        isChecked: _selected.contains(conv.id),
+                        onTap: () {
+                          if (_selectionMode) {
+                            _toggle(conv.id);
+                          } else {
+                            widget.onConversationTap(conv);
+                          }
+                        },
+                        onLongPress: () {
+                          // Long-press intră direct în modul de selecție cu
+                          // conversația respectivă bifată - scurtătură uzuală.
+                          setState(() {
+                            _selectionMode = true;
+                            _selected.add(conv.id);
+                          });
+                        },
+                      );
+                    },
                   );
                 },
                 loading: () => const CenteredScrollable(
@@ -275,11 +405,11 @@ class _ConversationsPane extends ConsumerWidget {
 
   List<Conversation> _applyFilter(List<Conversation> all) {
     Iterable<Conversation> result = all;
-    if (filter == _ConversationsFilter.unread) {
+    if (widget.filter == _ConversationsFilter.unread) {
       result = result.where((c) => c.unreadCount > 0);
     }
-    if (searchQuery.trim().isNotEmpty) {
-      final q = searchQuery.toLowerCase().trim();
+    if (widget.searchQuery.trim().isNotEmpty) {
+      final q = widget.searchQuery.toLowerCase().trim();
       result = result.where((c) {
         final name = c.otherUser.name?.toLowerCase() ?? '';
         final last = c.lastMessage?.content?.toLowerCase() ?? '';
@@ -290,8 +420,8 @@ class _ConversationsPane extends ConsumerWidget {
   }
 
   String _emptyLabel(AppLocalizations l10n) {
-    if (searchQuery.trim().isNotEmpty) return l10n.chatEmptySearch;
-    switch (filter) {
+    if (widget.searchQuery.trim().isNotEmpty) return l10n.chatEmptySearch;
+    switch (widget.filter) {
       case _ConversationsFilter.archived:
         return l10n.chatEmptyArchived;
       case _ConversationsFilter.unread:
@@ -368,12 +498,21 @@ class _ConversationTile extends ConsumerWidget {
     required this.archived,
     required this.isSelected,
     required this.onTap,
+    this.selectionMode = false,
+    this.isChecked = false,
+    this.onLongPress,
   });
 
   final Conversation conversation;
   final bool archived;
   final bool isSelected;
   final VoidCallback onTap;
+
+  /// Modul de editare în masă: tile-ul arată bifă în loc de avatar-status și
+  /// tap-ul (de)selectează în loc să deschidă conversația.
+  final bool selectionMode;
+  final bool isChecked;
+  final VoidCallback? onLongPress;
 
   Future<bool> _confirmDelete(BuildContext context) async {
     final l10n = context.l10n;
@@ -410,100 +549,114 @@ class _ConversationTile extends ConsumerWidget {
     final hasUnread = conversation.unreadCount > 0;
     final notifier = ref.read(conversationsControllerProvider(archived).notifier);
 
-    return Container(
-      color: isSelected ? AppColors.accent.withValues(alpha: 0.08) : null,
-      child: Dismissible(
-        key: ValueKey(conversation.id),
-        background: _SwipeBackground(
-          alignment: Alignment.centerLeft,
-          color: AppColors.accent,
-          icon: archived ? Icons.unarchive_outlined : Icons.archive_outlined,
-          label: archived ? l10n.chatUnarchive : l10n.chatArchive,
-        ),
-        secondaryBackground: const _SwipeBackground(
-          alignment: Alignment.centerRight,
-          color: AppColors.destructive,
-          icon: Icons.delete_outline,
-          label: null,
-        ),
-        confirmDismiss: (direction) async {
-          if (direction == DismissDirection.startToEnd) {
-            await notifier.setArchived(conversation.id, !archived);
-            return false;
-          }
-          if (!await _confirmDelete(context)) return false;
-          await notifier.delete(conversation.id);
-          return false;
-        },
-        child: ListTile(
-          selected: isSelected,
-          leading: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CircleAvatar(
-                backgroundImage: conversation.otherUser.profileImage != null
-                    ? NetworkImage(conversation.otherUser.profileImage!)
-                    : null,
-                child: conversation.otherUser.profileImage == null
-                    ? const Icon(Icons.person)
-                    : null,
-              ),
-              if (conversation.otherUser.isOnline)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: AppColors.background, width: 2),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          title: Text(
-            conversation.otherUser.name ?? l10n.commonUnknownUser,
-            style: hasUnread ? const TextStyle(fontWeight: FontWeight.bold) : null,
-          ),
-          subtitle: Text(
-            preview,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: hasUnread
-                ? TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  )
-                : null,
-          ),
-          trailing: hasUnread
-              ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: const BoxDecoration(
-                    color: AppColors.accent,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-                  alignment: Alignment.center,
-                  child: Text(
-                    conversation.unreadCount > 99
-                        ? '99+'
-                        : '${conversation.unreadCount}',
-                    style: const TextStyle(
-                      color: AppColors.accentForeground,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
+    final avatar = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        CircleAvatar(
+          backgroundImage: conversation.otherUser.profileImage != null
+              ? NetworkImage(conversation.otherUser.profileImage!)
               : null,
-          onTap: onTap,
+          child: conversation.otherUser.profileImage == null
+              ? const Icon(Icons.person)
+              : null,
         ),
+        if (conversation.otherUser.isOnline)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: AppColors.success,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.background, width: 2),
+              ),
+            ),
+          ),
+      ],
+    );
+
+    final tile = ListTile(
+      selected: isSelected,
+      leading: selectionMode
+          ? Checkbox(value: isChecked, onChanged: (_) => onTap())
+          : avatar,
+      title: Text(
+        conversation.otherUser.name ?? l10n.commonUnknownUser,
+        style: hasUnread ? const TextStyle(fontWeight: FontWeight.bold) : null,
       ),
+      subtitle: Text(
+        preview,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: hasUnread
+            ? TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              )
+            : null,
+      ),
+      trailing: hasUnread
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: const BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+              alignment: Alignment.center,
+              child: Text(
+                conversation.unreadCount > 99
+                    ? '99+'
+                    : '${conversation.unreadCount}',
+                style: const TextStyle(
+                  color: AppColors.accentForeground,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
+      onTap: onTap,
+      onLongPress: onLongPress,
+    );
+
+    return Container(
+      color: (isSelected || isChecked)
+          ? AppColors.accent.withValues(alpha: 0.08)
+          : null,
+      // În modul de selecție dezactivăm swipe-ul (arhivă/ștergere pe gest):
+      // gestul de bifare intră în conflict, iar acțiunile există deja în antet.
+      child: selectionMode
+          ? tile
+          : Dismissible(
+              key: ValueKey(conversation.id),
+              background: _SwipeBackground(
+                alignment: Alignment.centerLeft,
+                color: AppColors.accent,
+                icon: archived
+                    ? Icons.unarchive_outlined
+                    : Icons.archive_outlined,
+                label: archived ? l10n.chatUnarchive : l10n.chatArchive,
+              ),
+              secondaryBackground: const _SwipeBackground(
+                alignment: Alignment.centerRight,
+                color: AppColors.destructive,
+                icon: Icons.delete_outline,
+                label: null,
+              ),
+              confirmDismiss: (direction) async {
+                if (direction == DismissDirection.startToEnd) {
+                  await notifier.setArchived(conversation.id, !archived);
+                  return false;
+                }
+                if (!await _confirmDelete(context)) return false;
+                await notifier.delete(conversation.id);
+                return false;
+              },
+              child: tile,
+            ),
     );
   }
 }

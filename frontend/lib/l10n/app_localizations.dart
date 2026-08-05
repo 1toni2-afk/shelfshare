@@ -204,6 +204,12 @@ abstract class AppLocalizations {
   /// **'Șterge'**
   String get commonDelete;
 
+  /// No description provided for @commonEdit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează'**
+  String get commonEdit;
+
   /// No description provided for @commonConfirm.
   ///
   /// In ro, this message translates to:

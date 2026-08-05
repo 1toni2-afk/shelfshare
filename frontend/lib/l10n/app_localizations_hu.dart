@@ -60,6 +60,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get commonDelete => 'Törlés';
 
   @override
+  String get commonEdit => 'Editează';
+
+  @override
   String get commonConfirm => 'Megerősítés';
 
   @override
