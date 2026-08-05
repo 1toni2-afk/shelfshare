@@ -31,9 +31,13 @@ class MyLibraryController extends AsyncNotifier<List<UserBook>> {
     String? language,
     String? edition,
     required bool isHardcover,
+    required bool availableForSwap,
     required bool isForSale,
     double? salePrice,
     required bool isNegotiable,
+    String? description,
+    List<String>? tags,
+    String? city,
   }) async {
     final updated = await ref.read(booksRepositoryProvider).updateListing(
           userBookId,
@@ -41,11 +45,22 @@ class MyLibraryController extends AsyncNotifier<List<UserBook>> {
           language: language,
           edition: edition,
           isHardcover: isHardcover,
+          availableForSwap: availableForSwap,
           isForSale: isForSale,
           salePrice: salePrice,
           isNegotiable: isNegotiable,
+          description: description,
+          tags: tags,
+          city: city,
         );
-    final current = state.value ?? const [];
+    final current = state.value;
+    if (current == null) {
+      // Lista nu e încărcată (ex. editare din pagina anunțului, fără să fi
+      // deschis „My Shelf"). O invalidăm ca să se reîncarce corect la
+      // următoarea afișare, în loc să o punem greșit pe gol.
+      ref.invalidateSelf();
+      return;
+    }
     state = AsyncData([
       for (final book in current)
         if (book.id == userBookId) updated else book,

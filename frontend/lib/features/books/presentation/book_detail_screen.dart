@@ -23,6 +23,7 @@ import '../../safety/data/safety_repository.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
 import '../data/books_repository.dart';
+import 'edit_listing_sheet.dart';
 
 class BookDetailScreen extends ConsumerStatefulWidget {
   const BookDetailScreen({super.key, required this.userBookId, this.fallbackOwner});
@@ -123,6 +124,22 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             tooltip: l10n.profileCopyLink,
             onPressed: () => shareAppLink(context, '/books/${widget.userBookId}'),
           ),
+          // Editează: doar pe propriul anunț. Deschide aceeași foaie de editare
+          // completă ca din bibliotecă (toate câmpurile). (Milestone 18)
+          if (currentBook != null && isOwnBook)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: l10n.libraryEditListing,
+              onPressed: () async {
+                await showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => EditListingSheet(userBook: currentBook),
+                );
+                // Reîncărcăm detaliul ca modificările să apară imediat.
+                ref.invalidate(bookDetailProvider(widget.userBookId));
+              },
+            ),
           if (currentBook != null && currentOwner != null && !isOwnBook)
             IconButton(
               icon: const Icon(Icons.flag_outlined),

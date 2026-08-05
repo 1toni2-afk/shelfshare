@@ -528,9 +528,13 @@ class BooksRepository {
     String? language,
     String? edition,
     required bool isHardcover,
+    required bool availableForSwap,
     required bool isForSale,
     double? salePrice,
     required bool isNegotiable,
+    String? description,
+    List<String>? tags,
+    String? city,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.patch('/books/$userBookId', data: {
@@ -538,9 +542,15 @@ class BooksRepository {
       'language': language,
       'edition': edition,
       'isHardcover': isHardcover,
+      'availableForSwap': availableForSwap,
       'isForSale': isForSale,
       if (isForSale) 'salePrice': salePrice,
       'isNegotiable': isNegotiable,
+      // Trimise mereu (chiar și goale) ca ștergerea unui câmp să se propage:
+      // string gol -> câmp golit. Backend-ul le tratează opțional.
+      'description': description ?? '',
+      'tags': tags ?? const <String>[],
+      'city': city ?? '',
     });
     return UserBook.fromJson(response.data as Map<String, dynamic>);
   }
