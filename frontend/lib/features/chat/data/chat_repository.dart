@@ -33,9 +33,19 @@ class ChatRepository {
       '/conversations/$conversationId/messages',
       queryParameters: {'before': ?before},
     );
-    return (response.data as List<dynamic>)
-        .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // Parsăm defensiv: un singur mesaj cu o formă neașteptată (ex. ofertă cu
+    // anunțul șters) nu mai trebuie să golească toată conversația - îl sărim și
+    // păstrăm restul. Erorile ies în log ca să putem investiga.
+    final result = <ChatMessage>[];
+    for (final e in response.data as List<dynamic>) {
+      try {
+        result.add(ChatMessage.fromJson(e as Map<String, dynamic>));
+      } catch (err) {
+        // ignore: avoid_print
+        print('[chat] mesaj neparsabil, sărit: $err');
+      }
+    }
+    return result;
   }
 
   /// Căutare în conversația curentă - rezultatele vin cele mai noi întâi.

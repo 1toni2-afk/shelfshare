@@ -14,14 +14,18 @@ class PriceOfferSummary {
   });
 
   factory PriceOfferSummary.fromJson(Map<String, dynamic> json) {
-    final userBook = json['userBook'] as Map<String, dynamic>;
-    final book = userBook['book'] as Map<String, dynamic>;
+    // `userBook`/`book` pot lipsi dacă anunțul din spatele ofertei a fost șters
+    // (relația PriceOffer -> UserBook e SetNull). Înainte, cast-ul non-null
+    // arunca aici și strica parsarea ÎNTREGII conversații ("Nu am putut încărca
+    // mesajele"). Acum degradăm elegant la un titlu gol.
+    final userBook = json['userBook'] as Map<String, dynamic>?;
+    final book = userBook?['book'] as Map<String, dynamic>?;
     return PriceOfferSummary(
       id: json['id'] as String,
       amount: (json['amount'] as num).toDouble(),
       status: json['status'] as String,
-      bookTitle: book['title'] as String,
-      bookCoverUrl: book['coverUrl'] as String?,
+      bookTitle: book?['title'] as String? ?? '',
+      bookCoverUrl: book?['coverUrl'] as String?,
     );
   }
 }

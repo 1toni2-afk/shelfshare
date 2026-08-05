@@ -99,7 +99,11 @@ class ChatController extends Notifier<ChatState> {
     try {
       final messages = await _repository.getMessages(conversationId);
       state = state.copyWith(messages: messages, isLoading: false, hasMore: messages.length >= _pageSize);
-    } catch (_) {
+    } catch (e) {
+      // Logăm cauza reală - „Nu am putut încărca mesajele" e prea generic ca să
+      // ne dăm seama dacă e rețea, 401 sau un mesaj neparsabil.
+      // ignore: avoid_print
+      print('[chat] getMessages a eșuat pentru $conversationId: $e');
       state = state.copyWith(isLoading: false, error: 'Nu am putut încărca mesajele.');
     }
 

@@ -135,12 +135,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               textInputAction: TextInputAction.next,
                               autofillHints: const [AutofillHints.username, AutofillHints.email],
                               decoration: InputDecoration(
-                                labelText: l10n.commonEmailLabel,
+                                // hintText, nu labelText: un label (chiar cu
+                                // floatingLabelBehavior.never) rezervă spațiul
+                                // vertical unde ar urca eticheta, deci câmpul are
+                                // un gol deasupra textului și pare mai înalt când
+                                // scrii. Placeholder-ul nu rezervă acel spațiu.
+                                hintText: l10n.commonEmailLabel,
                                 prefixIcon: const Icon(Icons.mail_outline),
-                                // Etichetele dispar la focus în loc să urce -
-                                // altfel câmpul cere loc rezervat deasupra și
-                                // pare că sare vertical când începi să scrii.
-                                floatingLabelBehavior: FloatingLabelBehavior.never,
                               ),
                               validator: (value) => (value == null || !value.contains('@'))
                                   ? l10n.commonEmailInvalid
@@ -158,9 +159,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               },
                               autofillHints: const [AutofillHints.password],
                               decoration: InputDecoration(
-                                labelText: l10n.authPasswordLabel,
+                                hintText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
-                                floatingLabelBehavior: FloatingLabelBehavior.never,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword
