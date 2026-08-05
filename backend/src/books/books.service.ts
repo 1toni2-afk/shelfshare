@@ -51,7 +51,11 @@ export class BooksService {
 
   async searchExternal(query: string) {
     this.logSearch(query);
-    return this.lookup.searchByTitle(query);
+    // Autocomplete: sărim peste completarea de copertă per rezultat (cereri HTTP
+    // suplimentare care făceau dropdown-ul „super greoi" pe cache-miss). Coperta
+    // venită gratis în răspunsul de căutare rămâne. `suggestCovers` folosește
+    // varianta completă separat, pentru selectorul de coperte.
+    return this.lookup.searchByTitle(query, { skipCoverFallback: true });
   }
 
   /**

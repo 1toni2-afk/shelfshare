@@ -53,8 +53,23 @@ export class BookLookupService {
    * Rezultat cache-uit 5 min per query (LRU simplu) - autocomplete cu
    * aceleași litere nu re-apelează API-urile externe.
    */
-  async searchByTitle(query: string): Promise<ExternalBookResult[]> {
-    const cacheKey = query.trim().toLowerCase();
+  /**
+   * [skipCoverFallback] sare peste completarea de copertă per rezultat - fiecare
+   * rezultat fără `coverUrl` altfel declanșează 1-2 cereri HTTP suplimentare
+   * (Google Books + HEAD Open Library), deci pentru 5 rezultate se pot lega până
+   * la ~10 cereri externe în serie/paralel, mărginite doar de timeout-ul global
+   * de 8s: de aici autocomplete-ul „super greoi" pe cache-miss. Coperta care vine
+   * deja gratis în răspunsul de căutare (cover_i / imageLinks) rămâne; doar
+   * lookup-ul suplimentar e sărit. Folosit pentru dropdown-ul de autocomplete,
+   * unde viteza contează mai mult decât coperta perfectă. `suggestCovers` cere
+   * varianta completă (skip=false), deci cache-uim separat pe cheie.
+   */
+  async searchByTitle(
+    query: string,
+    opts: { skipCoverFallback?: boolean } = {},
+  ): Promise<ExternalBookResult[]> {
+    const skip = opts.skipCoverFallback === true;
+    const cacheKey = `${query.trim().toLowerCase()}|${skip ? 'nocov' : 'cov'}`;
     const cached = this._searchCache.get(cacheKey);
     const now = Date.now();
     if (cached && now - cached.at < BookLookupService._cacheTtlMs) {
@@ -67,20 +82,22 @@ export class BookLookupService {
     ]);
     const results = fromOpenLibrary.length > 0 ? fromOpenLibrary : fromGoogle;
 
-    const withCovers = await Promise.all(
-      results.map((result, index) =>
-        index < BookLookupService._coverFallbackLimit
-          ? this.withCoverFallback(result, result.isbn)
-          : Promise.resolve(result),
-      ),
-    );
+    const finalResults = skip
+        ? results
+        : await Promise.all(
+            results.map((result, index) =>
+              index < BookLookupService._coverFallbackLimit
+                ? this.withCoverFallback(result, result.isbn)
+                : Promise.resolve(result),
+            ),
+          );
 
-    this._searchCache.set(cacheKey, { at: now, results: withCovers });
+    this._searchCache.set(cacheKey, { at: now, results: finalResults });
     if (this._searchCache.size > BookLookupService._cacheMaxEntries) {
       const oldestKey = this._searchCache.keys().next().value;
       if (oldestKey !== undefined) this._searchCache.delete(oldestKey);
     }
-    return withCovers;
+    return finalResults;
   }
 
   /** Câte rezultate de căutare primesc completare de copertă. */
@@ -174,7 +191,9 @@ export class BookLookupService {
 
       const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
       const { data } = await firstValueFrom(
-        this.http.get<{ items?: GoogleVolume[] }>(url),
+        // Timeout scurt: e doar completare de copertă, nu vrem să blocheze
+        // până la timeout-ul global de 8s dacă Google e lent.
+        this.http.get<{ items?: GoogleVolume[] }>(url, { timeout: 4000 }),
       );
       const thumbnail = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
       return thumbnail?.replace('http://', 'https://') ?? null;
