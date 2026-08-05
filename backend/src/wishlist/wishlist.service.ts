@@ -20,6 +20,19 @@ export class WishlistService {
       throw new NotFoundException('Cartea nu a fost găsită');
     }
 
+    // Nu-ți poți pune propria carte la favorite: dacă userul are deja un anunț
+    // (UserBook) activ pentru acest titlu, e cartea LUI - inima nu are sens.
+    // Soft-delete-urile nu blochează (deletedAt != null = scoasă din stoc).
+    const ownListing = await this.prisma.userBook.findFirst({
+      where: { userId, bookId, deletedAt: null },
+      select: { id: true },
+    });
+    if (ownListing) {
+      throw new ConflictException(
+        'Nu îți poți adăuga propria carte la favorite',
+      );
+    }
+
     const existing = await this.prisma.wishlistItem.findUnique({
       where: { userId_bookId: { userId, bookId } },
     });

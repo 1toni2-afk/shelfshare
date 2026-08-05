@@ -8,6 +8,7 @@ describe('WishlistService', () => {
   let service: WishlistService;
   let prisma: {
     book: Record<string, jest.Mock>;
+    userBook: Record<string, jest.Mock>;
     wishlistItem: Record<string, jest.Mock>;
     user: Record<string, jest.Mock>;
     auctionWatch: Record<string, jest.Mock>;
@@ -17,6 +18,8 @@ describe('WishlistService', () => {
   beforeEach(async () => {
     prisma = {
       book: { findUnique: jest.fn() },
+      // Implicit: userul NU are un anunț pentru titlu (nu e cartea lui).
+      userBook: { findFirst: jest.fn().mockResolvedValue(null) },
       wishlistItem: {
         findUnique: jest.fn(),
         create: jest.fn(),
@@ -56,6 +59,16 @@ describe('WishlistService', () => {
       await expect(service.add('user-1', 'book-1')).rejects.toThrow(
         ConflictException,
       );
+    });
+
+    it('respinge daca e propria carte (userul are deja un anunt activ)', async () => {
+      prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
+      prisma.userBook.findFirst.mockResolvedValue({ id: 'ub-1' });
+
+      await expect(service.add('user-1', 'book-1')).rejects.toThrow(
+        ConflictException,
+      );
+      expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
     });
 
     it('adauga cartea pe wishlist', async () => {

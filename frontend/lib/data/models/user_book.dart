@@ -42,6 +42,15 @@ class UserBook {
   /// Localitatea unde se face schimbul (distinctă de user.city). Milestone 10.
   final String? city;
 
+  /// Câți useri au titlul la favorite (afișat lângă inimă pe pagina anunțului).
+  /// Prezent doar în răspunsul de detaliu (/books/:id), null în browse.
+  final int? favoriteCount;
+
+  /// Dacă viewer-ul curent are titlul la favorite - sursă de adevăr de la
+  /// server, ca inima să fie corectă chiar dacă lista de wishlist a clientului
+  /// nu e încărcată. Prezent doar în răspunsul de detaliu; null în browse.
+  final bool? isWishlisted;
+
   const UserBook({
     required this.id,
     required this.userId,
@@ -68,6 +77,8 @@ class UserBook {
     this.description,
     this.tags = const [],
     this.city,
+    this.favoriteCount,
+    this.isWishlisted,
   });
 
   factory UserBook.fromJson(Map<String, dynamic> json) {
@@ -108,6 +119,8 @@ class UserBook {
       description: json['description'] as String?,
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
       city: json['city'] as String?,
+      favoriteCount: json['favoriteCount'] as int?,
+      isWishlisted: json['isWishlisted'] as bool?,
     );
   }
 

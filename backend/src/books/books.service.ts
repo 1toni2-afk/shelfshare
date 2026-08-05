@@ -1268,7 +1268,28 @@ export class BooksService {
         })
         .catch(() => {});
     }
-    return this.toPublicPhotos(userBook);
+
+    // Starea de favorite vine acum de la server, nu din lista de wishlist a
+    // clientului: aceea putea fi neîncărcată sau să conțină un alt `book.id`
+    // pentru același titlu, iar inima rămânea gri deși cartea era la favorite.
+    // `favoriteCount` = câți useri au titlul la favorite (afișat lângă inimă).
+    const [favoriteCount, ownFavorite] = await Promise.all([
+      this.prisma.wishlistItem.count({ where: { bookId: userBook.bookId } }),
+      viewerId
+        ? this.prisma.wishlistItem.findUnique({
+            where: {
+              userId_bookId: { userId: viewerId, bookId: userBook.bookId },
+            },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+    ]);
+
+    return {
+      ...this.toPublicPhotos(userBook),
+      favoriteCount,
+      isWishlisted: !!ownFavorite,
+    };
   }
 
   // Distinct de viewUserBook (care doar incrementează) - folosit de UI-ul

@@ -97,16 +97,21 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(bookDetailProvider(widget.userBookId));
-    final bookId = async.value?.book.id;
-    final wishlistState = ref.watch(wishlistControllerProvider);
-    final isWishlisted = bookId != null &&
-        (wishlistState.value ?? const []).any((item) => item.book.id == bookId);
     final currentBook = async.value;
+    final bookId = currentBook?.book.id;
     final currentOwner = currentBook?.owner ?? widget.fallbackOwner;
     final authState = ref.watch(authControllerProvider);
     final isOwnBook = currentBook != null &&
         authState is AuthAuthenticated &&
         authState.user.id == currentBook.userId;
+    // Sursa de adevăr pentru inimă: serverul (isWishlisted din detaliu). Lista
+    // de wishlist a clientului rămâne un fallback optimist ca inima să reacționeze
+    // instant la toggle, înainte de refetch-ul detaliului.
+    final wishlistState = ref.watch(wishlistControllerProvider);
+    final isWishlisted = bookId != null &&
+        ((currentBook?.isWishlisted ?? false) ||
+            (wishlistState.value ?? const [])
+                .any((item) => item.book.id == bookId));
     final l10n = context.l10n;
 
     return Scaffold(
@@ -124,11 +129,33 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
               tooltip: l10n.bookDetailReportTooltip,
               onPressed: () => _reportListing(currentBook, currentOwner),
             ),
-          if (bookId != null)
-            IconButton(
-              icon: Icon(isWishlisted ? Icons.favorite : Icons.favorite_border),
-              color: isWishlisted ? AppColors.destructive : null,
-              onPressed: () => ref.read(wishlistControllerProvider.notifier).toggle(bookId),
+          // Inima nu apare pe propria carte - nu-ți poți pune la favorite ceea
+          // ce oferi tu (blocat și pe backend). Lângă inimă: câți useri au
+          // titlul la favorite.
+          if (bookId != null && !isOwnBook)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if ((currentBook?.favoriteCount ?? 0) > 0)
+                  Text(
+                    '${currentBook!.favoriteCount}',
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                IconButton(
+                  icon: Icon(
+                    isWishlisted ? Icons.favorite : Icons.favorite_border,
+                  ),
+                  color: isWishlisted ? AppColors.destructive : null,
+                  onPressed: () async {
+                    await ref
+                        .read(wishlistControllerProvider.notifier)
+                        .toggle(bookId);
+                    // Reîncărcăm detaliul ca numărul de favorite de lângă inimă
+                    // să reflecte imediat toggle-ul propriu.
+                    ref.invalidate(bookDetailProvider(widget.userBookId));
+                  },
+                ),
+              ],
             ),
         ],
       ),
