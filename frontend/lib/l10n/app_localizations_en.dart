@@ -63,6 +63,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonEdit => 'Edit';
 
   @override
+  String get commonShowMore => 'Show more';
+
+  @override
+  String get commonShowLess => 'Show less';
+
+  @override
   String get commonConfirm => 'Confirm';
 
   @override
@@ -1249,7 +1255,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookDetailPagesLabel => 'Pages';
 
   @override
-  String get bookDetailOwnerTitle => 'Owner';
+  String get bookDetailOwnerTitle => 'Owned by';
 
   @override
   String get bookDetailPhotosTitle => 'Photos';
@@ -1262,6 +1268,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookDetailMakeOffer => 'Make an offer';
+
+  @override
+  String get bookDetailMessageOwner => 'Message';
+
+  @override
+  String get bookDetailAvailabilityTitle => 'Availability';
+
+  @override
+  String get bookDetailReadyToExchange => 'Ready to exchange';
+
+  @override
+  String get bookDetailLocationTitle => 'Location';
+
+  @override
+  String get bookDetailViewOnMap => 'View on map';
+
+  @override
+  String get bookDetailAvailableForExchangeHint =>
+      'This book is available for exchange';
 
   @override
   String get bookDetailHistoryTitle => 'This book\'s history';

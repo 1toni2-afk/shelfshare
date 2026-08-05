@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
@@ -251,6 +252,10 @@ Future<void> _showViewStats(BuildContext context, WidgetRef ref, String userBook
   );
 }
 
+/// Prag peste care afișăm layout-ul „desktop" din mockup (copertă | info |
+/// carduri lateral). Sub el, totul se stivuiește pe o coloană (mobil).
+const double _kDetailWideBreakpoint = 900.0;
+
 class _BookDetailContent extends ConsumerWidget {
   const _BookDetailContent({
     required this.book,
@@ -268,63 +273,124 @@ class _BookDetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authControllerProvider);
-    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : null;
     final isOwnBook = currentUserId != null && currentUserId == book.userId;
-    final l10n = context.l10n;
+    final isPremium = authState is AuthAuthenticated && authState.user.isPremium;
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Center(child: BookCover(url: book.book.coverUrl, fallbackUrl: book.photos.isNotEmpty ? book.photos.first : null, width: 180, height: 252)),
-        const SizedBox(height: 20),
-        Text(
-          book.book.title,
-          style: Theme.of(context).textTheme.headlineSmall,
-          textAlign: TextAlign.center,
-        ),
-        if (book.book.author != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              book.book.author!,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: AppColors.mutedForeground),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        // Sub titlu și autor rămâne doar locația listării. Restul etichetelor
-        // (stare, limbă, copertă cartonată, disponibilitate) au coborât sub
-        // descriere - înainte erau șase chipuri deasupra ei și aglomerau tot
-        // ecranul înainte să apuci să citești ceva despre carte.
-        if (owner?.city != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.location_on_outlined, size: 15, color: AppColors.mutedForeground),
-                const SizedBox(width: 4),
-                Text(
-                  owner!.city!,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: AppColors.mutedForeground),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= _kDetailWideBreakpoint;
+
+        final cover = _CoverPanel(
+          book: book,
+          isOwnBook: isOwnBook,
+          canPromote: isOwnBook && isPremium,
+        );
+        final main = _MainInfoPanel(
+          book: book,
+          isOwnBook: isOwnBook,
+          onRequestExchange: onRequestExchange,
+          onMakeOffer: onMakeOffer,
+        );
+        final sidebar = _SidebarPanel(
+          book: book,
+          owner: owner,
+          isOwnBook: isOwnBook,
+          onMessageOwner: onMessageOwner,
+        );
+        final similar = _SimilarBooksSection(userBookId: book.id);
+
+        if (isWide) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 300, child: cover),
+                        const SizedBox(width: 40),
+                        Expanded(child: main),
+                        const SizedBox(width: 28),
+                        SizedBox(width: 320, child: sidebar),
+                      ],
+                    ),
+                    const SizedBox(height: 44),
+                    similar,
+                  ],
                 ),
-              ],
+              ),
+            ),
+          );
+        }
+
+        // Mobil: totul pe o coloană, în ordinea firească de citire.
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              cover,
+              const SizedBox(height: 24),
+              main,
+              const SizedBox(height: 24),
+              sidebar,
+              const SizedBox(height: 32),
+              similar,
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Coloana din stânga: coperta mare + preț (dacă e la vânzare) + contorul de
+/// vizualizări + acțiunile de listă (colecții, promovare).
+class _CoverPanel extends ConsumerWidget {
+  const _CoverPanel({
+    required this.book,
+    required this.isOwnBook,
+    required this.canPromote,
+  });
+  final UserBook book;
+  final bool isOwnBook;
+  final bool canPromote;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AspectRatio(
+            aspectRatio: 5 / 7,
+            child: BookCover(
+              url: book.book.coverUrl,
+              fallbackUrl: book.photos.isNotEmpty ? book.photos.first : null,
+              width: double.infinity,
+              height: double.infinity,
             ),
           ),
+        ),
+        if (book.isForSale && book.salePrice != null) ...[
+          const SizedBox(height: 16),
+          Center(child: _PriceBlock(book: book)),
+        ],
         const SizedBox(height: 16),
-        // Un singur control pentru toate listele: rafturile fixe (citesc /
-        // vreau să citesc / citită) plus colecțiile proprii stau împreună în
-        // sheet-ul deschis de aici.
         _AddToCollectionButton(bookId: book.book.id),
-        const SizedBox(height: 8),
-        if (isOwnBook && authState is AuthAuthenticated && authState.user.isPremium)
+        if (canPromote) ...[
+          const SizedBox(height: 8),
           _PromoteButton(userBookId: book.id, isPromoted: book.isPromoted),
-        const SizedBox(height: 8),
+        ],
+        const SizedBox(height: 12),
         Center(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -332,7 +398,8 @@ class _BookDetailContent extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.visibility_outlined, size: 14, color: AppColors.mutedForeground),
+                Icon(Icons.visibility_outlined,
+                    size: 14, color: AppColors.mutedForeground),
                 const SizedBox(width: 4),
                 Text(
                   l10n.bookDetailViewCount(book.viewCount),
@@ -345,84 +412,10 @@ class _BookDetailContent extends ConsumerWidget {
             ),
           ),
         ),
-        if (book.isForSale && book.salePrice != null) ...[
-          const SizedBox(height: 16),
-          Center(child: _PriceBlock(book: book)),
-        ],
-        if (book.book.description != null && book.book.description!.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          Text(l10n.bookDetailDescriptionTitle, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(book.book.description!),
-        ],
-        // Etichetele listării, imediat sub descriere.
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            Chip(label: Text(book.condition.label(l10n))),
-            if (book.language != null) Chip(label: Text(book.language!)),
-            if (book.isHardcover) Chip(label: Text(l10n.bookDetailHardcoverChip)),
-            Chip(
-              label: Text(book.availableForSwap ? l10n.bookDetailAvailableChip : l10n.libraryUnavailable),
-              backgroundColor:
-                  book.availableForSwap ? AppColors.accent.withValues(alpha: 0.15) : AppColors.muted,
-            ),
-            if (book.isForSale && !book.isNegotiable) Chip(label: Text(l10n.addBookNonNegotiable)),
-          ],
-        ),
-        if (book.book.genre != null ||
-            book.book.publisher != null ||
-            book.book.publishedYear != null ||
-            book.book.pageCount != null) ...[
-          const SizedBox(height: 24),
-          Text(l10n.bookDetailDetailsTitle, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          if (book.book.genre != null) _DetailRow(label: l10n.filtersGenre, value: book.book.genre!),
-          if (book.book.publisher != null) _DetailRow(label: l10n.bookDetailPublisherLabel, value: book.book.publisher!),
-          if (book.book.publishedYear != null)
-            _DetailRow(label: l10n.bookDetailYearLabel, value: book.book.publishedYear.toString()),
-          if (book.book.pageCount != null)
-            _DetailRow(label: l10n.bookDetailPagesLabel, value: book.book.pageCount.toString()),
-        ],
-        if (owner != null) ...[
-          const SizedBox(height: 24),
-          Text(l10n.bookDetailOwnerTitle, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            onTap: () => context.push('/users/${owner!.id}', extra: owner),
-            leading: CircleAvatar(
-              backgroundImage: owner!.profileImage != null ? NetworkImage(owner!.profileImage!) : null,
-              child: owner!.profileImage == null ? const Icon(Icons.person) : null,
-            ),
-            title: Text(owner!.name ?? l10n.commonUnknownUser),
-            subtitle: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (owner!.city != null) ...[
-                  Text(owner!.city!),
-                  const Text(' · '),
-                ],
-                const Icon(Icons.star, size: 14, color: AppColors.accent),
-                Text(' ${owner!.rating.toStringAsFixed(1)}'),
-              ],
-            ),
-            trailing: isOwnBook
-                ? null
-                : IconButton(
-                    icon: const Icon(Icons.chat_bubble_outline),
-                    onPressed: onMessageOwner,
-                  ),
-          ),
-        ],
         if (book.photos.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          Text(l10n.bookDetailPhotosTitle, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           SizedBox(
-            height: 100,
+            height: 72,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: book.photos.length,
@@ -430,11 +423,11 @@ class _BookDetailContent extends ConsumerWidget {
               itemBuilder: (context, index) => GestureDetector(
                 onTap: () => _openPhotoViewer(context, book.photos, index),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   child: Image.network(
                     book.photos[index],
-                    width: 100,
-                    height: 100,
+                    width: 72,
+                    height: 72,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -442,28 +435,598 @@ class _BookDetailContent extends ConsumerWidget {
             ),
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// Coloana centrală: titlu, autor, badge de gen, meta (limbă/an/pagini),
+/// taguri, descriere cu „Show more", butoanele de acțiune și detaliile.
+class _MainInfoPanel extends StatefulWidget {
+  const _MainInfoPanel({
+    required this.book,
+    required this.isOwnBook,
+    required this.onRequestExchange,
+    required this.onMakeOffer,
+  });
+  final UserBook book;
+  final bool isOwnBook;
+  final VoidCallback onRequestExchange;
+  final VoidCallback onMakeOffer;
+
+  @override
+  State<_MainInfoPanel> createState() => _MainInfoPanelState();
+}
+
+class _MainInfoPanelState extends State<_MainInfoPanel> {
+  bool _descriptionExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final book = widget.book;
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final description = book.book.description;
+    final hasLongDescription =
+        description != null && description.length > 240;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(book.book.title, style: theme.textTheme.headlineMedium),
+        if (book.book.author != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            book.book.author!,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: AppColors.accent,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        const SizedBox(height: 14),
+        // Rând de badge-uri: gen + stare. (Cartea nu are rating agregat, deci
+        // nu inventăm unul - vezi cardul „Owned by" pentru reputația userului.)
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (book.book.genre != null) _GenrePill(label: book.book.genre!),
+            _OutlinePill(
+              icon: Icons.auto_stories_outlined,
+              label: book.condition.label(l10n),
+            ),
+            if (book.isHardcover)
+              _OutlinePill(
+                icon: Icons.menu_book_outlined,
+                label: l10n.bookDetailHardcoverChip,
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Meta cu iconițe, ca în mockup: limbă · an · pagini.
+        Wrap(
+          spacing: 22,
+          runSpacing: 8,
+          children: [
+            if (book.language != null)
+              _MetaItem(icon: Icons.translate_outlined, text: book.language!),
+            if (book.book.publishedYear != null)
+              _MetaItem(
+                icon: Icons.calendar_today_outlined,
+                text: '${book.book.publishedYear}',
+              ),
+            if (book.book.pageCount != null)
+              _MetaItem(
+                icon: Icons.description_outlined,
+                text: '${l10n.bookDetailPagesLabel}: ${book.book.pageCount}',
+              ),
+          ],
+        ),
+        if (book.tags.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final tag in book.tags) _TagChip(label: tag),
+            ],
+          ),
+        ],
+        if (description != null && description.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Text(l10n.bookDetailDescriptionTitle,
+              style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 150),
+            alignment: Alignment.topCenter,
+            child: Text(
+              description,
+              maxLines: _descriptionExpanded ? null : 3,
+              overflow: _descriptionExpanded
+                  ? TextOverflow.visible
+                  : TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+            ),
+          ),
+          if (hasLongDescription)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(
+                  () => _descriptionExpanded = !_descriptionExpanded),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _descriptionExpanded
+                          ? l10n.commonShowLess
+                          : l10n.commonShowMore,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.accent),
+                    ),
+                    Icon(
+                      _descriptionExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 18,
+                      color: AppColors.accent,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+        if (!widget.isOwnBook) ...[
+          const SizedBox(height: 24),
+          _ActionButtons(
+            book: book,
+            onRequestExchange: widget.onRequestExchange,
+            onMakeOffer: widget.onMakeOffer,
+          ),
+        ],
+        if (book.book.publisher != null) ...[
+          const SizedBox(height: 28),
+          Text(l10n.bookDetailDetailsTitle,
+              style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          _DetailRow(
+              label: l10n.bookDetailPublisherLabel,
+              value: book.book.publisher!),
+        ],
         const SizedBox(height: 24),
         _HistorySection(userBookId: book.id),
-        const SizedBox(height: 24),
-        _SimilarBooksSection(userBookId: book.id),
-        const SizedBox(height: 32),
-        if (!isOwnBook) ...[
-          if (book.availableForSwap)
-            ElevatedButton(
-              onPressed: onRequestExchange,
-              child: Text(l10n.bookDetailRequestExchange),
-            )
-          else
-            ElevatedButton(onPressed: null, child: Text(l10n.bookDetailUnavailableForExchange)),
-          if (book.isForSale && book.isNegotiable) ...[
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: onMakeOffer,
-              child: Text(l10n.bookDetailMakeOffer),
+      ],
+    );
+  }
+}
+
+/// Butoanele „Request exchange" / „Make an offer" + textul de sub ele, ca în
+/// mockup.
+class _ActionButtons extends StatelessWidget {
+  const _ActionButtons({
+    required this.book,
+    required this.onRequestExchange,
+    required this.onMakeOffer,
+  });
+  final UserBook book;
+  final VoidCallback onRequestExchange;
+  final VoidCallback onMakeOffer;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final canOffer = book.isForSale && book.isNegotiable;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton(
+                onPressed: book.availableForSwap ? onRequestExchange : null,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: Text(book.availableForSwap
+                    ? l10n.bookDetailRequestExchange
+                    : l10n.bookDetailUnavailableForExchange),
+              ),
+            ),
+            if (canOffer) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onMakeOffer,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(l10n.bookDetailMakeOffer),
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (book.availableForSwap) ...[
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              l10n.bookDetailAvailableForExchangeHint,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.mutedForeground),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Coloana din dreapta: cardul „Owned by" + cardul de disponibilitate/locație.
+class _SidebarPanel extends StatelessWidget {
+  const _SidebarPanel({
+    required this.book,
+    required this.owner,
+    required this.isOwnBook,
+    required this.onMessageOwner,
+  });
+  final UserBook book;
+  final PublicUser? owner;
+  final bool isOwnBook;
+  final VoidCallback? onMessageOwner;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (owner != null) ...[
+          _OwnedByCard(
+            owner: owner!,
+            isOwnBook: isOwnBook,
+            onMessageOwner: onMessageOwner,
+          ),
+          const SizedBox(height: 16),
+        ],
+        _AvailabilityCard(book: book, owner: owner),
+      ],
+    );
+  }
+}
+
+/// Container-ul cu stil de card folosit în bara laterală (fundal card + bordură
+/// + colțuri rotunjite), cu titlu opțional și un punct de accent.
+class _SidebarCard extends StatelessWidget {
+  const _SidebarCard({this.title, required this.child});
+  final String? title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(title!, style: Theme.of(context).textTheme.titleSmall),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _OwnedByCard extends StatelessWidget {
+  const _OwnedByCard({
+    required this.owner,
+    required this.isOwnBook,
+    required this.onMessageOwner,
+  });
+  final PublicUser owner;
+  final bool isOwnBook;
+  final VoidCallback? onMessageOwner;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return _SidebarCard(
+      title: l10n.bookDetailOwnerTitle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => context.push('/users/${owner.id}', extra: owner),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 26,
+                  backgroundImage: owner.profileImage != null
+                      ? NetworkImage(owner.profileImage!)
+                      : null,
+                  child: owner.profileImage == null
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        owner.name ?? l10n.commonUnknownUser,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      if (owner.city != null) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on_outlined,
+                                size: 14, color: AppColors.mutedForeground),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                owner.city!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                        color: AppColors.mutedForeground),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.star,
+                              size: 14, color: AppColors.accent),
+                          const SizedBox(width: 4),
+                          Text(
+                            owner.rating.toStringAsFixed(1),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!isOwnBook && onMessageOwner != null) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onMessageOwner,
+                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                label: Text(l10n.bookDetailMessageOwner),
+              ),
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _AvailabilityCard extends StatelessWidget {
+  const _AvailabilityCard({required this.book, required this.owner});
+  final UserBook book;
+  final PublicUser? owner;
+
+  Future<void> _openMap(String city) async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(city)}',
+    );
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final available = book.availableForSwap;
+    final city = book.city ?? owner?.city;
+
+    return _SidebarCard(
+      title: l10n.bookDetailAvailabilityTitle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_available_outlined,
+                  size: 18,
+                  color: available
+                      ? AppColors.success
+                      : AppColors.mutedForeground),
+              const SizedBox(width: 8),
+              Text(
+                available
+                    ? l10n.bookDetailAvailableChip
+                    : l10n.libraryUnavailable,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color:
+                      available ? AppColors.success : AppColors.mutedForeground,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          if (available) ...[
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.only(left: 26),
+              child: Text(
+                l10n.bookDetailReadyToExchange,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: AppColors.mutedForeground),
+              ),
+            ),
+          ],
+          if (city != null) ...[
+            const Divider(height: 28),
+            Text(
+              l10n.bookDetailLocationTitle,
+              style: theme.textTheme.labelMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.place_outlined,
+                    size: 18, color: AppColors.accent),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(city, style: theme.textTheme.bodyMedium),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _openMap(city),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.bookDetailViewOnMap,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: AppColors.accent),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.open_in_new,
+                      size: 13, color: AppColors.accent),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Badge de gen, plin cu accent translucid (ex. „Classic").
+class _GenrePill extends StatelessWidget {
+  const _GenrePill({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.accent,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+    );
+  }
+}
+
+/// Pill cu bordură + iconiță (stare, copertă cartonată).
+class _OutlinePill extends StatelessWidget {
+  const _OutlinePill({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.mutedForeground),
+          const SizedBox(width: 6),
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+        ],
+      ),
+    );
+  }
+}
+
+/// Element de meta (iconiță + text) din rândul limbă/an/pagini.
+class _MetaItem extends StatelessWidget {
+  const _MetaItem({required this.icon, required this.text});
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: AppColors.mutedForeground),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppColors.mutedForeground),
+        ),
       ],
+    );
+  }
+}
+
+/// Chip de tag al listării (stil hashtag discret).
+class _TagChip extends StatelessWidget {
+  const _TagChip({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.muted,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(label, style: Theme.of(context).textTheme.labelMedium),
     );
   }
 }

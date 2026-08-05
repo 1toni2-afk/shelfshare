@@ -63,6 +63,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get commonEdit => 'Editează';
 
   @override
+  String get commonShowMore => 'Vezi mai mult';
+
+  @override
+  String get commonShowLess => 'Vezi mai puțin';
+
+  @override
   String get commonConfirm => 'Megerősítés';
 
   @override
@@ -1269,6 +1275,25 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get bookDetailMakeOffer => 'Ajánlat tétele';
+
+  @override
+  String get bookDetailMessageOwner => 'Mesaj';
+
+  @override
+  String get bookDetailAvailabilityTitle => 'Disponibilitate';
+
+  @override
+  String get bookDetailReadyToExchange => 'Gata de schimb';
+
+  @override
+  String get bookDetailLocationTitle => 'Locație';
+
+  @override
+  String get bookDetailViewOnMap => 'Vezi pe hartă';
+
+  @override
+  String get bookDetailAvailableForExchangeHint =>
+      'Această carte este disponibilă la schimb';
 
   @override
   String get bookDetailHistoryTitle => 'A könyv előzményei';

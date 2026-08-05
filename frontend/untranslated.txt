@@ -1,6 +1,14 @@
 {
   "de": [
     "commonEdit",
+    "commonShowMore",
+    "commonShowLess",
+    "bookDetailMessageOwner",
+    "bookDetailAvailabilityTitle",
+    "bookDetailReadyToExchange",
+    "bookDetailLocationTitle",
+    "bookDetailViewOnMap",
+    "bookDetailAvailableForExchangeHint",
     "profileKeepAlive",
     "profileKeepAliveSubtitle",
     "aboutDevTitle",
@@ -138,6 +146,14 @@
 
   "hu": [
     "commonEdit",
+    "commonShowMore",
+    "commonShowLess",
+    "bookDetailMessageOwner",
+    "bookDetailAvailabilityTitle",
+    "bookDetailReadyToExchange",
+    "bookDetailLocationTitle",
+    "bookDetailViewOnMap",
+    "bookDetailAvailableForExchangeHint",
     "profileKeepAlive",
     "profileKeepAliveSubtitle",
     "aboutDevTitle",

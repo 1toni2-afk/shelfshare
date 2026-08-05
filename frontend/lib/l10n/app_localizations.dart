@@ -210,6 +210,18 @@ abstract class AppLocalizations {
   /// **'Editează'**
   String get commonEdit;
 
+  /// No description provided for @commonShowMore.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi mai mult'**
+  String get commonShowMore;
+
+  /// No description provided for @commonShowLess.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi mai puțin'**
+  String get commonShowLess;
+
   /// No description provided for @commonConfirm.
   ///
   /// In ro, this message translates to:
@@ -2339,6 +2351,42 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Fă o ofertă'**
   String get bookDetailMakeOffer;
+
+  /// No description provided for @bookDetailMessageOwner.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj'**
+  String get bookDetailMessageOwner;
+
+  /// No description provided for @bookDetailAvailabilityTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Disponibilitate'**
+  String get bookDetailAvailabilityTitle;
+
+  /// No description provided for @bookDetailReadyToExchange.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gata de schimb'**
+  String get bookDetailReadyToExchange;
+
+  /// No description provided for @bookDetailLocationTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Locație'**
+  String get bookDetailLocationTitle;
+
+  /// No description provided for @bookDetailViewOnMap.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi pe hartă'**
+  String get bookDetailViewOnMap;
+
+  /// No description provided for @bookDetailAvailableForExchangeHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Această carte este disponibilă la schimb'**
+  String get bookDetailAvailableForExchangeHint;
 
   /// No description provided for @bookDetailHistoryTitle.
   ///
