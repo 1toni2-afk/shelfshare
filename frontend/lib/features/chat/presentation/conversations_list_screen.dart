@@ -597,15 +597,19 @@ class _ConversationTile extends ConsumerWidget {
               )
             : null,
       ),
+      // IMPORTANT: fără `alignment` pe acest Container. Ca `trailing` de ListTile
+      // primește constrângeri largi (loose), iar un Container cu `alignment` se
+      // umflă să umple toată lățimea disponibilă - badge-ul devenea un cerc uriaș
+      // care fura tot spațiul, iar numele se rupea pe verticală, literă cu literă.
+      // Fără alignment, Container-ul se strânge pe conținut. Pilulă (borderRadius)
+      // în loc de cerc, ca „99+" să nu iasă din formă.
       trailing: hasUnread
           ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: const BoxDecoration(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
                 color: AppColors.accent,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(12),
               ),
-              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-              alignment: Alignment.center,
               child: Text(
                 conversation.unreadCount > 99
                     ? '99+'
