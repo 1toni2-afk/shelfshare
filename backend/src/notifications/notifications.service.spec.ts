@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeService } from '../common/realtime/realtime.service';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
   let prisma: {
     notification: Record<string, jest.Mock>;
   };
+  let realtime: { emitToUser: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -16,11 +18,13 @@ describe('NotificationsService', () => {
         updateMany: jest.fn(),
       },
     };
+    realtime = { emitToUser: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationsService,
         { provide: PrismaService, useValue: prisma },
+        { provide: RealtimeService, useValue: realtime },
       ],
     }).compile();
 
@@ -41,6 +45,16 @@ describe('NotificationsService', () => {
         message: 'Ai un mesaj nou',
         data: { conversationId: 'c-1' },
       },
+    });
+  });
+
+  it('impinge notificarea creata live catre user, pe socket', async () => {
+    prisma.notification.create.mockResolvedValue({ id: 'notif-1' });
+
+    await service.create('user-1', 'NEW_MESSAGE', 'Ai un mesaj nou');
+
+    expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'notification', {
+      id: 'notif-1',
     });
   });
 

@@ -3,6 +3,7 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -14,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { ConversationsService } from './conversations.service';
 import { PresenceService } from './presence.service';
 import { SendMessageDto } from './dto/send-message.dto';
+import { RealtimeService } from '../common/realtime/realtime.service';
 
 interface AuthenticatedSocket extends Socket {
   data: { userId: string };
@@ -23,7 +25,9 @@ interface AuthenticatedSocket extends Socket {
   cors: { origin: '*' },
   namespace: 'chat',
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   private readonly logger = new Logger(ChatGateway.name);
 
   @WebSocketServer()
@@ -34,7 +38,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private config: ConfigService,
     private conversations: ConversationsService,
     private presence: PresenceService,
+    private realtime: RealtimeService,
   ) {}
+
+  // Punem serverul namespace-ului /chat la dispoziția serviciilor care nu au
+  // acces la socket.io (ex. NotificationsService), ca notificările create în
+  // orice modul să poată fi împinse live către user, pe același socket.
+  afterInit(server: Server) {
+    this.realtime.registerServer(server);
+  }
 
   async handleConnection(client: AuthenticatedSocket) {
     try {

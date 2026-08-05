@@ -1,18 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationType, Prisma } from '@prisma/client';
+import { RealtimeService } from '../common/realtime/realtime.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtime: RealtimeService,
+  ) {}
 
-  create(
+  async create(
     userId: string,
     type: NotificationType,
     message: string,
     data?: Record<string, unknown>,
   ) {
-    return this.prisma.notification.create({
+    const notification = await this.prisma.notification.create({
       data: {
         userId,
         type,
@@ -20,6 +24,13 @@ export class NotificationsService {
         data: data as Prisma.InputJsonValue,
       },
     });
+
+    // Împinge notificarea live către user, ca clopoțelul și buleta de necitite
+    // să se actualizeze fără refresh de pagină. Dacă userul nu e conectat pe
+    // socket, se pierde - o va vedea oricum la următoarea încărcare (GET /mine).
+    this.realtime.emitToUser(userId, 'notification', notification);
+
+    return notification;
   }
 
   getMine(userId: string) {

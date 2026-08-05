@@ -28,12 +28,20 @@ class ChatSocketService {
     final socket = io.io(
       '${ApiConfig.baseUrl}/chat',
       io.OptionBuilder()
-          // Polling ca rezervă, nu doar websocket: pe date mobile și în
-          // spatele unor proxy-uri (inclusiv Cloudflare Tunnel) upgrade-ul la
-          // websocket poate fi blocat, iar cu o listă doar-websocket socket.io
-          // nu are unde să cadă înapoi - chatul pur și simplu nu se conectează,
-          // fără nicio eroare vizibilă în aplicație.
-          .setTransports(['websocket', 'polling'])
+          // Polling PRIMUL, websocket ca upgrade opțional - nu invers.
+          // Cu websocket primul, engine.io deschide conexiunea pe websocket și,
+          // dacă acel prim transport eșuează (exact ce face un proxy/tunel care
+          // blochează upgrade-ul WS - inclusiv Cloudflare Tunnel), NU mai încearcă
+          // polling (tryAllTransports e false implicit): socket-ul pur și simplu
+          // nu se conectează, fără eroare vizibilă, iar tot ce depinde de el
+          // (trimitere text, notificări live, actualizarea listei de conversații)
+          // pică în tăcere, deși pozele - care merg pe HTTP - se trimit normal.
+          // Local websocket merge, deci nu se vede; în producție, în spatele
+          // tunelului, cade. Cu polling primul, handshake-ul se face pe HTTP
+          // simplu (care sigur trece prin tunel) și abia apoi se face upgrade la
+          // websocket dacă tunelul îl permite; dacă nu, rămâne pe polling și
+          // totul funcționează oricum.
+          .setTransports(['polling', 'websocket'])
           // Funcție, nu un Map static - se apelează din nou la fiecare
           // (re)conectare, inclusiv reconectările automate ale socket.io.
           // Cu un token static, dacă access token-ul expiră (15 minute)
@@ -191,6 +199,16 @@ class ChatSocketService {
   }
 
   void offMessageNotification() => _socket?.off('message_notification');
+
+  /// Notificare din clopoțel (ofertă, schimb, follow etc.) creată în orice
+  /// modul de backend și împinsă live pe camera personală `user:<id>`. Payload-ul
+  /// e notificarea salvată; nu ne interesează conținutul aici - doar declanșăm
+  /// un refetch al listei, ca badge-ul și lista să fie la zi fără refresh.
+  void onNotification(void Function() handler) {
+    _socket?.on('notification', (_) => handler());
+  }
+
+  void offNotification() => _socket?.off('notification');
 }
 
 final chatSocketServiceProvider = Provider<ChatSocketService>((ref) {

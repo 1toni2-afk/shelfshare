@@ -34,6 +34,10 @@ class ConversationScreen extends ConsumerStatefulWidget {
 
 class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   final _messageController = TextEditingController();
+  // Ținem focusul pe câmp după trimitere: fără el, `onSubmitted` (tasta trimite)
+  // și apăsarea butonului de send scot focusul, iar userul trebuie să dea din
+  // nou click în câmp ca să mai scrie un mesaj.
+  final _messageFocusNode = FocusNode();
   final _scrollController = ScrollController();
   bool _safetyBannerDismissed = false;
   BlockStatus? _blockStatus;
@@ -62,6 +66,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   void dispose() {
     _highlightTimer?.cancel();
     _messageController.dispose();
+    _messageFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -318,6 +323,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     if (text.trim().isEmpty) return;
     ref.read(chatControllerProvider(widget.conversationId).notifier).sendMessage(text);
     _messageController.clear();
+    // Readucem focusul pe câmp, ca userul să poată scrie următorul mesaj fără
+    // să dea din nou click (onSubmitted / butonul de send scot focusul).
+    _messageFocusNode.requestFocus();
   }
 
   Future<void> _shareLocation() async {
@@ -553,6 +561,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                     Expanded(
                       child: TextField(
                         controller: _messageController,
+                        focusNode: _messageFocusNode,
                         onChanged: (_) =>
                             ref.read(chatControllerProvider(widget.conversationId).notifier).notifyTyping(),
                         decoration: InputDecoration(hintText: l10n.chatMessageHint),

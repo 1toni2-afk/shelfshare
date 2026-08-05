@@ -1,16 +1,34 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/app_notification.dart';
+import '../../chat/data/chat_socket_service.dart';
 import '../data/notifications_repository.dart';
 
 class NotificationsController extends AsyncNotifier<List<AppNotification>> {
   @override
-  Future<List<AppNotification>> build() {
+  Future<List<AppNotification>> build() async {
+    // Provider-ul e urmărit de main_scaffold (badge-ul clopoțelului), deci
+    // rămâne montat cât e aplicația deschisă - listener-ul de socket de mai jos
+    // primește notificări live și când userul nu e pe ecranul de notificări.
+    final socketService = ref.read(chatSocketServiceProvider);
+    await socketService.connect();
+    socketService.onNotification(_reload);
+    ref.onDispose(() => socketService.offNotification());
+
     return ref.read(notificationsRepositoryProvider).getNotifications();
   }
 
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => ref.read(notificationsRepositoryProvider).getNotifications());
+  }
+
+  /// Refetch tăcut (fără spinner) la primirea unei notificări pe socket - lista
+  /// și badge-ul se împrospătează sub mână, fără să pâlpâie ecranul.
+  Future<void> _reload() async {
+    final result = await AsyncValue.guard(
+      () => ref.read(notificationsRepositoryProvider).getNotifications(),
+    );
+    state = result;
   }
 
   Future<void> markAsRead(String id) async {

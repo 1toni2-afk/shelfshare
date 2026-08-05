@@ -26,11 +26,13 @@ import { CollectionsModule } from './collections/collections.module';
 import { GroupsModule } from './groups/groups.module';
 import { AccountDeletionModule } from './account-deletion/account-deletion.module';
 import { PreRegistrationModule } from './pre-registration/pre-registration.module';
+import { RealtimeModule } from './common/realtime/realtime.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    RealtimeModule,
     PrismaModule,
     AuthModule,
     ProfileModule,
