@@ -21,6 +21,18 @@ interface OverpassElement {
 export class PlacesService {
   private readonly logger = new Logger(PlacesService.name);
 
+  // Cache simplu în memorie pentru căutările de locații. Nominatim e lent și
+  // limitat la ~1 cerere/secundă per IP - fără cache, fiecare tastare (chiar
+  // și re-tastarea aceluiași oraș) mai lovește o dată API-ul, de unde senzația
+  // de „super greoi". TTL scurt fiindcă rezultatele nu se schimbă des; capăt
+  // de dimensiune ca să nu crească la nesfârșit.
+  private readonly searchCache = new Map<
+    string,
+    { at: number; results: PlaceResult[] }
+  >();
+  private static readonly CACHE_TTL_MS = 10 * 60 * 1000;
+  private static readonly CACHE_MAX = 500;
+
   constructor(private http: HttpService) {}
 
   /**
@@ -30,7 +42,13 @@ export class PlacesService {
    * live cu debounce dintr-un chat, nu pentru trafic de producție masiv).
    */
   async search(query: string): Promise<PlaceResult[]> {
-    if (query.trim().length < 3) return [];
+    const normalized = query.trim().toLowerCase();
+    if (normalized.length < 3) return [];
+
+    const cached = this.searchCache.get(normalized);
+    if (cached && Date.now() - cached.at < PlacesService.CACHE_TTL_MS) {
+      return cached.results;
+    }
 
     try {
       const url = 'https://nominatim.openstreetmap.org/search';
@@ -47,19 +65,35 @@ export class PlacesService {
             headers: {
               'User-Agent': 'ShelfShare/1.0 (aplicatie schimb de carti)',
             },
+            // Autocomplete: mai bine eșuăm repede decât să lăsăm câmpul să se
+            // învârtă până la timeout-ul global (8s). Overpass (meeting-points)
+            // are nevoie de mai mult, de aceea îl scurtăm doar aici, per cerere.
+            timeout: 5000,
           },
         ),
       );
 
-      return data.map((item) => ({
+      const results = data.map((item) => ({
         displayName: item.display_name,
         lat: parseFloat(item.lat),
         lng: parseFloat(item.lon),
       }));
+      this.cacheSearch(normalized, results);
+      return results;
     } catch (error) {
       this.logger.warn(`Căutare locație eșuată pentru "${query}": ${error}`);
       return [];
     }
+  }
+
+  private cacheSearch(key: string, results: PlaceResult[]) {
+    // Curățare grosolană când umple: ștergem prima (cea mai veche) intrare.
+    // Map păstrează ordinea de inserare, deci e suficient pentru un cap simplu.
+    if (this.searchCache.size >= PlacesService.CACHE_MAX) {
+      const oldest = this.searchCache.keys().next().value;
+      if (oldest !== undefined) this.searchCache.delete(oldest);
+    }
+    this.searchCache.set(key, { at: Date.now(), results });
   }
 
   /**

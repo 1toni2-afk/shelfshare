@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../books/presentation/relist_book_sheet.dart';
 import '../../chat/data/chat_repository.dart';
+import '../../chat/data/places_repository.dart';
 import '../../offers/application/offers_controller.dart';
 import '../application/exchanges_controller.dart';
 
@@ -612,10 +615,58 @@ class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
   late final _locationController = TextEditingController(text: widget.request.meetingLocation);
   bool _isSubmitting = false;
 
+  // Autocomplete de locație, la fel ca sheet-ul din chat: debounce 400ms peste
+  // /places/search, sugestii sub câmp. Lipsea complet aici (Milestone 18).
+  Timer? _locationDebounce;
+  List<PlaceResult>? _locationSuggestions;
+  bool _searchingLocation = false;
+
   @override
   void dispose() {
+    _locationDebounce?.cancel();
     _locationController.dispose();
     super.dispose();
+  }
+
+  void _onLocationChanged(String value) {
+    _locationDebounce?.cancel();
+    final query = value.trim();
+    // Nominatim ignoră query-urile < 3 caractere; evităm și cererea inutilă.
+    if (query.length < 3) {
+      setState(() {
+        _locationSuggestions = null;
+        _searchingLocation = false;
+      });
+      return;
+    }
+    setState(() => _searchingLocation = true);
+    _locationDebounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final results =
+            await ref.read(placesRepositoryProvider).search(query);
+        if (mounted) {
+          setState(() {
+            _locationSuggestions = results;
+            _searchingLocation = false;
+          });
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _locationSuggestions = const [];
+            _searchingLocation = false;
+          });
+        }
+      }
+    });
+  }
+
+  void _selectSuggestion(PlaceResult place) {
+    _locationController.text = place.displayName;
+    _locationController.selection = TextSelection.fromPosition(
+      TextPosition(offset: _locationController.text.length),
+    );
+    setState(() => _locationSuggestions = null);
   }
 
   Future<void> _pickDateTime() async {
@@ -686,8 +737,45 @@ class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
           TextField(
             controller: _locationController,
             maxLength: 200,
-            decoration: InputDecoration(labelText: l10n.exchangeLocationLabel),
+            onChanged: _onLocationChanged,
+            decoration: InputDecoration(
+              labelText: l10n.exchangeLocationLabel,
+              suffixIcon: _searchingLocation
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : const Icon(Icons.search),
+            ),
           ),
+          if (_locationSuggestions != null &&
+              _locationSuggestions!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _locationSuggestions!.length,
+                itemBuilder: (context, index) {
+                  final place = _locationSuggestions![index];
+                  return ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.place_outlined),
+                    title: Text(
+                      place.displayName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () => _selectSuggestion(place),
+                  );
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           ElevatedButton(
             onPressed: _isSubmitting ? null : _submit,
