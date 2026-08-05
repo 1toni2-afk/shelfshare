@@ -12,6 +12,7 @@ import {
 import type { Request } from 'express';
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
+import { CounterOfferDto } from './dto/counter-offer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -61,5 +62,17 @@ export class OffersController {
   cancel(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
     return this.offersService.cancel(id, userId!);
+  }
+
+  /** Contra-ofertă (Batch 11). Oricare parte poate propune preț nou. */
+  @Post('offers/:id/counter')
+  @HttpCode(HttpStatus.CREATED)
+  counter(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: CounterOfferDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.offersService.counter(id, userId!, dto);
   }
 }

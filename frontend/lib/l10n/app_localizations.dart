@@ -4854,6 +4854,18 @@ abstract class AppLocalizations {
   /// **'Apasă pe stea pentru a marca poza principală (apare în feed).'**
   String get shareMainPhotoHint;
 
+  /// No description provided for @chatOfferCounterAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contra-ofertă'**
+  String get chatOfferCounterAction;
+
+  /// No description provided for @chatOfferCounterTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite o contra-ofertă'**
+  String get chatOfferCounterTitle;
+
   /// No description provided for @navMyBooks.
   ///
   /// In ro, this message translates to:

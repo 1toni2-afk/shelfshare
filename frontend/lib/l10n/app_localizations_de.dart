@@ -2715,6 +2715,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tippe auf den Stern, um das Hauptfoto festzulegen (erscheint im Feed).';
 
   @override
+  String get chatOfferCounterAction => 'Gegenangebot';
+
+  @override
+  String get chatOfferCounterTitle => 'Gegenangebot senden';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

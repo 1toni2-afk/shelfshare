@@ -2677,6 +2677,12 @@ class AppLocalizationsRo extends AppLocalizations {
       'Apasă pe stea pentru a marca poza principală (apare în feed).';
 
   @override
+  String get chatOfferCounterAction => 'Contra-ofertă';
+
+  @override
+  String get chatOfferCounterTitle => 'Trimite o contra-ofertă';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override

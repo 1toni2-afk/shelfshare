@@ -238,6 +238,21 @@ class ChatController extends Notifier<ChatState> {
     state = state.copyWith(clearReplyTo: true, sendFailed: false);
   }
 
+  /// Refresh mesajelor din conversație (Batch 11) - folosit după acțiuni
+  /// care postează mesaje noi în chat pe backend (ex. contra-ofertă), unde
+  /// nu trecem prin socket-ul WebSocket și deci nu primim `new_message`.
+  Future<void> reload() async {
+    try {
+      final messages = await _repository.getMessages(conversationId);
+      state = state.copyWith(
+        messages: messages,
+        hasMore: messages.length >= _pageSize,
+      );
+    } catch (_) {
+      // Silent - dacă rețeaua pică, mesajele curente rămân vizibile.
+    }
+  }
+
   /// Actualizare optimistă imediat după accept/refuz dintr-un card de ofertă
   /// afișat în chat - celălalt participant vede starea corectă oricum la
   /// următorul fetch de mesaje (vezi ConversationsService#getMessages).

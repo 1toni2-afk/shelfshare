@@ -336,6 +336,34 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     }
   }
 
+  /// Contra-ofertă (Batch 11): deschide un dialog cu preț nou, apoi cheamă
+  /// POST /offers/:id/counter. Backend-ul postează un mesaj nou în chat,
+  /// deci după succes reîncărcăm conversația ca să apară imediat.
+  Future<void> _handleCounterOffer(ChatMessage message) async {
+    final offerId = message.priceOffer?.id;
+    if (offerId == null) return;
+    final currentAmount = message.priceOffer?.amount ?? 0;
+    final result = await showDialog<double>(
+      context: context,
+      builder: (_) => _CounterOfferDialog(initialAmount: currentAmount),
+    );
+    if (result == null) return;
+    try {
+      await ref.read(offersRepositoryProvider).counter(offerId, amount: result);
+      // Backendul a marcat original ca REJECTED - update local ca să nu mai
+      // afișeze butoanele Accept/Respinge pe cardul vechi cât timp încarcă.
+      ref
+          .read(chatControllerProvider(widget.conversationId).notifier)
+          .updatePriceOfferStatus(message.id, 'REJECTED');
+      await ref.read(chatControllerProvider(widget.conversationId).notifier).reload();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.chatOfferActionError)));
+      }
+    }
+  }
+
   Future<void> _handleOfferAction(ChatMessage message, {required bool accept}) async {
     final offerId = message.priceOffer?.id;
     if (offerId == null) return;
@@ -465,6 +493,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                           onLoadMore: () =>
                               ref.read(chatControllerProvider(widget.conversationId).notifier).loadMore(),
                           onOfferAction: _handleOfferAction,
+                          onCounterOffer: _handleCounterOffer,
                           onMessageLongPress: _showMessageActions,
                         ),
             ),
@@ -611,6 +640,7 @@ class _MessageList extends StatelessWidget {
     required this.highlightedMessageId,
     required this.onLoadMore,
     required this.onOfferAction,
+    required this.onCounterOffer,
     required this.onMessageLongPress,
   });
 
@@ -622,6 +652,7 @@ class _MessageList extends StatelessWidget {
   final String? highlightedMessageId;
   final VoidCallback onLoadMore;
   final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
+  final Future<void> Function(ChatMessage message) onCounterOffer;
   final Future<void> Function(ChatMessage message) onMessageLongPress;
 
   /// Ultimul mesaj trimis de mine - singurul sub care se afișează „Văzut",
@@ -718,6 +749,7 @@ class _MessageList extends StatelessWidget {
                         message: message,
                         isMine: isMine,
                         onOfferAction: onOfferAction,
+                        onCounterOffer: onCounterOffer,
                       ),
                     ],
                   ),
@@ -1128,10 +1160,16 @@ class _SafetyAdvisoryCard extends StatelessWidget {
 }
 
 class _MessageContent extends StatelessWidget {
-  const _MessageContent({required this.message, required this.isMine, required this.onOfferAction});
+  const _MessageContent({
+    required this.message,
+    required this.isMine,
+    required this.onOfferAction,
+    required this.onCounterOffer,
+  });
   final ChatMessage message;
   final bool isMine;
   final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
+  final Future<void> Function(ChatMessage message) onCounterOffer;
 
   @override
   Widget build(BuildContext context) {
@@ -1167,14 +1205,19 @@ class _MessageContent extends StatelessWidget {
           Text(status.label, style: TextStyle(color: textColor, fontSize: 13)),
           if (!isMine && status == OfferStatus.pending) ...[
             const SizedBox(height: 8),
-            Row(
-              mainAxisSize: MainAxisSize.min,
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 OutlinedButton(
                   onPressed: () => onOfferAction(message, accept: false),
                   child: Text(l10n.exchangeReject),
                 ),
-                const SizedBox(width: 8),
+                // Contra-ofertă (Batch 11) - deschide dialog cu preț nou.
+                TextButton(
+                  onPressed: () => onCounterOffer(message),
+                  child: Text(l10n.chatOfferCounterAction),
+                ),
                 ElevatedButton(
                   onPressed: () => onOfferAction(message, accept: true),
                   child: Text(l10n.exchangeAccept),
@@ -1533,6 +1576,77 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Dialog pentru contra-ofertă (Batch 11). Preț nou cu validare (>0),
+/// prepopulate cu valoarea curentă ca punct de plecare pentru negociere.
+/// Returnează suma sau null dacă user a anulat.
+class _CounterOfferDialog extends StatefulWidget {
+  const _CounterOfferDialog({required this.initialAmount});
+  final double initialAmount;
+
+  @override
+  State<_CounterOfferDialog> createState() => _CounterOfferDialogState();
+}
+
+class _CounterOfferDialogState extends State<_CounterOfferDialog> {
+  late final TextEditingController _controller;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.initialAmount > 0
+          ? widget.initialAmount.toStringAsFixed(0)
+          : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final raw = _controller.text.trim().replaceAll(',', '.');
+    final value = double.tryParse(raw);
+    if (value == null || value <= 0) {
+      setState(() => _error = context.l10n.addBookInvalidPrice);
+      return;
+    }
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.chatOfferCounterTitle),
+      content: TextField(
+        controller: _controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        autofocus: true,
+        decoration: InputDecoration(
+          labelText: l10n.addBookPriceLabel,
+          suffixText: 'lei',
+          errorText: _error,
+        ),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.commonCancel),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: Text(l10n.chatOfferCounterAction),
+        ),
+      ],
     );
   }
 }

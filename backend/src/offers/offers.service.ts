@@ -10,6 +10,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
 import { NotificationType } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
+import { CounterOfferDto } from './dto/counter-offer.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_SALE_COMPLETED } from '../common/utils/xp';
 
@@ -253,6 +254,80 @@ export class OffersService {
       include: INCLUDE_FULL,
     });
     return this.sanitizeParties(updated);
+  }
+
+  /**
+   * Contra-ofertă (Batch 11): oricare parte poate propune un preț nou.
+   * Original devine REJECTED (nu are sens „PENDING dublu"), iar noua ofertă
+   * are rolurile buyer/owner INVERSATE față de original - astfel cealaltă
+   * parte devine „ownerul deciziei" și poate folosi fluxul standard
+   * accept/reject/counter fără cazuri speciale.
+   *
+   * Noua ofertă se postează ca mesaj în aceeași conversație (același
+   * mecanism ca la createOffer), iar cealaltă parte primește notificare.
+   */
+  async counter(id: string, userId: string, dto: CounterOfferDto) {
+    const original = await this.findForAction(id);
+    if (original.buyerId !== userId && original.ownerId !== userId) {
+      throw new ForbiddenException(
+        'Doar participanții la ofertă pot face contra-ofertă',
+      );
+    }
+    this.assertStatus(original, 'PENDING');
+
+    const originalWithBook = await this.prisma.priceOffer.findUnique({
+      where: { id },
+      include: { userBook: { include: { book: true } } },
+    });
+    if (!originalWithBook) {
+      throw new NotFoundException('Oferta nu a fost găsită');
+    }
+
+    // Rolurile se inversează: „buyerId" al noii oferte = cel care propune
+    // (userId curent). Astfel, decizia rămâne mereu la ownerId.
+    const newBuyerId = userId;
+    const newOwnerId =
+      userId === original.buyerId ? original.ownerId : original.buyerId;
+
+    const counterOffer = await this.prisma.$transaction(async (tx) => {
+      await tx.priceOffer.update({
+        where: { id },
+        data: { status: 'REJECTED' },
+      });
+      return tx.priceOffer.create({
+        data: {
+          buyerId: newBuyerId,
+          ownerId: newOwnerId,
+          userBookId: original.userBookId,
+          amount: dto.amount,
+          message: dto.message,
+          expiresAt: new Date(Date.now() + OFFER_EXPIRY_DAYS * 86_400_000),
+        },
+        include: INCLUDE_FULL,
+      });
+    });
+
+    // Postează contra-oferta ca mesaj în conversația existentă (dacă găsită)
+    // sau creează una - același comportament ca la createOffer.
+    const conversation = await this.conversations.findOrCreateConversation(
+      newBuyerId,
+      newOwnerId,
+    );
+    await this.conversations.createPriceOfferMessage(
+      conversation.id,
+      newBuyerId,
+      counterOffer.id,
+      `Contra-ofertă: ${dto.amount} lei pentru "${originalWithBook.userBook.book.title}"`,
+    );
+
+    await this.notifySafe(
+      newOwnerId,
+      'PRICE_OFFER_RECEIVED',
+      `Ai primit o contra-ofertă de ${dto.amount} lei pentru "${originalWithBook.userBook.book.title}"`,
+      { offerId: counterOffer.id, conversationId: conversation.id },
+    );
+
+    return this.sanitizeParties(counterOffer);
   }
 
   private async findForAction(id: string) {

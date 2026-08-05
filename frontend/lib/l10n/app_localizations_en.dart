@@ -2673,6 +2673,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap the star to mark the main photo (shown in the feed).';
 
   @override
+  String get chatOfferCounterAction => 'Counter-offer';
+
+  @override
+  String get chatOfferCounterTitle => 'Send a counter-offer';
+
+  @override
   String get navMyBooks => 'My books';
 
   @override

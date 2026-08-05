@@ -48,6 +48,17 @@ class OffersRepository {
     final response = await dio.post('/offers/$id/cancel');
     return PriceOffer.fromJson(response.data as Map<String, dynamic>);
   }
+
+  /// Contra-ofertă (Batch 11): închide oferta curentă și creează una nouă
+  /// cu rolurile inversate. Backend-ul postează și un mesaj în chat.
+  Future<PriceOffer> counter(String id, {required double amount, String? message}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/offers/$id/counter', data: {
+      'amount': amount,
+      if (message != null && message.isNotEmpty) 'message': message,
+    });
+    return PriceOffer.fromJson(response.data as Map<String, dynamic>);
+  }
 }
 
 final offersRepositoryProvider = Provider<OffersRepository>((ref) {

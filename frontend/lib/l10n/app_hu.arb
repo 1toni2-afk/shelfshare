@@ -810,5 +810,7 @@
     "shortcutTrash":  "Kuka",
     "shareCoverSelected":  "Könyv borító",
     "shareCoverRecommended":  "Ajánlott borítók",
-    "shareMainPhotoHint":  "Érintsd meg a csillagot a főkép beállításához (a feed-ben jelenik meg)."
+    "shareMainPhotoHint":  "Érintsd meg a csillagot a főkép beállításához (a feed-ben jelenik meg).",
+    "chatOfferCounterAction":  "Ellenajánlat",
+    "chatOfferCounterTitle":  "Ellenajánlat küldése"
 }

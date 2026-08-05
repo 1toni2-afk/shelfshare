@@ -2687,6 +2687,12 @@ class AppLocalizationsHu extends AppLocalizations {
       'Érintsd meg a csillagot a főkép beállításához (a feed-ben jelenik meg).';
 
   @override
+  String get chatOfferCounterAction => 'Ellenajánlat';
+
+  @override
+  String get chatOfferCounterTitle => 'Ellenajánlat küldése';
+
+  @override
   String get navMyBooks => 'Cărțile mele';
 
   @override
