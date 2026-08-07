@@ -16,6 +16,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
@@ -153,6 +154,7 @@ export class BooksController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post()
   addToLibrary(@Req() req: Request, @Body() dto: AddBookDto) {
     const { userId } = req.user as AuthenticatedUser;
@@ -170,13 +172,25 @@ export class BooksController {
   @Post('bulk')
   bulkAddToLibrary(@Req() req: Request, @Body() dto: BulkAddBooksDto) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.booksService.bulkAddToLibrary(userId!, dto.isbns, dto.condition, dto.language);
+    return this.booksService.bulkAddToLibrary(
+      userId!,
+      dto.isbns,
+      dto.condition,
+      dto.language,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('import-listings')
-  @UseInterceptors(FileInterceptor('file'))
-  importListingsCsv(@Req() req: Request, @UploadedFile() file: Express.Multer.File) {
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_IMPORT_FILE_SIZE_BYTES },
+    }),
+  )
+  importListingsCsv(
+    @Req() req: Request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) {
       throw new BadRequestException('Niciun fișier primit');
     }
@@ -224,7 +238,10 @@ export class BooksController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':userBookId/restore')
-  restoreUserBook(@Req() req: Request, @Param('userBookId') userBookId: string) {
+  restoreUserBook(
+    @Req() req: Request,
+    @Param('userBookId') userBookId: string,
+  ) {
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.restoreUserBook(userId!, userBookId);
   }
@@ -287,7 +304,9 @@ export class BooksController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':userBookId/photos')
-  @UseInterceptors(FileInterceptor('photo'))
+  @UseInterceptors(
+    FileInterceptor('photo', { limits: { fileSize: MAX_PHOTO_SIZE_BYTES } }),
+  )
   addPhoto(
     @Req() req: Request,
     @Param('userBookId') userBookId: string,

@@ -28,6 +28,11 @@ plugins {
     // avertismentul de build despre plugin-uri ce aplică KGP).
     id("com.android.application") version "8.11.1" apply false
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    // Aplicat condiționat în app/build.gradle.kts (doar dacă
+    // google-services.json există) - fără fișierul de config, pluginul
+    // eșuează buildul, iar proiectul Firebase e o resursă externă pe care
+    // userul o creează manual (vezi push_notifications_service.dart).
+    id("com.google.gms.google-services") version "4.4.4" apply false
 }
 
 include(":app")

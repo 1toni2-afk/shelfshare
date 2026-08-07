@@ -5,9 +5,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/locale/locale_controller.dart';
+import 'core/network/providers.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'features/auth/application/auth_controller.dart';
+import 'features/auth/application/auth_state.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -42,6 +45,10 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Firebase se inițializează o singură dată, indiferent dacă userul e
+    // logat - abonarea/dezabonarea efectivă a tokenului se face mai jos, în
+    // build(), pe baza stării de autentificare.
+    Future.microtask(() => ref.read(pushNotificationsServiceProvider).initialize());
   }
 
   @override
@@ -66,6 +73,16 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
 
   @override
   Widget build(BuildContext context) {
+    // Abonăm/dezabonăm dispozitivul la push exact când starea de auth se
+    // schimbă - nu la fiecare rebuild (de-asta e în ref.listen, nu ref.watch).
+    ref.listen(authControllerProvider, (previous, next) {
+      final push = ref.read(pushNotificationsServiceProvider);
+      if (next is AuthAuthenticated) {
+        push.registerForCurrentUser();
+      } else if (previous is AuthAuthenticated && next is AuthUnauthenticated) {
+        push.unregisterCurrentDevice();
+      }
+    });
     final router = ref.watch(routerProvider);
     final locale = ref.watch(effectiveLocaleProvider);
     final themeModePref = ref.watch(themeControllerProvider).value ?? AppThemeMode.system;

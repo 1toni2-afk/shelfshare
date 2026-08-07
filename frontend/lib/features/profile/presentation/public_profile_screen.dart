@@ -21,6 +21,7 @@ import '../../chat/data/chat_repository.dart';
 import '../../collections/data/collections_repository.dart';
 import '../application/public_profile_controller.dart';
 import '../data/follow_repository.dart';
+import 'my_profile_screen.dart' show kProfileContentMaxWidth;
 
 class PublicProfileScreen extends ConsumerStatefulWidget {
   const PublicProfileScreen({super.key, required this.userId, this.fallback});
@@ -183,28 +184,48 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ListView(
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: kProfileContentMaxWidth),
+        child: ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       children: [
         ProfileHeader(
           profileImage: user.profileImage,
           name: user.name,
           username: user.username,
-          subtitleLines: [
-            if (user.city != null) user.city!,
-            if (user.memberSince != null) l10n.publicProfileMemberSince(user.memberSince!.year),
-            if (followStatus != null)
-              l10n.publicProfileFollowersFollowing(
-                followStatus!.followersCount,
-                followStatus!.followingCount,
-              ),
-          ],
-          rating: user.rating,
-          booksExchangedCount: user.booksExchangedCount ?? 0,
-          bio: user.bio,
+          city: user.city,
           isPremium: user.isPremium,
         ),
+        if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            user.bio!.trim(),
+            style: TextStyle(color: AppColors.mutedForeground, fontSize: 13, height: 1.35),
+          ),
+        ],
+        const SizedBox(height: 16),
+        ProfileStatsRow(
+          stats: [
+            ProfileStat(value: user.rating.toStringAsFixed(1), label: l10n.commonRating, icon: Icons.star_rounded),
+            ProfileStat(value: '${user.booksExchangedCount ?? 0}', label: l10n.commonBooksExchanged),
+          ],
+        ),
+        if (user.memberSince != null || followStatus != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            [
+              if (user.memberSince != null) l10n.publicProfileMemberSince(user.memberSince!.year),
+              if (followStatus != null)
+                l10n.publicProfileFollowersFollowing(
+                  followStatus!.followersCount,
+                  followStatus!.followingCount,
+                ),
+            ].join(' · '),
+            style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+          ),
+        ],
         if (user.trustScore != null) ...[
           const SizedBox(height: 20),
           TrustScoreCard(trustScore: user.trustScore!),
@@ -397,6 +418,8 @@ class _Content extends StatelessWidget {
             ),
         ],
       ],
+        ),
+      ),
     );
   }
 }

@@ -324,8 +324,14 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     ref.read(chatControllerProvider(widget.conversationId).notifier).sendMessage(text);
     _messageController.clear();
     // Readucem focusul pe câmp, ca userul să poată scrie următorul mesaj fără
-    // să dea din nou click (onSubmitted / butonul de send scot focusul).
-    _messageFocusNode.requestFocus();
+    // să dea din nou click (onSubmitted / butonul de send scot focusul). Un
+    // apel sincron aici nu e de ajuns: butonul de send își reia singur focusul
+    // imediat DUPĂ ce rulează onPressed, suprascriind cererea noastră - de
+    // aceea cerem focusul din frame-ul următor, după ce Flutter a terminat de
+    // mutat focusul pe buton.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _messageFocusNode.requestFocus();
+    });
   }
 
   Future<void> _shareLocation() async {

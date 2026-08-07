@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { ConversationsService } from './conversations.service';
 import { ChatGateway } from './chat.gateway';
@@ -100,6 +101,7 @@ export class ConversationsController {
     return this.conversationsService.setArchived(id, userId!, false);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post(':id/report')
   report(
     @Req() req: Request,
@@ -111,7 +113,9 @@ export class ConversationsController {
   }
 
   @Post(':id/photos')
-  @UseInterceptors(FileInterceptor('photo'))
+  @UseInterceptors(
+    FileInterceptor('photo', { limits: { fileSize: MAX_PHOTO_SIZE_BYTES } }),
+  )
   async sendPhoto(
     @Req() req: Request,
     @Param('id') id: string,

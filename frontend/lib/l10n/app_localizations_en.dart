@@ -826,6 +826,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSeeAll => 'See all';
 
   @override
+  String homePendingSwapBanner(int count) {
+    return '$count swap requests are waiting for you';
+  }
+
+  @override
+  String get homePendingSwapReview => 'Review';
+
+  @override
   String get homeFeedEnd => 'You\'ve seen all the books';
 
   @override
@@ -998,6 +1006,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryUnavailable => 'Unavailable';
+
+  @override
+  String libraryShelfSubtitle(int total, int available) {
+    return '$total books · $available available to swap';
+  }
+
+  @override
+  String libraryFilterAll(int count) {
+    return 'All $count';
+  }
+
+  @override
+  String libraryFilterAvailable(int count) {
+    return 'Available $count';
+  }
+
+  @override
+  String libraryFilterUnavailable(int count) {
+    return 'Unavailable $count';
+  }
+
+  @override
+  String libraryFilterTransferred(int count) {
+    return 'Transferred $count';
+  }
 
   @override
   String get libraryDeleteConfirmTitle => 'Delete this book?';
@@ -1739,6 +1772,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wishlistTitle => 'Wishlist';
 
   @override
+  String wishlistCount(int count) {
+    return '$count books';
+  }
+
+  @override
   String get wishlistEmpty =>
       'You haven\'t added any books to your wishlist yet.';
 
@@ -1753,6 +1791,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationsEmpty => 'You don\'t have any notifications.';
+
+  @override
+  String get notificationsFilterAll => 'All';
+
+  @override
+  String get notificationsFilterUnread => 'Unread';
+
+  @override
+  String get notificationsFilterExchanges => 'Exchanges';
+
+  @override
+  String get notificationsFilterMessages => 'Messages';
+
+  @override
+  String get notificationsToday => 'Today';
+
+  @override
+  String get notificationsYesterday => 'Yesterday';
+
+  @override
+  String get notificationsEarlier => 'Earlier';
+
+  @override
+  String notificationsRepeatedCount(int count) {
+    return '×$count';
+  }
+
+  @override
+  String notificationsUnreadCount(int count) {
+    return '$count unread';
+  }
 
   @override
   String get notificationsLoadError => 'We couldn\'t load your notifications.';
@@ -1841,6 +1910,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCenterTitle => 'FAQ';
+
+  @override
+  String get helpGroupSwapping => 'Swapping';
+
+  @override
+  String get helpGroupPricing => 'Pricing';
+
+  @override
+  String get helpGroupSafety => 'Trust and safety';
+
+  @override
+  String get helpStillStuck => 'Still stuck?';
+
+  @override
+  String get helpContactModerator => 'Contact a moderator';
 
   @override
   String get helpFaq1Question => 'How does a book exchange work?';
@@ -2338,6 +2422,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoverSwapOnly => 'Swap only';
 
   @override
+  String discoverMoreGenres(int count) {
+    return '+ $count more';
+  }
+
+  @override
   String get discoverUnder30 => 'Under 30 lei';
 
   @override
@@ -2446,6 +2535,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareListingModeAuction => 'Auction';
 
   @override
+  String get shareSectionBook => 'The book';
+
+  @override
+  String get shareSectionListing => 'The listing';
+
+  @override
   String get shareListingMode => 'Listing mode';
 
   @override
@@ -2504,6 +2599,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileSettingsSubtitle => 'All your account options in one place';
+
+  @override
+  String get profileGroupProfile => 'Profile';
+
+  @override
+  String get profileGroupPreferences => 'Preferences';
+
+  @override
+  String get profileGroupLibrary => 'Library';
+
+  @override
+  String get profileGroupSupport => 'Support';
 
   @override
   String get profileRecentActivity => 'Recent activity';

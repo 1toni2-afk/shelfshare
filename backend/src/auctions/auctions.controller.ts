@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { AuctionsService } from './auctions.service';
 import { CreateAuctionDto } from './dto/create-auction.dto';
@@ -55,8 +56,13 @@ export class AuctionsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @Post('auctions/:id/bids')
-  placeBid(@Req() req: Request, @Param('id') id: string, @Body() dto: PlaceBidDto) {
+  placeBid(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: PlaceBidDto,
+  ) {
     const { userId } = req.user as AuthenticatedUser;
     return this.auctionsService.placeBid(userId!, id, dto);
   }

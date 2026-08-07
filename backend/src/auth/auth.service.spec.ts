@@ -6,8 +6,14 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
+import { CaptchaService } from '../common/captcha/captcha.service';
+import { AttemptGuardService } from '../common/captcha/attempt-guard.service';
+import { SecurityEventsService } from '../security-events/security-events.service';
+import { RevokedTokenService } from '../common/security/revoked-token.service';
 
 jest.mock('bcrypt');
+
+const IP = '127.0.0.1';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -23,6 +29,11 @@ describe('AuthService', () => {
     refreshTokenHash: null,
     resetPasswordExpiry: null,
     emailVerifyExpiry: null,
+    failedLoginAttempts: 0,
+    lockedUntil: null,
+    lastAuthEmailSentAt: null,
+    authEmailWindowStart: null,
+    authEmailSentCount: 0,
   };
 
   beforeEach(async () => {
@@ -56,6 +67,25 @@ describe('AuthService', () => {
             sendPasswordResetEmail: jest.fn(),
           },
         },
+        {
+          provide: CaptchaService,
+          useValue: { generate: jest.fn(), verify: jest.fn() },
+        },
+        {
+          provide: AttemptGuardService,
+          useValue: { shouldChallenge: jest.fn().mockReturnValue(false) },
+        },
+        {
+          provide: SecurityEventsService,
+          useValue: { log: jest.fn() },
+        },
+        {
+          provide: RevokedTokenService,
+          useValue: {
+            revoke: jest.fn(),
+            isRevoked: jest.fn().mockReturnValue(false),
+          },
+        },
       ],
     }).compile();
 
@@ -74,7 +104,7 @@ describe('AuthService', () => {
       users.findByEmail.mockResolvedValue(baseUser as never);
 
       await expect(
-        service.register({ email: baseUser.email, password: 'parola123' }),
+        service.register({ email: baseUser.email, password: 'parola123' }, IP),
       ).rejects.toThrow(ConflictException);
       expect(users.create).not.toHaveBeenCalled();
     });
@@ -87,10 +117,13 @@ describe('AuthService', () => {
       } as never);
       users.update.mockResolvedValue(baseUser as never);
 
-      const result = await service.register({
-        email: baseUser.email,
-        password: 'parola123',
-      });
+      const result = await service.register(
+        {
+          email: baseUser.email,
+          password: 'parola123',
+        },
+        IP,
+      );
 
       expect(users.create).toHaveBeenCalledWith(
         expect.objectContaining({ email: baseUser.email }),
@@ -165,7 +198,10 @@ describe('AuthService', () => {
     it('nu dezvaluie daca emailul nu exista', async () => {
       users.findByEmail.mockResolvedValue(null);
 
-      const result = await service.resendVerificationCode('nope@example.com');
+      const result = await service.resendVerificationCode(
+        'nope@example.com',
+        IP,
+      );
 
       expect(users.update).not.toHaveBeenCalled();
       expect(result.message).toBeDefined();
@@ -177,7 +213,7 @@ describe('AuthService', () => {
         isEmailVerified: true,
       } as never);
 
-      await service.resendVerificationCode(baseUser.email);
+      await service.resendVerificationCode(baseUser.email, IP);
 
       expect(users.update).not.toHaveBeenCalled();
       expect(mail.sendVerificationEmail).not.toHaveBeenCalled();
@@ -190,7 +226,7 @@ describe('AuthService', () => {
       } as never);
       users.update.mockResolvedValue(baseUser as never);
 
-      await service.resendVerificationCode(baseUser.email);
+      await service.resendVerificationCode(baseUser.email, IP);
 
       expect(users.update).toHaveBeenCalledWith(
         baseUser.id,
@@ -211,7 +247,7 @@ describe('AuthService', () => {
       users.findByEmail.mockResolvedValue(null);
 
       await expect(
-        service.login({ email: 'nope@example.com', password: 'parola123' }),
+        service.login({ email: 'nope@example.com', password: 'parola123' }, IP),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -220,7 +256,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
-        service.login({ email: baseUser.email, password: 'gresita' }),
+        service.login({ email: baseUser.email, password: 'gresita' }, IP),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -231,7 +267,7 @@ describe('AuthService', () => {
       } as never);
 
       await expect(
-        service.login({ email: baseUser.email, password: 'parola123' }),
+        service.login({ email: baseUser.email, password: 'parola123' }, IP),
       ).rejects.toThrow('Trebuie să îți confirmi email-ul');
     });
 
@@ -239,10 +275,13 @@ describe('AuthService', () => {
       users.findByEmail.mockResolvedValue(baseUser as never);
       users.update.mockResolvedValue(baseUser as never);
 
-      const result = await service.login({
-        email: baseUser.email,
-        password: 'parola123',
-      });
+      const result = await service.login(
+        {
+          email: baseUser.email,
+          password: 'parola123',
+        },
+        IP,
+      );
 
       expect(result.accessToken).toBe('signed-token');
       expect(result.refreshToken).toBe('signed-token');
@@ -346,7 +385,7 @@ describe('AuthService', () => {
       users.findByEmail.mockResolvedValue(null);
 
       await expect(
-        service.resetPassword(baseUser.email, '123456', 'parolaNoua1'),
+        service.resetPassword(baseUser.email, '123456', 'parolaNoua1', IP),
       ).rejects.toThrow('Cod de resetare invalid');
     });
 
@@ -358,7 +397,7 @@ describe('AuthService', () => {
       } as never);
 
       await expect(
-        service.resetPassword(baseUser.email, '123456', 'parolaNoua1'),
+        service.resetPassword(baseUser.email, '123456', 'parolaNoua1', IP),
       ).rejects.toThrow('Cod de resetare expirat');
     });
 
@@ -374,6 +413,7 @@ describe('AuthService', () => {
         baseUser.email,
         '123456',
         'parolaNoua1',
+        IP,
       );
 
       expect(users.update).toHaveBeenCalledWith(

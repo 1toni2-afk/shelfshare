@@ -258,6 +258,15 @@
     "homeMostViewed":  "Legtöbbet megtekintett",
     "homeMostSearched":  "Legkeresettebb",
     "homeSeeAll":  "Összes megtekintése",
+    "homePendingSwapBanner":  "{count} cserekérés vár rád",
+    "@homePendingSwapBanner":  {
+                                   "placeholders":  {
+                                                        "count":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                    }
+                               },
+    "homePendingSwapReview":  "Áttekintés",
     "homeFeedEnd":  "Minden könyvet láttál",
     "homeNearYou":  "A városodban",
     "homeNearYouToday":  "Ma, a közeledben",
@@ -313,6 +322,49 @@
     "libraryLoadError":  "Nem sikerült betölteni a könyvtárat.",
     "libraryAvailable":  "Elérhető",
     "libraryUnavailable":  "Nem elérhető",
+    "libraryShelfSubtitle":  "{total} könyv · {available} elérhető cserére",
+    "@libraryShelfSubtitle":  {
+                                  "placeholders":  {
+                                                       "total":  {
+                                                                     "type":  "int"
+                                                                 },
+                                                       "available":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                   }
+                              },
+    "libraryFilterAll":  "Összes {count}",
+    "@libraryFilterAll":  {
+                              "placeholders":  {
+                                                   "count":  {
+                                                                 "type":  "int"
+                                                             }
+                                               }
+                          },
+    "libraryFilterAvailable":  "Elérhető {count}",
+    "@libraryFilterAvailable":  {
+                                    "placeholders":  {
+                                                         "count":  {
+                                                                       "type":  "int"
+                                                                   }
+                                                     }
+                                },
+    "libraryFilterUnavailable":  "Nem elérhető {count}",
+    "@libraryFilterUnavailable":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "libraryFilterTransferred":  "Átadva {count}",
+    "@libraryFilterTransferred":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "libraryDeleteConfirmTitle":  "Törlöd a könyvet?",
     "libraryDeleteConfirmBody":  "„{title}” eltávolításra kerül a könyvtáradból.",
     "libraryAvailableForSwap":  "Elérhető cserére",
@@ -558,11 +610,42 @@
     "chatPickDate":  "Válassz dátumot",
     "chatPickTime":  "Válassz időpontot",
     "wishlistTitle":  "Kívánságlista",
+    "wishlistCount":  "{count} könyv",
+    "@wishlistCount":  {
+                           "placeholders":  {
+                                                "count":  {
+                                                              "type":  "int"
+                                                          }
+                                            }
+                       },
     "wishlistEmpty":  "Még nem adtál hozzá könyvet a kívánságlistádhoz.",
     "wishlistLoadError":  "Nem sikerült betölteni a kívánságlistát.",
     "notificationsTitle":  "Értesítések",
     "notificationsMarkAllRead":  "Összes megjelölése olvasottként",
     "notificationsEmpty":  "Nincs egyetlen értesítésed sem.",
+    "notificationsFilterAll":  "Mind",
+    "notificationsFilterUnread":  "Olvasatlan",
+    "notificationsFilterExchanges":  "Csere",
+    "notificationsFilterMessages":  "Üzenetek",
+    "notificationsToday":  "Ma",
+    "notificationsYesterday":  "Tegnap",
+    "notificationsEarlier":  "Korábbi",
+    "notificationsRepeatedCount":  "×{count}",
+    "@notificationsRepeatedCount":  {
+                                        "placeholders":  {
+                                                             "count":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
+    "notificationsUnreadCount":  "{count} olvasatlan",
+    "@notificationsUnreadCount":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "notificationsLoadError":  "Nem sikerült betölteni az értesítéseket.",
     "timeJustNow":  "most",
     "timeMinutesAgo":  "{minutes} perce",
@@ -587,6 +670,11 @@
     "safetyTip8Title":  "Jelents be minden gyanús viselkedést",
     "safetyTip8Desc":  "Bejelentheted vagy letilthatod a felhasználót közvetlenül a profiljából vagy a beszélgetésből.",
     "helpCenterTitle":  "Gyakori kérdések",
+    "helpGroupSwapping":  "Csere",
+    "helpGroupPricing":  "Árak",
+    "helpGroupSafety":  "Bizalom és biztonság",
+    "helpStillStuck":  "Nem találtad meg a választ?",
+    "helpContactModerator":  "Moderátor elérése",
     "helpFaq1Question":  "Hogyan működik a könyvcsere?",
     "helpFaq1Answer":  "Kérsz egy könyvet valaki más hirdetéséből (te is felajánlhatsz cserébe egy könyvet), a tulajdonos elfogadja vagy elutasítja, majd chat-en keresztül megbeszélitek a találkozót. Miután a valóságban is lezajlott a csere, bármelyiktek megjelölheti befejezettként.",
     "helpFaq2Question":  "Mi az a Megbízhatósági pontszám?",
@@ -738,6 +826,14 @@
     "discoverAuctions":  "Aktív aukciók",
     "discoverHiddenGems":  "Rejtett gyöngyszemek",
     "discoverSwapOnly":  "Csak csere",
+    "discoverMoreGenres":  "+ {count} további",
+    "@discoverMoreGenres":  {
+                                "placeholders":  {
+                                                     "count":  {
+                                                                   "type":  "int"
+                                                               }
+                                                 }
+                            },
     "discoverUnder30":  "30 lej alatt",
     "discoverRecommendedForYou":  "Neked ajánlott",
     "discoverPopularAuthors":  "Népszerű szerzők",
@@ -773,6 +869,8 @@
     "sharePublishedYear":  "Kiadás éve",
     "shareSubmit":  "Közzététel",
     "shareListingModeAuction":  "Aukció",
+    "shareSectionBook":  "A könyv",
+    "shareSectionListing":  "A hirdetés",
     "shareListingMode":  "Hirdetés típusa",
     "shareDescriptionCharsLeft":  "{n} karakter maradt",
     "shareListingModeSwap":  "Normál csere",
@@ -791,6 +889,10 @@
     "preRegisterEmailHint":  "E-mail az értesítéshez",
     "preRegisterError":  "Nem sikerült regisztrálni az e-mailt. Próbáld újra.",
     "profileSettingsSubtitle":  "Minden fiókbeállítás egy helyen",
+    "profileGroupProfile":  "Profil",
+    "profileGroupPreferences":  "Beállítások",
+    "profileGroupLibrary":  "Könyvtár",
+    "profileGroupSupport":  "Támogatás",
     "profileRecentActivity":  "Legutóbbi tevékenység",
     "profileStatSwaps":  "csere",
     "profileActivityAdded":  "Hozzáadva",

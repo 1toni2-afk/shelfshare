@@ -258,6 +258,15 @@
     "homeMostViewed":  "Meistgesehen",
     "homeMostSearched":  "Meistgesucht",
     "homeSeeAll":  "Alle ansehen",
+    "homePendingSwapBanner":  "{count} Tauschanfragen warten auf dich",
+    "@homePendingSwapBanner":  {
+                                   "placeholders":  {
+                                                        "count":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                    }
+                               },
+    "homePendingSwapReview":  "Prüfen",
     "homeFeedEnd":  "Du hast alle Bücher gesehen",
     "homeNearYou":  "In deiner Stadt",
     "homeNearYouToday":  "Heute in deiner Nähe",
@@ -313,6 +322,49 @@
     "libraryLoadError":  "Deine Bibliothek konnte nicht geladen werden.",
     "libraryAvailable":  "Verfügbar",
     "libraryUnavailable":  "Nicht verfügbar",
+    "libraryShelfSubtitle":  "{total} Bücher · {available} zum Tausch verfügbar",
+    "@libraryShelfSubtitle":  {
+                                  "placeholders":  {
+                                                       "total":  {
+                                                                     "type":  "int"
+                                                                 },
+                                                       "available":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                   }
+                              },
+    "libraryFilterAll":  "Alle {count}",
+    "@libraryFilterAll":  {
+                              "placeholders":  {
+                                                   "count":  {
+                                                                 "type":  "int"
+                                                             }
+                                               }
+                          },
+    "libraryFilterAvailable":  "Verfügbar {count}",
+    "@libraryFilterAvailable":  {
+                                    "placeholders":  {
+                                                         "count":  {
+                                                                       "type":  "int"
+                                                                   }
+                                                     }
+                                },
+    "libraryFilterUnavailable":  "Nicht verfügbar {count}",
+    "@libraryFilterUnavailable":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "libraryFilterTransferred":  "Übertragen {count}",
+    "@libraryFilterTransferred":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "libraryDeleteConfirmTitle":  "Buch löschen?",
     "libraryDeleteConfirmBody":  "„{title}\" wird aus deiner Bibliothek entfernt.",
     "libraryAvailableForSwap":  "Verfügbar zum Tausch",
@@ -558,11 +610,42 @@
     "chatPickDate":  "Datum wählen",
     "chatPickTime":  "Uhrzeit wählen",
     "wishlistTitle":  "Wunschliste",
+    "wishlistCount":  "{count} Bücher",
+    "@wishlistCount":  {
+                           "placeholders":  {
+                                                "count":  {
+                                                              "type":  "int"
+                                                          }
+                                            }
+                       },
     "wishlistEmpty":  "Du hast noch keine Bücher zu deiner Wunschliste hinzugefügt.",
     "wishlistLoadError":  "Deine Wunschliste konnte nicht geladen werden.",
     "notificationsTitle":  "Benachrichtigungen",
     "notificationsMarkAllRead":  "Alle als gelesen markieren",
     "notificationsEmpty":  "Du hast keine Benachrichtigungen.",
+    "notificationsFilterAll":  "Alle",
+    "notificationsFilterUnread":  "Ungelesen",
+    "notificationsFilterExchanges":  "Tausch",
+    "notificationsFilterMessages":  "Nachrichten",
+    "notificationsToday":  "Heute",
+    "notificationsYesterday":  "Gestern",
+    "notificationsEarlier":  "Älter",
+    "notificationsRepeatedCount":  "×{count}",
+    "@notificationsRepeatedCount":  {
+                                        "placeholders":  {
+                                                             "count":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
+    "notificationsUnreadCount":  "{count} ungelesen",
+    "@notificationsUnreadCount":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "notificationsLoadError":  "Deine Benachrichtigungen konnten nicht geladen werden.",
     "timeJustNow":  "gerade eben",
     "timeMinutesAgo":  "vor {minutes} Min",
@@ -587,6 +670,11 @@
     "safetyTip8Title":  "Melde jedes verdächtige Verhalten",
     "safetyTip8Desc":  "Du kannst einen Nutzer direkt über sein Profil oder aus der Unterhaltung heraus melden oder blockieren.",
     "helpCenterTitle":  "Häufige Fragen",
+    "helpGroupSwapping":  "Tausch",
+    "helpGroupPricing":  "Preise",
+    "helpGroupSafety":  "Vertrauen und Sicherheit",
+    "helpStillStuck":  "Immer noch nicht gefunden?",
+    "helpContactModerator":  "Moderator kontaktieren",
     "helpFaq1Question":  "Wie funktioniert ein Büchertausch?",
     "helpFaq1Answer":  "Du fragst ein Buch aus der Anzeige einer anderen Person an (du kannst auch ein Buch im Tausch anbieten), der Besitzer nimmt an oder lehnt ab, dann vereinbart ihr ein Treffen per Chat. Nachdem ihr den Tausch persönlich abgeschlossen habt, markiert einer von euch den Tausch als abgeschlossen.",
     "helpFaq2Question":  "Was ist der Vertrauens-Score?",
@@ -738,6 +826,14 @@
     "discoverAuctions":  "Aktive Auktionen",
     "discoverHiddenGems":  "Versteckte Perlen",
     "discoverSwapOnly":  "Nur Tausch",
+    "discoverMoreGenres":  "+ {count} weitere",
+    "@discoverMoreGenres":  {
+                                "placeholders":  {
+                                                     "count":  {
+                                                                   "type":  "int"
+                                                               }
+                                                 }
+                            },
     "discoverUnder30":  "Unter 30 Lei",
     "discoverRecommendedForYou":  "Für dich empfohlen",
     "discoverPopularAuthors":  "Beliebte Autoren",
@@ -773,6 +869,8 @@
     "sharePublishedYear":  "Erscheinungsjahr",
     "shareSubmit":  "Veröffentlichen",
     "shareListingModeAuction":  "Auktion",
+    "shareSectionBook":  "Das Buch",
+    "shareSectionListing":  "Das Angebot",
     "shareListingMode":  "Angebotsart",
     "shareDescriptionCharsLeft":  "{n} Zeichen übrig",
     "shareListingModeSwap":  "Normaler Tausch",
@@ -791,6 +889,10 @@
     "preRegisterEmailHint":  "E-Mail für die Benachrichtigung",
     "preRegisterError":  "Konnte E-Mail nicht registrieren. Versuche es erneut.",
     "profileSettingsSubtitle":  "Alle Kontooptionen an einem Ort",
+    "profileGroupProfile":  "Profil",
+    "profileGroupPreferences":  "Einstellungen",
+    "profileGroupLibrary":  "Bibliothek",
+    "profileGroupSupport":  "Support",
     "profileRecentActivity":  "Letzte Aktivität",
     "profileStatSwaps":  "Tausche",
     "profileActivityAdded":  "Hinzugefügt",

@@ -158,7 +158,10 @@ export class OffersService {
     return offers.map((o) => this.sanitizeParties(o));
   }
 
-  private async expireStalePending(where: { buyerId?: string; ownerId?: string }) {
+  private async expireStalePending(where: {
+    buyerId?: string;
+    ownerId?: string;
+  }) {
     await this.prisma.priceOffer.updateMany({
       where: { ...where, status: 'PENDING', expiresAt: { lt: new Date() } },
       data: { status: 'EXPIRED' },
@@ -171,22 +174,40 @@ export class OffersService {
     this.assertStatus(offer, 'PENDING');
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.userBook.update({
-        where: { id: offer.userBookId },
+      // Atomic guards prevent two concurrent accept() calls (e.g. on two
+      // different pending offers for the same book) from both succeeding.
+      const offerClaim = await tx.priceOffer.updateMany({
+        where: { id, status: 'PENDING' },
+        data: { status: 'ACCEPTED' },
+      });
+      if (offerClaim.count === 0) {
+        throw new BadRequestException(
+          'Această ofertă nu mai este în așteptare',
+        );
+      }
+
+      const bookClaim = await tx.userBook.updateMany({
+        where: { id: offer.userBookId, isForSale: true },
         data: { isForSale: false, availableForSwap: false },
       });
+      if (bookClaim.count === 0) {
+        throw new BadRequestException('Cartea nu mai este de vânzare');
+      }
+
       await tx.user.update({
         where: { id: offer.ownerId },
-        data: { booksSharedCount: { increment: 1 }, xp: { increment: XP_SALE_COMPLETED } },
+        data: {
+          booksSharedCount: { increment: 1 },
+          xp: { increment: XP_SALE_COMPLETED },
+        },
       });
       await tx.user.update({
         where: { id: offer.buyerId },
         data: { booksReceivedCount: { increment: 1 } },
       });
 
-      return tx.priceOffer.update({
+      return tx.priceOffer.findUniqueOrThrow({
         where: { id },
-        data: { status: 'ACCEPTED' },
         include: INCLUDE_FULL,
       });
     });
@@ -198,7 +219,9 @@ export class OffersService {
       `Oferta ta pentru "${updated.userBook.book.title}" a fost acceptată`,
       {
         offerId: id,
-        ...(acceptConversationId ? { conversationId: acceptConversationId } : {}),
+        ...(acceptConversationId
+          ? { conversationId: acceptConversationId }
+          : {}),
       },
     );
 
@@ -223,7 +246,9 @@ export class OffersService {
       `Oferta ta pentru "${updated.userBook.book.title}" a fost refuzată`,
       {
         offerId: id,
-        ...(rejectConversationId ? { conversationId: rejectConversationId } : {}),
+        ...(rejectConversationId
+          ? { conversationId: rejectConversationId }
+          : {}),
       },
     );
 
@@ -231,7 +256,9 @@ export class OffersService {
   }
 
   /** Regăsește conversația unde a fost postată oferta, ca notificarea de accept/refuz să te trimită tot acolo. */
-  private async findConversationIdForOffer(offerId: string): Promise<string | undefined> {
+  private async findConversationIdForOffer(
+    offerId: string,
+  ): Promise<string | undefined> {
     const message = await this.prisma.message.findFirst({
       where: { priceOfferId: offerId },
       select: { conversationId: true },
@@ -342,10 +369,14 @@ export class OffersService {
    * Expirare "leneșă" - vezi comentariul de pe PriceOffer.expiresAt în
    * schema.prisma. Verificată la fiecare citire, nu printr-un job separat.
    */
-  private async expireIfStale<T extends { id: string; status: string; expiresAt: Date | null }>(
-    offer: T,
-  ): Promise<T> {
-    if (offer.status !== 'PENDING' || !offer.expiresAt || offer.expiresAt > new Date()) {
+  private async expireIfStale<
+    T extends { id: string; status: string; expiresAt: Date | null },
+  >(offer: T): Promise<T> {
+    if (
+      offer.status !== 'PENDING' ||
+      !offer.expiresAt ||
+      offer.expiresAt > new Date()
+    ) {
       return offer;
     }
     await this.prisma.priceOffer.update({

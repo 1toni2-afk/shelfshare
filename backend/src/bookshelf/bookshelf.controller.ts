@@ -35,7 +35,11 @@ export class BookshelfController {
   }
 
   @Post('import/:source')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_IMPORT_FILE_SIZE_BYTES },
+    }),
+  )
   importCsv(
     @Req() req: Request,
     @Param('source') source: string,
@@ -52,7 +56,11 @@ export class BookshelfController {
     }
 
     const { userId } = req.user as AuthenticatedUser;
-    return this.bookshelfService.importCsv(userId!, source as BookshelfImportSource, file.buffer);
+    return this.bookshelfService.importCsv(
+      userId!,
+      source as BookshelfImportSource,
+      file.buffer,
+    );
   }
 
   @Get('me/:bookId')

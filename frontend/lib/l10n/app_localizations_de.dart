@@ -838,6 +838,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeSeeAll => 'Alle ansehen';
 
   @override
+  String homePendingSwapBanner(int count) {
+    return '$count Tauschanfragen warten auf dich';
+  }
+
+  @override
+  String get homePendingSwapReview => 'Prüfen';
+
+  @override
   String get homeFeedEnd => 'Du hast alle Bücher gesehen';
 
   @override
@@ -1011,6 +1019,31 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get libraryUnavailable => 'Nicht verfügbar';
+
+  @override
+  String libraryShelfSubtitle(int total, int available) {
+    return '$total Bücher · $available zum Tausch verfügbar';
+  }
+
+  @override
+  String libraryFilterAll(int count) {
+    return 'Alle $count';
+  }
+
+  @override
+  String libraryFilterAvailable(int count) {
+    return 'Verfügbar $count';
+  }
+
+  @override
+  String libraryFilterUnavailable(int count) {
+    return 'Nicht verfügbar $count';
+  }
+
+  @override
+  String libraryFilterTransferred(int count) {
+    return 'Übertragen $count';
+  }
 
   @override
   String get libraryDeleteConfirmTitle => 'Buch löschen?';
@@ -1768,6 +1801,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get wishlistTitle => 'Wunschliste';
 
   @override
+  String wishlistCount(int count) {
+    return '$count Bücher';
+  }
+
+  @override
   String get wishlistEmpty =>
       'Du hast noch keine Bücher zu deiner Wunschliste hinzugefügt.';
 
@@ -1783,6 +1821,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notificationsEmpty => 'Du hast keine Benachrichtigungen.';
+
+  @override
+  String get notificationsFilterAll => 'Alle';
+
+  @override
+  String get notificationsFilterUnread => 'Ungelesen';
+
+  @override
+  String get notificationsFilterExchanges => 'Tausch';
+
+  @override
+  String get notificationsFilterMessages => 'Nachrichten';
+
+  @override
+  String get notificationsToday => 'Heute';
+
+  @override
+  String get notificationsYesterday => 'Gestern';
+
+  @override
+  String get notificationsEarlier => 'Älter';
+
+  @override
+  String notificationsRepeatedCount(int count) {
+    return '×$count';
+  }
+
+  @override
+  String notificationsUnreadCount(int count) {
+    return '$count ungelesen';
+  }
 
   @override
   String get notificationsLoadError =>
@@ -1871,6 +1940,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get helpCenterTitle => 'Häufige Fragen';
+
+  @override
+  String get helpGroupSwapping => 'Tausch';
+
+  @override
+  String get helpGroupPricing => 'Preise';
+
+  @override
+  String get helpGroupSafety => 'Vertrauen und Sicherheit';
+
+  @override
+  String get helpStillStuck => 'Immer noch nicht gefunden?';
+
+  @override
+  String get helpContactModerator => 'Moderator kontaktieren';
 
   @override
   String get helpFaq1Question => 'Wie funktioniert ein Büchertausch?';
@@ -2376,6 +2460,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get discoverSwapOnly => 'Nur Tausch';
 
   @override
+  String discoverMoreGenres(int count) {
+    return '+ $count weitere';
+  }
+
+  @override
   String get discoverUnder30 => 'Unter 30 Lei';
 
   @override
@@ -2485,6 +2574,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shareListingModeAuction => 'Auktion';
 
   @override
+  String get shareSectionBook => 'Das Buch';
+
+  @override
+  String get shareSectionListing => 'Das Angebot';
+
+  @override
   String get shareListingMode => 'Angebotsart';
 
   @override
@@ -2544,6 +2639,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get profileSettingsSubtitle => 'Alle Kontooptionen an einem Ort';
+
+  @override
+  String get profileGroupProfile => 'Profil';
+
+  @override
+  String get profileGroupPreferences => 'Einstellungen';
+
+  @override
+  String get profileGroupLibrary => 'Bibliothek';
+
+  @override
+  String get profileGroupSupport => 'Support';
 
   @override
   String get profileRecentActivity => 'Letzte Aktivität';

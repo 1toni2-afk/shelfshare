@@ -25,6 +25,11 @@ import { awardXp, XP_BOOK_LISTED } from '../common/utils/xp';
 
 const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
 const MAX_LISTING_IMPORT_ROWS = 500;
+const MAX_PHOTOS_PER_LISTING = 10;
+// Storage-abuse guard: rough cap on total listing photos across a user's
+// whole library, well above what any real user would ever legitimately need
+// (10 photos x this many listings).
+const MAX_TOTAL_LISTING_PHOTOS_PER_USER = 300;
 
 const OWNER_SELECT = {
   id: true,
@@ -131,7 +136,15 @@ export class BooksService {
         include: {
           book: true,
           user: { select: OWNER_SELECT },
-          auction: { select: { id: true, currentPrice: true, endsAt: true, status: true, buyNowPrice: true } },
+          auction: {
+            select: {
+              id: true,
+              currentPrice: true,
+              endsAt: true,
+              status: true,
+              buyNowPrice: true,
+            },
+          },
         },
         take: 500,
       });
@@ -164,7 +177,9 @@ export class BooksService {
     // sortare ales - vezi togglePromoted și User.isPremium.
     const orderBy: Prisma.UserBookOrderByWithRelationInput[] = [
       { isPromoted: 'desc' },
-      filters.sort === 'mostViewed' ? { viewCount: 'desc' } : { createdAt: 'desc' },
+      filters.sort === 'mostViewed'
+        ? { viewCount: 'desc' }
+        : { createdAt: 'desc' },
     ];
 
     const [items, total] = await Promise.all([
@@ -173,7 +188,15 @@ export class BooksService {
         include: {
           book: true,
           user: { select: OWNER_SELECT },
-          auction: { select: { id: true, currentPrice: true, endsAt: true, status: true, buyNowPrice: true } },
+          auction: {
+            select: {
+              id: true,
+              currentPrice: true,
+              endsAt: true,
+              status: true,
+              buyNowPrice: true,
+            },
+          },
         },
         orderBy,
         take: filters.limit,
@@ -206,7 +229,9 @@ export class BooksService {
         bookId: book.id,
         condition: dto.condition,
         language: dto.language,
-        edition: dto.edition ?? (dto.editionYear ? String(dto.editionYear) : undefined),
+        edition:
+          dto.edition ??
+          (dto.editionYear ? String(dto.editionYear) : undefined),
         isHardcover: dto.isHardcover ?? false,
         isForSale: false,
         description: dto.description,
@@ -232,18 +257,34 @@ export class BooksService {
    * ca să reutilizeze exact logica de la addToLibrary (deduplicare pe ISBN,
    * XP, notificări). Un ISBN care eșuează nu oprește restul listei.
    */
-  async bulkAddToLibrary(userId: string, isbns: string[], condition: BookCondition, language?: string) {
+  async bulkAddToLibrary(
+    userId: string,
+    isbns: string[],
+    condition: BookCondition,
+    language?: string,
+  ) {
     const created: { isbn: string; userBookId: string; title: string }[] = [];
     const failed: { isbn: string; reason: string }[] = [];
 
     for (const isbn of isbns) {
       try {
-        const userBook = await this.addToLibrary(userId, { isbn, condition, language });
-        created.push({ isbn, userBookId: userBook.id, title: userBook.book.title });
+        const userBook = await this.addToLibrary(userId, {
+          isbn,
+          condition,
+          language,
+        });
+        created.push({
+          isbn,
+          userBookId: userBook.id,
+          title: userBook.book.title,
+        });
       } catch (error) {
         failed.push({
           isbn,
-          reason: error instanceof BadRequestException ? error.message : 'Eroare necunoscută',
+          reason:
+            error instanceof BadRequestException
+              ? error.message
+              : 'Eroare necunoscută',
         });
       }
     }
@@ -285,7 +326,9 @@ export class BooksService {
       throw new BadRequestException('Fișierul CSV este gol');
     }
     if (rows.length > MAX_LISTING_IMPORT_ROWS) {
-      throw new BadRequestException(`Fișierul are prea multe rânduri (maxim ${MAX_LISTING_IMPORT_ROWS})`);
+      throw new BadRequestException(
+        `Fișierul are prea multe rânduri (maxim ${MAX_LISTING_IMPORT_ROWS})`,
+      );
     }
 
     const created: { title: string; userBookId: string }[] = [];
@@ -299,7 +342,8 @@ export class BooksService {
       }
       const conditionRaw = row['condition']?.trim().toUpperCase();
       const condition: BookCondition =
-        conditionRaw && (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
+        conditionRaw &&
+        (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
           ? (conditionRaw as BookCondition)
           : 'BUNA';
 
@@ -315,7 +359,10 @@ export class BooksService {
       } catch (error) {
         failed.push({
           title,
-          reason: error instanceof BadRequestException ? error.message : 'Eroare necunoscută',
+          reason:
+            error instanceof BadRequestException
+              ? error.message
+              : 'Eroare necunoscută',
         });
       }
     }
@@ -390,7 +437,9 @@ export class BooksService {
         // notifyNearbyUsers. `city: null` nu se potrivește cu `not`, deci
         // userii fără oraș setat rămân incluși - corect, ei nu primesc
         // notificarea „din orașul tău".
-        ...(owner?.city ? { OR: [{ city: null }, { city: { not: owner.city } }] } : {}),
+        ...(owner?.city
+          ? { OR: [{ city: null }, { city: { not: owner.city } }] }
+          : {}),
       },
       select: { id: true },
       take: 200, // aceeași plasă de siguranță ca la notificarea pe oraș
@@ -547,9 +596,7 @@ export class BooksService {
     const rows = await this.prisma.book.groupBy({
       by: ['genre'],
       where: {
-        genre: query
-          ? { contains: query, mode: 'insensitive' }
-          : { not: null },
+        genre: query ? { contains: query, mode: 'insensitive' } : { not: null },
         userBooks: { some: { availableForSwap: true } },
       },
       _count: { genre: true },
@@ -636,7 +683,9 @@ export class BooksService {
       .map(([id]) => id);
     if (topIds.length === 0) return [];
 
-    const books = await this.prisma.book.findMany({ where: { id: { in: topIds } } });
+    const books = await this.prisma.book.findMany({
+      where: { id: { in: topIds } },
+    });
     const byId = new Map(books.map((b) => [b.id, b]));
     return topIds
       .map((id) => {
@@ -658,7 +707,10 @@ export class BooksService {
     const authorCounts = new Map<string, number>();
     for (const book of books) {
       const count = counts.get(book.id) ?? 0;
-      authorCounts.set(book.author!, (authorCounts.get(book.author!) ?? 0) + count);
+      authorCounts.set(
+        book.author!,
+        (authorCounts.get(book.author!) ?? 0) + count,
+      );
     }
     return Array.from(authorCounts.entries())
       .map(([author, count]) => ({ author, count }))
@@ -727,7 +779,9 @@ export class BooksService {
       set.add(viewer);
       perBook.set(bookId, set);
     }
-    return new Map(Array.from(perBook.entries()).map(([id, s]) => [id, s.size]));
+    return new Map(
+      Array.from(perBook.entries()).map(([id, s]) => [id, s.size]),
+    );
   }
 
   /**
@@ -868,7 +922,15 @@ export class BooksService {
         include: {
           book: true,
           user: { select: OWNER_SELECT },
-          auction: { select: { id: true, currentPrice: true, endsAt: true, status: true, buyNowPrice: true } },
+          auction: {
+            select: {
+              id: true,
+              currentPrice: true,
+              endsAt: true,
+              status: true,
+              buyNowPrice: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         take: 15,
@@ -941,7 +1003,10 @@ export class BooksService {
       { user: (typeof others)[number]['user']; genres: Set<string> }
     >();
     for (const row of others) {
-      const entry = overlapByUser.get(row.userId) ?? { user: row.user, genres: new Set<string>() };
+      const entry = overlapByUser.get(row.userId) ?? {
+        user: row.user,
+        genres: new Set<string>(),
+      };
       if (row.book.genre) entry.genres.add(row.book.genre);
       overlapByUser.set(row.userId, entry);
     }
@@ -998,10 +1063,17 @@ export class BooksService {
    */
   async getSmartMatches(userId: string) {
     const [myWishlist, myBooks] = await Promise.all([
-      this.prisma.wishlistItem.findMany({ where: { userId }, select: { bookId: true } }),
+      this.prisma.wishlistItem.findMany({
+        where: { userId },
+        select: { bookId: true },
+      }),
       this.prisma.userBook.findMany({
         where: { userId, availableForSwap: true },
-        select: { id: true, bookId: true, book: { select: { title: true, coverUrl: true } } },
+        select: {
+          id: true,
+          bookId: true,
+          book: { select: { title: true, coverUrl: true } },
+        },
       }),
     ]);
     if (myWishlist.length === 0 || myBooks.length === 0) return [];
@@ -1035,11 +1107,17 @@ export class BooksService {
 
     const grouped = new Map<
       string,
-      { owner: (typeof candidates)[number]['user']; theirBooks: typeof candidates }
+      {
+        owner: (typeof candidates)[number]['user'];
+        theirBooks: typeof candidates;
+      }
     >();
     for (const candidate of candidates) {
       if (!wantedByOwner.has(candidate.userId)) continue;
-      const entry = grouped.get(candidate.userId) ?? { owner: candidate.user, theirBooks: [] };
+      const entry = grouped.get(candidate.userId) ?? {
+        owner: candidate.user,
+        theirBooks: [],
+      };
       entry.theirBooks.push(candidate);
       grouped.set(candidate.userId, entry);
     }
@@ -1317,7 +1395,14 @@ export class BooksService {
       select: {
         salePrice: true,
         updatedAt: true,
-        book: { select: { title: true, author: true, description: true, coverUrl: true } },
+        book: {
+          select: {
+            title: true,
+            author: true,
+            description: true,
+            coverUrl: true,
+          },
+        },
         user: { select: { city: true } },
       },
     });
@@ -1388,7 +1473,9 @@ export class BooksService {
 
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user?.isPremium) {
-      throw new ForbiddenException('Promovarea anunțurilor este o funcție Premium');
+      throw new ForbiddenException(
+        'Promovarea anunțurilor este o funcție Premium',
+      );
     }
 
     const updated = await this.prisma.userBook.update({
@@ -1489,11 +1576,15 @@ export class BooksService {
     });
     if (expired.length === 0) return;
 
-    this.logger.log(`Purge coș gunoi: șterg definitiv ${expired.length} anunțuri`);
+    this.logger.log(
+      `Purge coș gunoi: șterg definitiv ${expired.length} anunțuri`,
+    );
     for (const item of expired) {
       try {
         await Promise.all(
-          item.photos.map((path) => this.storage.deleteImage(path).catch(() => undefined)),
+          item.photos.map((path) =>
+            this.storage.deleteImage(path).catch(() => undefined),
+          ),
         );
         await this.prisma.userBook.delete({ where: { id: item.id } });
       } catch (error) {
@@ -1505,6 +1596,23 @@ export class BooksService {
   async addPhoto(userId: string, userBookId: string, fileBuffer: Buffer) {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
+
+    if (userBook.photos.length >= MAX_PHOTOS_PER_LISTING) {
+      throw new BadRequestException(
+        `Poți adăuga maximum ${MAX_PHOTOS_PER_LISTING} poze per anunț`,
+      );
+    }
+
+    const allPhotos = await this.prisma.userBook.findMany({
+      where: { userId },
+      select: { photos: true },
+    });
+    const totalPhotos = allPhotos.reduce((sum, b) => sum + b.photos.length, 0);
+    if (totalPhotos >= MAX_TOTAL_LISTING_PHOTOS_PER_USER) {
+      throw new BadRequestException(
+        'Ai atins limita totală de poze pentru biblioteca ta',
+      );
+    }
 
     const path = await this.storage.uploadImage(fileBuffer, 'user-books');
 

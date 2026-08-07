@@ -9,6 +9,7 @@ import '../../../data/models/collection.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/profile_header.dart';
 import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../../shared/widgets/trust_score_card.dart';
 import '../../../shared/utils/share_link.dart';
@@ -121,7 +122,7 @@ class _ProfileContent extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           children: [
-            _CompactHeader(user: user),
+            _MyProfileHeader(user: user),
             // Bio-ul rămâne inline pe mobil (unde n-avem card lateral).
             // Pe desktop, e afișat pe cardul _AboutCard, deci îl scoatem
             // din coloana centrală ca să nu apară de două ori.
@@ -139,7 +140,17 @@ class _ProfileContent extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 16),
-            _StatsRow(user: user),
+            ProfileStatsRow(
+              stats: [
+                ProfileStat(value: user.booksSharedCount.toString(), label: l10n.profileStatBooks),
+                ProfileStat(value: user.booksExchangedCount.toString(), label: l10n.profileStatSwaps),
+                ProfileStat(
+                  value: user.rating > 0 ? user.rating.toStringAsFixed(1) : '—',
+                  label: l10n.profileStatRating,
+                  icon: Icons.star_rounded,
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
             _PrimaryActions(user: user, onEdit: onEdit),
             const SizedBox(height: 24),
@@ -164,18 +175,19 @@ class _ProfileContent extends ConsumerWidget {
   }
 }
 
-/// Header compact: avatar (56dp) + nume/username·oraș pe centru + trust score
-/// compact pe dreapta. Trust score-ul afișează doar numărul + cuvânt „trust";
-/// tap deschide un dialog cu detaliile (aceleași chip-uri de pe cardul mare).
-class _CompactHeader extends ConsumerStatefulWidget {
-  const _CompactHeader({required this.user});
+/// Header profilului propriu: folosește [ProfileHeader] comun (avatar +
+/// nume/username·oraș) cu tap-to-change pe avatar și trust score compact în
+/// dreapta. Trust score-ul afișează doar numărul + cuvânt „trust"; tap
+/// deschide un dialog cu detaliile (aceleași chip-uri de pe cardul mare).
+class _MyProfileHeader extends ConsumerStatefulWidget {
+  const _MyProfileHeader({required this.user});
   final AppUser user;
 
   @override
-  ConsumerState<_CompactHeader> createState() => _CompactHeaderState();
+  ConsumerState<_MyProfileHeader> createState() => _MyProfileHeaderState();
 }
 
-class _CompactHeaderState extends ConsumerState<_CompactHeader> {
+class _MyProfileHeaderState extends ConsumerState<_MyProfileHeader> {
   bool _uploadingPhoto = false;
 
   AppUser get user => widget.user;
@@ -271,161 +283,60 @@ class _CompactHeaderState extends ConsumerState<_CompactHeader> {
   @override
   Widget build(BuildContext context) {
     final displayName = user.name?.trim().isNotEmpty == true ? user.name! : user.email;
-    final subtitleParts = [
-      if (user.username != null) '@${user.username}',
-      if (user.city != null && user.city!.isNotEmpty) user.city!,
-    ];
     final trust = user.trustScore?.score;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Avatarul e și butonul de schimbare a pozei - insigna cu creion e
-        // singurul indiciu vizual că se poate apăsa.
-        GestureDetector(
-          onTap: _uploadingPhoto ? null : _changePhoto,
-          child: Stack(
-            children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: AppColors.muted,
-                backgroundImage: user.profileImage != null
-                    ? NetworkImage(user.profileImage!)
-                    : null,
-                child: _uploadingPhoto
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : (user.profileImage == null
-                        ? Icon(Icons.person, color: AppColors.mutedForeground, size: 32)
-                        : null),
-              ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.background, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.photo_camera,
-                    size: 12,
-                    color: AppColors.primaryForeground,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return ProfileHeader(
+      profileImage: user.profileImage,
+      name: displayName,
+      username: user.username,
+      city: user.city,
+      isVerified: user.isEmailVerified,
+      isPremium: user.isPremium,
+      // Avatarul e și butonul de schimbare a pozei - insigna cu creion e
+      // singurul indiciu vizual că se poate apăsa.
+      onAvatarTap: _uploadingPhoto ? null : _changePhoto,
+      avatarLoading: _uploadingPhoto,
+      avatarBadge: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.background, width: 2),
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      displayName,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+        child: const Icon(
+          Icons.photo_camera,
+          size: 12,
+          color: AppColors.primaryForeground,
+        ),
+      ),
+      trailing: trust != null
+          ? InkWell(
+              onTap: () => _openTrustDetails(context),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Column(
+                  children: [
+                    Text(
+                      '$trust',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  if (user.isEmailVerified) ...[
-                    const SizedBox(width: 6),
-                    Icon(Icons.verified, size: 16, color: AppColors.accent),
+                    Text(
+                      'trust',
+                      style: TextStyle(color: AppColors.mutedForeground, fontSize: 10),
+                    ),
                   ],
-                ],
-              ),
-              if (subtitleParts.isNotEmpty)
-                Text(
-                  subtitleParts.join(' · '),
-                  style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-            ],
-          ),
-        ),
-        if (trust != null)
-          InkWell(
-            onTap: () => _openTrustDetails(context),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              child: Column(
-                children: [
-                  Text(
-                    '$trust',
-                    style: TextStyle(
-                      color: AppColors.accent,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    'trust',
-                    style: TextStyle(color: AppColors.mutedForeground, fontSize: 10),
-                  ),
-                ],
               ),
-            ),
-          ),
-      ],
+            )
+          : null,
     );
   }
 }
 
-/// Linia orizontală cu 3 statistici (books / swaps / rating), separată printr-o
-/// linie subțire jos, ca reper vizual pentru finalul header-ului.
-class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.user});
-  final AppUser user;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Container(
-      padding: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        children: [
-          _stat(context, user.booksSharedCount.toString(), l10n.profileStatBooks),
-          const SizedBox(width: 24),
-          _stat(context, user.booksExchangedCount.toString(), l10n.profileStatSwaps),
-          const SizedBox(width: 24),
-          _stat(
-            context,
-            user.rating > 0 ? user.rating.toStringAsFixed(1) : '—',
-            l10n.profileStatRating,
-            icon: Icons.star_rounded,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _stat(BuildContext context, String value, String label, {IconData? icon}) {
-    return Row(
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: 15, color: AppColors.accent),
-          const SizedBox(width: 3),
-        ],
-        Text(value, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(width: 6),
-        Text(label, style: TextStyle(color: AppColors.mutedForeground, fontSize: 12)),
-      ],
-    );
-  }
-}
 
 /// Rândul de acțiuni principale de sub statistici. Pentru profilul propriu:
 /// Editează profil (buton primar lat) + QR (icon) + Share (icon).
@@ -590,7 +501,7 @@ class _LibraryPreview extends ConsumerWidget {
                           width: kCoverTileWidth,
                           child: AspectRatio(
                             aspectRatio: 2 / 3,
-                            child: BookCover(url: b.book.coverUrl, borderRadius: 5),
+                            child: BookCover(url: b.book.coverUrl, title: b.book.title, borderRadius: 5),
                           ),
                         ),
                         const SizedBox(width: gap),

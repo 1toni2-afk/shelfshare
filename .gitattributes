@@ -1,0 +1,5 @@
+# Scripturile shell rulează în containere Linux (bind-mount în docker-compose)
+# - CRLF le rupe shebang-ul ("#!/bin/sh\r" nu există ca interpretor), exact ce
+# a picat backup-ul zilnic tăcut timp de câteva zile. Forțăm LF indiferent de
+# core.autocrlf pe checkout-urile Windows.
+*.sh text eol=lf

@@ -13,11 +13,22 @@ import 'book_cover.dart';
 /// `width == null` => cardul umple lățimea părintelui (celula de GridView din
 /// home/discover). O lățime explicită e folosită de carusele orizontale.
 class BookCard extends StatelessWidget {
-  const BookCard({super.key, required this.userBook, this.onTap, this.width});
+  const BookCard({
+    super.key,
+    required this.userBook,
+    this.onTap,
+    this.width,
+    this.showWishlistHeart = true,
+  });
 
   final UserBook userBook;
   final VoidCallback? onTap;
   final double? width;
+
+  /// Fals pe cărțile proprii (My Shelf): nu are sens să adaugi propria carte
+  /// la wishlist, iar inima se suprapunea peste meniul/butonul de acțiuni din
+  /// colțul din dreapta sus al cardului (Milestone 19).
+  final bool showWishlistHeart;
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +58,14 @@ class BookCard extends StatelessWidget {
                     url: userBook.book.coverUrl,
                     fallbackUrl:
                         userBook.photos.isNotEmpty ? userBook.photos.first : null,
+                    title: userBook.book.title,
                   ),
-                  Positioned(
-                    top: 6,
-                    right: 6,
-                    child: _WishlistHeart(bookId: userBook.book.id),
-                  ),
+                  if (showWishlistHeart)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: _WishlistHeart(bookId: userBook.book.id),
+                    ),
                   Positioned(
                     bottom: 6,
                     right: 6,

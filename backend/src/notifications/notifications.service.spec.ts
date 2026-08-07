@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RealtimeService } from '../common/realtime/realtime.service';
+import { PushService } from './push.service';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
@@ -9,6 +10,7 @@ describe('NotificationsService', () => {
     notification: Record<string, jest.Mock>;
   };
   let realtime: { emitToUser: jest.Mock };
+  let push: { sendToUser: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -19,12 +21,14 @@ describe('NotificationsService', () => {
       },
     };
     realtime = { emitToUser: jest.fn() };
+    push = { sendToUser: jest.fn().mockResolvedValue(undefined) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NotificationsService,
         { provide: PrismaService, useValue: prisma },
         { provide: RealtimeService, useValue: realtime },
+        { provide: PushService, useValue: push },
       ],
     }).compile();
 

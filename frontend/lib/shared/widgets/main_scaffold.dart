@@ -3,14 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/models/exchange_request.dart';
-import '../../data/models/price_offer.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/application/auth_state.dart';
 import '../../features/chat/application/conversations_controller.dart';
-import '../../features/exchanges/application/exchanges_controller.dart';
 import '../../features/notifications/application/notifications_controller.dart';
-import '../../features/offers/application/offers_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
 import 'sidebar_shortcuts.dart';
 
@@ -92,14 +88,13 @@ class _SidebarState extends ConsumerState<_Sidebar> {
 
     // Badge-uri urmărite direct - MainScaffold e mereu montat, deci numerele
     // sunt corecte indiferent de tab-ul curent.
+    //
+    // Cererile de schimb/ofertele pending NU mai au badge propriu pe My Shelf
+    // (Milestone 19): userul primea „1" simultan pe My Shelf, Chat și
+    // clopoțel pentru același eveniment. Cererile de schimb au acum un
+    // singur canal - notificarea din clopoțel (+ push); ofertele de preț se
+    // văd oricum ca mesaj în conversație.
     final chatUnread = ref.watch(unreadMessagesCountProvider);
-    final libraryPending =
-        (ref.watch(exchangesControllerProvider).value?.received ?? const [])
-                .where((r) => r.status == ExchangeStatus.pending)
-                .length +
-            (ref.watch(offersControllerProvider).value?.received ?? const [])
-                .where((o) => o.status == OfferStatus.pending)
-                .length;
     final notificationsUnread =
         (ref.watch(notificationsControllerProvider).value ?? const [])
             .where((n) => !n.isRead)
@@ -123,7 +118,6 @@ class _SidebarState extends ConsumerState<_Sidebar> {
         activeIcon: Icons.menu_book,
         label: l10n.navLibrary,
         route: '/library',
-        badge: libraryPending,
       ),
       _NavItem(
         icon: Icons.chat_bubble_outline,

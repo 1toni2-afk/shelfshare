@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/message.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
+import 'conversations_controller.dart';
 import '../data/chat_repository.dart';
 import '../data/chat_socket_service.dart';
 
@@ -162,10 +163,18 @@ class ChatController extends Notifier<ChatState> {
   }
 
   /// Marcăm și pe socket (pentru bifa instantanee a expeditorului), și pe HTTP
-  /// (sursa de adevăr pentru badge-ul din lista de conversații).
+  /// (sursa de adevăr pentru badge-ul din lista de conversații). Lista de
+  /// conversații ține propria copie a `unreadCount` - fără invalidarea ei,
+  /// badge-ul de necitite rămâne cu valoarea veche până la un refresh
+  /// independent, deși mesajele sunt deja marcate citite pe server.
   void _markRead() {
     _socketService.markRead(conversationId);
-    unawaited(_repository.markAsRead(conversationId));
+    unawaited(
+      _repository.markAsRead(conversationId).then((_) {
+        ref.invalidate(conversationsControllerProvider(false));
+        ref.invalidate(conversationsControllerProvider(true));
+      }),
+    );
   }
 
   void setReplyTo(ChatMessage? message) {

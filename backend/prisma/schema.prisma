@@ -28,6 +28,17 @@ model User {
   resetPasswordToken  String?
   resetPasswordExpiry DateTime?
 
+  // Email abuse protection (Milestone 17): cooldown + daily cap shared by
+  // verification and reset emails, per the "10 emailuri/zi" checklist item.
+  lastAuthEmailSentAt  DateTime?
+  authEmailWindowStart DateTime?
+  authEmailSentCount   Int       @default(0)
+
+  // Account lockout (Milestone 17): temporary lock after repeated failed
+  // logins, reset to 0 on a successful login or password reset.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   refreshTokenHash String?
 
   googleId String? @unique
@@ -149,6 +160,7 @@ model User {
   messagesSent             Message[]         @relation("MessageSender")
   wishlistItems            WishlistItem[]
   notifications            Notification[]
+  deviceTokens             DeviceToken[]
   blocksMade               Block[]           @relation("BlockBlocker")
   blocksReceived           Block[]           @relation("BlockBlocked")
   reportsMade              Report[]          @relation("ReportReporter")
@@ -167,6 +179,7 @@ model User {
   createdGroups            Group[]           @relation("GroupCreator")
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
+  securityEvents           SecurityEvent[]
 
   @@map("users")
 }
@@ -855,6 +868,26 @@ enum NotificationType {
   AUCTION_ENDED
 }
 
+/// Token FCM al unui dispozitiv (telefon/tabletă) pe care userul e logat, ca
+/// să putem trimite push notifications. Un user poate avea mai multe
+/// dispozitive; același token e reînregistrat (upsert) la fiecare login sau
+/// refresh al tokenului de FCM - nu creăm duplicate.
+model DeviceToken {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token    String   @unique
+  platform String // "android" | "ios" | "web"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
 model Notification {
   id String @id @default(uuid())
 
@@ -885,4 +918,26 @@ model PreRegistration {
   createdAt  DateTime @default(now())
 
   @@map("pre_registrations")
+}
+
+/**
+ * Milestone 17: audit trail for security-relevant events (login, password
+ * changes, premium/admin actions). userId is nullable + SetNull on delete
+ * (not the usual project-wide Cascade for new User relations, see
+ * project_account_deletion memory) - deliberately, since an audit log
+ * should survive the account it was about, not disappear with it.
+ */
+model SecurityEvent {
+  id        String   @id @default(uuid())
+  type      String
+  userId    String?
+  ip        String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([type, createdAt])
+  @@map("security_events")
 }

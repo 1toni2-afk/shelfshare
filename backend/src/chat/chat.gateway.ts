@@ -16,13 +16,18 @@ import { ConversationsService } from './conversations.service';
 import { PresenceService } from './presence.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { RealtimeService } from '../common/realtime/realtime.service';
+import { corsOrigin } from '../common/utils/cors-origin';
+import { SlidingWindowLimiterService } from '../common/rate-limit/sliding-window-limiter.service';
 
 interface AuthenticatedSocket extends Socket {
   data: { userId: string };
 }
 
+const SEND_MESSAGE_LIMIT = 20;
+const SEND_MESSAGE_WINDOW_MS = 10_000;
+
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: { origin: corsOrigin },
   namespace: 'chat',
 })
 export class ChatGateway
@@ -39,6 +44,7 @@ export class ChatGateway
     private conversations: ConversationsService,
     private presence: PresenceService,
     private realtime: RealtimeService,
+    private rateLimiter: SlidingWindowLimiterService,
   ) {}
 
   // Punem serverul namespace-ului /chat la dispoziția serviciilor care nu au
@@ -112,6 +118,18 @@ export class ChatGateway
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() dto: SendMessageDto,
   ) {
+    // Guard-ul HTTP (HttpThrottlerGuard) sare peste contextele WS - fără
+    // asta, send_message n-ar avea nicio limită de spam.
+    if (
+      !this.rateLimiter.consume(
+        `send_message:${client.data.userId}`,
+        SEND_MESSAGE_LIMIT,
+        SEND_MESSAGE_WINDOW_MS,
+      )
+    ) {
+      return { error: 'Trimiți mesaje prea repede - așteaptă puțin' };
+    }
+
     // Global ValidationPipe nu se aplică peste gateway-urile WS din NestJS,
     // așa că validăm manual câmpurile cheie. Fără asta, un `locationLat`
     // trimis ca string (din browser) sau lipsa unuia dintre lat/lng ar cădea
@@ -151,7 +169,9 @@ export class ChatGateway
       // Prinderea explicită a excepțiilor face diferența între „a picat rețeaua"
       // și „serverul a refuzat mesajul" pentru client - și lasă un log utilizabil.
       const detail =
-        error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+        error instanceof Error
+          ? `${error.name}: ${error.message}`
+          : String(error);
       this.logger.error(
         `send_message a eșuat pentru user ${client.data.userId} (conv ${dto.conversationId}): ${detail}`,
       );
@@ -209,9 +229,12 @@ export class ChatGateway
     senderId: string,
     message: unknown,
   ) {
-    this.server.to(`conversation:${conversationId}`).emit('new_message', message);
+    this.server
+      .to(`conversation:${conversationId}`)
+      .emit('new_message', message);
 
-    const participants = await this.conversations.getParticipants(conversationId);
+    const participants =
+      await this.conversations.getParticipants(conversationId);
     const otherUserId = participants.find((id) => id !== senderId);
     if (otherUserId) {
       this.server
@@ -270,7 +293,9 @@ export class ChatGateway
         this.server.to(`user:${partnerId}`).emit('user_presence', payload);
       }
     } catch (error) {
-      this.logger.warn(`Nu am putut difuza prezența pentru ${userId}: ${error}`);
+      this.logger.warn(
+        `Nu am putut difuza prezența pentru ${userId}: ${error}`,
+      );
     }
   }
 }

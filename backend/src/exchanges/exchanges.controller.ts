@@ -12,6 +12,7 @@ import {
   StreamableFile,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { ExchangesService } from './exchanges.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
@@ -25,6 +26,7 @@ import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 export class ExchangesController {
   constructor(private exchangesService: ExchangesService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post()
   create(@Req() req: Request, @Body() dto: CreateExchangeRequestDto) {
     const { userId } = req.user as AuthenticatedUser;
@@ -77,6 +79,7 @@ export class ExchangesController {
     return this.exchangesService.complete(id, userId!);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @Post(':id/rate')
   @HttpCode(HttpStatus.OK)
   rate(

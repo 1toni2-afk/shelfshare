@@ -7,6 +7,9 @@
          _ExchangeQrDialog. -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <!-- Push notifications (Android 13+): fără el, notificările de sistem
+         nu apar deloc chiar dacă FCM livrează mesajul. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:label="ShelfShare"
@@ -39,6 +42,16 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Canalul implicit pentru notificările FCM primite când aplicația e
+             minimizată/închisă - creat în Dart la pornire (vezi
+             push_notifications_service.dart), ca id-ul să fie definit o
+             singură dată, în ambele locuri. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="shelfshare_default" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

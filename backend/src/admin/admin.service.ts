@@ -194,6 +194,63 @@ export class AdminService {
   }
 
   /**
+   * Monitorizare minimă (Milestone 17): agregă SecurityEvent pe ultimele
+   * 24h/7 zile, plus IP-urile cu cele mai multe login-uri eșuate - un punct
+   * de plecare ca să vezi un atac de brute-force sau un abuz de cont fără
+   * să sapi în loguri brute.
+   */
+  async getSecurityStats() {
+    const now = new Date();
+    const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [countsByType24h, countsByType7d, topFailedLoginIps, recentLockouts] =
+      await Promise.all([
+        this.prisma.securityEvent.groupBy({
+          by: ['type'],
+          where: { createdAt: { gte: since24h } },
+          _count: { _all: true },
+        }),
+        this.prisma.securityEvent.groupBy({
+          by: ['type'],
+          where: { createdAt: { gte: since7d } },
+          _count: { _all: true },
+        }),
+        this.prisma.securityEvent.groupBy({
+          by: ['ip'],
+          where: {
+            type: 'LOGIN_FAILED',
+            createdAt: { gte: since24h },
+            ip: { not: null },
+          },
+          _count: { ip: true },
+          orderBy: { _count: { ip: 'desc' } },
+          take: 10,
+        }),
+        this.prisma.securityEvent.findMany({
+          where: { type: 'ACCOUNT_LOCKED', createdAt: { gte: since7d } },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+          select: { userId: true, ip: true, createdAt: true },
+        }),
+      ]);
+
+    return {
+      since24h: Object.fromEntries(
+        countsByType24h.map((c) => [c.type, c._count._all]),
+      ),
+      since7d: Object.fromEntries(
+        countsByType7d.map((c) => [c.type, c._count._all]),
+      ),
+      topFailedLoginIps24h: topFailedLoginIps.map((r) => ({
+        ip: r.ip,
+        count: r._count.ip,
+      })),
+      recentLockouts,
+    };
+  }
+
+  /**
    * Statistici de marketplace (Milestone 5) - separate de getStats(), care e
    * mai degrabă un raport de sănătate a platformei (useri/cărți/schimburi).
    * GMV = suma ofertelor de preț acceptate + licitațiilor încheiate cu
@@ -201,24 +258,31 @@ export class AdminService {
    * carte (offeredAmount) - cele 3 căi prin care circulă bani în aplicație.
    */
   async getMarketplaceStats() {
-    const [acceptedOffers, wonAuctions, cashExchanges, completedSalesCount, completedAuctionsCount] =
-      await Promise.all([
-        this.prisma.priceOffer.aggregate({
-          where: { status: 'ACCEPTED' },
-          _sum: { amount: true },
-          _avg: { amount: true },
-        }),
-        this.prisma.auction.aggregate({
-          where: { status: 'ENDED', highestBidderId: { not: null } },
-          _sum: { currentPrice: true },
-        }),
-        this.prisma.exchangeRequest.aggregate({
-          where: { status: 'COMPLETED', offeredAmount: { not: null } },
-          _sum: { offeredAmount: true },
-        }),
-        this.prisma.priceOffer.count({ where: { status: 'ACCEPTED' } }),
-        this.prisma.auction.count({ where: { status: 'ENDED', highestBidderId: { not: null } } }),
-      ]);
+    const [
+      acceptedOffers,
+      wonAuctions,
+      cashExchanges,
+      completedSalesCount,
+      completedAuctionsCount,
+    ] = await Promise.all([
+      this.prisma.priceOffer.aggregate({
+        where: { status: 'ACCEPTED' },
+        _sum: { amount: true },
+        _avg: { amount: true },
+      }),
+      this.prisma.auction.aggregate({
+        where: { status: 'ENDED', highestBidderId: { not: null } },
+        _sum: { currentPrice: true },
+      }),
+      this.prisma.exchangeRequest.aggregate({
+        where: { status: 'COMPLETED', offeredAmount: { not: null } },
+        _sum: { offeredAmount: true },
+      }),
+      this.prisma.priceOffer.count({ where: { status: 'ACCEPTED' } }),
+      this.prisma.auction.count({
+        where: { status: 'ENDED', highestBidderId: { not: null } },
+      }),
+    ]);
 
     const gmv =
       Number(acceptedOffers._sum.amount ?? 0) +
@@ -227,7 +291,13 @@ export class AdminService {
 
     const topGenres = await this.prisma.userBook.groupBy({
       by: ['bookId'],
-      where: { OR: [{ isForSale: true }, { isAuction: true }, { availableForSwap: true }] },
+      where: {
+        OR: [
+          { isForSale: true },
+          { isAuction: true },
+          { availableForSwap: true },
+        ],
+      },
       _count: true,
     });
     const bookGenres = await this.prisma.book.findMany({
@@ -263,7 +333,13 @@ export class AdminService {
   async getActiveZones() {
     const grouped = await this.prisma.userBook.groupBy({
       by: ['userId'],
-      where: { OR: [{ isForSale: true }, { isAuction: true }, { availableForSwap: true }] },
+      where: {
+        OR: [
+          { isForSale: true },
+          { isAuction: true },
+          { availableForSwap: true },
+        ],
+      },
       _count: true,
     });
     const users = await this.prisma.user.findMany({
@@ -281,7 +357,9 @@ export class AdminService {
     return [...perCity.entries()]
       .map(([city, count]) => {
         const coords = ROMANIAN_CITY_COORDINATES[city as RomanianCity];
-        return coords ? { city, count, lat: coords.lat, lng: coords.lng } : null;
+        return coords
+          ? { city, count, lat: coords.lat, lng: coords.lng }
+          : null;
       })
       .filter((z) => z !== null)
       .sort((a, b) => b.count - a.count);

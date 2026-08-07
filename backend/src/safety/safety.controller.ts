@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { SafetyService } from './safety.service';
 import { ReportUserDto } from './dto/report-user.dto';
@@ -25,6 +26,7 @@ export class SafetyController {
     return this.safetyService.getBlockStatus(userId!, id);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('block')
   block(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
@@ -37,6 +39,7 @@ export class SafetyController {
     return this.safetyService.unblockUser(userId!, id);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post('report')
   report(
     @Req() req: Request,

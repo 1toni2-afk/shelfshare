@@ -8,4 +8,9 @@ export interface AuthenticatedUser {
   googleId?: string;
   email: string;
   refreshToken?: string;
+  // Prezente doar când request-ul a trecut prin JwtStrategy (access token) -
+  // folosite la logout ca să putem revoca exact acest token, vezi
+  // RevokedTokenService.
+  jti?: string;
+  exp?: number;
 }

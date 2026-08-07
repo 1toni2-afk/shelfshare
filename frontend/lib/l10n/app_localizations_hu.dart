@@ -832,6 +832,14 @@ class AppLocalizationsHu extends AppLocalizations {
   String get homeSeeAll => 'Összes megtekintése';
 
   @override
+  String homePendingSwapBanner(int count) {
+    return '$count cserekérés vár rád';
+  }
+
+  @override
+  String get homePendingSwapReview => 'Áttekintés';
+
+  @override
   String get homeFeedEnd => 'Minden könyvet láttál';
 
   @override
@@ -1004,6 +1012,31 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get libraryUnavailable => 'Nem elérhető';
+
+  @override
+  String libraryShelfSubtitle(int total, int available) {
+    return '$total könyv · $available elérhető cserére';
+  }
+
+  @override
+  String libraryFilterAll(int count) {
+    return 'Összes $count';
+  }
+
+  @override
+  String libraryFilterAvailable(int count) {
+    return 'Elérhető $count';
+  }
+
+  @override
+  String libraryFilterUnavailable(int count) {
+    return 'Nem elérhető $count';
+  }
+
+  @override
+  String libraryFilterTransferred(int count) {
+    return 'Átadva $count';
+  }
 
   @override
   String get libraryDeleteConfirmTitle => 'Törlöd a könyvet?';
@@ -1747,6 +1780,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get wishlistTitle => 'Kívánságlista';
 
   @override
+  String wishlistCount(int count) {
+    return '$count könyv';
+  }
+
+  @override
   String get wishlistEmpty =>
       'Még nem adtál hozzá könyvet a kívánságlistádhoz.';
 
@@ -1761,6 +1799,37 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get notificationsEmpty => 'Nincs egyetlen értesítésed sem.';
+
+  @override
+  String get notificationsFilterAll => 'Mind';
+
+  @override
+  String get notificationsFilterUnread => 'Olvasatlan';
+
+  @override
+  String get notificationsFilterExchanges => 'Csere';
+
+  @override
+  String get notificationsFilterMessages => 'Üzenetek';
+
+  @override
+  String get notificationsToday => 'Ma';
+
+  @override
+  String get notificationsYesterday => 'Tegnap';
+
+  @override
+  String get notificationsEarlier => 'Korábbi';
+
+  @override
+  String notificationsRepeatedCount(int count) {
+    return '×$count';
+  }
+
+  @override
+  String notificationsUnreadCount(int count) {
+    return '$count olvasatlan';
+  }
 
   @override
   String get notificationsLoadError =>
@@ -1851,6 +1920,21 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get helpCenterTitle => 'Gyakori kérdések';
+
+  @override
+  String get helpGroupSwapping => 'Csere';
+
+  @override
+  String get helpGroupPricing => 'Árak';
+
+  @override
+  String get helpGroupSafety => 'Bizalom és biztonság';
+
+  @override
+  String get helpStillStuck => 'Nem találtad meg a választ?';
+
+  @override
+  String get helpContactModerator => 'Moderátor elérése';
 
   @override
   String get helpFaq1Question => 'Hogyan működik a könyvcsere?';
@@ -2352,6 +2436,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get discoverSwapOnly => 'Csak csere';
 
   @override
+  String discoverMoreGenres(int count) {
+    return '+ $count további';
+  }
+
+  @override
   String get discoverUnder30 => '30 lej alatt';
 
   @override
@@ -2460,6 +2549,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get shareListingModeAuction => 'Aukció';
 
   @override
+  String get shareSectionBook => 'A könyv';
+
+  @override
+  String get shareSectionListing => 'A hirdetés';
+
+  @override
   String get shareListingMode => 'Hirdetés típusa';
 
   @override
@@ -2517,6 +2612,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get profileSettingsSubtitle => 'Minden fiókbeállítás egy helyen';
+
+  @override
+  String get profileGroupProfile => 'Profil';
+
+  @override
+  String get profileGroupPreferences => 'Beállítások';
+
+  @override
+  String get profileGroupLibrary => 'Könyvtár';
+
+  @override
+  String get profileGroupSupport => 'Támogatás';
 
   @override
   String get profileRecentActivity => 'Legutóbbi tevékenység';

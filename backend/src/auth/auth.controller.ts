@@ -10,8 +10,10 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { CaptchaService } from '../common/captcha/captcha.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -33,47 +35,72 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private config: ConfigService,
+    private captchaService: CaptchaService,
   ) {}
 
-  @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  /** Folosit doar când serverul semnalează requiresCaptcha (vezi AuthService.requireCaptchaIfSuspicious). */
+  @Get('captcha')
+  getCaptcha() {
+    return this.captchaService.generate();
   }
 
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
+  @Post('register')
+  register(@Req() req: Request, @Body() dto: RegisterDto) {
+    return this.authService.register(dto, req.ip ?? '');
+  }
+
+  // 6-digit codes (1e6 space) - keep guess attempts per IP low enough that
+  // brute-forcing one within its validity window is impractical.
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.authService.verifyEmail(dto.email, dto.code);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
-  resendVerification(@Body() dto: ResendVerificationDto) {
-    return this.authService.resendVerificationCode(dto.email);
+  resendVerification(@Req() req: Request, @Body() dto: ResendVerificationDto) {
+    return this.authService.resendVerificationCode(
+      dto.email,
+      req.ip ?? '',
+      dto,
+    );
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  login(@Req() req: Request, @Body() dto: LoginDto) {
+    return this.authService.login(dto, req.ip ?? '');
   }
 
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto.email);
+  forgotPassword(@Req() req: Request, @Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email, req.ip ?? '', dto);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @Post('verify-reset-code')
   @HttpCode(HttpStatus.OK)
   verifyResetCode(@Body() dto: VerifyResetCodeDto) {
     return this.authService.verifyResetCode(dto.email, dto.code);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
+  resetPassword(@Req() req: Request, @Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(
+      dto.email,
+      dto.code,
+      dto.newPassword,
+      req.ip ?? '',
+    );
   }
 
   @UseGuards(JwtRefreshGuard)
@@ -88,8 +115,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@Req() req: Request) {
-    const { userId } = req.user as AuthenticatedUser;
-    return this.authService.logout(userId!);
+    const { userId, jti, exp } = req.user as AuthenticatedUser;
+    return this.authService.logout(userId!, jti, exp);
   }
 
   // ---------- Google OAuth ----------

@@ -49,12 +49,14 @@ class _SettingsList extends ConsumerWidget {
     // scroll cu rotița funcționează oriunde pe pagină, nu doar peste coloana de
     // 560px. Conținutul rămâne centrat și îngustat prin Center + ConstrainedBox
     // de mai jos, într-un singur Column. (Milestone 18)
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 12),
       children: [
         Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
+            constraints: BoxConstraints(maxWidth: isDesktop ? 620 : 560),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -66,133 +68,153 @@ class _SettingsList extends ConsumerWidget {
                         TextStyle(color: AppColors.mutedForeground, fontSize: 12),
                   ),
                   const SizedBox(height: 12),
-        // Donațiile stau sus, ca prim element vizibil: aplicația e găzduită pe
-        // un server personal, deci e singura sursă de finanțare.
-        _KeepAliveCard(onTap: () => context.push('/profile/about-dev')),
-        const SizedBox(height: 16),
-        // Codul de referral e ascuns deocamdată (Milestone 18) - programul nu e
-        // activ. Cardul rămâne în cod (`_ReferralCard`) ca să poată fi reactivat
-        // ușor, reintroducând blocul de mai jos.
-        // if (user.referralCode != null) ...[
-        //   _ReferralCard(code: user.referralCode!, count: user.referralCount),
-        //   const SizedBox(height: 16),
-        // ],
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.qr_code_2),
-            title: Text(l10n.profileQrTooltip),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => showDialog<void>(
-              context: context,
-              builder: (context) => ProfileQrDialog(userId: user.id),
-            ),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.swap_horiz),
-            title: Text(l10n.profileMyExchanges),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/exchanges'),
-          ),
-        ),
-        _SettingsTile(
-          icon: Icons.edit_outlined,
-          label: l10n.profileEditProfile,
-          onTap: () => context.push('/profile/edit'),
-        ),
-        _SettingsTile(
-          icon: Icons.language_outlined,
-          label: l10n.profileLanguage,
-          trailingLabel: ref.watch(effectiveLocaleProvider).label,
-          onTap: () => showLanguagePicker(context, ref),
-        ),
-        _SettingsTile(
-          icon: Icons.dark_mode_outlined,
-          label: l10n.profileDarkModeSection,
-          trailingLabel: themeModeLabel(
-            context,
-            ref.watch(themeControllerProvider).value ?? AppThemeMode.system,
-          ),
-          onTap: () => showThemePicker(context, ref),
-        ),
-        const Divider(height: 24),
-        _SettingsTile(
-            icon: Icons.auto_stories_outlined,
-            label: l10n.profileMyBookshelf,
-            onTap: () => context.push('/bookshelf')),
-        _SettingsTile(
-            icon: Icons.collections_bookmark_outlined,
-            label: l10n.collectionsTitle,
-            onTap: () => context.push('/collections')),
-        _SettingsTile(
-            icon: Icons.groups_outlined,
-            label: l10n.groupsTitle,
-            onTap: () => context.push('/groups')),
-        _SettingsTile(
-            icon: Icons.dynamic_feed_outlined,
-            label: l10n.profileActivityFeed,
-            onTap: () => context.push('/activity-feed')),
-        _SettingsTile(
-            icon: Icons.compare_arrows_outlined,
-            label: l10n.profileSmartMatches,
-            onTap: () => context.push('/smart-matches')),
-        _SettingsTile(
-            icon: Icons.favorite_border,
-            label: l10n.profileFavoriteSellers,
-            onTap: () => context.push('/following')),
-        _SettingsTile(
-            icon: Icons.leaderboard_outlined,
-            label: l10n.profileLeaderboard,
-            onTap: () => context.push('/leaderboard')),
-        _SettingsTile(
-            icon: Icons.bar_chart_outlined,
-            label: l10n.profileGlobalStats,
-            onTap: () => context.push('/global-stats')),
-        _SettingsTile(
-          icon: Icons.insights_outlined,
-          iconColor: user.isPremium ? AppColors.warning : null,
-          label: l10n.premiumAnalyticsTitle,
-          onTap: () => context.push('/seller-analytics'),
-        ),
-        const Divider(height: 24),
-        _SettingsTile(
-            icon: Icons.shield_outlined,
-            label: l10n.profileSafetyCenter,
-            onTap: () => context.push('/safety-center')),
-        _SettingsTile(
-            icon: Icons.help_outline,
-            label: l10n.profileHelpCenter,
-            onTap: () => context.push('/help-center')),
-        _SettingsTile(
-            icon: Icons.person_outline,
-            label: l10n.aboutDevTitle,
-            onTap: () => context.push('/profile/about-dev')),
-        _SettingsTile(
-            icon: Icons.feedback_outlined,
-            label: l10n.profileSendFeedback,
-            onTap: () => _showFeedbackDialog(context, ref)),
-        _SettingsTile(
-            icon: Icons.android,
-            label: l10n.profilePreRegister,
-            onTap: () => context.push('/pre-register')),
-        if (user.isAdmin) ...[
-          const Divider(height: 24),
-          _SettingsTile(
-              icon: Icons.admin_panel_settings_outlined,
-              label: l10n.profileAdminPanel,
-              onTap: () => context.push('/admin')),
-        ],
-        const Divider(height: 24),
-        _SettingsTile(
-          icon: Icons.logout,
-          label: l10n.profileLogout,
-          iconColor: AppColors.destructive,
-          onTap: () => ref.read(authControllerProvider.notifier).logout(),
-        ),
-        const SizedBox(height: 12),
-        _DeleteAccountSection(user: user),
-        const SizedBox(height: 24),
+                  // Donațiile stau sus, ca prim element vizibil: aplicația e
+                  // găzduită pe un server personal, deci e singura sursă de
+                  // finanțare.
+                  _KeepAliveCard(onTap: () => context.push('/profile/about-dev')),
+                  const SizedBox(height: 20),
+
+                  // Grupuri vizuale distincte (card cu fundal propriu), cu
+                  // valoarea curentă vizibilă lângă fiecare setare - în loc
+                  // de o listă plată separată doar prin linii orizontale
+                  // (Milestone 20).
+                  _SettingsGroupLabel(l10n.profileGroupProfile),
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.qr_code_2,
+                        label: l10n.profileQrTooltip,
+                        onTap: () => showDialog<void>(
+                          context: context,
+                          builder: (context) => ProfileQrDialog(userId: user.id),
+                        ),
+                      ),
+                      _SettingsTile(
+                        icon: Icons.swap_horiz,
+                        label: l10n.profileMyExchanges,
+                        onTap: () => context.push('/exchanges'),
+                      ),
+                      _SettingsTile(
+                        icon: Icons.edit_outlined,
+                        label: l10n.profileEditProfile,
+                        onTap: () => context.push('/profile/edit'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _SettingsGroupLabel(l10n.profileGroupPreferences),
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.language_outlined,
+                        label: l10n.profileLanguage,
+                        trailingLabel: ref.watch(effectiveLocaleProvider).label,
+                        onTap: () => showLanguagePicker(context, ref),
+                      ),
+                      _SettingsTile(
+                        icon: Icons.dark_mode_outlined,
+                        label: l10n.profileDarkModeSection,
+                        trailingLabel: themeModeLabel(
+                          context,
+                          ref.watch(themeControllerProvider).value ?? AppThemeMode.system,
+                        ),
+                        onTap: () => showThemePicker(context, ref),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _SettingsGroupLabel(l10n.profileGroupLibrary),
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
+                          icon: Icons.auto_stories_outlined,
+                          label: l10n.profileMyBookshelf,
+                          onTap: () => context.push('/bookshelf')),
+                      _SettingsTile(
+                          icon: Icons.collections_bookmark_outlined,
+                          label: l10n.collectionsTitle,
+                          onTap: () => context.push('/collections')),
+                      _SettingsTile(
+                          icon: Icons.groups_outlined,
+                          label: l10n.groupsTitle,
+                          onTap: () => context.push('/groups')),
+                      _SettingsTile(
+                          icon: Icons.dynamic_feed_outlined,
+                          label: l10n.profileActivityFeed,
+                          onTap: () => context.push('/activity-feed')),
+                      _SettingsTile(
+                          icon: Icons.compare_arrows_outlined,
+                          label: l10n.profileSmartMatches,
+                          onTap: () => context.push('/smart-matches')),
+                      _SettingsTile(
+                          icon: Icons.favorite_border,
+                          label: l10n.profileFavoriteSellers,
+                          onTap: () => context.push('/following')),
+                      _SettingsTile(
+                          icon: Icons.leaderboard_outlined,
+                          label: l10n.profileLeaderboard,
+                          onTap: () => context.push('/leaderboard')),
+                      _SettingsTile(
+                          icon: Icons.bar_chart_outlined,
+                          label: l10n.profileGlobalStats,
+                          onTap: () => context.push('/global-stats')),
+                      _SettingsTile(
+                        icon: Icons.insights_outlined,
+                        iconColor: user.isPremium ? AppColors.warning : null,
+                        label: l10n.premiumAnalyticsTitle,
+                        onTap: () => context.push('/seller-analytics'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _SettingsGroupLabel(l10n.profileGroupSupport),
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
+                          icon: Icons.shield_outlined,
+                          label: l10n.profileSafetyCenter,
+                          onTap: () => context.push('/safety-center')),
+                      _SettingsTile(
+                          icon: Icons.help_outline,
+                          label: l10n.profileHelpCenter,
+                          onTap: () => context.push('/help-center')),
+                      _SettingsTile(
+                          icon: Icons.person_outline,
+                          label: l10n.aboutDevTitle,
+                          onTap: () => context.push('/profile/about-dev')),
+                      _SettingsTile(
+                          icon: Icons.feedback_outlined,
+                          label: l10n.profileSendFeedback,
+                          onTap: () => _showFeedbackDialog(context, ref)),
+                      _SettingsTile(
+                          icon: Icons.android,
+                          label: l10n.profilePreRegister,
+                          onTap: () => context.push('/pre-register')),
+                      if (user.isAdmin)
+                        _SettingsTile(
+                            icon: Icons.admin_panel_settings_outlined,
+                            label: l10n.profileAdminPanel,
+                            onTap: () => context.push('/admin')),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.logout,
+                        label: l10n.profileLogout,
+                        iconColor: AppColors.destructive,
+                        onTap: () => ref.read(authControllerProvider.notifier).logout(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _DeleteAccountSection(user: user),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -264,6 +286,53 @@ class _KeepAliveCard extends StatelessWidget {
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+/// Etichetă mică deasupra unui grup de setări (ex. „Profile", „Preferences").
+class _SettingsGroupLabel extends StatelessWidget {
+  const _SettingsGroupLabel(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 6),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: AppColors.mutedForeground,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Un card cu fundal propriu ce grupează rânduri de setări înrudite, cu linii
+/// de separare între ele - în loc de o listă plată separată doar de un
+/// `Divider` orizontal (Milestone 20).
+class _SettingsGroup extends StatelessWidget {
+  const _SettingsGroup({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) Divider(height: 1, color: AppColors.border),
+              children[i],
+            ],
+          ],
+        ),
       ),
     );
   }

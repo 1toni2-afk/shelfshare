@@ -41,7 +41,10 @@ const BIDDER_SELECT = {
 const INCLUDE_FULL = {
   userBook: { include: { book: true, user: { select: OWNER_SELECT } } },
   highestBidder: { select: BIDDER_SELECT },
-  bids: { include: { bidder: { select: BIDDER_SELECT } }, orderBy: { createdAt: 'asc' as const } },
+  bids: {
+    include: { bidder: { select: BIDDER_SELECT } },
+    orderBy: { createdAt: 'asc' as const },
+  },
   _count: { select: { watches: true } },
 };
 
@@ -69,7 +72,11 @@ export class AuctionsService {
     }
   }
 
-  async createAuction(sellerId: string, userBookId: string, dto: CreateAuctionDto) {
+  async createAuction(
+    sellerId: string,
+    userBookId: string,
+    dto: CreateAuctionDto,
+  ) {
     const userBook = await this.prisma.userBook.findUnique({
       where: { id: userBookId },
       include: { auction: true },
@@ -78,13 +85,17 @@ export class AuctionsService {
       throw new NotFoundException('Cartea nu a fost găsită');
     }
     if (userBook.userId !== sellerId) {
-      throw new ForbiddenException('Doar proprietarul cărții poate începe o licitație');
+      throw new ForbiddenException(
+        'Doar proprietarul cărții poate începe o licitație',
+      );
     }
     if (userBook.auction) {
       throw new BadRequestException('Această carte are deja o licitație');
     }
     if (userBook.photos.length === 0) {
-      throw new BadRequestException('Adaugă cel puțin o poză înainte de a începe o licitație');
+      throw new BadRequestException(
+        'Adaugă cel puțin o poză înainte de a începe o licitație',
+      );
     }
     if (dto.reservePrice != null && dto.reservePrice < dto.startingPrice) {
       throw new BadRequestException(
@@ -125,7 +136,9 @@ export class AuctionsService {
     const isSeller = auction.userBook.userId === requestingUserId;
     const isWatching = requestingUserId
       ? (await this.prisma.auctionWatch.findUnique({
-          where: { auctionId_userId: { auctionId: id, userId: requestingUserId } },
+          where: {
+            auctionId_userId: { auctionId: id, userId: requestingUserId },
+          },
         })) != null
       : false;
 
@@ -134,7 +147,10 @@ export class AuctionsService {
       bids: this.anonymizeBids(auction.bids, isSeller),
       isSeller,
       isWatching,
-      canBuyNow: auction.buyNowPrice != null && auction.bids.length === 0 && auction.status === 'ACTIVE',
+      canBuyNow:
+        auction.buyNowPrice != null &&
+        auction.bids.length === 0 &&
+        auction.status === 'ACTIVE',
     };
   }
 
@@ -143,29 +159,54 @@ export class AuctionsService {
     if (auction.userBook.userId === bidderId) {
       throw new BadRequestException('Nu poți licita la propria licitație');
     }
-    if (auction.status !== 'ACTIVE') {
-      throw new BadRequestException('Această licitație s-a încheiat');
-    }
-    if (dto.amount <= Number(auction.currentPrice)) {
-      throw new BadRequestException(
-        `Oferta trebuie să fie mai mare decât prețul curent (${auction.currentPrice} lei)`,
-      );
-    }
 
     const previousHighestBidderId = auction.highestBidderId;
-    const now = Date.now();
-    const shouldExtend = auction.endsAt.getTime() - now < ANTI_SNIPE_WINDOW_MS;
-    const newEndsAt = shouldExtend ? new Date(now + ANTI_SNIPE_EXTENSION_MS) : auction.endsAt;
 
-    await this.prisma.$transaction([
-      this.prisma.bid.create({
-        data: { auctionId, bidderId, amount: dto.amount },
-      }),
-      this.prisma.auction.update({
+    await this.prisma.$transaction(async (tx) => {
+      const current = await tx.auction.findUniqueOrThrow({
         where: { id: auctionId },
-        data: { currentPrice: dto.amount, highestBidderId: bidderId, endsAt: newEndsAt },
-      }),
-    ]);
+      });
+      if (current.status !== 'ACTIVE') {
+        throw new BadRequestException('Această licitație s-a încheiat');
+      }
+      if (dto.amount <= Number(current.currentPrice)) {
+        throw new BadRequestException(
+          `Oferta trebuie să fie mai mare decât prețul curent (${Number(current.currentPrice)} lei)`,
+        );
+      }
+
+      const now = Date.now();
+      const shouldExtend =
+        current.endsAt.getTime() - now < ANTI_SNIPE_WINDOW_MS;
+      const newEndsAt = shouldExtend
+        ? new Date(now + ANTI_SNIPE_EXTENSION_MS)
+        : current.endsAt;
+
+      // Compare-and-swap on currentPrice: if another bid committed between
+      // our read and this write, the WHERE won't match and count is 0 -
+      // prevents two concurrent bids from both being recorded as "winning".
+      const claim = await tx.auction.updateMany({
+        where: {
+          id: auctionId,
+          status: 'ACTIVE',
+          currentPrice: current.currentPrice,
+        },
+        data: {
+          currentPrice: dto.amount,
+          highestBidderId: bidderId,
+          endsAt: newEndsAt,
+        },
+      });
+      if (claim.count === 0) {
+        throw new BadRequestException(
+          'Altcineva a licitat chiar acum - te rog reîncearcă',
+        );
+      }
+
+      await tx.bid.create({
+        data: { auctionId, bidderId, amount: dto.amount },
+      });
+    });
 
     if (previousHighestBidderId && previousHighestBidderId !== bidderId) {
       await this.notifySafe(
@@ -188,25 +229,36 @@ export class AuctionsService {
       throw new BadRequestException('Această licitație s-a încheiat');
     }
     if (auction.buyNowPrice == null) {
-      throw new BadRequestException('Această licitație nu are opțiunea "Cumpără acum"');
-    }
-    if (auction.bids.length > 0) {
       throw new BadRequestException(
-        '"Cumpără acum" nu mai este disponibil - licitația are deja oferte',
+        'Această licitație nu are opțiunea "Cumpără acum"',
       );
     }
 
     await this.prisma.$transaction(async (tx) => {
-      await tx.bid.create({
-        data: { auctionId, bidderId: buyerId, amount: auction.buyNowPrice! },
-      });
-      await tx.auction.update({
-        where: { id: auctionId },
+      // Atomic claim: only one concurrent buyNow()/placeBid() can flip
+      // status ACTIVE -> ENDED. Losers see count 0 and abort cleanly.
+      const claim = await tx.auction.updateMany({
+        where: { id: auctionId, status: 'ACTIVE' },
         data: {
           currentPrice: auction.buyNowPrice!,
           highestBidderId: buyerId,
           status: 'ENDED',
         },
+      });
+      if (claim.count === 0) {
+        throw new BadRequestException('Această licitație s-a încheiat');
+      }
+
+      const bidCount = await tx.bid.count({ where: { auctionId } });
+      if (bidCount > 0) {
+        // Throwing here rolls back the claim above too (interactive tx).
+        throw new BadRequestException(
+          '"Cumpără acum" nu mai este disponibil - licitația are deja oferte',
+        );
+      }
+
+      await tx.bid.create({
+        data: { auctionId, bidderId: buyerId, amount: auction.buyNowPrice! },
       });
     });
 
@@ -259,7 +311,9 @@ export class AuctionsService {
       orderBy: { createdAt: 'desc' },
       select: { auctionId: true },
     });
-    return Promise.all(watches.map((w) => this.getAuction(w.auctionId, userId)));
+    return Promise.all(
+      watches.map((w) => this.getAuction(w.auctionId, userId)),
+    );
   }
 
   /**
@@ -287,7 +341,8 @@ export class AuctionsService {
     });
 
     const reserveMet =
-      auction.reservePrice == null || Number(auction.currentPrice) >= Number(auction.reservePrice);
+      auction.reservePrice == null ||
+      Number(auction.currentPrice) >= Number(auction.reservePrice);
 
     if (auction.highestBidderId && reserveMet) {
       await this.finalizeWin(id, auction.highestBidderId);
@@ -350,7 +405,13 @@ export class AuctionsService {
       amount: unknown;
       createdAt: Date;
       bidderId: string;
-      bidder: { id: string; name: string | null; username: string | null; nameVisible: boolean; profileImage: string | null };
+      bidder: {
+        id: string;
+        name: string | null;
+        username: string | null;
+        nameVisible: boolean;
+        profileImage: string | null;
+      };
     }>,
     isSeller: boolean,
   ) {
@@ -393,8 +454,19 @@ export class AuctionsService {
     endsAt: Date;
     status: string;
     createdAt: Date;
-    highestBidder: { id: string; name: string | null; username: string | null; nameVisible: boolean; profileImage: string | null } | null;
-    userBook: { id: string; userId: string; book: unknown; user: { name: string | null; nameVisible: boolean; [k: string]: unknown } };
+    highestBidder: {
+      id: string;
+      name: string | null;
+      username: string | null;
+      nameVisible: boolean;
+      profileImage: string | null;
+    } | null;
+    userBook: {
+      id: string;
+      userId: string;
+      book: unknown;
+      user: { name: string | null; nameVisible: boolean; [k: string]: unknown };
+    };
     _count: { watches: number };
   }) {
     return {
@@ -415,7 +487,10 @@ export class AuctionsService {
         : null,
       userBook: {
         ...auction.userBook,
-        user: { ...auction.userBook.user, name: publicName(auction.userBook.user) },
+        user: {
+          ...auction.userBook.user,
+          name: publicName(auction.userBook.user),
+        },
       },
     };
   }

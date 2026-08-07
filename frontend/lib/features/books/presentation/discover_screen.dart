@@ -53,31 +53,37 @@ class DiscoverScreen extends ConsumerWidget {
             ref.invalidate(_hiddenGemsProvider);
             ref.invalidate(_popularAuthorsProvider);
           },
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
-            children: const [
-              _QuickFiltersSection(),
-              _GenresSection(),
-              SizedBox(height: 8),
-              _RecommendedSection(),
-              SizedBox(height: 8),
-              _TrendingSection(),
-              SizedBox(height: 8),
-              _NearYouSection(),
-              SizedBox(height: 8),
-              _RecentsSection(),
-              SizedBox(height: 8),
-              _MostWishedSection(),
-              SizedBox(height: 8),
-              _HiddenGemsSection(),
-              SizedBox(height: 8),
-              _PopularSearchesSection(),
-              SizedBox(height: 8),
-              _PopularAuthorsSection(),
-              SizedBox(height: 8),
-              _UpcomingSection(),
-            ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1350),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 8, bottom: 24),
+                children: const [
+                  // Filtrele rapide și categoriile fac aceeași treabă (rafinează
+                  // feed-ul) - o singură bară, nu două secțiuni separate.
+                  _UnifiedFiltersSection(),
+                  SizedBox(height: 8),
+                  _RecommendedSection(),
+                  SizedBox(height: 8),
+                  _TrendingSection(),
+                  SizedBox(height: 8),
+                  _NearYouSection(),
+                  SizedBox(height: 8),
+                  _RecentsSection(),
+                  SizedBox(height: 8),
+                  _MostWishedSection(),
+                  SizedBox(height: 8),
+                  _HiddenGemsSection(),
+                  SizedBox(height: 8),
+                  _PopularSearchesSection(),
+                  SizedBox(height: 8),
+                  _PopularAuthorsSection(),
+                  SizedBox(height: 8),
+                  _UpcomingSection(),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -189,50 +195,6 @@ class _HorizontalCarousel extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _GenresSection extends ConsumerWidget {
-  const _GenresSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(_genresProvider);
-    return async.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
-      data: (genres) {
-        if (genres.isEmpty) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(
-              title: context.l10n.homeCategories,
-              icon: Icons.category_outlined,
-            ),
-            SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: genres.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final g = genres[index];
-                  return ActionChip(
-                    label: Text('${g.genre} (${g.count})'),
-                    onPressed: () => context.push(
-                      '/browse',
-                      extra: SearchScreenArgs(genre: g.genre),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }
@@ -434,15 +396,23 @@ class _UpcomingTile extends StatelessWidget {
   }
 }
 
-class _QuickFiltersSection extends ConsumerWidget {
-  const _QuickFiltersSection();
+/// Filtrele rapide (swap/licitații/hartă) și categoriile (genuri) rezolvau
+/// aceeași nevoie - rafinarea feed-ului - din două locuri diferite. O singură
+/// bară de pill-uri, cu genurile după shortcut-uri, „+N more" peste primele
+/// 6 (Milestone 20).
+class _UnifiedFiltersSection extends ConsumerWidget {
+  const _UnifiedFiltersSection();
+
+  static const _visibleGenres = 6;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    // Chip-uri de filtrare rapidă în AppBar-ul feed-ului - shortcut-uri către
-    // /browse cu preset-ul aplicat. Nu au icon pentru că sunt „acțiuni", nu
-    // secțiuni; le lăsăm compacte.
+    final genresAsync = ref.watch(_genresProvider);
+    final genres = genresAsync.value ?? const [];
+    final visible = genres.take(_visibleGenres).toList();
+    final overflow = genres.length - visible.length;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Wrap(
@@ -470,6 +440,19 @@ class _QuickFiltersSection extends ConsumerWidget {
             label: Text(l10n.mapTitle),
             onPressed: () => context.push('/map'),
           ),
+          for (final g in visible)
+            ActionChip(
+              label: Text('${g.genre} ${g.count}'),
+              onPressed: () => context.push('/browse', extra: SearchScreenArgs(genre: g.genre)),
+            ),
+          if (overflow > 0)
+            ActionChip(
+              label: Text(l10n.discoverMoreGenres(overflow)),
+              labelStyle: const TextStyle(color: AppColors.accent),
+              backgroundColor: Colors.transparent,
+              side: BorderSide.none,
+              onPressed: () => context.push('/browse'),
+            ),
         ],
       ),
     );

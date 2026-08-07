@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
+import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -32,6 +35,9 @@ import { RealtimeModule } from './common/realtime/realtime.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    // Default rate limit applied to every route unless overridden with
+    // @Throttle(...) or opted out with @SkipThrottle() on a controller/route.
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
     RealtimeModule,
     PrismaModule,
     AuthModule,
@@ -58,6 +64,6 @@ import { RealtimeModule } from './common/realtime/realtime.module';
     PreRegistrationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: HttpThrottlerGuard }],
 })
 export class AppModule {}

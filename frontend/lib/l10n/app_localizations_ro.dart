@@ -827,6 +827,14 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homeSeeAll => 'Vezi toate';
 
   @override
+  String homePendingSwapBanner(int count) {
+    return '$count cereri de schimb te așteaptă';
+  }
+
+  @override
+  String get homePendingSwapReview => 'Revizuiește';
+
+  @override
   String get homeFeedEnd => 'Ai văzut toate cărțile';
 
   @override
@@ -999,6 +1007,31 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get libraryUnavailable => 'Indisponibilă';
+
+  @override
+  String libraryShelfSubtitle(int total, int available) {
+    return '$total cărți · $available disponibile la schimb';
+  }
+
+  @override
+  String libraryFilterAll(int count) {
+    return 'Toate $count';
+  }
+
+  @override
+  String libraryFilterAvailable(int count) {
+    return 'Disponibile $count';
+  }
+
+  @override
+  String libraryFilterUnavailable(int count) {
+    return 'Indisponibile $count';
+  }
+
+  @override
+  String libraryFilterTransferred(int count) {
+    return 'Transferate $count';
+  }
 
   @override
   String get libraryDeleteConfirmTitle => 'Ștergi cartea?';
@@ -1740,6 +1773,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get wishlistTitle => 'Lista de dorințe';
 
   @override
+  String wishlistCount(int count) {
+    return '$count cărți';
+  }
+
+  @override
   String get wishlistEmpty =>
       'Nu ai adăugat încă nicio carte în lista de dorințe.';
 
@@ -1754,6 +1792,37 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get notificationsEmpty => 'Nu ai nicio notificare.';
+
+  @override
+  String get notificationsFilterAll => 'Toate';
+
+  @override
+  String get notificationsFilterUnread => 'Necitite';
+
+  @override
+  String get notificationsFilterExchanges => 'Schimburi';
+
+  @override
+  String get notificationsFilterMessages => 'Mesaje';
+
+  @override
+  String get notificationsToday => 'Astăzi';
+
+  @override
+  String get notificationsYesterday => 'Ieri';
+
+  @override
+  String get notificationsEarlier => 'Mai vechi';
+
+  @override
+  String notificationsRepeatedCount(int count) {
+    return '×$count';
+  }
+
+  @override
+  String notificationsUnreadCount(int count) {
+    return '$count necitite';
+  }
 
   @override
   String get notificationsLoadError => 'Nu am putut încărca notificările.';
@@ -1841,6 +1910,21 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get helpCenterTitle => 'Întrebări frecvente';
+
+  @override
+  String get helpGroupSwapping => 'Schimburi';
+
+  @override
+  String get helpGroupPricing => 'Prețuri';
+
+  @override
+  String get helpGroupSafety => 'Încredere și siguranță';
+
+  @override
+  String get helpStillStuck => 'Nu ai găsit răspunsul?';
+
+  @override
+  String get helpContactModerator => 'Contactează un moderator';
 
   @override
   String get helpFaq1Question => 'Cum funcționează un schimb de cărți?';
@@ -2340,6 +2424,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get discoverSwapOnly => 'Doar la schimb';
 
   @override
+  String discoverMoreGenres(int count) {
+    return '+ $count altele';
+  }
+
+  @override
   String get discoverUnder30 => 'Sub 30 lei';
 
   @override
@@ -2448,6 +2537,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareListingModeAuction => 'Licitație';
 
   @override
+  String get shareSectionBook => 'Cartea';
+
+  @override
+  String get shareSectionListing => 'Anunțul';
+
+  @override
   String get shareListingMode => 'Mod de schimb';
 
   @override
@@ -2507,6 +2602,18 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get profileSettingsSubtitle =>
       'Toate opțiunile contului într-un singur loc';
+
+  @override
+  String get profileGroupProfile => 'Profil';
+
+  @override
+  String get profileGroupPreferences => 'Preferințe';
+
+  @override
+  String get profileGroupLibrary => 'Bibliotecă';
+
+  @override
+  String get profileGroupSupport => 'Suport';
 
   @override
   String get profileRecentActivity => 'Activitate recentă';

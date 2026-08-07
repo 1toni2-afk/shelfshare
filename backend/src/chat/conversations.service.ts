@@ -348,11 +348,20 @@ export class ConversationsService {
     // Mesajul deja s-a salvat cât timp ajungem aici - o eroare la
     // notificare nu trebuie să facă send-ul să pară eșuat pentru client.
     try {
-      await this.notifications.create(
+      const sender = await this.prisma.user.findUnique({
+        where: { id: senderId },
+        select: { name: true },
+      });
+      const senderName = sender?.name?.trim() || 'Cineva';
+      // Dedup pe conversationId: dacă expeditorul trimite mai multe mesaje
+      // consecutive înainte ca destinatarul să deschidă conversația, actualizăm
+      // aceeași notificare necitită în loc să creăm una nouă per mesaj.
+      await this.notifications.upsertUnread(
         recipientId,
         'NEW_MESSAGE',
-        'Ai un mesaj nou într-o conversație',
+        `${senderName} ți-a trimis un mesaj`,
         { conversationId },
+        'conversationId',
       );
     } catch (error) {
       this.logger.warn(
@@ -368,6 +377,15 @@ export class ConversationsService {
       where: { conversationId, senderId: { not: userId }, isRead: false },
       data: { isRead: true },
     });
+
+    // Deschiderea conversației îi rezolvă și notificarea de „mesaj nou"
+    // aferentă din clopoțel - altfel ar rămâne necitită acolo la nesfârșit.
+    await this.notifications.markAsReadByDataField(
+      userId,
+      'NEW_MESSAGE',
+      'conversationId',
+      conversationId,
+    );
 
     return { message: 'Marcat ca citit', markedCount: count };
   }

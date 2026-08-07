@@ -508,6 +508,15 @@
     "homeMostViewed":  "Cele mai vizualizate",
     "homeMostSearched":  "Cele mai căutate",
     "homeSeeAll":  "Vezi toate",
+    "homePendingSwapBanner":  "{count} cereri de schimb te așteaptă",
+    "@homePendingSwapBanner":  {
+                                   "placeholders":  {
+                                                        "count":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                    }
+                               },
+    "homePendingSwapReview":  "Revizuiește",
     "homeFeedEnd":  "Ai văzut toate cărțile",
     "homeNearYou":  "Din orașul tău",
     "homeNearYouToday":  "Astăzi, aproape de tine",
@@ -587,6 +596,49 @@
     "libraryLoadError":  "Nu am putut încărca biblioteca.",
     "libraryAvailable":  "Disponibilă",
     "libraryUnavailable":  "Indisponibilă",
+    "libraryShelfSubtitle":  "{total} cărți · {available} disponibile la schimb",
+    "@libraryShelfSubtitle":  {
+                                  "placeholders":  {
+                                                       "total":  {
+                                                                     "type":  "int"
+                                                                 },
+                                                       "available":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                   }
+                              },
+    "libraryFilterAll":  "Toate {count}",
+    "@libraryFilterAll":  {
+                              "placeholders":  {
+                                                   "count":  {
+                                                                 "type":  "int"
+                                                             }
+                                               }
+                          },
+    "libraryFilterAvailable":  "Disponibile {count}",
+    "@libraryFilterAvailable":  {
+                                    "placeholders":  {
+                                                         "count":  {
+                                                                       "type":  "int"
+                                                                   }
+                                                     }
+                                },
+    "libraryFilterUnavailable":  "Indisponibile {count}",
+    "@libraryFilterUnavailable":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "libraryFilterTransferred":  "Transferate {count}",
+    "@libraryFilterTransferred":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "libraryDeleteConfirmTitle":  "Ștergi cartea?",
     "libraryDeleteConfirmBody":  "„{title}\" va fi eliminată din bibliotecă.",
     "@libraryDeleteConfirmBody":  {
@@ -984,11 +1036,42 @@
     "chatPickDate":  "Alege data",
     "chatPickTime":  "Alege ora",
     "wishlistTitle":  "Lista de dorințe",
+    "wishlistCount":  "{count} cărți",
+    "@wishlistCount":  {
+                           "placeholders":  {
+                                                "count":  {
+                                                              "type":  "int"
+                                                          }
+                                            }
+                       },
     "wishlistEmpty":  "Nu ai adăugat încă nicio carte în lista de dorințe.",
     "wishlistLoadError":  "Nu am putut încărca lista de dorințe.",
     "notificationsTitle":  "Notificări",
     "notificationsMarkAllRead":  "Marchează tot ca citit",
     "notificationsEmpty":  "Nu ai nicio notificare.",
+    "notificationsFilterAll":  "Toate",
+    "notificationsFilterUnread":  "Necitite",
+    "notificationsFilterExchanges":  "Schimburi",
+    "notificationsFilterMessages":  "Mesaje",
+    "notificationsToday":  "Astăzi",
+    "notificationsYesterday":  "Ieri",
+    "notificationsEarlier":  "Mai vechi",
+    "notificationsRepeatedCount":  "×{count}",
+    "@notificationsRepeatedCount":  {
+                                        "placeholders":  {
+                                                             "count":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
+    "notificationsUnreadCount":  "{count} necitite",
+    "@notificationsUnreadCount":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "notificationsLoadError":  "Nu am putut încărca notificările.",
     "timeJustNow":  "acum",
     "timeMinutesAgo":  "acum {minutes} min",
@@ -1034,6 +1117,11 @@
     "safetyTip8Title":  "Raportează orice comportament suspect",
     "safetyTip8Desc":  "Poți raporta sau bloca un utilizator direct din profilul lui sau din conversație.",
     "helpCenterTitle":  "Întrebări frecvente",
+    "helpGroupSwapping":  "Schimburi",
+    "helpGroupPricing":  "Prețuri",
+    "helpGroupSafety":  "Încredere și siguranță",
+    "helpStillStuck":  "Nu ai găsit răspunsul?",
+    "helpContactModerator":  "Contactează un moderator",
     "helpFaq1Question":  "Cum funcționează un schimb de cărți?",
     "helpFaq1Answer":  "Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat.",
     "helpFaq2Question":  "Ce e Scorul de încredere?",
@@ -1352,6 +1440,14 @@
     "discoverAuctions":  "Licitații active",
     "discoverHiddenGems":  "Comori ascunse",
     "discoverSwapOnly":  "Doar la schimb",
+    "discoverMoreGenres":  "+ {count} altele",
+    "@discoverMoreGenres":  {
+                                "placeholders":  {
+                                                     "count":  {
+                                                                   "type":  "int"
+                                                               }
+                                                 }
+                            },
     "discoverUnder30":  "Sub 30 lei",
     "discoverRecommendedForYou":  "Recomandate pentru tine",
     "discoverPopularAuthors":  "Autori populari",
@@ -1394,6 +1490,8 @@
     "sharePublishedYear":  "An apariție",
     "shareSubmit":  "Publică",
     "shareListingModeAuction":  "Licitație",
+    "shareSectionBook":  "Cartea",
+    "shareSectionListing":  "Anunțul",
     "shareListingMode":  "Mod de schimb",
     "shareDescriptionCharsLeft":  "{n} caractere rămase",
     "shareListingModeSwap":  "Schimb normal",
@@ -1419,6 +1517,10 @@
     "preRegisterEmailHint":  "Email pentru anunț",
     "preRegisterError":  "Nu am putut înregistra emailul. Încearcă din nou.",
     "profileSettingsSubtitle":  "Toate opțiunile contului într-un singur loc",
+    "profileGroupProfile":  "Profil",
+    "profileGroupPreferences":  "Preferințe",
+    "profileGroupLibrary":  "Bibliotecă",
+    "profileGroupSupport":  "Suport",
     "profileRecentActivity":  "Activitate recentă",
     "profileStatSwaps":  "schimburi",
     "profileActivityAdded":  "Ai adăugat",

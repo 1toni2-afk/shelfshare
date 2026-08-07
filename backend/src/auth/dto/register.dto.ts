@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, MinLength } from 'class-validator';
 import { IsNormalizedEmail } from '../../common/decorators/normalized-email.decorator';
 
 export class RegisterDto {
@@ -12,4 +12,14 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   referralCode?: string;
+
+  // Cerute doar dacă serverul semnalează requiresCaptcha (vezi AttemptGuardService) -
+  // clientul obișnuit nu le trimite la prima încercare.
+  @IsOptional()
+  @IsString()
+  captchaToken?: string;
+
+  @IsOptional()
+  @IsInt()
+  captchaAnswer?: number;
 }

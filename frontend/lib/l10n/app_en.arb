@@ -261,6 +261,15 @@
     "homeMostViewed":  "Most viewed",
     "homeMostSearched":  "Most sought after",
     "homeSeeAll":  "See all",
+    "homePendingSwapBanner":  "{count} swap requests are waiting for you",
+    "@homePendingSwapBanner":  {
+                                   "placeholders":  {
+                                                        "count":  {
+                                                                      "type":  "int"
+                                                                  }
+                                                    }
+                               },
+    "homePendingSwapReview":  "Review",
     "homeFeedEnd":  "You\u0027ve seen all the books",
     "homeNearYou":  "Near your city",
     "homeNearYouToday":  "Near you today",
@@ -316,6 +325,49 @@
     "libraryLoadError":  "We couldn\u0027t load your library.",
     "libraryAvailable":  "Available",
     "libraryUnavailable":  "Unavailable",
+    "libraryShelfSubtitle":  "{total} books · {available} available to swap",
+    "@libraryShelfSubtitle":  {
+                                  "placeholders":  {
+                                                       "total":  {
+                                                                     "type":  "int"
+                                                                 },
+                                                       "available":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                   }
+                              },
+    "libraryFilterAll":  "All {count}",
+    "@libraryFilterAll":  {
+                              "placeholders":  {
+                                                   "count":  {
+                                                                 "type":  "int"
+                                                             }
+                                               }
+                          },
+    "libraryFilterAvailable":  "Available {count}",
+    "@libraryFilterAvailable":  {
+                                    "placeholders":  {
+                                                         "count":  {
+                                                                       "type":  "int"
+                                                                   }
+                                                     }
+                                },
+    "libraryFilterUnavailable":  "Unavailable {count}",
+    "@libraryFilterUnavailable":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
+    "libraryFilterTransferred":  "Transferred {count}",
+    "@libraryFilterTransferred":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "libraryDeleteConfirmTitle":  "Delete this book?",
     "libraryDeleteConfirmBody":  "\"{title}\" will be removed from your library.",
     "libraryAvailableForSwap":  "Available for exchange",
@@ -567,11 +619,42 @@
     "chatPickDate":  "Pick a date",
     "chatPickTime":  "Pick a time",
     "wishlistTitle":  "Wishlist",
+    "wishlistCount":  "{count} books",
+    "@wishlistCount":  {
+                           "placeholders":  {
+                                                "count":  {
+                                                              "type":  "int"
+                                                          }
+                                            }
+                       },
     "wishlistEmpty":  "You haven\u0027t added any books to your wishlist yet.",
     "wishlistLoadError":  "We couldn\u0027t load your wishlist.",
     "notificationsTitle":  "Notifications",
     "notificationsMarkAllRead":  "Mark all as read",
     "notificationsEmpty":  "You don\u0027t have any notifications.",
+    "notificationsFilterAll":  "All",
+    "notificationsFilterUnread":  "Unread",
+    "notificationsFilterExchanges":  "Exchanges",
+    "notificationsFilterMessages":  "Messages",
+    "notificationsToday":  "Today",
+    "notificationsYesterday":  "Yesterday",
+    "notificationsEarlier":  "Earlier",
+    "notificationsRepeatedCount":  "×{count}",
+    "@notificationsRepeatedCount":  {
+                                        "placeholders":  {
+                                                             "count":  {
+                                                                           "type":  "int"
+                                                                       }
+                                                         }
+                                    },
+    "notificationsUnreadCount":  "{count} unread",
+    "@notificationsUnreadCount":  {
+                                      "placeholders":  {
+                                                           "count":  {
+                                                                         "type":  "int"
+                                                                     }
+                                                       }
+                                  },
     "notificationsLoadError":  "We couldn\u0027t load your notifications.",
     "timeJustNow":  "just now",
     "timeMinutesAgo":  "{minutes} min ago",
@@ -596,6 +679,11 @@
     "safetyTip8Title":  "Report any suspicious behavior",
     "safetyTip8Desc":  "You can report or block a user directly from their profile or from the conversation.",
     "helpCenterTitle":  "FAQ",
+    "helpGroupSwapping":  "Swapping",
+    "helpGroupPricing":  "Pricing",
+    "helpGroupSafety":  "Trust and safety",
+    "helpStillStuck":  "Still stuck?",
+    "helpContactModerator":  "Contact a moderator",
     "helpFaq1Question":  "How does a book exchange work?",
     "helpFaq1Answer":  "You request a book from someone else\u0027s listing (you can also offer a book in exchange), the owner accepts or declines, then you arrange a meeting via chat. After you complete the exchange in person, either of you marks the exchange as completed.",
     "helpFaq2Question":  "What is the Trust Score?",
@@ -747,6 +835,14 @@
     "discoverAuctions":  "Active auctions",
     "discoverHiddenGems":  "Hidden gems",
     "discoverSwapOnly":  "Swap only",
+    "discoverMoreGenres":  "+ {count} more",
+    "@discoverMoreGenres":  {
+                                "placeholders":  {
+                                                     "count":  {
+                                                                   "type":  "int"
+                                                               }
+                                                 }
+                            },
     "discoverUnder30":  "Under 30 lei",
     "discoverRecommendedForYou":  "Recommended for you",
     "discoverPopularAuthors":  "Popular authors",
@@ -782,6 +878,8 @@
     "sharePublishedYear":  "Published year",
     "shareSubmit":  "Publish",
     "shareListingModeAuction":  "Auction",
+    "shareSectionBook":  "The book",
+    "shareSectionListing":  "The listing",
     "shareListingMode":  "Listing mode",
     "shareDescriptionCharsLeft":  "{n} characters left",
     "shareListingModeSwap":  "Normal swap",
@@ -800,6 +898,10 @@
     "preRegisterEmailHint":  "Email for the launch notice",
     "preRegisterError":  "Could not register your email. Please try again.",
     "profileSettingsSubtitle":  "All your account options in one place",
+    "profileGroupProfile":  "Profile",
+    "profileGroupPreferences":  "Preferences",
+    "profileGroupLibrary":  "Library",
+    "profileGroupSupport":  "Support",
     "profileRecentActivity":  "Recent activity",
     "profileStatSwaps":  "swaps",
     "profileActivityAdded":  "Added",

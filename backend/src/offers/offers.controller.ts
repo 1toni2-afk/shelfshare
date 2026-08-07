@@ -9,6 +9,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
@@ -21,6 +22,7 @@ import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 export class OffersController {
   constructor(private offersService: OffersService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('books/:userBookId/offers')
   create(
     @Req() req: Request,

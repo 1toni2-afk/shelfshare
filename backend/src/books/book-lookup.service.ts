@@ -282,8 +282,10 @@ export class BookLookupService {
       };
 
       const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10&fields=isbn,title,author_name,cover_i,publisher,first_publish_year,number_of_pages_median,language,subject`;
+      // Fără timeout, un upstream lent ținea autocomplete-ul blocat 10-15s -
+      // Promise.all cu Google Books aștepta oricum după cel mai lent.
       const { data } = await firstValueFrom(
-        this.http.get<{ docs?: OpenLibrarySearchDoc[] }>(url),
+        this.http.get<{ docs?: OpenLibrarySearchDoc[] }>(url, { timeout: 4000 }),
       );
 
       return (data.docs ?? []).map((doc): ExternalBookResult => ({
@@ -337,7 +339,7 @@ export class BookLookupService {
 
       const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`;
       const { data } = await firstValueFrom(
-        this.http.get<{ items?: GoogleVolume[] }>(url),
+        this.http.get<{ items?: GoogleVolume[] }>(url, { timeout: 4000 }),
       );
 
       return (data.items ?? []).map((item): ExternalBookResult => {

@@ -12,7 +12,11 @@ import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
 import { publicName } from '../common/utils/user-visibility';
-import { awardXp, XP_EXCHANGE_COMPLETED, XP_REVIEW_WRITTEN } from '../common/utils/xp';
+import {
+  awardXp,
+  XP_EXCHANGE_COMPLETED,
+  XP_REVIEW_WRITTEN,
+} from '../common/utils/xp';
 
 // Offer Expiration (Milestone 3) - o cerere PENDING neatinsă expiră automat
 // după atâtea zile, ca să nu rămână la nesfârșit "în așteptare" fără răspuns.
@@ -140,7 +144,7 @@ export class ExchangesService {
     await this.notifySafe(
       requestedBook.userId,
       'EXCHANGE_REQUEST_RECEIVED',
-      `Ai primit o cerere de schimb pentru "${requestedBook.book.title}"`,
+      `${publicName(created.requester)} ți-a trimis o cerere de schimb pentru "${requestedBook.book.title}"`,
       { exchangeRequestId: created.id },
     );
 
@@ -167,7 +171,10 @@ export class ExchangesService {
     return requests.map((r) => this.sanitizeParties(r));
   }
 
-  private async expireStalePending(where: { requesterId?: string; ownerId?: string }) {
+  private async expireStalePending(where: {
+    requesterId?: string;
+    ownerId?: string;
+  }) {
     await this.prisma.exchangeRequest.updateMany({
       where: { ...where, status: 'PENDING', expiresAt: { lt: new Date() } },
       data: { status: 'EXPIRED' },
@@ -189,20 +196,42 @@ export class ExchangesService {
     this.assertStatus(request, 'PENDING');
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.userBook.update({
-        where: { id: request.requestedBookId },
-        data: { availableForSwap: false },
+      // Atomic guards prevent two concurrent accept() calls (e.g. on two
+      // different pending requests for the same book) from both succeeding.
+      const requestClaim = await tx.exchangeRequest.updateMany({
+        where: { id, status: 'PENDING' },
+        data: { status: 'ACCEPTED' },
       });
-      if (request.offeredBookId) {
-        await tx.userBook.update({
-          where: { id: request.offeredBookId },
-          data: { availableForSwap: false },
-        });
+      if (requestClaim.count === 0) {
+        throw new BadRequestException(
+          'Această cerere nu mai este în așteptare',
+        );
       }
 
-      return tx.exchangeRequest.update({
+      const bookClaim = await tx.userBook.updateMany({
+        where: { id: request.requestedBookId, availableForSwap: true },
+        data: { availableForSwap: false },
+      });
+      if (bookClaim.count === 0) {
+        throw new BadRequestException(
+          'Cartea cerută nu mai este disponibilă la schimb',
+        );
+      }
+
+      if (request.offeredBookId) {
+        const offeredClaim = await tx.userBook.updateMany({
+          where: { id: request.offeredBookId, availableForSwap: true },
+          data: { availableForSwap: false },
+        });
+        if (offeredClaim.count === 0) {
+          throw new BadRequestException(
+            'Cartea oferită nu mai este disponibilă la schimb',
+          );
+        }
+      }
+
+      return tx.exchangeRequest.findUniqueOrThrow({
         where: { id },
-        data: { status: 'ACCEPTED' },
         include: INCLUDE_FULL,
       });
     });
@@ -210,7 +239,7 @@ export class ExchangesService {
     await this.notifySafe(
       request.requesterId,
       'EXCHANGE_REQUEST_ACCEPTED',
-      `Cererea ta de schimb pentru "${updated.requestedBook.book.title}" a fost acceptată`,
+      `${publicName(updated.owner)} a acceptat cererea ta de schimb pentru "${updated.requestedBook.book.title}"`,
       { exchangeRequestId: id },
     );
 
@@ -231,7 +260,7 @@ export class ExchangesService {
     await this.notifySafe(
       request.requesterId,
       'EXCHANGE_REQUEST_REJECTED',
-      `Cererea ta de schimb pentru "${updated.requestedBook.book.title}" a fost refuzată`,
+      `${publicName(updated.owner)} a refuzat cererea ta de schimb pentru "${updated.requestedBook.book.title}"`,
       { exchangeRequestId: id },
     );
 
@@ -368,12 +397,13 @@ export class ExchangesService {
       include: INCLUDE_FULL,
     });
 
-    const otherUserId =
-      userId === updated.requesterId ? updated.ownerId : updated.requesterId;
+    const isRequester = userId === updated.requesterId;
+    const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
+    const actorName = publicName(isRequester ? updated.requester : updated.owner);
     await this.notifySafe(
       otherUserId,
       'EXCHANGE_MEETING_SCHEDULED',
-      `Întâlnirea pentru "${updated.requestedBook.book.title}" a fost programată`,
+      `${actorName} a programat întâlnirea pentru "${updated.requestedBook.book.title}"`,
       { exchangeRequestId: updated.id },
     );
 
@@ -407,7 +437,9 @@ export class ExchangesService {
     const bookTitle = request.requestedBook.book.title;
     const verb = request.offeredAmount != null ? 'cumpăra' : 'schimba';
     const priceClause =
-      request.offeredAmount != null ? ` (la prețul de ${request.offeredAmount} lei)` : '';
+      request.offeredAmount != null
+        ? ` (la prețul de ${request.offeredAmount} lei)`
+        : '';
 
     const summary = 'Schimb de carte';
     const description = `${requesterName} se întâlnește cu ${ownerName} pentru a ${verb} cartea „${bookTitle}"${priceClause}`;
@@ -455,17 +487,24 @@ export class ExchangesService {
       .filter((v): v is number => v !== null);
 
     const communicationValues = ratedExchanges
-      .map((r) => r.requesterCommunicationForOwner ?? r.ownerCommunicationForRequester)
+      .map(
+        (r) =>
+          r.requesterCommunicationForOwner ?? r.ownerCommunicationForRequester,
+      )
       .filter((v): v is number => v !== null);
     const punctualityValues = ratedExchanges
-      .map((r) => r.requesterPunctualityForOwner ?? r.ownerPunctualityForRequester)
+      .map(
+        (r) => r.requesterPunctualityForOwner ?? r.ownerPunctualityForRequester,
+      )
       .filter((v): v is number => v !== null);
     const conditionValues = ratedExchanges
       .map((r) => r.requesterConditionForOwner ?? r.ownerConditionForRequester)
       .filter((v): v is number => v !== null);
 
     const average = (nums: number[]) =>
-      nums.length === 0 ? 0 : Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+      nums.length === 0
+        ? 0
+        : Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 
     const rating = average(values);
 
@@ -496,10 +535,14 @@ export class ExchangesService {
    * Expirare "leneșă" - vezi comentariul de pe ExchangeRequest.expiresAt în
    * schema.prisma. Verificată la fiecare citire, nu printr-un job separat.
    */
-  private async expireIfStale<T extends { id: string; status: string; expiresAt: Date | null }>(
-    request: T,
-  ): Promise<T> {
-    if (request.status !== 'PENDING' || !request.expiresAt || request.expiresAt > new Date()) {
+  private async expireIfStale<
+    T extends { id: string; status: string; expiresAt: Date | null },
+  >(request: T): Promise<T> {
+    if (
+      request.status !== 'PENDING' ||
+      !request.expiresAt ||
+      request.expiresAt > new Date()
+    ) {
       return request;
     }
     await this.prisma.exchangeRequest.update({

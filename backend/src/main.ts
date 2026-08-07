@@ -1,39 +1,45 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { corsOrigin } from './common/utils/cors-origin';
 
-type CorsOriginCallback = (err: Error | null, allow?: boolean) => void;
+/**
+ * CaptchaService cade pe un secret public din cod dacă CAPTCHA_SECRET
+ * lipsește din env - bun pentru dev local, dar în producție ar însemna că
+ * oricine poate falsifica un răspuns de captcha valid (vezi captcha.service.ts).
+ * Preferăm să nu pornim deloc decât să degradăm silențios o protecție
+ * adăugată explicit (Milestone 17).
+ */
+function assertProductionSecrets() {
+  if (process.env.NODE_ENV !== 'production') return;
 
-function corsOrigin(
-  origin: string | undefined,
-  callback: CorsOriginCallback,
-): void {
-  if (!origin) {
-    callback(null, true);
-    return;
+  const missing: string[] = [];
+  if (!process.env.CAPTCHA_SECRET) missing.push('CAPTCHA_SECRET');
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Lipsesc variabile de mediu obligatorii în producție: ${missing.join(', ')}. ` +
+        'Setează-le în .env înainte de a porni serverul.',
+    );
   }
-
-  // PUBLIC_HOSTNAME e verificat indiferent de mediu - altfel un domeniu
-  // public setat pentru producție era ignorat de ramura de mai jos.
-  const publicHostname = process.env.PUBLIC_HOSTNAME;
-  const isPublicHostname = publicHostname
-    ? new RegExp(
-        `^https?://(www\\.)?${publicHostname.replace(/\./g, '\\.')}(:\\d+)?$`,
-      ).test(origin)
-    : false;
-
-  if (process.env.NODE_ENV === 'production') {
-    const allowed = process.env.FRONTEND_URL ?? 'http://localhost:8080';
-    callback(null, origin === allowed || isPublicHostname);
-    return;
-  }
-
-  const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
-  callback(null, isLocalhost || isPublicHostname);
 }
 
 async function bootstrap() {
+  assertProductionSecrets();
   const app = await NestFactory.create(AppModule);
+
+  app.use(
+    helmet({
+      // API JSON pură, fără pagini HTML - CSP n-are ce să constrângă aici
+      // și doar ar crea confuzie; restul header-elor (HSTS, X-Frame-Options,
+      // X-Content-Type-Options, Referrer-Policy) rămân active.
+      contentSecurityPolicy: false,
+      // Consumat de frontend-ul Flutter web de pe alt origin - politica
+      // implicită "same-origin" ar bloca acel consum cross-origin.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({

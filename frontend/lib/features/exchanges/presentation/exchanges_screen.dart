@@ -25,6 +25,17 @@ String _formatDateTime(DateTime dateTime) {
   return '${two(local.day)}.${two(local.month)}.${local.year}, ${two(local.hour)}:${two(local.minute)}';
 }
 
+String _formatRelative(BuildContext context, DateTime time) {
+  final l10n = context.l10n;
+  final diff = DateTime.now().difference(time);
+  if (diff.inMinutes < 1) return l10n.timeJustNow;
+  if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.timeDaysAgo(diff.inDays);
+  final local = time.toLocal();
+  return '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}.${local.year}';
+}
+
 class ExchangesScreen extends StatefulWidget {
   const ExchangesScreen({super.key});
 
@@ -105,15 +116,20 @@ class _ExchangeList extends ConsumerWidget {
               ),
             );
           }
-          return ListView.separated(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => _ExchangeCard(
-              exchange: items[index],
-              isReceived: mode == _ExchangeListMode.received,
-              myUserId: myUserId,
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 840),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) => _ExchangeCard(
+                  exchange: items[index],
+                  isReceived: mode == _ExchangeListMode.received,
+                  myUserId: myUserId,
+                ),
+              ),
             ),
           );
         },
@@ -153,39 +169,77 @@ class _ExchangeCard extends ConsumerWidget {
     final alreadyRated = myUserId != null && exchange.myRatingGiven(myUserId!);
     final l10n = context.l10n;
 
+    final offeredBook = exchange.offeredBook;
+
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Cele două coperți față în față + ⇄: cardul arată dintr-o
+                // privire ce se dă și ce se primește, fără să citești textul.
                 GestureDetector(
                   onTap: () => context.push(
                     '/books/${exchange.requestedBook.id}',
                     extra: isReceived ? null : exchange.owner,
                   ),
-                  child: BookCover(url: exchange.requestedBook.book.coverUrl, fallbackUrl: exchange.requestedBook.photos.isNotEmpty ? exchange.requestedBook.photos.first : null, width: 56, height: 78),
+                  child: BookCover(
+                    url: exchange.requestedBook.book.coverUrl,
+                    fallbackUrl: exchange.requestedBook.photos.isNotEmpty
+                        ? exchange.requestedBook.photos.first
+                        : null,
+                    title: exchange.requestedBook.book.title,
+                    width: 48,
+                    height: 68,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                if (offeredBook != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Icon(Icons.swap_horiz, size: 18, color: AppColors.mutedForeground),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.push('/books/${offeredBook.id}'),
+                    child: BookCover(
+                      url: offeredBook.book.coverUrl,
+                      fallbackUrl: offeredBook.photos.isNotEmpty ? offeredBook.photos.first : null,
+                      title: offeredBook.book.title,
+                      width: 48,
+                      height: 68,
+                    ),
+                  ),
+                ] else
+                  const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GestureDetector(
-                        onTap: () => context.push(
-                          '/books/${exchange.requestedBook.id}',
-                          extra: isReceived ? null : exchange.owner,
-                        ),
-                        child: Text(
-                          exchange.requestedBook.book.title,
-                          style: Theme.of(context).textTheme.titleSmall,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => context.push(
+                                '/books/${exchange.requestedBook.id}',
+                                extra: isReceived ? null : exchange.owner,
+                              ),
+                              child: Text(
+                                exchange.requestedBook.book.title,
+                                style: Theme.of(context).textTheme.titleSmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _StatusChip(status: exchange.status),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
@@ -201,9 +255,9 @@ class _ExchangeCard extends ConsumerWidget {
                               ?.copyWith(color: AppColors.mutedForeground, decoration: TextDecoration.underline),
                         ),
                       ),
-                      if (exchange.offeredBook != null)
+                      if (offeredBook != null)
                         Text(
-                          l10n.exchangeOffersBook(exchange.offeredBook!.book.title),
+                          l10n.exchangeOffersBook(offeredBook.book.title),
                           style: Theme.of(context).textTheme.bodySmall,
                         )
                       else if (exchange.offeredAmount != null)
@@ -211,24 +265,46 @@ class _ExchangeCard extends ConsumerWidget {
                           l10n.exchangeOffersAmount(exchange.offeredAmount!.toStringAsFixed(0)),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
+                      // Meta line: momentul cererii - lipsea complet înainte.
+                      const SizedBox(height: 3),
+                      Text(
+                        _formatRelative(context, exchange.createdAt),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                      ),
+                      if (exchange.message != null && exchange.message!.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        // Bară verticală + serif: comentariul arată ca un citat
+                        // în interiorul cardului, nu ca text scăpat din layout.
+                        Container(
+                          padding: const EdgeInsets.only(left: 12),
+                          decoration: BoxDecoration(
+                            border: Border(left: BorderSide(color: AppColors.border, width: 2)),
+                          ),
+                          child: Text(
+                            exchange.message!,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontStyle: FontStyle.italic,
+                                  color: AppColors.mutedForeground,
+                                ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                _StatusChip(status: exchange.status),
               ],
             ),
-            if (exchange.message != null && exchange.message!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                '„${exchange.message}"',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+            const SizedBox(height: 14),
+            // Un singur footer, separat printr-o linie, aliniat dreapta -
+            // aceeași structură indiferent de status.
+            Container(
+              padding: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
+              child: _Actions(
+                exchange: exchange,
+                isReceived: isReceived,
+                alreadyRated: alreadyRated,
               ),
-            ],
-            const SizedBox(height: 12),
-            _Actions(
-              exchange: exchange,
-              isReceived: isReceived,
-              alreadyRated: alreadyRated,
             ),
           ],
         ),
@@ -817,14 +893,19 @@ class _OfferList extends ConsumerWidget {
               ),
             );
           }
-          return ListView.separated(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => _OfferCard(
-              offer: items[index],
-              isReceived: mode == _OfferListMode.received,
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 840),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) => _OfferCard(
+                  offer: items[index],
+                  isReceived: mode == _OfferListMode.received,
+                ),
+              ),
             ),
           );
         },
@@ -869,7 +950,7 @@ class _OfferCard extends ConsumerWidget {
               children: [
                 GestureDetector(
                   onTap: () => context.push('/books/${offer.userBook.id}'),
-                  child: BookCover(url: offer.userBook.book.coverUrl, fallbackUrl: offer.userBook.photos.isNotEmpty ? offer.userBook.photos.first : null, width: 56, height: 78),
+                  child: BookCover(url: offer.userBook.book.coverUrl, fallbackUrl: offer.userBook.photos.isNotEmpty ? offer.userBook.photos.first : null, title: offer.userBook.book.title, width: 56, height: 78),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

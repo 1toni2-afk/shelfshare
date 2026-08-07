@@ -45,6 +45,68 @@ export class AccountDeletionService {
     return { scheduledFor };
   }
 
+  /**
+   * GDPR "dreptul de acces/portabilitate" - exportă datele proprii ale
+   * userului ca JSON. Folosim `select` explicit (nu `include` de pe User)
+   * ca să nu riscăm să scurgem vreodată parola/hash-urile/token-urile prin
+   * adăugarea neatentă a unui câmp nou pe model.
+   */
+  async exportMyData(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        username: true,
+        city: true,
+        bio: true,
+        profileImage: true,
+        isEmailVerified: true,
+        rating: true,
+        booksExchangedCount: true,
+        booksSharedCount: true,
+        booksReceivedCount: true,
+        avgCommunicationRating: true,
+        avgPunctualityRating: true,
+        avgConditionRating: true,
+        xp: true,
+        currentStreakDays: true,
+        longestStreakDays: true,
+        isPremium: true,
+        supporterSince: true,
+        birthdayDay: true,
+        birthdayMonth: true,
+        languages: true,
+        referralCode: true,
+        createdAt: true,
+        updatedAt: true,
+
+        userBooks: { include: { book: true } },
+        sentExchangeRequests: true,
+        receivedExchangeRequests: true,
+        offersMade: true,
+        offersReceived: true,
+        messagesSent: true,
+        wishlistItems: { include: { book: true } },
+        bookshelfEntries: { include: { book: true } },
+        auctionBids: true,
+        auctionsWon: true,
+        collections: { include: { items: true } },
+        groupMemberships: true,
+        groupPosts: true,
+        feedback: true,
+        securityEvents: { orderBy: { createdAt: 'desc' }, take: 200 },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+
+    return { exportedAt: new Date().toISOString(), data: user };
+  }
+
   async cancelDeletion(userId: string): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

@@ -14,6 +14,8 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
 import '../../notifications/presentation/notification_routing.dart';
+import '../../exchanges/application/exchanges_controller.dart';
+import '../../../data/models/exchange_request.dart';
 import '../application/home_controller.dart';
 
 /// Metricile grilei sunt aceleași ca ale delegate-ului (vezi [_BookSliverGrid]).
@@ -206,6 +208,7 @@ class _HomeFeed extends StatelessWidget {
     final slivers = <Widget>[
       const SliverToBoxAdapter(child: _NotificationHaloHeader()),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
+      const SliverToBoxAdapter(child: _PendingSwapBanner()),
     ];
     var cursor = 0;
     for (var i = 0; i < sections.length; i++) {
@@ -278,6 +281,54 @@ class _NotificationHaloHeader extends ConsumerWidget {
           avatar: avatar,
           onBubbleTap: (n) => openNotification(context, ref, n),
           onOverflowTap: () => context.push('/notifications'),
+        ),
+      ),
+    );
+  }
+}
+
+/// Banner de acțiune în așteptare - cererile de schimb primite și încă
+/// nedecise, sus în feed, înainte de secțiunile de descoperire (Milestone 20).
+/// Dispare complet când nu e nimic de decis, nu ocupă spațiu degeaba.
+class _PendingSwapBanner extends ConsumerWidget {
+  const _PendingSwapBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exchanges = ref.watch(exchangesControllerProvider).value;
+    final pending = exchanges?.received.where((e) => e.status == ExchangeStatus.pending).length ?? 0;
+    if (pending == 0) return const SizedBox.shrink();
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final side = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
+    final l10n = context.l10n;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16 + side, 0, 16 + side, 12),
+      child: Material(
+        color: AppColors.accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => context.push('/exchanges'),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.swap_horiz, color: AppColors.accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.homePendingSwapBanner(pending),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.accent),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push('/exchanges'),
+                  child: Text(l10n.homePendingSwapReview),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

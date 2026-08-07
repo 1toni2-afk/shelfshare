@@ -68,7 +68,10 @@ describe('ConversationsService', () => {
         ConversationsService,
         { provide: PrismaService, useValue: prisma },
         { provide: StorageService, useValue: storage },
-        { provide: NotificationsService, useValue: { create: jest.fn() } },
+        {
+          provide: NotificationsService,
+          useValue: { create: jest.fn(), upsertUnread: jest.fn(), markAsReadByDataField: jest.fn() },
+        },
         {
           provide: SafetyService,
           useValue: { assertNotBlocked: jest.fn() },
@@ -271,6 +274,7 @@ describe('ConversationsService', () => {
         photo: null,
       });
       prisma.conversation.update.mockResolvedValue(conversation);
+      prisma.user.findUnique.mockResolvedValue({ name: 'Ana' });
     });
 
     it('notifică celălalt participant, nu pe expeditor', async () => {
@@ -279,11 +283,12 @@ describe('ConversationsService', () => {
         content: 'salut',
       });
 
-      expect(notifications.create).toHaveBeenCalledWith(
+      expect(notifications.upsertUnread).toHaveBeenCalledWith(
         'user-b',
         'NEW_MESSAGE',
         expect.any(String),
         { conversationId: 'conv-1' },
+        'conversationId',
       );
     });
 

@@ -24,9 +24,12 @@ class MyLibraryScreen extends ConsumerStatefulWidget {
   ConsumerState<MyLibraryScreen> createState() => _MyLibraryScreenState();
 }
 
+enum _StatusFilter { all, available, unavailable, transferred }
+
 class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   bool _sheetOpen = false;
   bool _isGridView = true;
+  _StatusFilter _filter = _StatusFilter.all;
   final Set<String> _selectedIds = {};
 
   bool get _selectionMode => _selectedIds.isNotEmpty;
@@ -158,22 +161,41 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     }
   }
 
-  /// Grila sau lista de carduri pentru un subset (disponibile / indisponibile).
-  /// Shrink-wrapped și fără scroll propriu - trăiește într-un ListView exterior.
-  Widget _booksView(List<UserBook> books) {
+  /// Grila sau lista de carduri pentru un subset filtrat. Shrink-wrapped și
+  /// fără scroll propriu - trăiește într-un ListView exterior. `trailingAdd`
+  /// adaugă un card „Add a book" la final - locul cel mai natural pentru
+  /// acțiune, în grila unificată (Milestone 20).
+  Widget _booksView(List<_ShelfItem> items, {bool trailingAdd = false}) {
     if (!_isGridView) {
       return ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: books.length,
+        itemCount: items.length + (trailingAdd ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: 8),
-        itemBuilder: (context, index) => _MyLibraryListRow(
-          userBook: books[index],
-          selected: _selectedIds.contains(books[index].id),
-          onTap: () => _handleTap(books[index]),
-          onLongPress: () => _toggleSelected(books[index].id),
-          onMenu: () => _openActions(books[index]),
-        ),
+        itemBuilder: (context, index) {
+          if (index >= items.length) {
+            return ListTile(
+              leading: const Icon(Icons.add),
+              title: Text(context.l10n.myShelfShare),
+              onTap: () => context.push('/library/add'),
+            );
+          }
+          final item = items[index];
+          return _MyLibraryListRow(
+            userBook: item.userBook,
+            status: item.status,
+            selected: _selectedIds.contains(item.userBook.id),
+            onTap: item.status == _StatusFilter.transferred
+                ? () => context.push('/books/${item.userBook.id}')
+                : () => _handleTap(item.userBook),
+            onLongPress: item.status == _StatusFilter.transferred
+                ? null
+                : () => _toggleSelected(item.userBook.id),
+            onMenu: item.status == _StatusFilter.transferred
+                ? null
+                : () => _openActions(item.userBook),
+          );
+        },
       );
     }
     // Aceeași grilă ca pe Home (vezi book_grid_metrics.dart).
@@ -186,15 +208,25 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         crossAxisSpacing: kBookGridCrossAxisSpacing,
         childAspectRatio: kBookCardAspectRatio,
       ),
-      itemCount: books.length,
+      itemCount: items.length + (trailingAdd ? 1 : 0),
       itemBuilder: (context, index) {
-        final userBook = books[index];
+        if (index >= items.length) {
+          return _AddBookCard(onTap: () => context.push('/library/add'));
+        }
+        final item = items[index];
         return _MyLibraryCard(
-          userBook: userBook,
-          selected: _selectedIds.contains(userBook.id),
-          onTap: () => _handleTap(userBook),
-          onLongPress: () => _toggleSelected(userBook.id),
-          onMenu: () => _openActions(userBook),
+          userBook: item.userBook,
+          status: item.status,
+          selected: _selectedIds.contains(item.userBook.id),
+          onTap: item.status == _StatusFilter.transferred
+              ? () => context.push('/books/${item.userBook.id}')
+              : () => _handleTap(item.userBook),
+          onLongPress: item.status == _StatusFilter.transferred
+              ? null
+              : () => _toggleSelected(item.userBook.id),
+          onMenu: item.status == _StatusFilter.transferred
+              ? null
+              : () => _openActions(item.userBook),
         );
       },
     );
@@ -397,42 +429,63 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   child: Text(l10n.libraryEmpty),
                 );
               }
-              // Milestone 18: cărțile disponibile se văd toate direct;
-              // indisponibilele stau într-un dropdown închis by default.
+              final transferred = ref.watch(emptiedShelvesProvider).value ?? const [];
               final available = [
-                for (final b in books) if (b.availableForSwap) b,
+                for (final b in books) if (b.availableForSwap) _ShelfItem(b, _StatusFilter.available),
               ];
               final unavailable = [
-                for (final b in books) if (!b.availableForSwap) b,
+                for (final b in books) if (!b.availableForSwap) _ShelfItem(b, _StatusFilter.unavailable),
               ];
+              final transferredItems = [
+                for (final b in transferred) _ShelfItem(b, _StatusFilter.transferred),
+              ];
+              final all = [...available, ...unavailable, ...transferredItems];
+              final filtered = switch (_filter) {
+                _StatusFilter.all => all,
+                _StatusFilter.available => available,
+                _StatusFilter.unavailable => unavailable,
+                _StatusFilter.transferred => transferredItems,
+              };
+
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
-                  if (available.isNotEmpty) _booksView(available),
-                  if (unavailable.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Theme(
-                      // Ascundem liniile implicite ale ExpansionTile.
-                      data: Theme.of(context)
-                          .copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        tilePadding: EdgeInsets.zero,
-                        childrenPadding: const EdgeInsets.only(top: 8),
-                        initiallyExpanded: false,
-                        title: Text(
-                          '${l10n.libraryUnavailable} (${unavailable.length})',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(color: AppColors.mutedForeground),
-                        ),
-                        children: [_booksView(unavailable)],
+                  Text(
+                    l10n.libraryShelfSubtitle(all.length, available.length),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _StatusPill(
+                        label: l10n.libraryFilterAll(all.length),
+                        selected: _filter == _StatusFilter.all,
+                        onTap: () => setState(() => _filter = _StatusFilter.all),
                       ),
-                    ),
-                  ],
-                  const SizedBox(height: 32),
-                  const _EmptiedShelvesSection(),
+                      _StatusPill(
+                        label: l10n.libraryFilterAvailable(available.length),
+                        selected: _filter == _StatusFilter.available,
+                        onTap: () => setState(() => _filter = _StatusFilter.available),
+                      ),
+                      _StatusPill(
+                        label: l10n.libraryFilterUnavailable(unavailable.length),
+                        selected: _filter == _StatusFilter.unavailable,
+                        onTap: () => setState(() => _filter = _StatusFilter.unavailable),
+                      ),
+                      _StatusPill(
+                        label: l10n.libraryFilterTransferred(transferredItems.length),
+                        selected: _filter == _StatusFilter.transferred,
+                        onTap: () => setState(() => _filter = _StatusFilter.transferred),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  const Divider(height: 1),
+                  const SizedBox(height: 18),
+                  _booksView(filtered, trailingAdd: _filter != _StatusFilter.transferred),
                 ],
               );
             },
@@ -457,18 +510,71 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   }
 }
 
+/// Un item al gridului unificat: cartea + statusul cu care e afișată acum
+/// (poate diferi de `userBook.availableForSwap` pentru cele transferate, care
+/// nu mai au sens ca „unavailable" - au propriul badge).
+class _ShelfItem {
+  const _ShelfItem(this.userBook, this.status);
+  final UserBook userBook;
+  final _StatusFilter status;
+}
+
+/// Badge-ul de status - același text/culoare pe card (grid) și pe rând (listă).
+class _StatusChipLabel extends StatelessWidget {
+  const _StatusChipLabel({required this.status, this.dense = false});
+  final _StatusFilter status;
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final (label, color, bg) = switch (status) {
+      _StatusFilter.available => (
+          l10n.libraryAvailable,
+          AppColors.accent,
+          AppColors.accent.withValues(alpha: dense ? 0.9 : 0.15),
+        ),
+      _StatusFilter.unavailable => (
+          l10n.libraryUnavailable,
+          AppColors.mutedForeground,
+          dense ? AppColors.muted.withValues(alpha: 0.9) : AppColors.muted,
+        ),
+      _StatusFilter.transferred => (
+          l10n.inventoryTransferred,
+          AppColors.accent,
+          AppColors.accent.withValues(alpha: dense ? 0.9 : 0.15),
+        ),
+      _StatusFilter.all => (l10n.libraryAvailable, AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: dense && status == _StatusFilter.available ? AppColors.primaryForeground : color,
+              fontWeight: FontWeight.w600,
+              fontSize: dense ? 11 : null,
+            ),
+      ),
+    );
+  }
+}
+
 class _MyLibraryListRow extends StatelessWidget {
   const _MyLibraryListRow({
     required this.userBook,
+    required this.status,
     required this.onTap,
-    required this.onLongPress,
-    required this.onMenu,
+    this.onLongPress,
+    this.onMenu,
     this.selected = false,
   });
   final UserBook userBook;
+  final _StatusFilter status;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
-  final VoidCallback onMenu;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onMenu;
   final bool selected;
 
   @override
@@ -476,49 +582,43 @@ class _MyLibraryListRow extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       color: selected ? AppColors.accent.withValues(alpha: 0.1) : null,
-      child: ListTile(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        leading: selected
-            ? const Icon(Icons.check_circle, color: AppColors.accent)
-            : BookCover(url: userBook.book.coverUrl, fallbackUrl: userBook.photos.isNotEmpty ? userBook.photos.first : null, width: 44, height: 62),
-        title: Text(userBook.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-          [
-            if (userBook.book.author != null) userBook.book.author!,
-            userBook.condition.label(context.l10n),
-            if (userBook.isForSale && userBook.salePrice != null)
-              context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
-          ].join(' · '),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: userBook.availableForSwap
-                    ? AppColors.accent.withValues(alpha: 0.15)
-                    : AppColors.muted,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                userBook.availableForSwap ? context.l10n.libraryAvailable : context.l10n.libraryUnavailable,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: userBook.availableForSwap ? AppColors.accent : AppColors.mutedForeground,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-            // 3 puncte: acțiuni pe anunț (editează, disponibilitate, șterge).
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              tooltip: context.l10n.libraryEditListing,
-              onPressed: onMenu,
-            ),
-          ],
+      child: Opacity(
+        opacity: status == _StatusFilter.available ? 1 : 0.75,
+        child: ListTile(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          leading: selected
+              ? const Icon(Icons.check_circle, color: AppColors.accent)
+              : BookCover(
+                  url: userBook.book.coverUrl,
+                  fallbackUrl: userBook.photos.isNotEmpty ? userBook.photos.first : null,
+                  title: userBook.book.title,
+                  width: 44,
+                  height: 62,
+                ),
+          title: Text(userBook.book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Text(
+            [
+              if (userBook.book.author != null) userBook.book.author!,
+              userBook.condition.label(context.l10n),
+              if (userBook.isForSale && userBook.salePrice != null)
+                context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
+            ].join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _StatusChipLabel(status: status),
+              if (onMenu != null)
+                IconButton(
+                  icon: const Icon(Icons.more_horiz),
+                  tooltip: context.l10n.libraryEditListing,
+                  onPressed: onMenu,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -528,81 +628,123 @@ class _MyLibraryListRow extends StatelessWidget {
 class _MyLibraryCard extends StatelessWidget {
   const _MyLibraryCard({
     required this.userBook,
+    required this.status,
     required this.onTap,
-    required this.onLongPress,
-    required this.onMenu,
+    this.onLongPress,
+    this.onMenu,
     this.selected = false,
   });
   final UserBook userBook;
+  final _StatusFilter status;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
-  final VoidCallback onMenu;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onMenu;
   final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
     // Fără lățime fixă: cardul umple celula grilei, ca pe Home. Eticheta de
-    // disponibilitate stă peste copertă, nu sub card - dedesubt ar fi depășit
-    // înălțimea celulei (kBookCardAspectRatio e calculat pentru copertă +
-    // titlu + autor, atât).
+    // status stă peste copertă (colț stânga-sus), „⋯" în colțul opus - nu
+    // mai concurează cu inima de wishlist din alte ecrane (Milestone 20).
     return GestureDetector(
       onLongPress: onLongPress,
-      child: Stack(
-        children: [
-          BookCard(userBook: userBook, onTap: onTap),
-          Positioned(
-            top: 6,
-            left: 6,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: userBook.availableForSwap
-                    ? AppColors.accent.withValues(alpha: 0.9)
-                    : AppColors.muted.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                userBook.availableForSwap ? l10n.libraryAvailable : l10n.libraryUnavailable,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: userBook.availableForSwap
-                          ? AppColors.primaryForeground
-                          : AppColors.mutedForeground,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
-                    ),
-              ),
-            ),
-          ),
-          if (selected)
-            const Positioned(
-              top: 6,
-              right: 6,
-              child: Icon(Icons.check_circle, color: AppColors.accent),
-            )
-          else
-            // 3 puncte în dreapta sus: acțiuni pe anunț (editează,
-            // disponibilitate, șterge). Ascuns în modul de selecție, unde locul
-            // e ocupat de bifă.
+      child: Opacity(
+        opacity: status == _StatusFilter.available ? 1 : 0.65,
+        child: Stack(
+          children: [
+            BookCard(userBook: userBook, onTap: onTap, showWishlistHeart: false),
             Positioned(
-              top: 0,
-              right: 0,
-              child: Material(
-                color: Colors.transparent,
-                child: IconButton(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  tooltip: l10n.libraryEditListing,
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.muted.withValues(alpha: 0.7),
-                    minimumSize: const Size(32, 32),
-                    padding: EdgeInsets.zero,
+              top: 6,
+              left: 6,
+              child: _StatusChipLabel(status: status, dense: true),
+            ),
+            if (selected)
+              const Positioned(
+                top: 6,
+                right: 6,
+                child: Icon(Icons.check_circle, color: AppColors.accent),
+              )
+            else if (onMenu != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Material(
+                  color: Colors.transparent,
+                  child: IconButton(
+                    icon: const Icon(Icons.more_horiz, size: 18),
+                    tooltip: context.l10n.libraryEditListing,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.muted.withValues(alpha: 0.7),
+                      minimumSize: const Size(32, 32),
+                      padding: EdgeInsets.zero,
+                    ),
+                    onPressed: onMenu,
                   ),
-                  onPressed: onMenu,
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.selected, required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: selected ? AppColors.accent.withValues(alpha: 0.4) : AppColors.border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: selected ? AppColors.accent : AppColors.mutedForeground,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AddBookCard extends StatelessWidget {
+  const _AddBookCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 2 / 3,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add, size: 22, color: AppColors.mutedForeground),
+              const SizedBox(height: 6),
+              Text(context.l10n.myShelfShare, style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -689,98 +831,3 @@ class _BookActionsSheet extends ConsumerWidget {
   }
 }
 
-/// „Emptied Shelves" - cărțile deja transferate. Marcate ca istoric imutabil
-/// în josul bibliotecii, cu badge de „schimbată" - user cerea să apară
-/// permanent ca fiind indisponibile.
-class _EmptiedShelvesSection extends ConsumerWidget {
-  const _EmptiedShelvesSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final async = ref.watch(emptiedShelvesProvider);
-    return async.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
-      data: (items) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.archive_outlined, size: 20, color: AppColors.mutedForeground),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.libraryEmptiedShelves,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (items.isEmpty)
-              Text(
-                l10n.libraryEmptiedShelvesEmpty,
-                style: Theme.of(context).textTheme.bodySmall,
-              )
-            else
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  for (final b in items) _EmptiedShelfCard(userBook: b),
-                ],
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _EmptiedShelfCard extends StatelessWidget {
-  const _EmptiedShelfCard({required this.userBook});
-  final UserBook userBook;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 120,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              // Cover afișat cu opacitate redusă ca să indice „nu mai e activă".
-              Opacity(
-                opacity: 0.55,
-                child: BookCover(url: userBook.book.coverUrl, fallbackUrl: userBook.photos.isNotEmpty ? userBook.photos.first : null, width: 120, height: 168),
-              ),
-              Positioned(
-                left: 4,
-                top: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.foreground.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    context.l10n.inventoryTransferred,
-                    style: TextStyle(color: AppColors.background, fontSize: 10),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            userBook.book.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
-    );
-  }
-}

@@ -6,12 +6,15 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { AdminAuditInterceptor } from './admin-audit.interceptor';
 
 @UseGuards(JwtAuthGuard, AdminGuard)
+@UseInterceptors(AdminAuditInterceptor)
 @Controller('admin')
 export class AdminController {
   constructor(private adminService: AdminService) {}
@@ -29,6 +32,11 @@ export class AdminController {
   @Get('stats/active-zones')
   getActiveZones() {
     return this.adminService.getActiveZones();
+  }
+
+  @Get('stats/security')
+  getSecurityStats() {
+    return this.adminService.getSecurityStats();
   }
 
   @Get('users')

@@ -63,65 +63,84 @@ const USERS = [
 ];
 
 const BOOKS = [
-  { title: 'Ion', author: 'Liviu Rebreanu', isbn: null, genre: 'Clasic românesc', publishedYear: 1920, language: 'Română', pageCount: 480 },
-  { title: 'Enigma Otiliei', author: 'George Călinescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1938, language: 'Română', pageCount: 480 },
-  { title: 'Moromeții', author: 'Marin Preda', isbn: null, genre: 'Clasic românesc', publishedYear: 1955, language: 'Română', pageCount: 400 },
-  { title: 'Baltagul', author: 'Mihail Sadoveanu', isbn: null, genre: 'Clasic românesc', publishedYear: 1930, language: 'Română', pageCount: 200 },
-  { title: 'Craii de Curtea-Veche', author: 'Mateiu Caragiale', isbn: null, genre: 'Clasic românesc', publishedYear: 1929, language: 'Română', pageCount: 160 },
-  { title: 'Amintiri din copilărie', author: 'Ion Creangă', isbn: null, genre: 'Clasic românesc', publishedYear: 1892, language: 'Română', pageCount: 220 },
-  { title: '1984', author: 'George Orwell', isbn: '9780451524935', genre: 'Distopie', publishedYear: 1949, language: 'Engleză', pageCount: 328 },
-  { title: 'Crimă și pedeapsă', author: 'Feodor Dostoievski', isbn: '9780486415871', genre: 'Clasic', publishedYear: 1866, language: 'Română', pageCount: 671 },
-  { title: 'Micul Prinț', author: 'Antoine de Saint-Exupéry', isbn: '9780156012195', genre: 'Ficțiune', publishedYear: 1943, language: 'Română', pageCount: 96 },
-  { title: 'Harry Potter și Piatra Filosofală', author: 'J.K. Rowling', isbn: '9780747532699', genre: 'Fantasy', publishedYear: 1997, language: 'Română', pageCount: 320 },
-  { title: 'Stăpânul Inelelor: Frăția Inelului', author: 'J.R.R. Tolkien', isbn: '9780618346257', genre: 'Fantasy', publishedYear: 1954, language: 'Română', pageCount: 423 },
-  { title: 'Jocurile Foamei', author: 'Suzanne Collins', isbn: '9780439023528', genre: 'SF', publishedYear: 2008, language: 'Română', pageCount: 374 },
-  { title: 'Leul, Vrăjitoarea și Dulapul', author: 'C.S. Lewis', isbn: '9780064404990', genre: 'Fantasy', publishedYear: 1950, language: 'Română', pageCount: 206 },
-  { title: 'Sapiens: Scurtă istorie a omenirii', author: 'Yuval Noah Harari', isbn: '9780062316097', genre: 'Non-ficțiune', publishedYear: 2011, language: 'Română', pageCount: 443 },
-  { title: 'Atomic Habits', author: 'James Clear', isbn: '9780735211292', genre: 'Dezvoltare personală', publishedYear: 2018, language: 'Engleză', pageCount: 320 },
-  { title: 'Alchimistul', author: 'Paulo Coelho', isbn: '9780062315007', genre: 'Ficțiune', publishedYear: 1988, language: 'Română', pageCount: 208 },
-  { title: 'Să ucizi o pasăre cântătoare', author: 'Harper Lee', isbn: '9780061120084', genre: 'Clasic', publishedYear: 1960, language: 'Română', pageCount: 336 },
-  { title: 'Mândrie și prejudecată', author: 'Jane Austen', isbn: '9780141439518', genre: 'Clasic', publishedYear: 1813, language: 'Română', pageCount: 432 },
-  { title: 'Hobbitul', author: 'J.R.R. Tolkien', isbn: '9780547928227', genre: 'Fantasy', publishedYear: 1937, language: 'Română', pageCount: 310 },
-  { title: 'Dune', author: 'Frank Herbert', isbn: '9780441013593', genre: 'SF', publishedYear: 1965, language: 'Engleză', pageCount: 412 },
-  { title: 'Fahrenheit 451', author: 'Ray Bradbury', isbn: '9781451673319', genre: 'Distopie', publishedYear: 1953, language: 'Română', pageCount: 256 },
-  { title: 'Minunata lume nouă', author: 'Aldous Huxley', isbn: '9780060850524', genre: 'Distopie', publishedYear: 1932, language: 'Română', pageCount: 311 },
-  { title: 'Codul lui Da Vinci', author: 'Dan Brown', isbn: '9780307474278', genre: 'Thriller', publishedYear: 2003, language: 'Română', pageCount: 489 },
-  { title: 'Educated', author: 'Tara Westover', isbn: '9780399590504', genre: 'Biografie', publishedYear: 2018, language: 'Engleză', pageCount: 334 },
-  { title: 'Pădurea Norvegiană', author: 'Haruki Murakami', isbn: '9780375704024', genre: 'Ficțiune', publishedYear: 1987, language: 'Română', pageCount: 296 },
-  { title: 'Vânătorul de zmeie', author: 'Khaled Hosseini', isbn: '9781594631931', genre: 'Ficțiune', publishedYear: 2003, language: 'Română', pageCount: 371 },
-  { title: 'Viața lui Pi', author: 'Yann Martel', isbn: '9780156027328', genre: 'Ficțiune', publishedYear: 2001, language: 'Română', pageCount: 319 },
-  { title: 'Strălucirea', author: 'Stephen King', isbn: '9780307743657', genre: 'Thriller', publishedYear: 1977, language: 'Română', pageCount: 447 },
-  { title: 'Percy Jackson și Fulgerul Furat', author: 'Rick Riordan', isbn: '9780786838653', genre: 'Fantasy', publishedYear: 2005, language: 'Română', pageCount: 377 },
-  { title: 'Divergent', author: 'Veronica Roth', isbn: '9780062024039', genre: 'SF', publishedYear: 2011, language: 'Română', pageCount: 487 },
-  { title: 'Frankenstein', author: 'Mary Shelley', isbn: '9780486282114', genre: 'Clasic', publishedYear: 1818, language: 'Română', pageCount: 280 },
-  { title: 'Steve Jobs', author: 'Walter Isaacson', isbn: '9781451648539', genre: 'Biografie', publishedYear: 2011, language: 'Română', pageCount: 656 },
-  { title: 'Winnie de Pluș', author: 'A.A. Milne', isbn: '9780525444435', genre: 'Copii', publishedYear: 1926, language: 'Română', pageCount: 176 },
-  { title: 'Charlie și Fabrica de Ciocolată', author: 'Roald Dahl', isbn: '9780142410318', genre: 'Copii', publishedYear: 1964, language: 'Română', pageCount: 176 },
-  { title: 'Matilda', author: 'Roald Dahl', isbn: '9780142410370', genre: 'Copii', publishedYear: 1988, language: 'Română', pageCount: 240 },
-  { title: 'Război și pace', author: 'Lev Tolstoi', isbn: '9781400079988', genre: 'Clasic', publishedYear: 1869, language: 'Română', pageCount: 1225 },
-  { title: 'Cel mai iubit dintre pământeni', author: 'Marin Preda', isbn: null, genre: 'Clasic românesc', publishedYear: 1980, language: 'Română', pageCount: 640 },
-  { title: 'Patul lui Procust', author: 'Camil Petrescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1933, language: 'Română', pageCount: 280 },
-  { title: 'Ultima noapte de dragoste, întâia noapte de război', author: 'Camil Petrescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1930, language: 'Română', pageCount: 320 },
-  { title: 'Groapa', author: 'Eugen Barbu', isbn: null, genre: 'Clasic românesc', publishedYear: 1957, language: 'Română', pageCount: 350 },
-  { title: 'Nunta Domnitei Ruxanda', author: 'Bogdan Petriceicu Hasdeu', isbn: null, genre: 'Clasic românesc', publishedYear: 1877, language: 'Română', pageCount: 120 },
-  { title: 'Joc de-a vacanța', author: 'Mihail Sebastian', isbn: null, genre: 'Clasic românesc', publishedYear: 1938, language: 'Română', pageCount: 140 },
-  { title: 'It', author: 'Stephen King', isbn: '9781501142970', genre: 'Thriller', publishedYear: 1986, language: 'Română', pageCount: 1168 },
-  { title: 'Cutremurul', author: 'Ken Follett', isbn: '9780451225467', genre: 'Thriller', publishedYear: 1978, language: 'Română', pageCount: 380 },
-  { title: 'Circul de la miezul nopții', author: 'Erin Morgenstern', isbn: '9780385534635', genre: 'Fantasy', publishedYear: 2011, language: 'Română', pageCount: 512 },
-  { title: 'Numele Trandafirului', author: 'Umberto Eco', isbn: '9780156001311', genre: 'Clasic', publishedYear: 1980, language: 'Română', pageCount: 512 },
-  { title: 'Cronica unei morți anunțate', author: 'Gabriel García Márquez', isbn: '9781400034716', genre: 'Ficțiune', publishedYear: 1981, language: 'Română', pageCount: 120 },
-  { title: 'O sută de ani de singurătate', author: 'Gabriel García Márquez', isbn: '9780060883287', genre: 'Ficțiune', publishedYear: 1967, language: 'Română', pageCount: 417 },
-  { title: 'Talentatul domn Ripley', author: 'Patricia Highsmith', isbn: '9780393332144', genre: 'Thriller', publishedYear: 1955, language: 'Română', pageCount: 290 },
-  { title: 'Educația unui om rațional', author: 'Ray Dalio', isbn: '9781501124020', genre: 'Dezvoltare personală', publishedYear: 2017, language: 'Engleză', pageCount: 592 },
-  { title: 'Gândește repede, gândește încet', author: 'Daniel Kahneman', isbn: '9780374533557', genre: 'Non-ficțiune', publishedYear: 2011, language: 'Română', pageCount: 499 },
-  { title: 'Puterea obiceiului', author: 'Charles Duhigg', isbn: '9780812981605', genre: 'Dezvoltare personală', publishedYear: 2012, language: 'Română', pageCount: 371 },
+  { title: 'Ion', author: 'Liviu Rebreanu', isbn: null, genre: 'Clasic românesc', publishedYear: 1920, language: 'Română', pageCount: 480, description: 'Romanul lui Ion al Glanetașului, ros de setea de pământ, într-un sat ardelenesc de la începutul secolului XX.' },
+  { title: 'Enigma Otiliei', author: 'George Călinescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1938, language: 'Română', pageCount: 480, description: 'Bucureștiul burghez de la 1900, moștenirea lui moș Costache și tânăra Otilia, privite prin ochii adolescentului Felix.' },
+  { title: 'Moromeții', author: 'Marin Preda', isbn: null, genre: 'Clasic românesc', publishedYear: 1955, language: 'Română', pageCount: 400, description: 'Familia lui Ilie Moromete, în satul câmpiei dunărene, în anii dinaintea celui de-Al Doilea Război Mondial.' },
+  { title: 'Baltagul', author: 'Mihail Sadoveanu', isbn: null, genre: 'Clasic românesc', publishedYear: 1930, language: 'Română', pageCount: 200, description: 'Vitoria Lipan pornește să afle ce s-a întâmplat cu soțul ei dispărut, urmând drumul turmelor prin munți.' },
+  { title: 'Craii de Curtea-Veche', author: 'Mateiu Caragiale', isbn: null, genre: 'Clasic românesc', publishedYear: 1929, language: 'Română', pageCount: 160, description: 'O lume decadentă de aristocrați scăpătați, în Bucureștiul nopților lungi de la începutul secolului XX.' },
+  { title: 'Amintiri din copilărie', author: 'Ion Creangă', isbn: null, genre: 'Clasic românesc', publishedYear: 1892, language: 'Română', pageCount: 220, description: 'Copilăria lui Nică a lui Ștefan a Petrei la Humulești, povestită cu umor și limbaj viu, popular.' },
+  { title: '1984', author: 'George Orwell', isbn: '9780451524935', genre: 'Distopie', publishedYear: 1949, language: 'Engleză', pageCount: 328, description: 'Winston Smith trăiește sub supravegherea permanentă a Fratelui cel Mare, într-un stat totalitar care rescrie trecutul.' },
+  { title: 'Crimă și pedeapsă', author: 'Feodor Dostoievski', isbn: '9780486415871', genre: 'Clasic', publishedYear: 1866, language: 'Română', pageCount: 671, description: 'Studentul Raskolnikov comite o crimă și se zbate apoi în vinovăție, în Sankt Petersburgul sărăciei și disperării.' },
+  { title: 'Micul Prinț', author: 'Antoine de Saint-Exupéry', isbn: '9780156012195', genre: 'Ficțiune', publishedYear: 1943, language: 'Română', pageCount: 96, description: 'Un aviator prăbușit în deșert întâlnește un mic prinț venit de pe o planetă îndepărtată, cu o singură floare.' },
+  { title: 'Harry Potter și Piatra Filosofală', author: 'J.K. Rowling', isbn: '9780747532699', genre: 'Fantasy', publishedYear: 1997, language: 'Română', pageCount: 320, description: 'Un băiat orfan descoperă la 11 ani că e vrăjitor și pleacă la Hogwarts, școala de magie.' },
+  { title: 'Stăpânul Inelelor: Frăția Inelului', author: 'J.R.R. Tolkien', isbn: '9780618346257', genre: 'Fantasy', publishedYear: 1954, language: 'Română', pageCount: 423, description: 'Hobbitul Frodo pornește cu un inel al puterii spre Muntele Osândei, alături de o frăție de nouă tovarăși.' },
+  { title: 'Jocurile Foamei', author: 'Suzanne Collins', isbn: '9780439023528', genre: 'SF', publishedYear: 2008, language: 'Română', pageCount: 374, description: 'Într-un viitor distopic, Katniss Everdeen se oferă voluntar pentru un turneu televizat pe viață și pe moarte.' },
+  { title: 'Leul, Vrăjitoarea și Dulapul', author: 'C.S. Lewis', isbn: '9780064404990', genre: 'Fantasy', publishedYear: 1950, language: 'Română', pageCount: 206, description: 'Patru frați descoperă, printr-un dulap vechi, tărâmul fermecat și înghețat al Narniei.' },
+  { title: 'Sapiens: Scurtă istorie a omenirii', author: 'Yuval Noah Harari', isbn: '9780062316097', genre: 'Non-ficțiune', publishedYear: 2011, language: 'Română', pageCount: 443, description: 'O trecere în revistă a istoriei speciei umane, de la triburile de vânători-culegători la civilizația modernă.' },
+  { title: 'Atomic Habits', author: 'James Clear', isbn: '9780735211292', genre: 'Dezvoltare personală', publishedYear: 2018, language: 'Engleză', pageCount: 320, description: 'Un ghid practic despre cum schimbări mici și constante în obiceiuri produc rezultate mari pe termen lung.' },
+  { title: 'Alchimistul', author: 'Paulo Coelho', isbn: '9780062315007', genre: 'Ficțiune', publishedYear: 1988, language: 'Română', pageCount: 208, description: 'Un cioban andaluz pornește spre piramidele Egiptului în căutarea unei comori visate, descoperindu-și menirea.' },
+  { title: 'Să ucizi o pasăre cântătoare', author: 'Harper Lee', isbn: '9780061120084', genre: 'Clasic', publishedYear: 1960, language: 'Română', pageCount: 336, description: 'Fetița Scout povestește copilăria din sudul american segregaționist și procesul apărat de tatăl ei, avocat.' },
+  { title: 'Mândrie și prejudecată', author: 'Jane Austen', isbn: '9780141439518', genre: 'Clasic', publishedYear: 1813, language: 'Română', pageCount: 432, description: 'Elizabeth Bennet și domnul Darcy își depășesc mândria și prejudecățile reciproce, în Anglia rurală de secol XIX.' },
+  { title: 'Hobbitul', author: 'J.R.R. Tolkien', isbn: '9780547928227', genre: 'Fantasy', publishedYear: 1937, language: 'Română', pageCount: 310, description: 'Hobbitul Bilbo Baggins e atras într-o aventură neașteptată alături de pitici, spre comoara păzită de dragonul Smaug.' },
+  { title: 'Dune', author: 'Frank Herbert', isbn: '9780441013593', genre: 'SF', publishedYear: 1965, language: 'Engleză', pageCount: 412, description: 'Pe planeta deșertică Arrakis, tânărul Paul Atreides se confruntă cu politică, religie și controlul asupra "mirodeniei".' },
+  { title: 'Fahrenheit 451', author: 'Ray Bradbury', isbn: '9781451673319', genre: 'Distopie', publishedYear: 1953, language: 'Română', pageCount: 256, description: 'Într-o societate care arde cărțile, pompierul Guy Montag începe să pună la îndoială rostul acestei meserii.' },
+  { title: 'Minunata lume nouă', author: 'Aldous Huxley', isbn: '9780060850524', genre: 'Distopie', publishedYear: 1932, language: 'Română', pageCount: 311, description: 'O societate viitoare controlată prin plăcere, condiționare genetică și droguri, nu prin frică.' },
+  { title: 'Codul lui Da Vinci', author: 'Dan Brown', isbn: '9780307474278', genre: 'Thriller', publishedYear: 2003, language: 'Română', pageCount: 489, description: 'O crimă la Luvru declanșează o vânătoare de coduri ascunse și secrete legate de istoria creștinismului.' },
+  { title: 'Educated', author: 'Tara Westover', isbn: '9780399590504', genre: 'Biografie', publishedYear: 2018, language: 'Engleză', pageCount: 334, description: 'Memoriile unei femei crescute izolat, fără școală, care ajunge totuși la Cambridge printr-o educație autodidactă.' },
+  { title: 'Pădurea Norvegiană', author: 'Haruki Murakami', isbn: '9780375704024', genre: 'Ficțiune', publishedYear: 1987, language: 'Română', pageCount: 296, description: 'Un student japonez rememorează iubirile și pierderile studenției, pe fondul melancolic al anilor 60.' },
+  { title: 'Vânătorul de zmeie', author: 'Khaled Hosseini', isbn: '9781594631931', genre: 'Ficțiune', publishedYear: 2003, language: 'Română', pageCount: 371, description: 'Prietenia dintre doi băieți din Kabul, umbrită de o trădare, urmărită pe fundalul istoriei zbuciumate a Afganistanului.' },
+  { title: 'Viața lui Pi', author: 'Yann Martel', isbn: '9780156027328', genre: 'Ficțiune', publishedYear: 2001, language: 'Română', pageCount: 319, description: 'Un băiat supraviețuiește 227 de zile pe ocean, într-o barcă de salvare împreună cu un tigru bengalez.' },
+  { title: 'Strălucirea', author: 'Stephen King', isbn: '9780307743657', genre: 'Thriller', publishedYear: 1977, language: 'Română', pageCount: 447, description: 'O familie devine îngrijitoare de iarnă la un hotel izolat, ale cărui prezențe malefice îl posedă treptat pe tată.' },
+  { title: 'Percy Jackson și Fulgerul Furat', author: 'Rick Riordan', isbn: '9780786838653', genre: 'Fantasy', publishedYear: 2005, language: 'Română', pageCount: 377, description: 'Un adolescent descoperă că e fiul lui Poseidon și pornește într-o căutare pentru a preveni un război între zei.' },
+  { title: 'Divergent', author: 'Veronica Roth', isbn: '9780062024039', genre: 'SF', publishedYear: 2011, language: 'Română', pageCount: 487, description: 'Într-o societate împărțită pe facțiuni, Tris descoperă că nu se încadrează în niciuna și ascunde acest secret periculos.' },
+  { title: 'Frankenstein', author: 'Mary Shelley', isbn: '9780486282114', genre: 'Clasic', publishedYear: 1818, language: 'Română', pageCount: 280, description: 'Savantul Victor Frankenstein dă viață unei creaturi pe care apoi o respinge, cu urmări tragice pentru amândoi.' },
+  { title: 'Steve Jobs', author: 'Walter Isaacson', isbn: '9781451648539', genre: 'Biografie', publishedYear: 2011, language: 'Română', pageCount: 656, description: 'Biografia autorizată a cofondatorului Apple, de la garaj până la revoluționarea industriei tehnologice.' },
+  { title: 'Winnie de Pluș', author: 'A.A. Milne', isbn: '9780525444435', genre: 'Copii', publishedYear: 1926, language: 'Română', pageCount: 176, description: 'Aventurile ursulețului Winnie și ale prietenilor săi din Pădurea de o Sută de Acri.' },
+  { title: 'Charlie și Fabrica de Ciocolată', author: 'Roald Dahl', isbn: '9780142410318', genre: 'Copii', publishedYear: 1964, language: 'Română', pageCount: 176, description: 'Charlie Bucket câștigă un bilet de aur și vizitează fabrica de ciocolată a excentricului domn Willy Wonka.' },
+  { title: 'Matilda', author: 'Roald Dahl', isbn: '9780142410370', genre: 'Copii', publishedYear: 1988, language: 'Română', pageCount: 240, description: 'O fetiță genială cu puteri telechinetice se confruntă cu părinți neglijenți și o directoare tiranică.' },
+  { title: 'Război și pace', author: 'Lev Tolstoi', isbn: '9781400079988', genre: 'Clasic', publishedYear: 1869, language: 'Română', pageCount: 1225, description: 'Destinele mai multor familii aristocrate rusești, pe fondul invaziei napoleoniene din 1812.' },
+  { title: 'Cel mai iubit dintre pământeni', author: 'Marin Preda', isbn: null, genre: 'Clasic românesc', publishedYear: 1980, language: 'Română', pageCount: 640, description: 'Victor Petrini povestește, din închisoare, un destin frânt de mecanismele represive ale regimului comunist.' },
+  { title: 'Patul lui Procust', author: 'Camil Petrescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1933, language: 'Română', pageCount: 280, description: 'Un roman construit din jurnale și scrisori încrucișate, despre iubiri și iluzii în Bucureștiul interbelic.' },
+  { title: 'Ultima noapte de dragoste, întâia noapte de război', author: 'Camil Petrescu', isbn: null, genre: 'Clasic românesc', publishedYear: 1930, language: 'Română', pageCount: 320, description: 'Ștefan Gheorghidiu trece de la geloziile unei căsnicii la frontul Primului Război Mondial.' },
+  { title: 'Groapa', author: 'Eugen Barbu', isbn: null, genre: 'Clasic românesc', publishedYear: 1957, language: 'Română', pageCount: 350, description: 'Lumea mahalalei bucureștene interbelice, cu personaje pestrițe adunate în cartierul „Groapa".' },
+  { title: 'Nunta Domnitei Ruxanda', author: 'Bogdan Petriceicu Hasdeu', isbn: null, genre: 'Clasic românesc', publishedYear: 1877, language: 'Română', pageCount: 120, description: 'Dramă istorică despre intrigile de curte din jurul nunții fiicei lui Vasile Lupu.' },
+  { title: 'Joc de-a vacanța', author: 'Mihail Sebastian', isbn: null, genre: 'Clasic românesc', publishedYear: 1938, language: 'Română', pageCount: 140, description: 'Piesă de teatru despre un grup de tineri care își petrec vacanța la munte, între iluzii și dezamăgiri.' },
+  { title: 'It', author: 'Stephen King', isbn: '9781501142970', genre: 'Thriller', publishedYear: 1986, language: 'Română', pageCount: 1168, description: 'Un grup de copii din Derry se confruntă cu o entitate malefică ce revine la fiecare 27 de ani.' },
+  { title: 'Cutremurul', author: 'Ken Follett', isbn: '9780451225467', genre: 'Thriller', publishedYear: 1978, language: 'Română', pageCount: 380, description: 'Un jurnalist descoperă un complot legat de securitatea unei centrale nucleare din Franța.' },
+  { title: 'Circul de la miezul nopții', author: 'Erin Morgenstern', isbn: '9780385534635', genre: 'Fantasy', publishedYear: 2011, language: 'Română', pageCount: 512, description: 'Un circ misterios, deschis doar noaptea, devine scena unei competiții magice între doi tineri iluzioniști.' },
+  { title: 'Numele Trandafirului', author: 'Umberto Eco', isbn: '9780156001311', genre: 'Clasic', publishedYear: 1980, language: 'Română', pageCount: 512, description: 'Un călugăr franciscan anchetează o serie de morți misterioase într-o mănăstire medievală italiană.' },
+  { title: 'Cronica unei morți anunțate', author: 'Gabriel García Márquez', isbn: '9781400034716', genre: 'Ficțiune', publishedYear: 1981, language: 'Română', pageCount: 120, description: 'Toată lumea dintr-un orășel știe că Santiago Nasar va fi ucis - și totuși nimeni nu reușește să-l salveze.' },
+  { title: 'O sută de ani de singurătate', author: 'Gabriel García Márquez', isbn: '9780060883287', genre: 'Ficțiune', publishedYear: 1967, language: 'Română', pageCount: 417, description: 'Șapte generații ale familiei Buendía, în orășelul fictiv Macondo, între realism și magie.' },
+  { title: 'Talentatul domn Ripley', author: 'Patricia Highsmith', isbn: '9780393332144', genre: 'Thriller', publishedYear: 1955, language: 'Română', pageCount: 290, description: 'Tom Ripley e trimis în Italia să-l aducă acasă pe fiul unui magnat, dar ajunge să-i râvnească identitatea.' },
+  { title: 'Educația unui om rațional', author: 'Ray Dalio', isbn: '9781501124020', genre: 'Dezvoltare personală', publishedYear: 2017, language: 'Engleză', pageCount: 592, description: 'Principii de viață și de management, distilate din cariera fondatorului unui fond de investiții.' },
+  { title: 'Gândește repede, gândește încet', author: 'Daniel Kahneman', isbn: '9780374533557', genre: 'Non-ficțiune', publishedYear: 2011, language: 'Română', pageCount: 499, description: 'Un psiholog laureat Nobel explică cele două sisteme de gândire care ne modelează deciziile.' },
+  { title: 'Puterea obiceiului', author: 'Charles Duhigg', isbn: '9780812981605', genre: 'Dezvoltare personală', publishedYear: 2012, language: 'Română', pageCount: 371, description: 'De ce se formează obiceiurile, cum funcționează în creier și cum pot fi schimbate deliberat.' },
 ];
 
 const CONDITIONS: BookCondition[] = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'];
 
-function coverUrl(isbn: string | null): string | null {
-  if (!isbn) return null;
+function coverUrlByIsbn(isbn: string): string {
   return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
+}
+
+/**
+ * Cărțile clasice românești nu au ISBN modern unic (multe ediții diferite),
+ * deci nu putem construi un URL de copertă direct din ISBN. Căutăm titlul pe
+ * Open Library la seed-time, ca să nu rămână fără copertă - vezi bug-ul
+ * raportat „Many books have no cover" (Milestone 19).
+ */
+async function findCoverByTitle(title: string, author: string): Promise<string | null> {
+  try {
+    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(`${title} ${author}`)}&limit=1&fields=cover_i`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = (await res.json()) as { docs?: { cover_i?: number }[] };
+    const coverId = data.docs?.[0]?.cover_i;
+    return coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : null;
+  } catch (error) {
+    console.warn(`Nu am găsit copertă pentru „${title}": ${error}`);
+    return null;
+  }
 }
 
 /**
@@ -192,6 +211,7 @@ async function main() {
   console.log('Creez cărți...');
   const books: Book[] = [];
   for (const b of BOOKS) {
+    const cover = b.isbn ? coverUrlByIsbn(b.isbn) : await findCoverByTitle(b.title, b.author);
     const book = await prisma.book.create({
       data: {
         isbn: b.isbn,
@@ -201,9 +221,9 @@ async function main() {
         publishedYear: b.publishedYear,
         language: b.language,
         pageCount: b.pageCount,
-        coverUrl: coverUrl(b.isbn),
+        coverUrl: cover ?? `https://picsum.photos/seed/${encodeURIComponent(b.title)}/400/600`,
         source: 'demo-seed',
-        description: `${b.title}, de ${b.author}.`,
+        description: b.description,
       },
     });
     books.push(book);

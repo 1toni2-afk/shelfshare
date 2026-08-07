@@ -206,9 +206,16 @@ class ChatSocketService {
   /// un refetch al listei, ca badge-ul și lista să fie la zi fără refresh.
   void onNotification(void Function() handler) {
     _socket?.on('notification', (_) => handler());
+    // O notificare din clopoțel poate fi rezolvată indirect (ex. deschiderea
+    // conversației marchează ca citită notificarea „mesaj nou" aferentă) -
+    // badge-ul are nevoie de același refetch și pentru acest caz.
+    _socket?.on('notification_read', (_) => handler());
   }
 
-  void offNotification() => _socket?.off('notification');
+  void offNotification() {
+    _socket?.off('notification');
+    _socket?.off('notification_read');
+  }
 }
 
 final chatSocketServiceProvider = Provider<ChatSocketService>((ref) {

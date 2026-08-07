@@ -58,7 +58,9 @@ export class ProfileController {
 
   @UseGuards(JwtAuthGuard)
   @Post('me/photo')
-  @UseInterceptors(FileInterceptor('photo'))
+  @UseInterceptors(
+    FileInterceptor('photo', { limits: { fileSize: MAX_PHOTO_SIZE_BYTES } }),
+  )
   uploadPhoto(@Req() req: Request, @UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('Nicio poză primită');
@@ -113,9 +115,15 @@ export class ProfileController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('reading-challenge')
-  setReadingChallenge(@Req() req: Request, @Body() dto: SetReadingChallengeDto) {
+  setReadingChallenge(
+    @Req() req: Request,
+    @Body() dto: SetReadingChallengeDto,
+  ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.profileService.setReadingChallengeGoal(userId!, dto.goal ?? null);
+    return this.profileService.setReadingChallengeGoal(
+      userId!,
+      dto.goal ?? null,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

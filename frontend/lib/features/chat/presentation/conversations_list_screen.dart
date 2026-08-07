@@ -221,7 +221,7 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
                 ? Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: Icon(Icons.close, color: AppColors.foreground),
                         onPressed: _exitSelection,
                       ),
                       Expanded(
@@ -234,9 +234,11 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(archived
-                            ? Icons.unarchive_outlined
-                            : Icons.archive_outlined),
+                        icon: Icon(
+                            archived
+                                ? Icons.unarchive_outlined
+                                : Icons.archive_outlined,
+                            color: AppColors.foreground),
                         tooltip:
                             archived ? l10n.chatUnarchive : l10n.chatArchive,
                         onPressed: _selected.isEmpty
@@ -268,12 +270,12 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
                       // arhivezi/ștergi împreună. Înlocuiește vechiul creion
                       // (care doar deschidea o conversație nouă - mutat lângă).
                       IconButton(
-                        icon: const Icon(Icons.checklist_rounded),
+                        icon: Icon(Icons.checklist_rounded, color: AppColors.foreground),
                         tooltip: l10n.commonEdit,
                         onPressed: () => setState(() => _selectionMode = true),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.add_comment_outlined),
+                        icon: Icon(Icons.add_comment_outlined, color: AppColors.foreground),
                         tooltip: l10n.chatNewConversationTooltip,
                         onPressed: () => context.push('/search'),
                       ),

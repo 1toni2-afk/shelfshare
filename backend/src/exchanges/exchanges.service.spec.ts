@@ -35,12 +35,18 @@ describe('ExchangesService', () => {
 
   beforeEach(async () => {
     prisma = {
-      userBook: { findUnique: jest.fn(), update: jest.fn() },
+      userBook: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        updateMany: jest.fn(),
+      },
       exchangeRequest: {
         create: jest.fn(),
         findMany: jest.fn(),
         findUnique: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn(),
+        findUniqueOrThrow: jest.fn(),
       },
       user: { update: jest.fn() },
       $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb(prisma)),
@@ -146,7 +152,9 @@ describe('ExchangesService', () => {
 
     it('accepta, marcheaza cartea indisponibila si notifica solicitantul', async () => {
       prisma.exchangeRequest.findUnique.mockResolvedValue(pendingRequest);
-      prisma.exchangeRequest.update.mockResolvedValue({
+      prisma.exchangeRequest.updateMany.mockResolvedValue({ count: 1 });
+      prisma.userBook.updateMany.mockResolvedValue({ count: 1 });
+      prisma.exchangeRequest.findUniqueOrThrow.mockResolvedValue({
         ...pendingRequest,
         status: 'ACCEPTED',
         requestedBook: { book: { title: 'Cartea Cerută' } },
@@ -154,8 +162,8 @@ describe('ExchangesService', () => {
 
       const result = await service.accept('ex-1', 'owner-1');
 
-      expect(prisma.userBook.update).toHaveBeenCalledWith({
-        where: { id: 'ub-requested' },
+      expect(prisma.userBook.updateMany).toHaveBeenCalledWith({
+        where: { id: 'ub-requested', availableForSwap: true },
         data: { availableForSwap: false },
       });
       expect(notifications.create).toHaveBeenCalledWith(
@@ -261,9 +269,9 @@ describe('ExchangesService', () => {
     it('respinge daca schimbul nu e COMPLETED', async () => {
       prisma.exchangeRequest.findUnique.mockResolvedValue(pendingRequest);
 
-      await expect(service.rate('ex-1', 'owner-1', { value: 5 })).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.rate('ex-1', 'owner-1', { value: 5 }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('respinge a doua evaluare a aceluiasi schimb', async () => {

@@ -210,6 +210,16 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       if (result.publisher != null && _publisherController.text.isEmpty) {
         _publisherController.text = result.publisher!;
       }
+      if (result.description != null &&
+          result.description!.trim().isNotEmpty &&
+          _descriptionController.text.isEmpty) {
+        final description = result.description!.trim();
+        // setText programatic nu trece prin LengthLimitingTextInputFormatter
+        // (acela intervine doar la input de la tastatură) - trunchiem manual,
+        // altfel câmpul ar afișa un text peste limita permisă la submit.
+        _descriptionController.text =
+            description.length > 256 ? description.substring(0, 256) : description;
+      }
       _isbnFromAutocomplete = result.isbn;
       // La alegerea unei ediții de autocomplete, folosim coperta ei oficială
       // - nu mai are sens să căutăm recomandări suplimentare. Batch 8.
@@ -343,14 +353,53 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     }
   }
 
+  static const _desktopBreakpoint = 900.0;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final charsLeft = 256 - _descriptionController.text.length;
+    final isDesktop = MediaQuery.of(context).size.width >= _desktopBreakpoint;
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.addBookTitle)),
+      appBar: AppBar(
+        title: Text(l10n.addBookTitle),
+        actions: isDesktop
+            ? [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.commonCancel),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submit,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.shareSubmit),
+                  ),
+                ),
+              ]
+            : null,
+      ),
       body: SafeArea(
-        child: ListView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1180),
+            child: isDesktop ? _buildDesktop(context) : _buildMobile(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobile(BuildContext context) {
+    final l10n = context.l10n;
+    final charsLeft = 256 - _descriptionController.text.length;
+    return ListView(
           padding: const EdgeInsets.all(16),
           children: [
             // 1. Poze - sus, cu placeholder mare cu „+"
@@ -373,57 +422,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             const SizedBox(height: 24),
 
             // 2. Titlu cu autocomplete
-            Autocomplete<ExternalBookResult>(
-              displayStringForOption: (r) => r.title,
-              optionsBuilder: (value) => _titleAutocomplete(value.text),
-              onSelected: _applySuggestion,
-              fieldViewBuilder:
-                  (context, controller, focusNode, onFieldSubmitted) {
-                // Sincronizăm cu propriul controller pentru a putea prelua
-                // textul la submit chiar dacă userul nu a ales o sugestie.
-                controller.text = _titleController.text;
-                controller.addListener(() {
-                  if (_titleController.text != controller.text) {
-                    _titleController.text = controller.text;
-                  }
-                });
-                return TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  decoration: InputDecoration(
-                    labelText: l10n.shareTitleHint,
-                    helperText: l10n.shareTitleAutocomplete,
-                  ),
-                );
-              },
-              optionsViewBuilder: (context, onSelected, options) {
-                return Align(
-                  alignment: Alignment.topLeft,
-                  child: Material(
-                    elevation: 4,
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width - 32,
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        itemCount: options.length,
-                        itemBuilder: (context, index) {
-                          final option = options.elementAt(index);
-                          return ListTile(
-                            dense: true,
-                            title: Text(option.title, maxLines: 1),
-                            subtitle: option.author != null
-                                ? Text(option.author!, maxLines: 1)
-                                : null,
-                            onTap: () => onSelected(option),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+            _titleField(context),
             const SizedBox(height: 12),
 
             // 3. Autor
@@ -457,11 +456,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             ),
             const SizedBox(height: 20),
 
-            // 5. Descriere
+            // 5. Descriere - pornește compact (2 linii) și crește pe măsură
+            // ce userul scrie, în loc să rezerve dintotdeauna 4 linii goale.
             TextField(
               controller: _descriptionController,
               maxLength: 256,
-              maxLines: 4,
+              minLines: 2,
+              maxLines: 6,
               inputFormatters: [LengthLimitingTextInputFormatter(256)],
               decoration: InputDecoration(
                 labelText: l10n.shareDescriptionHint,
@@ -478,10 +479,266 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               mode: _listingMode,
               onChanged: (m) => setState(() => _listingMode = m),
             ),
-            if (_listingMode == _ListingMode.sale ||
-                _listingMode == _ListingMode.auction) ...[
-              const SizedBox(height: 12),
-              TextField(
+            ..._priceFields(context),
+            const SizedBox(height: 20),
+
+            // 7. Localitate - autocomplete peste toate orașele din România, nu
+            // dropdown cu reședințele de județ.
+            CityAutocomplete(
+              value: _city,
+              label: l10n.shareCityHint,
+              emptyLabel: l10n.shareCityUnknown,
+              onChanged: (value) => setState(() => _city = value),
+            ),
+            const SizedBox(height: 12),
+
+            // Stare (obligatoriu, dar nu în lista explicită a userului -
+            // păstrat pentru că backend-ul îl cere).
+            DropdownButtonFormField<BookCondition>(
+              initialValue: _condition,
+              decoration:
+                  InputDecoration(labelText: l10n.filtersCondition),
+              items: [
+                for (final c in BookCondition.values)
+                  DropdownMenuItem(value: c, child: Text(c.label(l10n))),
+              ],
+              onChanged: (v) => setState(() => _condition = v ?? _condition),
+            ),
+
+            const SizedBox(height: 20),
+
+            ..._moreInfoSection(context),
+
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: _isSubmitting ? null : _submit,
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.shareSubmit),
+            ),
+          ],
+        );
+  }
+
+  // Layout pe două coloane: coperta/pozele stânga, formularul dreapta - vezi
+  // mockup-ul Milestone 20. Publish stă în AppBar, nu la baza paginii.
+  Widget _buildDesktop(BuildContext context) {
+    final l10n = context.l10n;
+    final charsLeft = 256 - _descriptionController.text.length;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 220,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _PhotoPicker(
+                  photos: _photos,
+                  maxPhotos: _maxPhotos,
+                  mainPhotoIndex: _mainPhotoIndex,
+                  onPick: _pickPhotos,
+                  onRemove: (i) {
+                    _removePhoto(i);
+                    if (_mainPhotoIndex == i) {
+                      setState(() => _mainPhotoIndex = null);
+                    } else if (_mainPhotoIndex != null && _mainPhotoIndex! > i) {
+                      setState(() => _mainPhotoIndex = _mainPhotoIndex! - 1);
+                    }
+                  },
+                  onSetMain: (i) => setState(() => _mainPhotoIndex = i),
+                ),
+                const SizedBox(height: 20),
+                _CoverPicker(
+                  selectedUrl: _selectedCoverUrl,
+                  recommended: _recommendedCovers,
+                  onSelect: (url) => setState(() => _selectedCoverUrl = url),
+                  onClear: () => setState(() => _selectedCoverUrl = null),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 34),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.shareSectionBook,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelLarge
+                        ?.copyWith(color: AppColors.mutedForeground)),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 2, child: _titleField(context)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: TextField(
+                        controller: _authorController,
+                        decoration: InputDecoration(labelText: l10n.shareAuthorHint),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: TextField(
+                        controller: _genreController,
+                        decoration: InputDecoration(labelText: l10n.shareGenreHint),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _TagsInput(
+                        tags: _tags,
+                        controller: _tagInputController,
+                        hint: l10n.shareTagsHint,
+                        onAdd: _addTag,
+                        onRemove: _removeTag,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: TextField(
+                        controller: _descriptionController,
+                        maxLength: 256,
+                        minLines: 3,
+                        maxLines: 6,
+                        inputFormatters: [LengthLimitingTextInputFormatter(256)],
+                        decoration: InputDecoration(
+                          labelText: l10n.shareDescriptionHint,
+                          counterText: l10n.shareDescriptionCharsLeft(charsLeft),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                const SizedBox(height: 16),
+                Text(l10n.shareSectionListing,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelLarge
+                        ?.copyWith(color: AppColors.mutedForeground)),
+                const SizedBox(height: 12),
+                _ListingModePicker(
+                  mode: _listingMode,
+                  onChanged: (m) => setState(() => _listingMode = m),
+                ),
+                ..._priceFields(context),
+                const SizedBox(height: 18),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<BookCondition>(
+                        initialValue: _condition,
+                        decoration: InputDecoration(labelText: l10n.filtersCondition),
+                        items: [
+                          for (final c in BookCondition.values)
+                            DropdownMenuItem(value: c, child: Text(c.label(l10n))),
+                        ],
+                        onChanged: (v) => setState(() => _condition = v ?? _condition),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: CityAutocomplete(
+                        value: _city,
+                        label: l10n.shareCityHint,
+                        emptyLabel: l10n.shareCityUnknown,
+                        onChanged: (value) => setState(() => _city = value),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ..._moreInfoSection(context),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _titleField(BuildContext context) {
+    final l10n = context.l10n;
+    return Autocomplete<ExternalBookResult>(
+              displayStringForOption: (r) => r.title,
+              optionsBuilder: (value) => _titleAutocomplete(value.text),
+              onSelected: _applySuggestion,
+              fieldViewBuilder:
+                  (context, controller, focusNode, onFieldSubmitted) {
+                // Sincronizăm cu propriul controller pentru a putea prelua
+                // textul la submit chiar dacă userul nu a ales o sugestie.
+                controller.text = _titleController.text;
+                controller.addListener(() {
+                  if (_titleController.text != controller.text) {
+                    _titleController.text = controller.text;
+                  }
+                });
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: InputDecoration(
+                    labelText: l10n.shareTitleHint,
+                    helperText: l10n.shareTitleAutocomplete,
+                  ),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    child: SizedBox(
+                      width: (MediaQuery.of(context).size.width - 32).clamp(0, 420),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final option = options.elementAt(index);
+                          return ListTile(
+                            dense: true,
+                            title: Text(option.title, maxLines: 1),
+                            subtitle: option.author != null
+                                ? Text(option.author!, maxLines: 1)
+                                : null,
+                            onTap: () => onSelected(option),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+  }
+
+  // 6. Mod de listare - câmpurile de preț/licitație, comune ambelor layout-uri.
+  List<Widget> _priceFields(BuildContext context) {
+    final l10n = context.l10n;
+    if (_listingMode != _ListingMode.sale && _listingMode != _ListingMode.auction) {
+      return const [];
+    }
+    return [
+      const SizedBox(height: 12),
+      TextField(
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
@@ -536,35 +793,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                       () => _auctionDurationHours = v ?? 24),
                 ),
               ],
-            ],
-            const SizedBox(height: 20),
+            ];
+  }
 
-            // 7. Localitate - autocomplete peste toate orașele din România, nu
-            // dropdown cu reședințele de județ.
-            CityAutocomplete(
-              value: _city,
-              label: l10n.shareCityHint,
-              emptyLabel: l10n.shareCityUnknown,
-              onChanged: (value) => setState(() => _city = value),
-            ),
-            const SizedBox(height: 12),
-
-            // Stare (obligatoriu, dar nu în lista explicită a userului -
-            // păstrat pentru că backend-ul îl cere).
-            DropdownButtonFormField<BookCondition>(
-              initialValue: _condition,
-              decoration:
-                  InputDecoration(labelText: l10n.filtersCondition),
-              items: [
-                for (final c in BookCondition.values)
-                  DropdownMenuItem(value: c, child: Text(c.label(l10n))),
-              ],
-              onChanged: (v) => setState(() => _condition = v ?? _condition),
-            ),
-
-            const SizedBox(height: 20),
-
-            // 8. „Mai multe informații" - collapsible
+  // 8. „Mai multe informații" - collapsible, comun ambelor layout-uri.
+  List<Widget> _moreInfoSection(BuildContext context) {
+    final l10n = context.l10n;
+    return [
             InkWell(
               onTap: () => setState(() => _showMoreInfo = !_showMoreInfo),
               child: Padding(
@@ -626,22 +861,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 onChanged: (v) => setState(() => _isHardcover = v),
               ),
             ],
-
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.shareSubmit),
-            ),
-          ],
-        ),
-      ),
-    );
+    ];
   }
 }
 

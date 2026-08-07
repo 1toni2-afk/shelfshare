@@ -10,11 +10,17 @@ import { MailModule } from '../mail/mail.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { CaptchaModule } from '../common/captcha/captcha.module';
+import { SecurityEventsModule } from '../security-events/security-events.module';
+import { RevokedTokenModule } from '../common/security/revoked-token.module';
 
 @Module({
   imports: [
     UsersModule,
     MailModule,
+    CaptchaModule,
+    SecurityEventsModule,
+    RevokedTokenModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -6,6 +6,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Push notifications (Firebase Cloud Messaging): pluginul google-services
+// generează resursele native din google-services.json la build time și
+// eșuează dacă fișierul lipsește. Fișierul e un secret de proiect (descărcat
+// din consola Firebase, cu package name ro.shelfshare.shelfshare) și nu e
+// commis în git - aplicăm pluginul doar dacă cineva l-a pus local, altfel
+// buildul continuă normal, fără push notifications.
+if (rootProject.file("app/google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // Cheia de release (upload-keystore.jks / key.properties) e generată local și
 // exclusă din git (vezi .gitignore) - fără ea, un build de release ar semna
 // cu cheia de debug, pe care Google Play nu o acceptă pentru publicare.
@@ -23,6 +33,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Cerut de flutter_local_notifications (folosește API-uri Java 8+ pe
+        // care Android le suportă doar prin desugaring pe minSdk-uri vechi).
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -69,4 +82,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Vezi compileOptions.isCoreLibraryDesugaringEnabled mai sus.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

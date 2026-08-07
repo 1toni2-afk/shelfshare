@@ -180,7 +180,10 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.primaryForeground,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          // `symmetric(vertical: 16)` lăsa horizontal implicit pe 0 - butoanele
+          // scurte ("Edit", "OK") aveau textul lipit de margini. 24px orizontal
+          // e padding-ul standard M3 pentru butoane cu text.
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
@@ -189,7 +192,14 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.foreground,
           side: BorderSide(color: AppColors.border),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.foreground,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),

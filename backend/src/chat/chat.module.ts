@@ -8,6 +8,7 @@ import { StorageModule } from '../storage/storage.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SafetyModule } from '../safety/safety.module';
 import { MailModule } from '../mail/mail.module';
+import { RateLimitModule } from '../common/rate-limit/rate-limit.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MailModule } from '../mail/mail.module';
     NotificationsModule,
     SafetyModule,
     MailModule,
+    RateLimitModule,
   ],
   controllers: [ConversationsController],
   providers: [ConversationsService, ChatGateway, PresenceService],

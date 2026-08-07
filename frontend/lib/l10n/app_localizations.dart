@@ -1542,6 +1542,18 @@ abstract class AppLocalizations {
   /// **'Vezi toate'**
   String get homeSeeAll;
 
+  /// No description provided for @homePendingSwapBanner.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} cereri de schimb te așteaptă'**
+  String homePendingSwapBanner(int count);
+
+  /// No description provided for @homePendingSwapReview.
+  ///
+  /// In ro, this message translates to:
+  /// **'Revizuiește'**
+  String get homePendingSwapReview;
+
   /// No description provided for @homeFeedEnd.
   ///
   /// In ro, this message translates to:
@@ -1871,6 +1883,36 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Indisponibilă'**
   String get libraryUnavailable;
+
+  /// No description provided for @libraryShelfSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'{total} cărți · {available} disponibile la schimb'**
+  String libraryShelfSubtitle(int total, int available);
+
+  /// No description provided for @libraryFilterAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate {count}'**
+  String libraryFilterAll(int count);
+
+  /// No description provided for @libraryFilterAvailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Disponibile {count}'**
+  String libraryFilterAvailable(int count);
+
+  /// No description provided for @libraryFilterUnavailable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Indisponibile {count}'**
+  String libraryFilterUnavailable(int count);
+
+  /// No description provided for @libraryFilterTransferred.
+  ///
+  /// In ro, this message translates to:
+  /// **'Transferate {count}'**
+  String libraryFilterTransferred(int count);
 
   /// No description provided for @libraryDeleteConfirmTitle.
   ///
@@ -3192,6 +3234,12 @@ abstract class AppLocalizations {
   /// **'Lista de dorințe'**
   String get wishlistTitle;
 
+  /// No description provided for @wishlistCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} cărți'**
+  String wishlistCount(int count);
+
   /// No description provided for @wishlistEmpty.
   ///
   /// In ro, this message translates to:
@@ -3221,6 +3269,60 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nu ai nicio notificare.'**
   String get notificationsEmpty;
+
+  /// No description provided for @notificationsFilterAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate'**
+  String get notificationsFilterAll;
+
+  /// No description provided for @notificationsFilterUnread.
+  ///
+  /// In ro, this message translates to:
+  /// **'Necitite'**
+  String get notificationsFilterUnread;
+
+  /// No description provided for @notificationsFilterExchanges.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimburi'**
+  String get notificationsFilterExchanges;
+
+  /// No description provided for @notificationsFilterMessages.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaje'**
+  String get notificationsFilterMessages;
+
+  /// No description provided for @notificationsToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Astăzi'**
+  String get notificationsToday;
+
+  /// No description provided for @notificationsYesterday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ieri'**
+  String get notificationsYesterday;
+
+  /// No description provided for @notificationsEarlier.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai vechi'**
+  String get notificationsEarlier;
+
+  /// No description provided for @notificationsRepeatedCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'×{count}'**
+  String notificationsRepeatedCount(int count);
+
+  /// No description provided for @notificationsUnreadCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} necitite'**
+  String notificationsUnreadCount(int count);
 
   /// No description provided for @notificationsLoadError.
   ///
@@ -3365,6 +3467,36 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Întrebări frecvente'**
   String get helpCenterTitle;
+
+  /// No description provided for @helpGroupSwapping.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimburi'**
+  String get helpGroupSwapping;
+
+  /// No description provided for @helpGroupPricing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Prețuri'**
+  String get helpGroupPricing;
+
+  /// No description provided for @helpGroupSafety.
+  ///
+  /// In ro, this message translates to:
+  /// **'Încredere și siguranță'**
+  String get helpGroupSafety;
+
+  /// No description provided for @helpStillStuck.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai găsit răspunsul?'**
+  String get helpStillStuck;
+
+  /// No description provided for @helpContactModerator.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contactează un moderator'**
+  String get helpContactModerator;
 
   /// No description provided for @helpFaq1Question.
   ///
@@ -4230,6 +4362,12 @@ abstract class AppLocalizations {
   /// **'Doar la schimb'**
   String get discoverSwapOnly;
 
+  /// No description provided for @discoverMoreGenres.
+  ///
+  /// In ro, this message translates to:
+  /// **'+ {count} altele'**
+  String discoverMoreGenres(int count);
+
   /// No description provided for @discoverUnder30.
   ///
   /// In ro, this message translates to:
@@ -4440,6 +4578,18 @@ abstract class AppLocalizations {
   /// **'Licitație'**
   String get shareListingModeAuction;
 
+  /// No description provided for @shareSectionBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cartea'**
+  String get shareSectionBook;
+
+  /// No description provided for @shareSectionListing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anunțul'**
+  String get shareSectionListing;
+
   /// No description provided for @shareListingMode.
   ///
   /// In ro, this message translates to:
@@ -4547,6 +4697,30 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Toate opțiunile contului într-un singur loc'**
   String get profileSettingsSubtitle;
+
+  /// No description provided for @profileGroupProfile.
+  ///
+  /// In ro, this message translates to:
+  /// **'Profil'**
+  String get profileGroupProfile;
+
+  /// No description provided for @profileGroupPreferences.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preferințe'**
+  String get profileGroupPreferences;
+
+  /// No description provided for @profileGroupLibrary.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bibliotecă'**
+  String get profileGroupLibrary;
+
+  /// No description provided for @profileGroupSupport.
+  ///
+  /// In ro, this message translates to:
+  /// **'Suport'**
+  String get profileGroupSupport;
 
   /// No description provided for @profileRecentActivity.
   ///
