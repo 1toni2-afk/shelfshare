@@ -16,6 +16,19 @@ const kSidebarBreakpoint = 900.0;
 /// Lățimea sidebar-ului pe desktop. Egală cu ce am folosit pe mockup.
 const kSidebarWidth = 240.0;
 
+/// Cheie stabilă pentru Scaffold-ul exterior (cel cu drawer-ul), instanțiată
+/// o singură dată la nivel de modul - MainScaffold e shell-ul unic al
+/// aplicației, deci o singură instanță trăiește la un moment dat.
+///
+/// De ce: pe mobil/web îngust, fiecare ecran (child) are PROPRIUL Scaffold
+/// cu propriul AppBar. Hamburger-ul automat din AppBar caută cel mai apropiat
+/// Scaffold ANCESTOR - găsește Scaffold-ul intern al ecranului (fără drawer),
+/// nu pe cel exterior care are drawer-ul cu meniul. Rezultat: pe telefon/web
+/// îngust nu exista nicio cale să deschizi meniul din stânga. Butonul flotant
+/// de mai jos apelează direct starea acestui Scaffold, deci funcționează
+/// indiferent de AppBar-ul ecranului curent.
+final _shellScaffoldKey = GlobalKey<ScaffoldState>();
+
 /// Shell principal al aplicației după autentificare: pe desktop sidebar
 /// permanent stânga, pe mobil același conținut într-un `Drawer` (hamburger
 /// în AppBar).
@@ -52,11 +65,51 @@ class MainScaffold extends ConsumerWidget {
       );
     }
 
-    // Pe mobil: același sidebar într-un drawer. Nav-ul se deschide din
-    // hamburger-ul AppBar-ului fiecărui ecran (Scaffold.drawer face automat).
+    // Pe mobil/web îngust: același sidebar într-un drawer. Nu ne bazăm pe
+    // hamburger-ul automat al AppBar-ului (fiecare ecran are propriul
+    // Scaffold, care „umbrește" drawer-ul celui exterior - vezi comentariul
+    // de la `_shellScaffoldKey`) - butonul flotant de mai jos deschide
+    // drawer-ul direct, indiferent de ecranul curent.
     return Scaffold(
+      key: _shellScaffoldKey,
       drawer: SizedBox(width: kSidebarWidth, child: Drawer(child: sidebar)),
-      body: child,
+      body: Stack(
+        children: [
+          child,
+          Positioned(
+            left: 12,
+            bottom: 12,
+            child: SafeArea(
+              child: _MenuFab(onTap: () => _shellScaffoldKey.currentState?.openDrawer()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Buton flotant care deschide meniul din stânga pe mobil/web îngust. Jos-
+/// stânga, nu jos-dreapta - acolo stau FAB-urile ecranelor (ex. „Add a
+/// book"), și n-ar trebui să se suprapună cu meniul de navigare.
+class _MenuFab extends StatelessWidget {
+  const _MenuFab({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.card,
+      shape: const CircleBorder(),
+      elevation: 3,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Icon(Icons.menu, color: AppColors.foreground, size: 22),
+        ),
+      ),
     );
   }
 }
