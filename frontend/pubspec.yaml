@@ -1,5 +1,5 @@
-name: shelfshare
-description: "ShelfShare - schimbă, vinde sau cumpără cărți second-hand."
+﻿name: shelfshare
+description: "ShelfShare - schimbÄƒ, vinde sau cumpÄƒrÄƒ cÄƒrÈ›i second-hand."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,8 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.4.0+9
-
+version: 1.5.0+10
 environment:
   sdk: ^3.12.2
 
@@ -78,11 +77,11 @@ flutter_launcher_icons:
   image_path: "assets/icon/icon-square.png"
   adaptive_icon_background: "#7C3A1E"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
-  # Desenul din icon-foreground.png ocupă ~67% din pânză, adică exact cât zona
-  # sigură a unei iconițe adaptive Android (72dp din 108dp = 66,7%). La limita
-  # aia, măștile rotunde ale launcher-elor taie fix pe marginea desenului și
-  # iconița pare umflată. Inset-ul o micșorează la ~52% din pânză, deci rămâne
-  # centrată, cu spațiu de respirație în orice formă de mască.
+  # Desenul din icon-foreground.png ocupÄƒ ~67% din pÃ¢nzÄƒ, adicÄƒ exact cÃ¢t zona
+  # sigurÄƒ a unei iconiÈ›e adaptive Android (72dp din 108dp = 66,7%). La limita
+  # aia, mÄƒÈ™tile rotunde ale launcher-elor taie fix pe marginea desenului È™i
+  # iconiÈ›a pare umflatÄƒ. Inset-ul o micÈ™oreazÄƒ la ~52% din pÃ¢nzÄƒ, deci rÄƒmÃ¢ne
+  # centratÄƒ, cu spaÈ›iu de respiraÈ›ie Ã®n orice formÄƒ de mascÄƒ.
   adaptive_icon_foreground_inset: 12
 
 flutter_native_splash:
