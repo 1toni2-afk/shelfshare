@@ -120,10 +120,18 @@ class _BooksMapScreenState extends ConsumerState<BooksMapScreen>
                   // în producție (politica lor de trafic/User-Agent) și poate
                   // degrada silențios plăcile - CartoDB servește aceleași date
                   // OpenStreetMap, gratuit, fără cheie API, cu CORS permisiv.
-                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                  //
+                  // Stilul urmează tema curentă - „Dark Matter" pe temă întunecată,
+                  // altfel hărțile luminoase pe UI-ul închis (sau invers) băteau
+                  // brutal la ochi. Vezi și `tileDisplay`: fade-in în loc de
+                  // dreptunghiuri gri goale cât se încarcă plăcile.
+                  urlTemplate: Theme.of(context).brightness == Brightness.dark
+                      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.shelfshare.app',
                   maxZoom: 20,
+                  tileDisplay: const TileDisplay.fadeIn(duration: Duration(milliseconds: 250)),
                 ),
                 const RichAttributionWidget(
                   attributions: [

@@ -419,7 +419,7 @@ class _CoverPanel extends ConsumerWidget {
         if (book.photos.isNotEmpty) ...[
           const SizedBox(height: 16),
           SizedBox(
-            height: 72,
+            height: 92,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: book.photos.length,
@@ -430,8 +430,8 @@ class _CoverPanel extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
                     book.photos[index],
-                    width: 72,
-                    height: 72,
+                    width: 92,
+                    height: 92,
                     fit: BoxFit.cover,
                   ),
                 ),
