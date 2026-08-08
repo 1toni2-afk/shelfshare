@@ -276,14 +276,14 @@ class _PopularSearchesSection extends ConsumerWidget {
               title: context.l10n.discoverTopSearches,
               icon: Icons.trending_up,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final s in searches) _PopularSearchChip(stat: s),
-                ],
+            SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                itemCount: searches.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) => _PopularSearchChip(stat: searches[index]),
               ),
             ),
           ],
@@ -562,21 +562,23 @@ class _PopularAuthorsSection extends ConsumerWidget {
               title: context.l10n.discoverPopularAuthors,
               icon: Icons.person_pin_outlined,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final a in authors)
-                    ActionChip(
-                      label: Text('${a.author}  ·  ${a.count}'),
-                      onPressed: () => context.push(
-                        '/browse',
-                        extra: SearchScreenArgs(title: a.author),
-                      ),
+            SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                itemCount: authors.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final a = authors[index];
+                  return ActionChip(
+                    label: Text('${a.author}  ·  ${a.count}'),
+                    onPressed: () => context.push(
+                      '/browse',
+                      extra: SearchScreenArgs(title: a.author),
                     ),
-                ],
+                  );
+                },
               ),
             ),
           ],

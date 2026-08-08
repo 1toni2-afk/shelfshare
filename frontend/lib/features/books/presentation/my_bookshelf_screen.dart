@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
@@ -190,22 +191,24 @@ class _SharedList extends ConsumerWidget {
         if (books.isEmpty) {
           return CenteredScrollable(child: Text(l10n.bookshelfEmpty));
         }
-        return ListView(
+        // Grid responsiv (aceleași metrici ca Home/Browse/Wishlist), nu
+        // `Wrap` cu lățime fixă - colapsa pe o coloană pe telefoane înguste.
+        return GridView.builder(
           padding: const EdgeInsets.all(16),
-          children: [
-            Wrap(
-              spacing: 16,
-              runSpacing: 20,
-              children: [
-                for (final userBook in books)
-                  BookCard(
-                    userBook: userBook,
-                    width: 140,
-                    onTap: () => context.push('/books/${userBook.id}'),
-                  ),
-              ],
-            ),
-          ],
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: kBookCardMaxWidth,
+            mainAxisSpacing: kBookGridMainAxisSpacing,
+            crossAxisSpacing: kBookGridCrossAxisSpacing,
+            childAspectRatio: kBookCardAspectRatio,
+          ),
+          itemCount: books.length,
+          itemBuilder: (context, index) {
+            final userBook = books[index];
+            return BookCard(
+              userBook: userBook,
+              onTap: () => context.push('/books/${userBook.id}'),
+            );
+          },
         );
       },
       loading: () => const CenteredScrollable(child: CircularProgressIndicator()),

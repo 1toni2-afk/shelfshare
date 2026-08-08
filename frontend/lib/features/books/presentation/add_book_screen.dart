@@ -1081,20 +1081,25 @@ class _TagsInput extends StatelessWidget {
         ),
         if (tags.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final t in tags)
-                Chip(
+          SizedBox(
+            height: 32,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: tags.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
+              itemBuilder: (context, index) {
+                final t = tags[index];
+                return Chip(
                   label: Text(t),
                   onDeleted: () => onRemove(t),
-                ),
-            ],
+                );
+              },
+            ),
           ),
         ],
         // Doar sugestiile neadăugate încă, și doar cât timp mai e loc (max 5
-        // tag-uri) - altfel userul ar apăsa pe chipuri fără efect.
+        // tag-uri) - altfel userul ar apăsa pe chipuri fără efect. Scroll
+        // orizontal, nu `Wrap` - cele ~18 sugestii se întindeau pe 3-4 rânduri.
         if (tags.length < 5) ...[
           const SizedBox(height: 10),
           Text(
@@ -1102,18 +1107,25 @@ class _TagsInput extends StatelessWidget {
             style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
           ),
           const SizedBox(height: 6),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final suggestion in _suggestedTags.where((s) => !tags.contains(s)))
-                ActionChip(
-                  label: Text(suggestion),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => onAdd(suggestion),
-                ),
-            ],
-          ),
+          Builder(builder: (context) {
+            final available = _suggestedTags.where((s) => !tags.contains(s)).toList();
+            return SizedBox(
+              height: 32,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: available.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 6),
+                itemBuilder: (context, index) {
+                  final suggestion = available[index];
+                  return ActionChip(
+                    label: Text(suggestion),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => onAdd(suggestion),
+                  );
+                },
+              ),
+            );
+          }),
         ],
       ],
     );

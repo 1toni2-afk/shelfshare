@@ -7,6 +7,7 @@ import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/profile_header.dart';
 import '../../../shared/widgets/achievements_grid.dart';
@@ -332,17 +333,25 @@ class _Content extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 16,
-            runSpacing: 20,
-            children: [
-              for (final userBook in user.listedBooks!)
-                BookCard(
-                  userBook: userBook,
-                  width: 130,
-                  onTap: () => context.push('/books/${userBook.id}', extra: user),
-                ),
-            ],
+          // Grid responsiv (aceleași metrici ca peste tot în app), nu `Wrap`
+          // cu lățime fixă - colapsa pe o coloană pe telefoane înguste.
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: kBookCardMaxWidth,
+              mainAxisSpacing: kBookGridMainAxisSpacing,
+              crossAxisSpacing: kBookGridCrossAxisSpacing,
+              childAspectRatio: kBookCardAspectRatio,
+            ),
+            itemCount: user.listedBooks!.length,
+            itemBuilder: (context, index) {
+              final userBook = user.listedBooks![index];
+              return BookCard(
+                userBook: userBook,
+                onTap: () => context.push('/books/${userBook.id}', extra: user),
+              );
+            },
           ),
         ],
         if (user.acquisitionHistory != null) ...[

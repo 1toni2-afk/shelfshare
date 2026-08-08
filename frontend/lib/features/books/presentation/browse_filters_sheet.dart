@@ -100,19 +100,23 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
     if (options.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final option in options)
-            ActionChip(
+      child: SizedBox(
+        height: 34,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: options.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          itemBuilder: (context, index) {
+            final option = options[index];
+            return ActionChip(
               label: Text(option),
               onPressed: () {
                 controller.text = option;
                 onPicked();
               },
-            ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }

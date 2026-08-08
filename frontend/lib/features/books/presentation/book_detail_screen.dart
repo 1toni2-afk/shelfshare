@@ -604,12 +604,14 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
         ),
         if (book.tags.isNotEmpty) ...[
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final tag in book.tags) _TagChip(label: tag),
-            ],
+          SizedBox(
+            height: 32,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: book.tags.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, index) => _TagChip(label: book.tags[index]),
+            ),
           ),
         ],
         if (description != null && description.isNotEmpty) ...[

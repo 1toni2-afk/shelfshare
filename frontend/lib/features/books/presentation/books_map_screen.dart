@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/map_city.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/book_card.dart';
+import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../data/books_repository.dart';
 
@@ -259,21 +260,28 @@ class _CityBooksSheet extends ConsumerWidget {
                 else
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    sliver: SliverToBoxAdapter(
-                      child: Wrap(
-                        spacing: 16,
-                        runSpacing: 20,
-                        children: [
-                          for (final userBook in snapshot.data ?? const <UserBook>[])
-                            BookCard(
-                              userBook: userBook,
-                              width: 140,
-                              onTap: () {
-                                Navigator.of(context).pop();
-                                context.push('/books/${userBook.id}', extra: userBook.owner);
-                              },
-                            ),
-                        ],
+                    // Grid responsiv (aceleași metrici ca peste tot în app),
+                    // nu `Wrap` cu lățime fixă - colapsa pe o coloană pe
+                    // telefoane înguste.
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: kBookCardMaxWidth,
+                        mainAxisSpacing: kBookGridMainAxisSpacing,
+                        crossAxisSpacing: kBookGridCrossAxisSpacing,
+                        childAspectRatio: kBookCardAspectRatio,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final userBook = (snapshot.data ?? const <UserBook>[])[index];
+                          return BookCard(
+                            userBook: userBook,
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              context.push('/books/${userBook.id}', extra: userBook.owner);
+                            },
+                          );
+                        },
+                        childCount: (snapshot.data ?? const <UserBook>[]).length,
                       ),
                     ),
                   ),

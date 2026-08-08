@@ -414,13 +414,17 @@ class _MarketplaceStatsGrid extends StatelessWidget {
                 children: [
                   Text(l10n.adminMarketplaceTopGenres, style: Theme.of(context).textTheme.bodyMedium),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final g in stats.topGenresByListings)
-                        Chip(label: Text('${g.genre} (${g.count})')),
-                    ],
+                  SizedBox(
+                    height: 32,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: stats.topGenresByListings.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final g = stats.topGenresByListings[index];
+                        return Chip(label: Text('${g.genre} (${g.count})'));
+                      },
+                    ),
                   ),
                 ],
               ),
