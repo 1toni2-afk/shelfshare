@@ -71,7 +71,7 @@ class _SettingsList extends ConsumerWidget {
                   // Donațiile stau sus, ca prim element vizibil: aplicația e
                   // găzduită pe un server personal, deci e singura sursă de
                   // finanțare.
-                  _KeepAliveCard(onTap: () => context.push('/profile/about-dev')),
+                  _KeepAliveCard(onTap: () => context.push('/about-dev')),
                   const SizedBox(height: 20),
 
                   // Grupuri vizuale distincte (card cu fundal propriu), cu
@@ -184,7 +184,7 @@ class _SettingsList extends ConsumerWidget {
                       _SettingsTile(
                           icon: Icons.person_outline,
                           label: l10n.aboutDevTitle,
-                          onTap: () => context.push('/profile/about-dev')),
+                          onTap: () => context.push('/about-dev')),
                       _SettingsTile(
                           icon: Icons.feedback_outlined,
                           label: l10n.profileSendFeedback,

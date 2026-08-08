@@ -2280,6 +2280,12 @@ abstract class AppLocalizations {
   /// **'Raport trimis. Mulțumim!'**
   String get bookDetailReportSent;
 
+  /// No description provided for @bookDetailWishlistError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut actualiza lista de dorințe'**
+  String get bookDetailWishlistError;
+
   /// No description provided for @bookDetailReportError.
   ///
   /// In ro, this message translates to:

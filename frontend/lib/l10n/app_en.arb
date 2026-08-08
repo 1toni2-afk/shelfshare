@@ -429,6 +429,7 @@
     "bookDetailReportTooltip":  "Report listing",
     "bookDetailReportedFrom":  "Reported from listing \"{title}\"",
     "bookDetailReportSent":  "Report sent. Thank you!",
+    "bookDetailWishlistError":  "We couldn't update your wishlist",
     "bookDetailReportError":  "We couldn\u0027t send the report",
     "bookDetailLoadError":  "We couldn\u0027t load the book.",
     "bookDetailViewsTitle":  "Views",

@@ -728,6 +728,7 @@
                                                      }
                                 },
     "bookDetailReportSent":  "Raport trimis. Mulțumim!",
+    "bookDetailWishlistError":  "Nu am putut actualiza lista de dorințe",
     "bookDetailReportError":  "Nu am putut trimite raportul",
     "bookDetailLoadError":  "Nu am putut încărca cartea.",
     "bookDetailViewsTitle":  "Vizualizări",

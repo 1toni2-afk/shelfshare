@@ -1255,6 +1255,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookDetailReportSent => 'Meldung gesendet. Danke!';
 
   @override
+  String get bookDetailWishlistError =>
+      'Die Wunschliste konnte nicht aktualisiert werden';
+
+  @override
   String get bookDetailReportError =>
       'Die Meldung konnte nicht gesendet werden';
 

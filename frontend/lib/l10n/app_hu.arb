@@ -426,6 +426,7 @@
     "bookDetailReportTooltip":  "Hirdetés bejelentése",
     "bookDetailReportedFrom":  "Bejelentve a(z) \"{title}\" hirdetésről",
     "bookDetailReportSent":  "Bejelentés elküldve. Köszönjük!",
+    "bookDetailWishlistError":  "Nem sikerült frissíteni a kívánságlistát",
     "bookDetailReportError":  "Nem sikerült elküldeni a bejelentést",
     "bookDetailLoadError":  "Nem sikerült betölteni a könyvet.",
     "bookDetailViewsTitle":  "Megtekintések",

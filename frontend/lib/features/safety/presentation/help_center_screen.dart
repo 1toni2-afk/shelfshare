@@ -112,30 +112,44 @@ class HelpCenterScreen extends ConsumerWidget {
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Row(
+                    // Coloană, nu rând: cu butonul lângă text pe lățime
+                    // îngustă (mobil), „Expanded" pe descriere se strângea
+                    // în lupta cu lățimea fixă a butonului, iar textul se
+                    // frângea aproape cuvânt cu cuvânt. Aici descrierea are
+                    // toată lățimea cardului, iar butonul stă dedesubt.
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.chat_bubble_outline, color: AppColors.accent),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(l10n.helpStillStuck, style: Theme.of(context).textTheme.titleSmall),
-                              const SizedBox(height: 2),
-                              Text(
-                                l10n.helpCenterFooter,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: AppColors.mutedForeground),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.chat_bubble_outline, color: AppColors.accent),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(l10n.helpStillStuck, style: Theme.of(context).textTheme.titleSmall),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n.helpCenterFooter,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: AppColors.mutedForeground),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () => _showContactModeratorDialog(context, ref),
-                          child: Text(l10n.helpContactModerator),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => _showContactModeratorDialog(context, ref),
+                            child: Text(l10n.helpContactModerator),
+                          ),
                         ),
                       ],
                     ),

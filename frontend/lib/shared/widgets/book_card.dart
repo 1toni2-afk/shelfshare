@@ -1,10 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/models/user_book.dart';
-import '../../features/wishlist/data/wishlist_repository.dart';
+import '../../features/wishlist/application/wishlist_controller.dart';
 import 'book_cover.dart';
 
 /// Card compact pentru o carte, cu copertă, buton inimă (adăugare rapidă la
@@ -200,9 +201,11 @@ class _PriceBadge extends StatelessWidget {
 }
 
 /// Buton inimă din colțul dreapta-sus al coperții pentru adăugare rapidă la
-/// wishlist. Optimist: umple imediat inima, apoi apelează API-ul; la eroare
-/// revine. Nu știm din feed dacă e deja în wishlist, așa că pornește gol -
-/// e un buton de „adaugă rapid", tap din nou îl scoate.
+/// wishlist. Trece prin `wishlistControllerProvider` (nu direct prin
+/// repository) - altfel starea din Wishlist screen nu se actualiza decât
+/// după un refresh manual, pentru că cele două nu mai știau una de alta.
+/// Starea inimii vine din controller, nu dintr-un bool local - altfel cardul
+/// pornea mereu gol chiar și pentru cărți deja pe wishlist.
 class _WishlistHeart extends ConsumerStatefulWidget {
   const _WishlistHeart({required this.bookId});
   final String bookId;
@@ -212,32 +215,44 @@ class _WishlistHeart extends ConsumerStatefulWidget {
 }
 
 class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
-  bool _wishlisted = false;
   bool _busy = false;
 
   Future<void> _toggle() async {
     if (_busy) return;
-    final next = !_wishlisted;
-    setState(() {
-      _wishlisted = next;
-      _busy = true;
-    });
+    setState(() => _busy = true);
     try {
-      final repo = ref.read(wishlistRepositoryProvider);
-      if (next) {
-        await repo.addToWishlist(widget.bookId);
-      } else {
-        await repo.removeFromWishlist(widget.bookId);
+      await ref.read(wishlistControllerProvider.notifier).toggle(widget.bookId);
+    } catch (e) {
+      // Cazul real întâlnit: limita gratuită de cărți/licitații urmărite -
+      // backendul întoarce un mesaj clar (403), dar înainte era înghițit
+      // silențios și inima doar revenea la alb, fără explicație.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_errorMessage(e))));
       }
-    } catch (_) {
-      if (mounted) setState(() => _wishlisted = !next);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
+  String _errorMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map && data['message'] != null) {
+        return data['message'] is List
+            ? (data['message'] as List).join(', ')
+            : data['message'].toString();
+      }
+    }
+    return context.l10n.bookDetailWishlistError;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final wishlisted = ref.watch(
+      wishlistControllerProvider.select(
+        (s) => s.value?.any((item) => item.book.id == widget.bookId) ?? false,
+      ),
+    );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: _toggle,
@@ -255,9 +270,9 @@ class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
           ],
         ),
         child: Icon(
-          _wishlisted ? Icons.favorite : Icons.favorite_border,
+          wishlisted ? Icons.favorite : Icons.favorite_border,
           size: 17,
-          color: _wishlisted ? AppColors.destructive : AppColors.mutedForeground,
+          color: wishlisted ? AppColors.destructive : AppColors.mutedForeground,
         ),
       ),
     );

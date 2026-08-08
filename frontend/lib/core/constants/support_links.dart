@@ -14,7 +14,7 @@ class SupportLinks {
   static const buyMeACoffee = 'https://www.buymeacoffee.com/shelfshare';
 
   /// PayPal.me - folosit pe web, unde nu există billing de Play Store.
-  static const paypal = 'https://www.paypal.com/paypalme/shelfshare';
+  static const paypal = 'https://paypal.me/tonims';
 
   /// Adresa de contact a dezvoltatorului, afișată în „About dev".
   static const contactEmail = 'contact@shelfshare.ro';

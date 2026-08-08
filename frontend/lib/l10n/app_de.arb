@@ -426,6 +426,7 @@
     "bookDetailReportTooltip":  "Anzeige melden",
     "bookDetailReportedFrom":  "Gemeldet von Anzeige \"{title}\"",
     "bookDetailReportSent":  "Meldung gesendet. Danke!",
+    "bookDetailWishlistError":  "Die Wunschliste konnte nicht aktualisiert werden",
     "bookDetailReportError":  "Die Meldung konnte nicht gesendet werden",
     "bookDetailLoadError":  "Das Buch konnte nicht geladen werden.",
     "bookDetailViewsTitle":  "Aufrufe",

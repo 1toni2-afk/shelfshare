@@ -18,12 +18,18 @@ class TypewriterText extends StatefulWidget {
     this.style,
     this.typingSpeed = const Duration(milliseconds: 70),
     this.deletingSpeed = const Duration(milliseconds: 35),
+    this.maxLines = 1,
   });
 
   final List<TypewriterPhrase> phrases;
   final TextStyle? style;
   final Duration typingSpeed;
   final Duration deletingSpeed;
+
+  /// Peste 1, textul se poate întinde pe mai multe linii în loc să fie tăiat -
+  /// folosit pe telefon, unde o frază lungă altfel se decupa brusc la
+  /// marginea AppBar-ului.
+  final int maxLines;
 
   @override
   State<TypewriterText> createState() => _TypewriterTextState();
@@ -104,8 +110,9 @@ class _TypewriterTextState extends State<TypewriterText> {
           ),
         ],
       ),
-      maxLines: 1,
-      overflow: TextOverflow.clip,
+      maxLines: widget.maxLines,
+      softWrap: widget.maxLines > 1,
+      overflow: widget.maxLines > 1 ? TextOverflow.ellipsis : TextOverflow.clip,
     );
   }
 }

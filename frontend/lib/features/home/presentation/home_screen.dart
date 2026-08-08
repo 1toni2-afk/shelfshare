@@ -8,12 +8,10 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/typewriter_text.dart';
-import '../../../shared/widgets/notification_halo.dart';
 import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
-import '../../notifications/presentation/notification_routing.dart';
 import '../../exchanges/application/exchanges_controller.dart';
 import '../../../data/models/exchange_request.dart';
 import '../application/home_controller.dart';
@@ -72,10 +70,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final unreadCount =
         (ref.watch(notificationsControllerProvider).value ?? const []).where((n) => !n.isRead).length;
     final l10n = context.l10n;
+    // Sub 400dp (telefon), o frază lungă nu mai încape pe o linie la
+    // titleLarge. În loc s-o tăiem brusc la marginea AppBar-ului, trecem pe
+    // font mai mic + 2 linii, cu un AppBar puțin mai înalt ca să le încapă.
+    final isNarrow = MediaQuery.of(context).size.width < 400;
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: isNarrow ? 72 : kToolbarHeight,
         title: TypewriterText(
+          // Cheie pe nume: fără ea, widgetul își păstrează starea de animație
+          // (poziția de tastare) între rebuild-uri. Când numele userului se
+          // încarcă asincron DUPĂ primul cadru (auth mai lent decât Home),
+          // fraza nouă (cu numele complet) era citită la un `_charCount` vechi
+          // rămas de la fraza inițială (fără nume) - de-aici „Toni Mu_" blocat
+          // câteva secunde. O cheie diferită forțează un remount curat, care
+          // repornește animația de la zero pe textul corect.
+          key: ValueKey(me?.name),
           // `DateTime.now()` e ora locală a telefonului, adică exact ce ne
           // trebuie: salutul urmează fusul userului, nu al serverului.
           phrases: buildGreetings(
@@ -85,7 +96,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             birthdayMonth: me?.birthdayMonth,
             birthdayDay: me?.birthdayDay,
           ),
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          maxLines: isNarrow ? 2 : 1,
+          style: (isNarrow
+                  ? Theme.of(context).textTheme.titleMedium
+                  : Theme.of(context).textTheme.titleLarge)
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -206,7 +221,6 @@ class _HomeFeed extends StatelessWidget {
     // primele două rânduri → secțiunea 0, următoarele trei → secțiunea 1 etc.
     // Convertim rândurile în număr de cărți folosind numărul de coloane.
     final slivers = <Widget>[
-      const SliverToBoxAdapter(child: _NotificationHaloHeader()),
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
       const SliverToBoxAdapter(child: _PendingSwapBanner()),
     ];
@@ -244,48 +258,6 @@ class _HomeFeed extends StatelessWidget {
   }
 }
 
-/// Header cu avatarul userului și notificările necitite dispuse ca buline
-/// în arc deasupra lui (Batch 7). Tap pe o bulină deschide notificarea; tap
-/// pe „+N" duce la lista completă. Când nu e nimic necitit, apare doar
-/// avatarul.
-class _NotificationHaloHeader extends ConsumerWidget {
-  const _NotificationHaloHeader();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.watch(authControllerProvider);
-    final user = auth is AuthAuthenticated ? auth.user : null;
-    final unread = (ref.watch(notificationsControllerProvider).value ?? const [])
-        .where((n) => !n.isRead)
-        .toList();
-
-    final avatar = GestureDetector(
-      onTap: () => context.push('/notifications'),
-      child: CircleAvatar(
-        radius: 28,
-        backgroundColor: AppColors.muted,
-        backgroundImage: user?.profileImage != null
-            ? NetworkImage(user!.profileImage!)
-            : null,
-        child: user?.profileImage == null
-            ? Icon(Icons.person, color: AppColors.mutedForeground, size: 28)
-            : null,
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Center(
-        child: NotificationHalo(
-          notifications: unread,
-          avatar: avatar,
-          onBubbleTap: (n) => openNotification(context, ref, n),
-          onOverflowTap: () => context.push('/notifications'),
-        ),
-      ),
-    );
-  }
-}
 
 /// Banner de acțiune în așteptare - cererile de schimb primite și încă
 /// nedecise, sus în feed, înainte de secțiunile de descoperire (Milestone 20).

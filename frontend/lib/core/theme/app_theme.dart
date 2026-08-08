@@ -145,6 +145,15 @@ class AppTheme {
         // Discover și-l centrau local - de unde inconsecvența dintre taburi.
         centerTitle: true,
       ),
+      // Fără asta, TabBar folosește `colorScheme.onSurfaceVariant` implicit
+      // pentru eticheta neselectată - un gri-maroniu din paleta default
+      // Material, nu din `AppColors` - deci apărea text maro-închis pe fundal
+      // negru (My Bookshelf, Exchanges, Groups, Global Stats, Leaderboard).
+      tabBarTheme: TabBarThemeData(
+        labelColor: AppColors.accent,
+        unselectedLabelColor: AppColors.mutedForeground,
+        indicatorColor: AppColors.accent,
+      ),
       cardTheme: CardThemeData(
         color: AppColors.card,
         elevation: 0,

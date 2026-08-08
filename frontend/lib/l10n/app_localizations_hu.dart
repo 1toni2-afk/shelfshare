@@ -1246,6 +1246,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookDetailReportSent => 'Bejelentés elküldve. Köszönjük!';
 
   @override
+  String get bookDetailWishlistError =>
+      'Nem sikerült frissíteni a kívánságlistát';
+
+  @override
   String get bookDetailReportError => 'Nem sikerült elküldeni a bejelentést';
 
   @override

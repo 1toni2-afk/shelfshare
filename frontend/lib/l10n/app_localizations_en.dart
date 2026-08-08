@@ -1240,6 +1240,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookDetailReportSent => 'Report sent. Thank you!';
 
   @override
+  String get bookDetailWishlistError => 'We couldn\'t update your wishlist';
+
+  @override
   String get bookDetailReportError => 'We couldn\'t send the report';
 
   @override

@@ -59,6 +59,7 @@ class _ConversationsListScreenState
     final l10n = context.l10n;
 
     final list = _ConversationsPane(
+      showTitle: isDesktop,
       filter: _filter,
       onFilterChange: (f) => setState(() => _filter = f),
       searchController: _searchController,
@@ -115,6 +116,7 @@ class _ConversationsListScreenState
 /// lista de conversații.
 class _ConversationsPane extends ConsumerStatefulWidget {
   const _ConversationsPane({
+    required this.showTitle,
     required this.filter,
     required this.onFilterChange,
     required this.searchController,
@@ -124,6 +126,10 @@ class _ConversationsPane extends ConsumerStatefulWidget {
     required this.onConversationTap,
   });
 
+  /// Titlul „Chat" al panoului e necesar doar pe desktop, unde nu există alt
+  /// AppBar. Pe mobil, ecranul are deja un AppBar cu același titlu centrat -
+  /// afișarea amândurora dubla „Chat" sus-centru + sus-stânga.
+  final bool showTitle;
   final _ConversationsFilter filter;
   final ValueChanged<_ConversationsFilter> onFilterChange;
   final TextEditingController searchController;
@@ -257,15 +263,18 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
                   )
                 : Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          l10n.navChat,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      if (widget.showTitle)
+                        Expanded(
+                          child: Text(
+                            l10n.navChat,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      else
+                        const Spacer(),
                       // Editare în masă: selectează conversații ca să le
                       // arhivezi/ștergi împreună. Înlocuiește vechiul creion
                       // (care doar deschidea o conversație nouă - mutat lângă).
@@ -605,25 +614,40 @@ class _ConversationTile extends ConsumerWidget {
       // care fura tot spațiul, iar numele se rupea pe verticală, literă cu literă.
       // Fără alignment, Container-ul se strânge pe conținut. Pilulă (borderRadius)
       // în loc de cerc, ca „99+" să nu iasă din formă.
-      trailing: hasUnread
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.accent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                conversation.unreadCount > 99
-                    ? '99+'
-                    : '${conversation.unreadCount}',
-                style: const TextStyle(
-                  color: AppColors.accentForeground,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          : null,
+      // Arhivate: buton explicit de dezarhivare - swipe-ul de mai jos există,
+      // dar userii nu-l descopereau ("acum e complicat procesul"). Un buton
+      // vizibil e cea mai directă cale.
+      trailing: selectionMode
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasUnread)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      conversation.unreadCount > 99
+                          ? '99+'
+                          : '${conversation.unreadCount}',
+                      style: const TextStyle(
+                        color: AppColors.accentForeground,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                if (archived)
+                  IconButton(
+                    icon: const Icon(Icons.unarchive_outlined),
+                    tooltip: l10n.chatUnarchive,
+                    onPressed: () => notifier.setArchived(conversation.id, false),
+                  ),
+              ],
+            ),
       onTap: onTap,
       onLongPress: onLongPress,
     );

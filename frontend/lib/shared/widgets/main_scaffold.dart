@@ -70,28 +70,39 @@ class MainScaffold extends ConsumerWidget {
     // Scaffold, care „umbrește" drawer-ul celui exterior - vezi comentariul
     // de la `_shellScaffoldKey`) - butonul flotant de mai jos deschide
     // drawer-ul direct, indiferent de ecranul curent.
+    //
+    // Apare doar pe ecranele „rădăcină" (fără o rută de push în urmă) - pe
+    // ecranele deschise cu `push` (detaliu carte, conversație), AppBar-ul
+    // propriu are deja o săgeată de back exact în același colț stânga-sus;
+    // dublarea celor două butoane era motivul pentru care meniul acoperea
+    // controale din ecran (ex. butonul de poze din chat).
+    final canPop = context.canPop();
     return Scaffold(
       key: _shellScaffoldKey,
+      // Lățime mai mare pentru gestul de swipe-din-margine: cea implicită din
+      // Flutter (20dp) e prea îngustă ca să fie ușor de nimerit pe telefon.
+      drawerEdgeDragWidth: 48,
       drawer: SizedBox(width: kSidebarWidth, child: Drawer(child: sidebar)),
       body: Stack(
         children: [
           child,
-          Positioned(
-            left: 12,
-            bottom: 12,
-            child: SafeArea(
-              child: _MenuFab(onTap: () => _shellScaffoldKey.currentState?.openDrawer()),
+          if (!canPop)
+            Positioned(
+              left: 8,
+              top: 8,
+              child: SafeArea(
+                child: _MenuFab(onTap: () => _shellScaffoldKey.currentState?.openDrawer()),
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 }
 
-/// Buton flotant care deschide meniul din stânga pe mobil/web îngust. Jos-
-/// stânga, nu jos-dreapta - acolo stau FAB-urile ecranelor (ex. „Add a
-/// book"), și n-ar trebui să se suprapună cu meniul de navigare.
+/// Buton flotant care deschide meniul din stânga pe mobil/web îngust, poziționat
+/// sus-stânga - același colț unde ecranele cu back-button au deja săgeata,
+/// dar vizibil doar când NU există un back-button (vezi `canPop` mai sus).
 class _MenuFab extends StatelessWidget {
   const _MenuFab({required this.onTap});
   final VoidCallback onTap;

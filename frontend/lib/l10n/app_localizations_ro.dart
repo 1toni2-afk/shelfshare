@@ -1241,6 +1241,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookDetailReportSent => 'Raport trimis. Mulțumim!';
 
   @override
+  String get bookDetailWishlistError =>
+      'Nu am putut actualiza lista de dorințe';
+
+  @override
   String get bookDetailReportError => 'Nu am putut trimite raportul';
 
   @override

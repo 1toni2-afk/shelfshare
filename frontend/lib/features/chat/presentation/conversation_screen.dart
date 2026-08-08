@@ -47,6 +47,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   String? _highlightedMessageId;
   Timer? _highlightTimer;
 
+  /// Primul salt la ultimele mesaje trebuie instant (jumpTo), nu animat -
+  /// altfel userul vede conversația pornind vizibil de la primele mesaje și
+  /// „alunecând" spre cele recente la fiecare intrare într-un chat.
+  bool _didInitialScroll = false;
+
   @override
   void initState() {
     super.initState();
@@ -433,7 +438,14 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     ref.listen(chatControllerProvider(widget.conversationId), (previous, next) {
       final previousLastId = previous?.messages.isNotEmpty == true ? previous!.messages.last.id : null;
       final nextLastId = next.messages.isNotEmpty ? next.messages.last.id : null;
-      if (nextLastId != null && nextLastId != previousLastId) {
+      if (nextLastId == null || nextLastId == previousLastId) return;
+      if (!_didInitialScroll) {
+        _didInitialScroll = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        });
+      } else {
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
       }
     });
