@@ -2651,7 +2651,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileGroupPreferences => 'Einstellungen';
 
   @override
-  String get profileGroupLibrary => 'Bibliothek';
+  String get profileGroupAccount => 'Konto';
+
+  @override
+  String get profileGroupLibrary => 'Meine Bibliothek';
+
+  @override
+  String get profileGroupDiscovery => 'Entdecken';
+
+  @override
+  String get profileGroupStats => 'Statistiken';
 
   @override
   String get profileGroupSupport => 'Support';

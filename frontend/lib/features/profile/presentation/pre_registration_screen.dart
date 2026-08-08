@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/page_container.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../data/pre_registration_repository.dart';
@@ -71,7 +72,15 @@ class _PreRegistrationScreenState extends ConsumerState<PreRegistrationScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.preRegisterAndroidTitle)),
       body: SafeArea(
-        child: ListView(
+        child: PageContainer(
+          // Formularul rămâne o coloană îngustă (citibilă) chiar și în
+          // interiorul cadrului unificat de 1400px - un câmp de email pe
+          // toată lățimea unui monitor ar fi la fel de absurd ca titlul
+          // de la Add a Book.
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
             const SizedBox(height: 16),
@@ -124,6 +133,9 @@ class _PreRegistrationScreenState extends ConsumerState<PreRegistrationScreen> {
                   : Text(_done ? l10n.preRegisterSuccess : l10n.preRegisterSubmit),
             ),
           ],
+              ),
+            ),
+          ),
         ),
       ),
     );

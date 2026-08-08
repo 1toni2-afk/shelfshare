@@ -531,11 +531,18 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     final charsLeft = 256 - _descriptionController.text.length;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 220,
+      // Capăt de lățime pe tot rândul, nu doar pe coloana de formular: fără
+      // el, `Expanded` umplea tot spațiul rămas pe ecrane late, iar un câmp
+      // de titlu ajungea la ~1100px - absurd pentru un input de o linie.
+      // 220 (copertă) + 34 (gap) + ~700 (formular) ≈ 954.
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 954),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 220,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -670,7 +677,9 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               ],
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

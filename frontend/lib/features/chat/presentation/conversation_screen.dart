@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +23,11 @@ import '../application/conversations_controller.dart';
 import '../data/chat_repository.dart';
 import '../data/places_repository.dart';
 import '../../../l10n/app_localizations.dart';
+
+String _formatBubbleTime(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+}
 
 class ConversationScreen extends ConsumerStatefulWidget {
   const ConversationScreen({super.key, required this.conversationId, this.otherUser});
@@ -739,6 +745,16 @@ class _MessageList extends StatelessWidget {
           final isHighlighted = message.id == highlightedMessageId;
           final showSeen = isMine && message.id == _lastOwnMessageId;
 
+          // Grupare pe expeditor: un mesaj e „ultimul dintr-un grup" dacă
+          // următorul item nu e de la același expeditor (sau nu mai există).
+          // Grupurile stau apropiate (4px), între grupuri diferite e un gol
+          // mai mare (16px) - fără asta, fiecare mesaj (chiar de un cuvânt)
+          // avea același gol mare în jur.
+          final prevItem = itemIndex > 0 ? items[itemIndex - 1] : null;
+          final nextItem = itemIndex < items.length - 1 ? items[itemIndex + 1] : null;
+          final isGroupEnd = !(nextItem is ChatMessage && nextItem.senderId == message.senderId);
+          final isGroupStart = !(prevItem is ChatMessage && prevItem.senderId == message.senderId);
+
           return Column(
             // Cheia permite centrarea exactă pe mesaj după o căutare, vezi
             // _jumpToMessage.
@@ -749,10 +765,14 @@ class _MessageList extends StatelessWidget {
               GestureDetector(
                 onLongPress: () => onMessageLongPress(message),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  margin: EdgeInsets.only(top: isGroupStart ? 12 : 0, bottom: 4),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  constraints:
-                      BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                  // Plafon absolut (~65ch), nu doar un procent din ecran - pe
+                  // desktop, 75% dintr-o fereastră largă tot întindea bula
+                  // pe ~1000px.
+                  constraints: BoxConstraints(
+                    maxWidth: math.min(MediaQuery.of(context).size.width * 0.75, 480),
+                  ),
                   decoration: BoxDecoration(
                     color: isMine ? AppColors.primary : AppColors.muted,
                     borderRadius: BorderRadius.circular(16),
@@ -782,12 +802,33 @@ class _MessageList extends StatelessWidget {
                   ),
                 ),
               ),
+              // Ora - doar la ultimul mesaj dintr-un grup, ca să nu repete
+              // aceeași informație pe fiecare bulă. Cea de „văzut"/„trimis"
+              // (doar pe ultimul mesaj propriu) o înlocuiește pe a ei.
+              if (isGroupEnd && !showSeen)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, right: 4, bottom: 4),
+                  child: Text(
+                    _formatBubbleTime(message.createdAt),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.mutedForeground, fontSize: 11),
+                  ),
+                ),
               if (showSeen)
                 Padding(
                   padding: const EdgeInsets.only(right: 4, bottom: 4),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Text(
+                        '${_formatBubbleTime(message.createdAt)} · ',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.mutedForeground,
+                              fontSize: 11,
+                            ),
+                      ),
                       Icon(
                         message.isRead ? Icons.done_all : Icons.done,
                         size: 14,

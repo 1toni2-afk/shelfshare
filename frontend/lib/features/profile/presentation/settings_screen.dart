@@ -67,45 +67,20 @@ class _SettingsList extends ConsumerWidget {
                     style:
                         TextStyle(color: AppColors.mutedForeground, fontSize: 12),
                   ),
-                  const SizedBox(height: 12),
-                  // Donațiile stau sus, ca prim element vizibil: aplicația e
-                  // găzduită pe un server personal, deci e singura sursă de
-                  // finanțare.
-                  _KeepAliveCard(onTap: () => context.push('/about-dev')),
                   const SizedBox(height: 20),
 
                   // Grupuri vizuale distincte (card cu fundal propriu), cu
                   // valoarea curentă vizibilă lângă fiecare setare - în loc
                   // de o listă plată separată doar prin linii orizontale
-                  // (Milestone 20).
-                  _SettingsGroupLabel(l10n.profileGroupProfile),
+                  // (Milestone 20/23).
+                  _SettingsGroupLabel(l10n.profileGroupAccount),
                   _SettingsGroup(
                     children: [
-                      _SettingsTile(
-                        icon: Icons.qr_code_2,
-                        label: l10n.profileQrTooltip,
-                        onTap: () => showDialog<void>(
-                          context: context,
-                          builder: (context) => ProfileQrDialog(userId: user.id),
-                        ),
-                      ),
-                      _SettingsTile(
-                        icon: Icons.swap_horiz,
-                        label: l10n.profileMyExchanges,
-                        onTap: () => context.push('/exchanges'),
-                      ),
                       _SettingsTile(
                         icon: Icons.edit_outlined,
                         label: l10n.profileEditProfile,
                         onTap: () => context.push('/profile/edit'),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  _SettingsGroupLabel(l10n.profileGroupPreferences),
-                  _SettingsGroup(
-                    children: [
                       _SettingsTile(
                         icon: Icons.language_outlined,
                         label: l10n.profileLanguage,
@@ -121,6 +96,19 @@ class _SettingsList extends ConsumerWidget {
                         ),
                         onTap: () => showThemePicker(context, ref),
                       ),
+                      _SettingsTile(
+                        icon: Icons.qr_code_2,
+                        label: l10n.profileQrTooltip,
+                        onTap: () => showDialog<void>(
+                          context: context,
+                          builder: (context) => ProfileQrDialog(userId: user.id),
+                        ),
+                      ),
+                      _SettingsTile(
+                        icon: Icons.swap_horiz,
+                        label: l10n.profileMyExchanges,
+                        onTap: () => context.push('/exchanges'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -130,7 +118,7 @@ class _SettingsList extends ConsumerWidget {
                     children: [
                       _SettingsTile(
                           icon: Icons.auto_stories_outlined,
-                          label: l10n.profileMyBookshelf,
+                          label: l10n.bookshelfTitle,
                           onTap: () => context.push('/bookshelf')),
                       _SettingsTile(
                           icon: Icons.collections_bookmark_outlined,
@@ -140,10 +128,13 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.groups_outlined,
                           label: l10n.groupsTitle,
                           onTap: () => context.push('/groups')),
-                      _SettingsTile(
-                          icon: Icons.dynamic_feed_outlined,
-                          label: l10n.profileActivityFeed,
-                          onTap: () => context.push('/activity-feed')),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _SettingsGroupLabel(l10n.profileGroupDiscovery),
+                  _SettingsGroup(
+                    children: [
                       _SettingsTile(
                           icon: Icons.compare_arrows_outlined,
                           label: l10n.profileSmartMatches,
@@ -157,6 +148,17 @@ class _SettingsList extends ConsumerWidget {
                           label: l10n.profileLeaderboard,
                           onTap: () => context.push('/leaderboard')),
                       _SettingsTile(
+                          icon: Icons.dynamic_feed_outlined,
+                          label: l10n.profileActivityFeed,
+                          onTap: () => context.push('/activity-feed')),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  _SettingsGroupLabel(l10n.profileGroupStats),
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
                           icon: Icons.bar_chart_outlined,
                           label: l10n.profileGlobalStats,
                           onTap: () => context.push('/global-stats')),
@@ -168,6 +170,11 @@ class _SettingsList extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
+
+                  // Donația mutată jos (Milestone 23) - simpatică, dar nu
+                  // trebuie să fie primul lucru pe care-l vezi în Setări.
+                  _KeepAliveCard(onTap: () => context.push('/about-dev')),
                   const SizedBox(height: 20),
 
                   _SettingsGroupLabel(l10n.profileGroupSupport),

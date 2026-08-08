@@ -52,7 +52,10 @@ final List<SidebarShortcutSpec> kSidebarShortcutSpecs = [
     icon: Icons.auto_stories_outlined,
     activeIcon: Icons.auto_stories,
     route: '/bookshelf',
-    labelOf: (l) => l.navMyBooks,
+    // Aceeași etichetă ca titlul real al ecranului (`bookshelfTitle`) și ca
+    // rândul din Settings - înainte spunea „My books" aici, „My bookshelf"
+    // în Settings, pentru aceeași destinație (Milestone 23).
+    labelOf: (l) => l.bookshelfTitle,
   ),
   SidebarShortcutSpec(
     key: SidebarShortcut.exchanges,
@@ -73,7 +76,9 @@ final List<SidebarShortcutSpec> kSidebarShortcutSpecs = [
     icon: Icons.collections_bookmark_outlined,
     activeIcon: Icons.collections_bookmark,
     route: '/collections',
-    labelOf: (l) => l.navMyCollections,
+    // La fel ca la „My books" mai sus - „My collections" aici vs
+    // „Collections" în Settings pentru aceeași destinație.
+    labelOf: (l) => l.collectionsTitle,
   ),
   SidebarShortcutSpec(
     key: SidebarShortcut.activityFeed,
@@ -150,13 +155,13 @@ final List<SidebarShortcutSpec> kSidebarShortcutSpecs = [
 SidebarShortcutSpec specFor(SidebarShortcut key) =>
     kSidebarShortcutSpecs.firstWhere((s) => s.key == key);
 
-/// Setul afișat implicit celor care nu au personalizat sidebar-ul (4 scurtături
-/// istorice + reflectă ce era hardcodat înainte de Milestone 16).
+/// Setul afișat implicit celor care nu au personalizat sidebar-ul. Redus la
+/// 3 (Milestone 23) - Collections a rămas în afara setului implicit, dar e
+/// oricând un tap distanță prin „+" din editarea scurtăturilor.
 const List<SidebarShortcut> _defaultShortcuts = [
   SidebarShortcut.myBooks,
   SidebarShortcut.exchanges,
   SidebarShortcut.wishlist,
-  SidebarShortcut.collections,
 ];
 
 /// Cheia sub care persistăm lista în secure storage. Aceleași chei

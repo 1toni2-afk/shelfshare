@@ -4716,11 +4716,29 @@ abstract class AppLocalizations {
   /// **'Preferințe'**
   String get profileGroupPreferences;
 
+  /// No description provided for @profileGroupAccount.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cont'**
+  String get profileGroupAccount;
+
   /// No description provided for @profileGroupLibrary.
   ///
   /// In ro, this message translates to:
-  /// **'Bibliotecă'**
+  /// **'Biblioteca mea'**
   String get profileGroupLibrary;
+
+  /// No description provided for @profileGroupDiscovery.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descoperire'**
+  String get profileGroupDiscovery;
+
+  /// No description provided for @profileGroupStats.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici'**
+  String get profileGroupStats;
 
   /// No description provided for @profileGroupSupport.
   ///

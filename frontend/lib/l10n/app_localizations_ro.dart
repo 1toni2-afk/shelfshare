@@ -2614,7 +2614,16 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileGroupPreferences => 'Preferințe';
 
   @override
-  String get profileGroupLibrary => 'Bibliotecă';
+  String get profileGroupAccount => 'Cont';
+
+  @override
+  String get profileGroupLibrary => 'Biblioteca mea';
+
+  @override
+  String get profileGroupDiscovery => 'Descoperire';
+
+  @override
+  String get profileGroupStats => 'Statistici';
 
   @override
   String get profileGroupSupport => 'Suport';

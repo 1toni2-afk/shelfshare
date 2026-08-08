@@ -2624,7 +2624,16 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileGroupPreferences => 'Beállítások';
 
   @override
-  String get profileGroupLibrary => 'Könyvtár';
+  String get profileGroupAccount => 'Fiók';
+
+  @override
+  String get profileGroupLibrary => 'Könyvtáram';
+
+  @override
+  String get profileGroupDiscovery => 'Felfedezés';
+
+  @override
+  String get profileGroupStats => 'Statisztikák';
 
   @override
   String get profileGroupSupport => 'Támogatás';

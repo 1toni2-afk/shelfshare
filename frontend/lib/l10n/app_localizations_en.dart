@@ -2610,7 +2610,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileGroupPreferences => 'Preferences';
 
   @override
-  String get profileGroupLibrary => 'Library';
+  String get profileGroupAccount => 'Account';
+
+  @override
+  String get profileGroupLibrary => 'My Library';
+
+  @override
+  String get profileGroupDiscovery => 'Discovery';
+
+  @override
+  String get profileGroupStats => 'Stats';
 
   @override
   String get profileGroupSupport => 'Support';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/page_container.dart';
 import '../../../l10n/app_localizations.dart';
 
 class SafetyCenterScreen extends StatelessWidget {
@@ -34,27 +35,29 @@ class SafetyCenterScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.safetyCenterTitle)),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              l10n.safetyCenterIntro,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
-            ),
-            const SizedBox(height: 16),
-            for (final (icon, title, description) in _tips(l10n))
-              Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: Icon(icon, color: AppColors.accent),
-                  title: Text(title, style: Theme.of(context).textTheme.titleSmall),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(description),
+        child: PageContainer(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            children: [
+              Text(
+                l10n.safetyCenterIntro,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
+              ),
+              const SizedBox(height: 16),
+              for (final (icon, title, description) in _tips(l10n))
+                Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: Icon(icon, color: AppColors.accent),
+                    title: Text(title, style: Theme.of(context).textTheme.titleSmall),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(description),
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
