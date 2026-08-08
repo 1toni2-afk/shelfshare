@@ -368,18 +368,22 @@ class _CoverPanel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: AspectRatio(
-            aspectRatio: 5 / 7,
-            child: BookCover(
-              url: book.book.coverUrl,
-              fallbackUrl: book.photos.isNotEmpty ? book.photos.first : null,
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          ),
-        ),
+        // Poze proprii → carusel cu swipe direct pe imaginea mare (nu doar
+        // pe rândul de thumbnail-uri de mai jos). Fără poze proprii, rămâne
+        // coperta unică din catalog - nu are ce să deruleze.
+        book.photos.isNotEmpty
+            ? _BookPhotoCarousel(photos: book.photos)
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: AspectRatio(
+                  aspectRatio: 5 / 7,
+                  child: BookCover(
+                    url: book.book.coverUrl,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
         if (book.isForSale && book.salePrice != null) ...[
           const SizedBox(height: 16),
           Center(child: _PriceBlock(book: book)),
@@ -436,6 +440,80 @@ class _CoverPanel extends ConsumerWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Poza mare devine un carusel cu swipe atunci când exemplarul are mai multe
+/// poze proprii - înainte, singura cale de a trece printre ele era să dai
+/// tap pe una din miniaturile de mai jos ca să deschizi viewer-ul pe tot
+/// ecranul. Tap pe imagine tot deschide viewer-ul (pentru zoom), dar swipe-ul
+/// direct pe poza mare funcționează fără el.
+class _BookPhotoCarousel extends StatefulWidget {
+  const _BookPhotoCarousel({required this.photos});
+  final List<String> photos;
+
+  @override
+  State<_BookPhotoCarousel> createState() => _BookPhotoCarouselState();
+}
+
+class _BookPhotoCarouselState extends State<_BookPhotoCarousel> {
+  final _controller = PageController();
+  int _index = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 5 / 7,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              controller: _controller,
+              itemCount: widget.photos.length,
+              onPageChanged: (i) => setState(() => _index = i),
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () => _openPhotoViewer(context, widget.photos, index),
+                child: Image.network(widget.photos[index], fit: BoxFit.cover),
+              ),
+            ),
+            if (widget.photos.length > 1)
+              Positioned(
+                bottom: 10,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (var i = 0; i < widget.photos.length; i++)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: i == _index ? 8 : 6,
+                        height: i == _index ? 8 : 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: i == _index
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.5),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 2),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

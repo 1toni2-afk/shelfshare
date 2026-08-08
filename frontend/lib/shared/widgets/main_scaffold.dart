@@ -71,11 +71,13 @@ class MainScaffold extends ConsumerWidget {
     // de la `_shellScaffoldKey`) - butonul flotant de mai jos deschide
     // drawer-ul direct, indiferent de ecranul curent.
     //
-    // Apare doar pe ecranele „rădăcină" (fără o rută de push în urmă) - pe
-    // ecranele deschise cu `push` (detaliu carte, conversație), AppBar-ul
-    // propriu are deja o săgeată de back exact în același colț stânga-sus;
-    // dublarea celor două butoane era motivul pentru care meniul acoperea
-    // controale din ecran (ex. butonul de poze din chat).
+    // Rămâne mereu vizibil, pe orice ecran - varianta anterioară îl ascundea
+    // când `canPop()` era true (ecrane deschise cu push, ex. detaliul unei
+    // cărți), presupunând că AppBar-ul acelui ecran are deja o săgeată de
+    // back. În practică, după ce userul apăsa acel back și revenea la un
+    // ecran „rădăcină", butonul rămânea dispărut - fără nicio cale de a mai
+    // deschide meniul. Când există și o săgeată de back, butonul se mută
+    // puțin la dreapta ei, în loc să dispară.
     final canPop = context.canPop();
     return Scaffold(
       key: _shellScaffoldKey,
@@ -86,14 +88,13 @@ class MainScaffold extends ConsumerWidget {
       body: Stack(
         children: [
           child,
-          if (!canPop)
-            Positioned(
-              left: 8,
-              top: 8,
-              child: SafeArea(
-                child: _MenuFab(onTap: () => _shellScaffoldKey.currentState?.openDrawer()),
-              ),
+          Positioned(
+            left: canPop ? 52 : 8,
+            top: 8,
+            child: SafeArea(
+              child: _MenuFab(onTap: () => _shellScaffoldKey.currentState?.openDrawer()),
             ),
+          ),
         ],
       ),
     );

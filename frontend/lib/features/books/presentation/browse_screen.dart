@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../shared/widgets/book_card.dart';
+import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/browse_controller.dart';
 import '../data/books_repository.dart';
@@ -177,18 +178,23 @@ class _PopularSearches extends ConsumerWidget {
     return async.when(
       data: (searches) {
         if (searches.isEmpty) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final search in searches)
-                ActionChip(
-                  label: Text(search.query),
-                  onPressed: () => onSelect(search.query),
-                ),
-            ],
+        // Rând orizontal cu scroll, nu `Wrap` - cu destule sugestii populare,
+        // un Wrap se întindea pe 3-4 rânduri și ocupa o bucată mare din ecran
+        // înainte să apară vreun rezultat.
+        return SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            itemCount: searches.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final search = searches[index];
+              return ActionChip(
+                label: Text(search.query),
+                onPressed: () => onSelect(search.query),
+              );
+            },
           ),
         );
       },
@@ -229,26 +235,38 @@ class _BrowseResults extends ConsumerWidget {
       return CenteredScrollable(child: Text(context.l10n.browseEmpty));
     }
 
-    return ListView(
+    // GridView responsiv (aceleași metrici ca Home/Wishlist/Raftul meu), nu
+    // `Wrap` cu carduri de lățime fixă - pe un telefon îngust, 160+16+160
+    // depășea lățimea utilă și tot rândul cădea pe o singură coloană lipită
+    // de margine.
+    return CustomScrollView(
       controller: scrollController,
-      padding: const EdgeInsets.all(16),
-      children: [
-        Wrap(
-          spacing: 16,
-          runSpacing: 20,
-          children: [
-            for (final userBook in state.items)
-              BookCard(
-                userBook: userBook,
-                width: 160,
-                onTap: () => context.push('/books/${userBook.id}', extra: userBook.owner),
-              ),
-          ],
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: kBookCardMaxWidth,
+              mainAxisSpacing: kBookGridMainAxisSpacing,
+              crossAxisSpacing: kBookGridCrossAxisSpacing,
+              childAspectRatio: kBookCardAspectRatio,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final userBook = state.items[index];
+                return BookCard(
+                  userBook: userBook,
+                  onTap: () => context.push('/books/${userBook.id}', extra: userBook.owner),
+                );
+              },
+              childCount: state.items.length,
+            ),
+          ),
         ),
         if (state.isLoadingMore)
-          const Padding(
+          const SliverPadding(
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
+            sliver: SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
           ),
       ],
     );
