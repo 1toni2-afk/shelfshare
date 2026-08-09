@@ -25,8 +25,10 @@ class ChatSocketService {
   }
 
   /// Cât așteptăm handshake-ul inițial de conectare (deschidere transport +
-  /// autentificare) înainte să renunțăm.
-  static const _connectTimeout = Duration(seconds: 10);
+  /// autentificare) înainte să renunțăm. Suficient de generos cât să acopere
+  /// câteva reîncercări automate socket.io (backoff intern), nu doar prima
+  /// tentativă - vezi de ce mai jos, la `onConnectError`.
+  static const _connectTimeout = Duration(seconds: 15);
 
   Future<io.Socket> _doConnect() async {
     final socket = io.io(
@@ -68,22 +70,24 @@ class ChatSocketService {
       if (!completer.isCompleted) completer.complete(socket);
     }
 
-    void onConnectError(dynamic err) {
-      if (!completer.isCompleted) completer.completeError(err ?? 'connect_error');
-    }
+    // NU respingem completer-ul la primul `connect_error`: socket.io are
+    // propria reîncercare automată cu backoff (2-3 tentative în intervalul de
+    // mai jos sunt normale, mai ales pe primul handshake printr-un tunel).
+    // Prima versiune a acestui fix trata orice eroare ca eșec definitiv -
+    // exact ce cădea înainte fără eroare vizibilă acum cădea CU eroare
+    // vizibilă, la prima reîncercare eșuată, chiar dacă a doua ar fi reușit.
+    // Singura cale de eșec rămâne timeout-ul de mai jos, care lasă loc pentru
+    // reîncercările interne să-și facă treaba.
 
     socket.on('connect', onConnect);
-    socket.on('connect_error', onConnectError);
     socket.connect();
 
     try {
       return await completer.future.timeout(_connectTimeout);
     } finally {
       // Fără argument de handler, la fel ca restul clasei (ex. `offNewMessage`)
-      // - sigur aici, fiindcă doar `_doConnect` ascultă vreodată aceste două
-      // evenimente.
+      // - sigur aici, fiindcă doar `_doConnect` ascultă vreodată acest eveniment.
       socket.off('connect');
-      socket.off('connect_error');
       _connecting = null;
     }
   }
