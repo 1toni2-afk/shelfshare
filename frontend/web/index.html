@@ -80,6 +80,18 @@
   </script>
 
   <style>
+    /* Fundalul paginii HTML e alb implicit. Pe mobil, când tastatura se
+       închide, engine-ul Flutter web uneori nu-și redimensionează view-ul
+       înapoi la înălțimea completă suficient de repede (bug cunoscut,
+       specific mobile Chrome) - golul rămas expune fundalul alb al paginii
+       de dedesubt, un dreptunghi orbitor pe o temă întunecată. Nu rezolvă
+       cauza (vezi și scriptul de resize de mai jos), dar dacă tot apare
+       golul, măcar se vede în culoarea temei, nu alb.
+       #0E0E0F = AppColors._darkBackground din app_theme.dart. */
+    html, body {
+      background: #0E0E0F;
+      height: 100%;
+    }
     /* Placeholder afișat instant de browser, înainte ca JS-ul Flutter să
        apuce să se descarce/parseze - fără el, userul vede o pagină complet
        albă câteva secunde la fiecare încărcare. Eliminat explicit la evenimentul

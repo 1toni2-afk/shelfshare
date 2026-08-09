@@ -413,47 +413,53 @@ class _UnifiedFiltersSection extends ConsumerWidget {
     final visible = genres.take(_visibleGenres).toList();
     final overflow = genres.length - visible.length;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          ActionChip(
-            avatar: const Icon(Icons.swap_horiz, size: 18),
-            label: Text(l10n.discoverSwapOnly),
-            onPressed: () => context.push(
-              '/browse',
-              extra: const SearchScreenArgs(listingType: 'swap'),
-            ),
-          ),
-          ActionChip(
-            avatar: const Icon(Icons.gavel_outlined, size: 18),
-            label: Text(l10n.discoverAuctions),
-            onPressed: () => context.push(
-              '/browse',
-              extra: const SearchScreenArgs(listingType: 'auction'),
-            ),
-          ),
-          ActionChip(
-            avatar: const Icon(Icons.map_outlined, size: 18),
-            label: Text(l10n.mapTitle),
-            onPressed: () => context.push('/map'),
-          ),
-          for (final g in visible)
-            ActionChip(
-              label: Text('${g.genre} ${g.count}'),
-              onPressed: () => context.push('/browse', extra: SearchScreenArgs(genre: g.genre)),
-            ),
-          if (overflow > 0)
-            ActionChip(
-              label: Text(l10n.discoverMoreGenres(overflow)),
-              labelStyle: const TextStyle(color: AppColors.accent),
-              backgroundColor: Colors.transparent,
-              side: BorderSide.none,
-              onPressed: () => context.push('/browse'),
-            ),
-        ],
+    final chips = [
+      ActionChip(
+        avatar: const Icon(Icons.swap_horiz, size: 18),
+        label: Text(l10n.discoverSwapOnly),
+        onPressed: () => context.push(
+          '/browse',
+          extra: const SearchScreenArgs(listingType: 'swap'),
+        ),
+      ),
+      ActionChip(
+        avatar: const Icon(Icons.gavel_outlined, size: 18),
+        label: Text(l10n.discoverAuctions),
+        onPressed: () => context.push(
+          '/browse',
+          extra: const SearchScreenArgs(listingType: 'auction'),
+        ),
+      ),
+      ActionChip(
+        avatar: const Icon(Icons.map_outlined, size: 18),
+        label: Text(l10n.mapTitle),
+        onPressed: () => context.push('/map'),
+      ),
+      for (final g in visible)
+        ActionChip(
+          label: Text('${g.genre} ${g.count}'),
+          onPressed: () => context.push('/browse', extra: SearchScreenArgs(genre: g.genre)),
+        ),
+      if (overflow > 0)
+        ActionChip(
+          label: Text(l10n.discoverMoreGenres(overflow)),
+          labelStyle: const TextStyle(color: AppColors.accent),
+          backgroundColor: Colors.transparent,
+          side: BorderSide.none,
+          onPressed: () => context.push('/browse'),
+        ),
+    ];
+    // Scroll orizontal, nu `Wrap` - cu filtrele rapide + 6 genuri + overflow,
+    // un Wrap cădea pe 3-4 rânduri și ocupa jumătate de ecran pe telefon
+    // înainte să apară vreun rezultat.
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        itemCount: chips.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) => chips[index],
       ),
     );
   }
