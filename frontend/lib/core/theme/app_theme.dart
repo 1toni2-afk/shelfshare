@@ -154,6 +154,17 @@ class AppTheme {
         unselectedLabelColor: AppColors.mutedForeground,
         indicatorColor: AppColors.accent,
       ),
+      // Fără el, ActionChip/Chip foloseau colțul rotunjit ~8dp implicit din
+      // Material 3 - „pătrățos" lângă pastilele complet rotunde (StadiumBorder)
+      // folosite peste tot altundeva pentru filtre (My Shelf, Notificări,
+      // Chat) - aceleași chip-uri, două forme diferite pe ecrane diferite
+      // (Milestone 23 Buggs #3, „tagurile cu colțuri pătrate vs categoriile
+      // rotunde"). StadiumBorder, nu un radius fix - rămâne perfect rotund
+      // indiferent de înălțimea reală a chip-ului.
+      chipTheme: ChipThemeData(
+        shape: const StadiumBorder(),
+        side: BorderSide(color: AppColors.border),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.card,
         elevation: 0,

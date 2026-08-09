@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/main_scaffold.dart' show kSidebarBreakpoint;
 import '../../../shared/widgets/typewriter_text.dart';
 import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
@@ -79,9 +80,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // titleLarge. În loc s-o tăiem brusc la marginea AppBar-ului, trecem pe
     // font mai mic + 2 linii, cu un AppBar puțin mai înalt ca să le încapă.
     final isNarrow = MediaQuery.of(context).size.width < 400;
+    // Sub pragul de sidebar, MainScaffold desenează butonul de meniu plutitor
+    // peste colțul stânga-sus al ecranului (vezi main_scaffold.dart). Titlul
+    // e `centerTitle` din temă, dar fraza de salut e destul de lungă cât să
+    // umple aproape tot slotul disponibil - „centrarea" ei tot începea lipit
+    // de marginea stângă, exact sub buton. Un `leading` gol rezervă spațiul
+    // ăsta, la fel cum săgeata de back îl rezervă natural pe alte ecrane.
+    final needsMenuClearance =
+        MediaQuery.of(context).size.width < kSidebarBreakpoint;
 
     return Scaffold(
       appBar: AppBar(
+        leading: needsMenuClearance ? const SizedBox.shrink() : null,
+        leadingWidth: needsMenuClearance ? 64 : null,
         toolbarHeight: isNarrow ? 72 : kToolbarHeight,
         title: TypewriterText(
           // Cheie pe nume: fără ea, widgetul își păstrează starea de animație

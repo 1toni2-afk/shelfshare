@@ -83,7 +83,12 @@ class MainScaffold extends ConsumerWidget {
       key: _shellScaffoldKey,
       // Lățime mai mare pentru gestul de swipe-din-margine: cea implicită din
       // Flutter (20dp) e prea îngustă ca să fie ușor de nimerit pe telefon.
-      drawerEdgeDragWidth: 48,
+      // Bumped 48 -> 96 (Milestone 23 Buggs #3): 48dp tot era prea îngust în
+      // practică - userul trebuia să nimerească aproape exact marginea
+      // ecranului. O bandă de aproape un sfert din lățimea unui telefon tipic
+      // dă mult mai multă marjă de eroare, fără să intre în conflict cu
+      // conținut orizontal scrollabil (acela stă de regulă mai spre centru).
+      drawerEdgeDragWidth: 96,
       drawer: SizedBox(width: kSidebarWidth, child: Drawer(child: sidebar)),
       body: Stack(
         children: [

@@ -46,106 +46,9 @@ class _ConversationsListScreenState
   String? _selectedConversationId;
   Conversation? _selectedConversation;
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDesktop =
-        MediaQuery.of(context).size.width >= _kChatDesktopBreakpoint;
-    final l10n = context.l10n;
-
-    final list = _ConversationsPane(
-      showTitle: isDesktop,
-      filter: _filter,
-      onFilterChange: (f) => setState(() => _filter = f),
-      searchController: _searchController,
-      searchQuery: _searchQuery,
-      onSearchChange: (q) => setState(() => _searchQuery = q),
-      selectedConversationId: _selectedConversationId,
-      onConversationTap: (c) {
-        if (isDesktop) {
-          setState(() {
-            _selectedConversationId = c.id;
-            _selectedConversation = c;
-          });
-        } else {
-          context.push('/chat/${c.id}', extra: c.otherUser);
-        }
-      },
-    );
-
-    if (!isDesktop) {
-      // Layout mobil: doar lista, ca înainte. AppBar-ul cu titlu vine din
-      // shell-ul principal (hamburger + Chat).
-      return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(l10n.navChat),
-        ),
-        body: list,
-      );
-    }
-
-    // Layout desktop: lista + panoul cu chatul activ / safety page.
-    return Row(
-      children: [
-        SizedBox(width: _kConversationsColumnWidth, child: list),
-        const VerticalDivider(width: 1, thickness: 1),
-        Expanded(
-          child: _selectedConversationId == null
-              ? const _ChatSafetyPage()
-              : ConversationScreen(
-                  // Key forțează un remount când selecția se schimbă -
-                  // ConversationScreen menține scroll position, undelete etc.
-                  // în state intern, deci trebuie recreat curat.
-                  key: ValueKey(_selectedConversationId),
-                  conversationId: _selectedConversationId!,
-                  otherUser: _selectedConversation?.otherUser,
-                ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Coloana din stânga (sau întreg ecranul pe mobil): search bar + filtre +
-/// lista de conversații.
-class _ConversationsPane extends ConsumerStatefulWidget {
-  const _ConversationsPane({
-    required this.showTitle,
-    required this.filter,
-    required this.onFilterChange,
-    required this.searchController,
-    required this.searchQuery,
-    required this.onSearchChange,
-    required this.selectedConversationId,
-    required this.onConversationTap,
-  });
-
-  /// Titlul „Chat" al panoului e necesar doar pe desktop, unde nu există alt
-  /// AppBar. Pe mobil, ecranul are deja un AppBar cu același titlu centrat -
-  /// afișarea amândurora dubla „Chat" sus-centru + sus-stânga.
-  final bool showTitle;
-  final _ConversationsFilter filter;
-  final ValueChanged<_ConversationsFilter> onFilterChange;
-  final TextEditingController searchController;
-  final String searchQuery;
-  final ValueChanged<String> onSearchChange;
-  final String? selectedConversationId;
-  final ValueChanged<Conversation> onConversationTap;
-
-  @override
-  ConsumerState<_ConversationsPane> createState() => _ConversationsPaneState();
-}
-
-class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
-  // Modul de editare în masă (Milestone 18): butonul de edit din dreapta sus
-  // intră aici; tile-urile capătă bifă, iar antetul arată acțiunile bulk
-  // (arhivează/dezarhivează + șterge) pe conversațiile selectate.
+  // Modul de editare în masă (Milestone 18): ridicat aici (nu mai trăiește în
+  // _ConversationsPane) ca să poată fi controlat și din AppBar-ul mobil, nu
+  // doar din antetul intern al panoului - vezi de ce mai jos, la AppBar.
   bool _selectionMode = false;
   final Set<String> _selected = {};
 
@@ -156,9 +59,16 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
     });
   }
 
-  void _toggle(String id) {
+  void _toggleSelected(String id) {
     setState(() {
       if (!_selected.remove(id)) _selected.add(id);
+    });
+  }
+
+  void _enterSelectionWith(String id) {
+    setState(() {
+      _selectionMode = true;
+      _selected.add(id);
     });
   }
 
@@ -204,8 +114,175 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final archived = widget.filter == _ConversationsFilter.archived;
+    final isDesktop =
+        MediaQuery.of(context).size.width >= _kChatDesktopBreakpoint;
+    final l10n = context.l10n;
+    final archived = _filter == _ConversationsFilter.archived;
+
+    final list = _ConversationsPane(
+      showTitle: isDesktop,
+      filter: _filter,
+      onFilterChange: (f) => setState(() => _filter = f),
+      searchController: _searchController,
+      searchQuery: _searchQuery,
+      onSearchChange: (q) => setState(() => _searchQuery = q),
+      selectedConversationId: _selectedConversationId,
+      onConversationTap: (c) {
+        if (isDesktop) {
+          setState(() {
+            _selectedConversationId = c.id;
+            _selectedConversation = c;
+          });
+        } else {
+          context.push('/chat/${c.id}', extra: c.otherUser);
+        }
+      },
+      selectionMode: _selectionMode,
+      selected: _selected,
+      onToggleSelected: _toggleSelected,
+      onEnterSelectionWith: _enterSelectionWith,
+      onEnterSelection: () => setState(() => _selectionMode = true),
+      onExitSelection: _exitSelection,
+      onBulkArchive: () => _bulkArchive(archived),
+      onBulkDelete: () => _bulkDelete(archived),
+    );
+
+    if (!isDesktop) {
+      // Layout mobil: doar lista, ca înainte. AppBar-ul cu titlu vine din
+      // shell-ul principal (hamburger + Chat). Butoanele de editare/conversație
+      // nouă stăteau înainte într-un rând separat sub acest AppBar, aproape gol
+      // (doar ele două, restul rândului irosit pe un Spacer) - mutate acum
+      // direct în AppBar, la același nivel cu titlul, ca să nu mai consume un
+      // rând întreg de spațiu vertical doar pentru 2 iconițe.
+      return Scaffold(
+        appBar: AppBar(
+          centerTitle: !_selectionMode,
+          leading: _selectionMode
+              ? IconButton(icon: const Icon(Icons.close), onPressed: _exitSelection)
+              : null,
+          title: _selectionMode
+              ? Text(
+                  '${_selected.length}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                )
+              : Text(l10n.navChat),
+          actions: _selectionMode
+              ? [
+                  IconButton(
+                    icon: Icon(archived
+                        ? Icons.unarchive_outlined
+                        : Icons.archive_outlined),
+                    tooltip: archived ? l10n.chatUnarchive : l10n.chatArchive,
+                    onPressed:
+                        _selected.isEmpty ? null : () => _bulkArchive(archived),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: AppColors.destructive),
+                    tooltip: l10n.chatDeleteTitle,
+                    onPressed:
+                        _selected.isEmpty ? null : () => _bulkDelete(archived),
+                  ),
+                ]
+              : [
+                  IconButton(
+                    icon: const Icon(Icons.checklist_rounded),
+                    tooltip: l10n.commonEdit,
+                    onPressed: () => setState(() => _selectionMode = true),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add_comment_outlined),
+                    tooltip: l10n.chatNewConversationTooltip,
+                    onPressed: () => context.push('/search'),
+                  ),
+                ],
+        ),
+        body: list,
+      );
+    }
+
+    // Layout desktop: lista + panoul cu chatul activ / safety page.
+    return Row(
+      children: [
+        SizedBox(width: _kConversationsColumnWidth, child: list),
+        const VerticalDivider(width: 1, thickness: 1),
+        Expanded(
+          child: _selectedConversationId == null
+              ? const _ChatSafetyPage()
+              : ConversationScreen(
+                  // Key forțează un remount când selecția se schimbă -
+                  // ConversationScreen menține scroll position, undelete etc.
+                  // în state intern, deci trebuie recreat curat.
+                  key: ValueKey(_selectedConversationId),
+                  conversationId: _selectedConversationId!,
+                  otherUser: _selectedConversation?.otherUser,
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Coloana din stânga (sau întreg ecranul pe mobil): search bar + filtre +
+/// lista de conversații.
+class _ConversationsPane extends ConsumerWidget {
+  const _ConversationsPane({
+    required this.showTitle,
+    required this.filter,
+    required this.onFilterChange,
+    required this.searchController,
+    required this.searchQuery,
+    required this.onSearchChange,
+    required this.selectedConversationId,
+    required this.onConversationTap,
+    required this.selectionMode,
+    required this.selected,
+    required this.onToggleSelected,
+    required this.onEnterSelectionWith,
+    required this.onEnterSelection,
+    required this.onExitSelection,
+    required this.onBulkArchive,
+    required this.onBulkDelete,
+  });
+
+  /// Titlul „Chat" al panoului e necesar doar pe desktop, unde nu există alt
+  /// AppBar. Pe mobil, ecranul are deja un AppBar cu același titlu centrat -
+  /// afișarea amândurora dubla „Chat" sus-centru + sus-stânga.
+  final bool showTitle;
+  final _ConversationsFilter filter;
+  final ValueChanged<_ConversationsFilter> onFilterChange;
+  final TextEditingController searchController;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChange;
+  final String? selectedConversationId;
+  final ValueChanged<Conversation> onConversationTap;
+
+  // Modul de editare în masă (Milestone 18): starea trăiește acum în ecranul
+  // părinte (_ConversationsListScreenState), nu aici - pe mobil, antetul cu
+  // acțiunile bulk trebuie să apară în AppBar-ul de sus, nu într-un rând
+  // separat sub el, deci starea trebuia să fie vizibilă și acolo.
+  final bool selectionMode;
+  final Set<String> selected;
+  final ValueChanged<String> onToggleSelected;
+  final ValueChanged<String> onEnterSelectionWith;
+  final VoidCallback onEnterSelection;
+  final VoidCallback onExitSelection;
+  final VoidCallback onBulkArchive;
+  final VoidCallback onBulkDelete;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final archived = filter == _ConversationsFilter.archived;
     final state = ref.watch(conversationsControllerProvider(archived));
     final l10n = context.l10n;
 
@@ -221,49 +298,49 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: _selectionMode
-                ? Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.close, color: AppColors.foreground),
-                        onPressed: _exitSelection,
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${_selected.length}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+          // Doar pe desktop: pe mobil, același antet (titlu + acțiuni normale
+          // sau bulk) trăiește acum în AppBar-ul ecranului părinte, ca să nu
+          // mai irosească un rând întreg de spațiu vertical doar pentru 2
+          // iconițe (vezi ConversationsListScreen.build).
+          if (showTitle)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: selectionMode
+                  ? Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.close, color: AppColors.foreground),
+                          onPressed: onExitSelection,
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                            archived
-                                ? Icons.unarchive_outlined
-                                : Icons.archive_outlined,
-                            color: AppColors.foreground),
-                        tooltip:
-                            archived ? l10n.chatUnarchive : l10n.chatArchive,
-                        onPressed: _selected.isEmpty
-                            ? null
-                            : () => _bulkArchive(archived),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline,
-                            color: AppColors.destructive),
-                        tooltip: l10n.chatDeleteTitle,
-                        onPressed: _selected.isEmpty
-                            ? null
-                            : () => _bulkDelete(archived),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      if (widget.showTitle)
+                        Expanded(
+                          child: Text(
+                            '${selected.length}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                              archived
+                                  ? Icons.unarchive_outlined
+                                  : Icons.archive_outlined,
+                              color: AppColors.foreground),
+                          tooltip:
+                              archived ? l10n.chatUnarchive : l10n.chatArchive,
+                          onPressed: selected.isEmpty ? null : onBulkArchive,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: AppColors.destructive),
+                          tooltip: l10n.chatDeleteTitle,
+                          onPressed: selected.isEmpty ? null : onBulkDelete,
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
                         Expanded(
                           child: Text(
                             l10n.navChat,
@@ -272,41 +349,39 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
                                 .titleLarge
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
-                        )
-                      else
-                        const Spacer(),
-                      // Editare în masă: selectează conversații ca să le
-                      // arhivezi/ștergi împreună. Înlocuiește vechiul creion
-                      // (care doar deschidea o conversație nouă - mutat lângă).
-                      IconButton(
-                        icon: Icon(Icons.checklist_rounded, color: AppColors.foreground),
-                        tooltip: l10n.commonEdit,
-                        onPressed: () => setState(() => _selectionMode = true),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add_comment_outlined, color: AppColors.foreground),
-                        tooltip: l10n.chatNewConversationTooltip,
-                        onPressed: () => context.push('/search'),
-                      ),
-                    ],
-                  ),
-          ),
+                        ),
+                        // Editare în masă: selectează conversații ca să le
+                        // arhivezi/ștergi împreună. Înlocuiește vechiul creion
+                        // (care doar deschidea o conversație nouă - mutat lângă).
+                        IconButton(
+                          icon: Icon(Icons.checklist_rounded, color: AppColors.foreground),
+                          tooltip: l10n.commonEdit,
+                          onPressed: onEnterSelection,
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.add_comment_outlined, color: AppColors.foreground),
+                          tooltip: l10n.chatNewConversationTooltip,
+                          onPressed: () => context.push('/search'),
+                        ),
+                      ],
+                    ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
-              controller: widget.searchController,
-              onChanged: widget.onSearchChange,
+              controller: searchController,
+              onChanged: onSearchChange,
               decoration: InputDecoration(
                 hintText: l10n.chatSearchHint,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
-                suffixIcon: widget.searchQuery.isEmpty
+                suffixIcon: searchQuery.isEmpty
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.clear, size: 18),
                         onPressed: () {
-                          widget.searchController.clear();
-                          widget.onSearchChange('');
+                          searchController.clear();
+                          onSearchChange('');
                         },
                       ),
               ),
@@ -318,23 +393,23 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
               children: [
                 _FilterChip(
                   label: l10n.chatFilterAll,
-                  selected: widget.filter == _ConversationsFilter.all,
-                  onTap: () => widget.onFilterChange(_ConversationsFilter.all),
+                  selected: filter == _ConversationsFilter.all,
+                  onTap: () => onFilterChange(_ConversationsFilter.all),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
                   label: l10n.chatFilterUnread,
                   badge: unreadCount > 0 ? unreadCount : null,
-                  selected: widget.filter == _ConversationsFilter.unread,
+                  selected: filter == _ConversationsFilter.unread,
                   onTap: () =>
-                      widget.onFilterChange(_ConversationsFilter.unread),
+                      onFilterChange(_ConversationsFilter.unread),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
                   label: l10n.chatFilterArchived,
-                  selected: widget.filter == _ConversationsFilter.archived,
+                  selected: filter == _ConversationsFilter.archived,
                   onTap: () =>
-                      widget.onFilterChange(_ConversationsFilter.archived),
+                      onFilterChange(_ConversationsFilter.archived),
                 ),
               ],
             ),
@@ -366,23 +441,20 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
                       return _ConversationTile(
                         conversation: conv,
                         archived: archived,
-                        isSelected: conv.id == widget.selectedConversationId,
-                        selectionMode: _selectionMode,
-                        isChecked: _selected.contains(conv.id),
+                        isSelected: conv.id == selectedConversationId,
+                        selectionMode: selectionMode,
+                        isChecked: selected.contains(conv.id),
                         onTap: () {
-                          if (_selectionMode) {
-                            _toggle(conv.id);
+                          if (selectionMode) {
+                            onToggleSelected(conv.id);
                           } else {
-                            widget.onConversationTap(conv);
+                            onConversationTap(conv);
                           }
                         },
                         onLongPress: () {
                           // Long-press intră direct în modul de selecție cu
                           // conversația respectivă bifată - scurtătură uzuală.
-                          setState(() {
-                            _selectionMode = true;
-                            _selected.add(conv.id);
-                          });
+                          onEnterSelectionWith(conv.id);
                         },
                       );
                     },
@@ -416,11 +488,11 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
 
   List<Conversation> _applyFilter(List<Conversation> all) {
     Iterable<Conversation> result = all;
-    if (widget.filter == _ConversationsFilter.unread) {
+    if (filter == _ConversationsFilter.unread) {
       result = result.where((c) => c.unreadCount > 0);
     }
-    if (widget.searchQuery.trim().isNotEmpty) {
-      final q = widget.searchQuery.toLowerCase().trim();
+    if (searchQuery.trim().isNotEmpty) {
+      final q = searchQuery.toLowerCase().trim();
       result = result.where((c) {
         final name = c.otherUser.name?.toLowerCase() ?? '';
         final last = c.lastMessage?.content?.toLowerCase() ?? '';
@@ -431,8 +503,8 @@ class _ConversationsPaneState extends ConsumerState<_ConversationsPane> {
   }
 
   String _emptyLabel(AppLocalizations l10n) {
-    if (widget.searchQuery.trim().isNotEmpty) return l10n.chatEmptySearch;
-    switch (widget.filter) {
+    if (searchQuery.trim().isNotEmpty) return l10n.chatEmptySearch;
+    switch (filter) {
       case _ConversationsFilter.archived:
         return l10n.chatEmptyArchived;
       case _ConversationsFilter.unread:
