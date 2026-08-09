@@ -639,6 +639,8 @@
                                                                      }
                                                        }
                                   },
+    "libraryOverviewTitle":  "Rezumatul raftului",
+    "libraryOverviewTotal":  "Total",
     "libraryDeleteConfirmTitle":  "Ștergi cartea?",
     "libraryDeleteConfirmBody":  "„{title}\" va fi eliminată din bibliotecă.",
     "@libraryDeleteConfirmBody":  {
@@ -1057,6 +1059,10 @@
     "notificationsToday":  "Astăzi",
     "notificationsYesterday":  "Ieri",
     "notificationsEarlier":  "Mai vechi",
+    "notificationsToastNewMessage":  "Ai un mesaj nou",
+    "notificationsToastNewReply":  "Ai un răspuns nou",
+    "notificationsToastMultiple":  "Ai mai multe notificări",
+    "notificationsToastGeneric":  "Ai o notificare nouă",
     "notificationsRepeatedCount":  "×{count}",
     "@notificationsRepeatedCount":  {
                                         "placeholders":  {

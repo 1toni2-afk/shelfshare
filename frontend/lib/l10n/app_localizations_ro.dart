@@ -1034,6 +1034,12 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get libraryOverviewTitle => 'Rezumatul raftului';
+
+  @override
+  String get libraryOverviewTotal => 'Total';
+
+  @override
   String get libraryDeleteConfirmTitle => 'Ștergi cartea?';
 
   @override
@@ -1817,6 +1823,18 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get notificationsEarlier => 'Mai vechi';
+
+  @override
+  String get notificationsToastNewMessage => 'Ai un mesaj nou';
+
+  @override
+  String get notificationsToastNewReply => 'Ai un răspuns nou';
+
+  @override
+  String get notificationsToastMultiple => 'Ai mai multe notificări';
+
+  @override
+  String get notificationsToastGeneric => 'Ai o notificare nouă';
 
   @override
   String notificationsRepeatedCount(int count) {

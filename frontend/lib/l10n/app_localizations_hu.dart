@@ -1039,6 +1039,12 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get libraryOverviewTitle => 'Polc áttekintése';
+
+  @override
+  String get libraryOverviewTotal => 'Összesen';
+
+  @override
   String get libraryDeleteConfirmTitle => 'Törlöd a könyvet?';
 
   @override
@@ -1824,6 +1830,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get notificationsEarlier => 'Korábbi';
+
+  @override
+  String get notificationsToastNewMessage => 'Új üzeneted érkezett';
+
+  @override
+  String get notificationsToastNewReply => 'Új válaszod érkezett';
+
+  @override
+  String get notificationsToastMultiple => 'További értesítéseid vannak';
+
+  @override
+  String get notificationsToastGeneric => 'Új értesítésed érkezett';
 
   @override
   String notificationsRepeatedCount(int count) {

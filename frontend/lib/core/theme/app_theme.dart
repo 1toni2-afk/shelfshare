@@ -213,9 +213,50 @@ class AppTheme {
         ),
       ),
       dividerTheme: DividerThemeData(color: AppColors.border, thickness: 1),
+      // Fără el, go_router (via `MaterialPage`) folosea tranziția implicită
+      // pe platformă - pe multe browsere desktop asta înseamnă slide-ul de
+      // tip iOS (pagina veche iese spre stânga, cea nouă intră din dreapta),
+      // cel mai clar semnal vizual că „asta e o aplicație de telefon". Pe
+      // ecrane late devine un fade scurt; pe telefon rămâne tranziția
+      // obișnuită, unde slide-ul chiar are sens.
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: {
+          for (final platform in TargetPlatform.values)
+            platform: const _WidthAwarePageTransitionsBuilder(),
+        },
+      ),
     );
   }
 
   static ThemeData get light => build(dark: false);
   static ThemeData get dark => build(dark: true);
+}
+
+/// Prag desktop pentru tranziții - același folosit de sidebar
+/// (`kSidebarBreakpoint` în main_scaffold.dart), ca alegerea „e desktop?" să
+/// fie consistentă în toată aplicația.
+const _kTransitionDesktopBreakpoint = 900.0;
+
+class _WidthAwarePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _WidthAwarePageTransitionsBuilder();
+
+  static const _mobileTransition = ZoomPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final isDesktop = MediaQuery.sizeOf(context).width >= _kTransitionDesktopBreakpoint;
+    if (!isDesktop) {
+      return _mobileTransition.buildTransitions(route, context, animation, secondaryAnimation, child);
+    }
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+      child: child,
+    );
+  }
 }

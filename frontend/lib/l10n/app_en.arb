@@ -368,6 +368,8 @@
                                                                      }
                                                        }
                                   },
+    "libraryOverviewTitle":  "Shelf overview",
+    "libraryOverviewTotal":  "Total",
     "libraryDeleteConfirmTitle":  "Delete this book?",
     "libraryDeleteConfirmBody":  "\"{title}\" will be removed from your library.",
     "libraryAvailableForSwap":  "Available for exchange",
@@ -640,6 +642,10 @@
     "notificationsToday":  "Today",
     "notificationsYesterday":  "Yesterday",
     "notificationsEarlier":  "Earlier",
+    "notificationsToastNewMessage":  "You have a new message",
+    "notificationsToastNewReply":  "You have a new reply",
+    "notificationsToastMultiple":  "You have more notifications",
+    "notificationsToastGeneric":  "You have a new notification",
     "notificationsRepeatedCount":  "×{count}",
     "@notificationsRepeatedCount":  {
                                         "placeholders":  {

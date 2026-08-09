@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/app_notification.dart';
 import '../../../data/models/user_book.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
@@ -12,6 +16,7 @@ import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
+import '../../notifications/presentation/notification_routing.dart';
 import '../../exchanges/application/exchanges_controller.dart';
 import '../../../data/models/exchange_request.dart';
 import '../application/home_controller.dart';
@@ -117,26 +122,163 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () => ref.read(homeControllerProvider.notifier).refresh(),
-          child: homeAsync.when(
-            data: (data) => _HomeFeed(
-              data: data,
-              scrollController: _scrollController,
-            ),
-            loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
-            error: (error, _) => CenteredScrollable(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(l10n.homeLoadError),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: () => ref.read(homeControllerProvider.notifier).refresh(),
-                    child: Text(l10n.commonRetry),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () => ref.read(homeControllerProvider.notifier).refresh(),
+              child: homeAsync.when(
+                data: (data) => _HomeFeed(
+                  data: data,
+                  scrollController: _scrollController,
+                ),
+                loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+                error: (error, _) => CenteredScrollable(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.homeLoadError),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () => ref.read(homeControllerProvider.notifier).refresh(),
+                        child: Text(l10n.commonRetry),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              ),
+            ),
+          ),
+          // Bandă care alunecă de la dreapta la stânga, în dreptul
+          // clopoțelului, când sosește o notificare nouă (Milestone 23).
+          const _NotificationToast(),
+        ],
+      ),
+    );
+  }
+
+}
+
+/// Urmărește `notificationsControllerProvider` și arată o bandă scurtă,
+/// dinamică, când apare o notificare nouă - dispare singură după câteva
+/// secunde sau la tap (care deschide direct notificarea/lista).
+class _NotificationToast extends ConsumerStatefulWidget {
+  const _NotificationToast();
+
+  @override
+  ConsumerState<_NotificationToast> createState() => _NotificationToastState();
+}
+
+class _NotificationToastState extends ConsumerState<_NotificationToast> {
+  Set<String> _seenIds = {};
+  bool _initialized = false;
+  bool _visible = false;
+  String? _message;
+  AppNotification? _target;
+  Timer? _hideTimer;
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  static const _replyTypes = {
+    NotificationType.exchangeRequestAccepted,
+    NotificationType.exchangeRequestRejected,
+    NotificationType.priceOfferAccepted,
+    NotificationType.priceOfferRejected,
+    NotificationType.outbid,
+    NotificationType.auctionWon,
+    NotificationType.auctionEnded,
+  };
+
+  String _labelFor(AppLocalizations l10n, List<AppNotification> fresh) {
+    if (fresh.length > 1) return l10n.notificationsToastMultiple;
+    final type = fresh.first.type;
+    if (type == NotificationType.newMessage) return l10n.notificationsToastNewMessage;
+    if (_replyTypes.contains(type)) return l10n.notificationsToastNewReply;
+    return l10n.notificationsToastGeneric;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
+    ref.listen(notificationsControllerProvider, (previous, next) {
+      final nextList = next.value;
+      if (nextList == null) return;
+      // Prima emisie de date (încărcarea inițială) nu e o „notificare nouă" -
+      // doar stabilim linia de bază față de care comparăm rundele următoare.
+      if (!_initialized) {
+        _initialized = true;
+        _seenIds = nextList.map((n) => n.id).toSet();
+        return;
+      }
+      final fresh = nextList.where((n) => !_seenIds.contains(n.id)).toList();
+      _seenIds = nextList.map((n) => n.id).toSet();
+      if (fresh.isEmpty) return;
+
+      _hideTimer?.cancel();
+      setState(() {
+        _message = _labelFor(l10n, fresh);
+        _target = fresh.length == 1 ? fresh.first : null;
+        _visible = true;
+      });
+      _hideTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) setState(() => _visible = false);
+      });
+    });
+
+    return Positioned(
+      top: 0,
+      right: 12,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: AnimatedSlide(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            offset: _visible ? Offset.zero : const Offset(1.3, 0),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: _visible ? 1 : 0,
+              child: GestureDetector(
+                onTap: () {
+                  _hideTimer?.cancel();
+                  setState(() => _visible = false);
+                  final target = _target;
+                  if (target != null) {
+                    openNotification(context, ref, target);
+                  } else {
+                    context.push('/notifications');
+                  }
+                },
+                child: Material(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(12),
+                  elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.notifications_active, color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 220),
+                          child: Text(
+                            _message ?? '',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -144,7 +286,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-
 }
 
 class _HomeFeed extends StatelessWidget {

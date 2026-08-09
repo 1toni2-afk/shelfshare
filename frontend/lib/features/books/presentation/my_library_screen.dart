@@ -321,6 +321,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(myLibraryControllerProvider);
     final l10n = context.l10n;
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
       appBar: _selectionMode
@@ -447,7 +448,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 _StatusFilter.transferred => transferredItems,
               };
 
-              return ListView(
+              final mainColumn = ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -486,6 +487,30 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   const Divider(height: 1),
                   const SizedBox(height: 18),
                   _booksView(filtered, trailingAdd: _filter != _StatusFilter.transferred),
+                ],
+              );
+
+              // Pe desktop, o coloană dreapta cu statistica raftului umple
+              // golul mort din dreapta grid-ului - același tipar ca profilul
+              // propriu (About/Stats/Top genres), nu doar conținutul întins
+              // pe toată lățimea cu spațiu gol necontrolat lângă el.
+              if (!isDesktop) return mainColumn;
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: mainColumn),
+                  SizedBox(
+                    width: 280,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                      child: _ShelfOverviewCard(
+                        total: all.length,
+                        available: available.length,
+                        unavailable: unavailable.length,
+                        transferred: transferredItems.length,
+                      ),
+                    ),
+                  ),
                 ],
               );
             },
@@ -685,6 +710,94 @@ class _MyLibraryCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Coloana dreapta pe desktop (Milestone 23): un rezumat rapid al raftului,
+/// în același spirit ca cardurile din profilul propriu. Nu introduce date
+/// noi - doar sumarizează ce oricum se calculează pentru filtre.
+class _ShelfOverviewCard extends StatelessWidget {
+  const _ShelfOverviewCard({
+    required this.total,
+    required this.available,
+    required this.unavailable,
+    required this.transferred,
+  });
+  final int total;
+  final int available;
+  final int unavailable;
+  final int transferred;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.libraryOverviewTitle, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 14),
+            _OverviewRow(color: AppColors.accent, label: l10n.libraryAvailable, count: available, total: total),
+            const SizedBox(height: 10),
+            _OverviewRow(
+                color: AppColors.mutedForeground, label: l10n.libraryUnavailable, count: unavailable, total: total),
+            const SizedBox(height: 10),
+            _OverviewRow(
+                color: AppColors.primary, label: l10n.inventoryTransferred, count: transferred, total: total),
+            const Divider(height: 28),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(l10n.libraryOverviewTotal, style: Theme.of(context).textTheme.bodyMedium),
+                Text('$total', style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewRow extends StatelessWidget {
+  const _OverviewRow({
+    required this.color,
+    required this.label,
+    required this.count,
+    required this.total,
+  });
+  final Color color;
+  final String label;
+  final int count;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = total == 0 ? 0.0 : count / total;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+            Text('$count', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: LinearProgressIndicator(
+            value: ratio,
+            minHeight: 5,
+            backgroundColor: AppColors.muted,
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
+        ),
+      ],
     );
   }
 }

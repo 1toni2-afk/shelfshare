@@ -24,6 +24,10 @@ class ChatSocketService {
     return _connecting ??= _doConnect();
   }
 
+  /// Cât așteptăm handshake-ul inițial de conectare (deschidere transport +
+  /// autentificare) înainte să renunțăm.
+  static const _connectTimeout = Duration(seconds: 10);
+
   Future<io.Socket> _doConnect() async {
     final socket = io.io(
       '${ApiConfig.baseUrl}/chat',
@@ -52,10 +56,36 @@ class ChatSocketService {
           .disableAutoConnect()
           .build(),
     );
-    socket.connect();
     _socket = socket;
-    _connecting = null;
-    return socket;
+
+    // `socket.connect()` întoarce imediat, indiferent dacă handshake-ul chiar
+    // a reușit - fără să așteptăm evenimentul `connect`, un `sendMessage`
+    // apelat imediat după `connect()` (ex. primul mesaj dintr-o sesiune nouă,
+    // înainte ca `_init()` să fi apucat să stabilească efectiv conexiunea)
+    // emitea pe un socket încă neconectat, care pierde evenimentul în tăcere.
+    final completer = Completer<io.Socket>();
+    void onConnect(dynamic _) {
+      if (!completer.isCompleted) completer.complete(socket);
+    }
+
+    void onConnectError(dynamic err) {
+      if (!completer.isCompleted) completer.completeError(err ?? 'connect_error');
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('connect_error', onConnectError);
+    socket.connect();
+
+    try {
+      return await completer.future.timeout(_connectTimeout);
+    } finally {
+      // Fără argument de handler, la fel ca restul clasei (ex. `offNewMessage`)
+      // - sigur aici, fiindcă doar `_doConnect` ascultă vreodată aceste două
+      // evenimente.
+      socket.off('connect');
+      socket.off('connect_error');
+      _connecting = null;
+    }
   }
 
   Future<void> _provideFreshAuth(void Function(Map<String, dynamic>) callback) async {
@@ -90,7 +120,15 @@ class ChatSocketService {
   /// Fără el, un `emit` pe un socket mort dispare în tăcere, iar userul crede
   /// că a trimis mesajul. `onFailed` primește mesajul de eroare de la server
   /// când e disponibil; null pentru „timeout / fără conexiune".
-  void sendMessage({
+  ///
+  /// Așteaptă mereu o conexiune activă înainte de emit - fără asta, primul
+  /// mesaj dintr-o sesiune complet nouă (cache șters) putea nimeri exact în
+  /// fereastra în care `connect()` din `_init()` încă nu terminase
+  /// handshake-ul: socket-ul exista deja (non-null) dar nu era `connected`,
+  /// `emitWithAck` pe el se pierdea în tăcere, iar userul trebuia să dea
+  /// refresh la toată pagina (care repornea conexiunea de la zero, de data
+  /// asta cu timp să se stabilească înainte de următoarea încercare).
+  Future<void> sendMessage({
     required String conversationId,
     String? content,
     String? location,
@@ -99,9 +137,11 @@ class ChatSocketService {
     String? meetingAt,
     String? replyToId,
     void Function([String? reason])? onFailed,
-  }) {
-    final socket = _socket;
-    if (socket == null) {
+  }) async {
+    io.Socket socket;
+    try {
+      socket = await connect();
+    } catch (_) {
       onFailed?.call();
       return;
     }

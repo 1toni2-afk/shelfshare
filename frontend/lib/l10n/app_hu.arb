@@ -365,6 +365,8 @@
                                                                      }
                                                        }
                                   },
+    "libraryOverviewTitle":  "Polc áttekintése",
+    "libraryOverviewTotal":  "Összesen",
     "libraryDeleteConfirmTitle":  "Törlöd a könyvet?",
     "libraryDeleteConfirmBody":  "„{title}” eltávolításra kerül a könyvtáradból.",
     "libraryAvailableForSwap":  "Elérhető cserére",
@@ -631,6 +633,10 @@
     "notificationsToday":  "Ma",
     "notificationsYesterday":  "Tegnap",
     "notificationsEarlier":  "Korábbi",
+    "notificationsToastNewMessage":  "Új üzeneted érkezett",
+    "notificationsToastNewReply":  "Új válaszod érkezett",
+    "notificationsToastMultiple":  "További értesítéseid vannak",
+    "notificationsToastGeneric":  "Új értesítésed érkezett",
     "notificationsRepeatedCount":  "×{count}",
     "@notificationsRepeatedCount":  {
                                         "placeholders":  {

@@ -1914,6 +1914,18 @@ abstract class AppLocalizations {
   /// **'Transferate {count}'**
   String libraryFilterTransferred(int count);
 
+  /// No description provided for @libraryOverviewTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rezumatul raftului'**
+  String get libraryOverviewTitle;
+
+  /// No description provided for @libraryOverviewTotal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Total'**
+  String get libraryOverviewTotal;
+
   /// No description provided for @libraryDeleteConfirmTitle.
   ///
   /// In ro, this message translates to:
@@ -3317,6 +3329,30 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Mai vechi'**
   String get notificationsEarlier;
+
+  /// No description provided for @notificationsToastNewMessage.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai un mesaj nou'**
+  String get notificationsToastNewMessage;
+
+  /// No description provided for @notificationsToastNewReply.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai un răspuns nou'**
+  String get notificationsToastNewReply;
+
+  /// No description provided for @notificationsToastMultiple.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai mai multe notificări'**
+  String get notificationsToastMultiple;
+
+  /// No description provided for @notificationsToastGeneric.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai o notificare nouă'**
+  String get notificationsToastGeneric;
 
   /// No description provided for @notificationsRepeatedCount.
   ///

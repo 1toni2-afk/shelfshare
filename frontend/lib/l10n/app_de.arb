@@ -365,6 +365,8 @@
                                                                      }
                                                        }
                                   },
+    "libraryOverviewTitle":  "Regalübersicht",
+    "libraryOverviewTotal":  "Gesamt",
     "libraryDeleteConfirmTitle":  "Buch löschen?",
     "libraryDeleteConfirmBody":  "„{title}\" wird aus deiner Bibliothek entfernt.",
     "libraryAvailableForSwap":  "Verfügbar zum Tausch",
@@ -631,6 +633,10 @@
     "notificationsToday":  "Heute",
     "notificationsYesterday":  "Gestern",
     "notificationsEarlier":  "Älter",
+    "notificationsToastNewMessage":  "Du hast eine neue Nachricht",
+    "notificationsToastNewReply":  "Du hast eine neue Antwort",
+    "notificationsToastMultiple":  "Du hast weitere Benachrichtigungen",
+    "notificationsToastGeneric":  "Du hast eine neue Benachrichtigung",
     "notificationsRepeatedCount":  "×{count}",
     "@notificationsRepeatedCount":  {
                                         "placeholders":  {

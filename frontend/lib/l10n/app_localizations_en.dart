@@ -1033,6 +1033,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get libraryOverviewTitle => 'Shelf overview';
+
+  @override
+  String get libraryOverviewTotal => 'Total';
+
+  @override
   String get libraryDeleteConfirmTitle => 'Delete this book?';
 
   @override
@@ -1815,6 +1821,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationsEarlier => 'Earlier';
+
+  @override
+  String get notificationsToastNewMessage => 'You have a new message';
+
+  @override
+  String get notificationsToastNewReply => 'You have a new reply';
+
+  @override
+  String get notificationsToastMultiple => 'You have more notifications';
+
+  @override
+  String get notificationsToastGeneric => 'You have a new notification';
 
   @override
   String notificationsRepeatedCount(int count) {

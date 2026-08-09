@@ -1046,6 +1046,12 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get libraryOverviewTitle => 'Regalübersicht';
+
+  @override
+  String get libraryOverviewTotal => 'Gesamt';
+
+  @override
   String get libraryDeleteConfirmTitle => 'Buch löschen?';
 
   @override
@@ -1846,6 +1852,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notificationsEarlier => 'Älter';
+
+  @override
+  String get notificationsToastNewMessage => 'Du hast eine neue Nachricht';
+
+  @override
+  String get notificationsToastNewReply => 'Du hast eine neue Antwort';
+
+  @override
+  String get notificationsToastMultiple => 'Du hast weitere Benachrichtigungen';
+
+  @override
+  String get notificationsToastGeneric => 'Du hast eine neue Benachrichtigung';
 
   @override
   String notificationsRepeatedCount(int count) {
