@@ -762,6 +762,7 @@
                                                   }
                              },
     "bookDetailDescriptionTitle":  "Descriere",
+    "bookDetailSellerNoteTitle":  "Notă de la proprietar",
     "bookDetailDetailsTitle":  "Detalii",
     "bookDetailPublisherLabel":  "Editură",
     "bookDetailYearLabel":  "An apariție",

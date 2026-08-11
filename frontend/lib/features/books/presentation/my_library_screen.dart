@@ -66,6 +66,12 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.inventoryBulkEditDescription),
+        // Fără `scrollable: true`, conținutul fix (2 câmpuri) + rândul de
+        // acțiuni (Renunță/Trimite) nu au cum să se comprime când apare
+        // tastatura - se suprapun cu al doilea câmp. Scrollable face
+        // conținutul să deruleze sub tastatură, cu acțiunile mereu vizibile
+        // dedesubt.
+        scrollable: true,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -440,13 +446,21 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
               final transferredItems = [
                 for (final b in transferred) _ShelfItem(b, _StatusFilter.transferred),
               ];
-              final all = [...available, ...unavailable, ...transferredItems];
+              // Indisponibile ȘI transferate erau două categorii separate care,
+              // pentru user, arătau ca „aceleași cărți" (ambele sunt cărți pe care
+              // nu le mai poate schimba acum) - unificate într-un singur grup,
+              // afișat restrâns by default (vezi ExpansionTile mai jos), fiecare
+              // carte păstrându-și eticheta proprie (Indisponibilă/Transferată).
+              final unavailableOrTransferred = [...unavailable, ...transferredItems];
+              final all = [...available, ...unavailableOrTransferred];
               final filtered = switch (_filter) {
                 _StatusFilter.all => all,
                 _StatusFilter.available => available,
-                _StatusFilter.unavailable => unavailable,
-                _StatusFilter.transferred => transferredItems,
+                _StatusFilter.unavailable => unavailableOrTransferred,
+                _StatusFilter.transferred => unavailableOrTransferred,
               };
+
+              final showCollapsedUnavailable = _filter == _StatusFilter.all;
 
               final mainColumn = ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -472,21 +486,26 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                         onTap: () => setState(() => _filter = _StatusFilter.available),
                       ),
                       _StatusPill(
-                        label: l10n.libraryFilterUnavailable(unavailable.length),
+                        label: l10n.libraryFilterUnavailable(unavailableOrTransferred.length),
                         selected: _filter == _StatusFilter.unavailable,
                         onTap: () => setState(() => _filter = _StatusFilter.unavailable),
-                      ),
-                      _StatusPill(
-                        label: l10n.libraryFilterTransferred(transferredItems.length),
-                        selected: _filter == _StatusFilter.transferred,
-                        onTap: () => setState(() => _filter = _StatusFilter.transferred),
                       ),
                     ],
                   ),
                   const SizedBox(height: 14),
                   const Divider(height: 1),
                   const SizedBox(height: 18),
-                  _booksView(filtered, trailingAdd: _filter != _StatusFilter.transferred),
+                  if (showCollapsedUnavailable) ...[
+                    _booksView(available, trailingAdd: true),
+                    if (unavailableOrTransferred.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      _UnavailableSection(
+                        count: unavailableOrTransferred.length,
+                        child: _booksView(unavailableOrTransferred),
+                      ),
+                    ],
+                  ] else
+                    _booksView(filtered, trailingAdd: true),
                 ],
               );
 
@@ -530,6 +549,32 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Secțiunea „Indisponibile" din tab-ul All - restrânsă by default (userul o
+/// deschide explicit), ca lista principală să nu fie dominată de cărți pe
+/// care nu le mai poate schimba acum oricum.
+class _UnavailableSection extends StatelessWidget {
+  const _UnavailableSection({required this.count, required this.child});
+  final int count;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: EdgeInsets.zero,
+        title: Text(
+          l10n.libraryFilterUnavailable(count),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        children: [Padding(padding: const EdgeInsets.only(top: 8), child: child)],
       ),
     );
   }

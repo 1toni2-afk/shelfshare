@@ -16,6 +16,11 @@ const kSidebarBreakpoint = 900.0;
 /// Lățimea sidebar-ului pe desktop. Egală cu ce am folosit pe mockup.
 const kSidebarWidth = 240.0;
 
+/// Rădăcinile celor 5 branch-uri din StatefulShellRoute (vezi app_router.dart) -
+/// singurele ecrane fără back-button în AppBar, deci fără nevoie de spațiu
+/// pentru el lângă butonul de meniu.
+const _tabRootRoutes = {'/', '/search', '/library', '/chat', '/profile'};
+
 /// Cheie stabilă pentru Scaffold-ul exterior (cel cu drawer-ul), instanțiată
 /// o singură dată la nivel de modul - MainScaffold e shell-ul unic al
 /// aplicației, deci o singură instanță trăiește la un moment dat.
@@ -78,7 +83,17 @@ class MainScaffold extends ConsumerWidget {
     // ecran „rădăcină", butonul rămânea dispărut - fără nicio cale de a mai
     // deschide meniul. Când există și o săgeată de back, butonul se mută
     // puțin la dreapta ei, în loc să dispară.
-    final canPop = context.canPop();
+    //
+    // NU folosim `context.canPop()` (GoRouter) pentru asta: reflectă stiva
+    // AGREGATĂ de rute a routerului, nu strict ecranul curent - branch-urile
+    // StatefulShellRoute (Home/Discover/My Shelf/Chat/Profil) își păstrează
+    // fiecare propriul stack intern, așa că after un push în afara branch-ului
+    // (ex. My Shelf -> detaliul unei cărți) și un pop înapoi, valoarea putea
+    // rămâne agățată pe `true` - butonul rămânea mutat la dreapta deși nu mai
+    // exista nicio săgeată de back vizibilă. Verificăm în schimb direct dacă
+    // suntem pe una din rădăcinile de tab (unde sigur NU există back-button).
+    final isTabRoot = _tabRootRoutes.contains(currentLocation);
+    final canPop = !isTabRoot;
     return Scaffold(
       key: _shellScaffoldKey,
       // Lățime mai mare pentru gestul de swipe-din-margine: cea implicită din

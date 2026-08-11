@@ -24,6 +24,7 @@ import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
 import { SearchLibraryDto } from './dto/search-library.dto';
+import { AddPhotoUrlDto } from './dto/add-photo-url.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
@@ -324,5 +325,16 @@ export class BooksController {
 
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.addPhoto(userId!, userBookId, file.buffer);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userBookId/photos/from-url')
+  addPhotoUrl(
+    @Req() req: Request,
+    @Param('userBookId') userBookId: string,
+    @Body() dto: AddPhotoUrlDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.addPhotoUrl(userId!, userBookId, dto.url);
   }
 }

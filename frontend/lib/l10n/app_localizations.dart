@@ -2358,6 +2358,12 @@ abstract class AppLocalizations {
   /// **'Descriere'**
   String get bookDetailDescriptionTitle;
 
+  /// No description provided for @bookDetailSellerNoteTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Notă de la proprietar'**
+  String get bookDetailSellerNoteTitle;
+
   /// No description provided for @bookDetailDetailsTitle.
   ///
   /// In ro, this message translates to:

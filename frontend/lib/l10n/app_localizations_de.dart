@@ -1303,6 +1303,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookDetailDescriptionTitle => 'Beschreibung';
 
   @override
+  String get bookDetailSellerNoteTitle => 'Note from the owner';
+
+  @override
   String get bookDetailDetailsTitle => 'Details';
 
   @override

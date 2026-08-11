@@ -567,6 +567,14 @@ class BooksRepository {
     return data is Map ? data['photoUrl'] as String? : null;
   }
 
+  /// Adaugă în galerie coperta recomandată la +Share (link extern, nu upload)
+  /// - fără asta, coperta aleasă devenea doar `mainPhotoUrl` și nu apărea
+  /// deloc printre pozele anunțului.
+  Future<void> addPhotoUrl(String userBookId, String url) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.post('/books/$userBookId/photos/from-url', data: {'url': url});
+  }
+
   /// Setează poza principală a anunțului (Batch 8). URL-ul poate fi o poză
   /// urcată sau o copertă externă; `null` resetează la fallback.
   Future<void> setMainPhoto(String userBookId, String? mainPhotoUrl) async {

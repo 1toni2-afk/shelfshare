@@ -135,7 +135,9 @@ export class OffersService {
       { offerId: created.id, conversationId: conversation.id },
     );
 
-    return this.sanitizeParties(created);
+    // Frontend-ul deschide chatul cu cumpărătorul direct după trimiterea
+    // ofertei - vezi book_detail_screen.dart#_MakeOfferSheet.
+    return { ...this.sanitizeParties(created), conversationId: conversation.id };
   }
 
   async getSentOffers(userId: string) {
@@ -213,6 +215,13 @@ export class OffersService {
     });
 
     const acceptConversationId = await this.findConversationIdForOffer(id);
+    if (acceptConversationId) {
+      this.conversations.broadcastPriceOfferUpdate(
+        acceptConversationId,
+        id,
+        'ACCEPTED',
+      );
+    }
     await this.notifySafe(
       offer.buyerId,
       'PRICE_OFFER_ACCEPTED',
@@ -240,6 +249,13 @@ export class OffersService {
     });
 
     const rejectConversationId = await this.findConversationIdForOffer(id);
+    if (rejectConversationId) {
+      this.conversations.broadcastPriceOfferUpdate(
+        rejectConversationId,
+        id,
+        'REJECTED',
+      );
+    }
     await this.notifySafe(
       offer.buyerId,
       'PRICE_OFFER_REJECTED',
@@ -339,6 +355,11 @@ export class OffersService {
     const conversation = await this.conversations.findOrCreateConversation(
       newBuyerId,
       newOwnerId,
+    );
+    this.conversations.broadcastPriceOfferUpdate(
+      conversation.id,
+      id,
+      'REJECTED',
     );
     await this.conversations.createPriceOfferMessage(
       conversation.id,

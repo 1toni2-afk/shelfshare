@@ -1285,6 +1285,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookDetailDescriptionTitle => 'Description';
 
   @override
+  String get bookDetailSellerNoteTitle => 'Note from the owner';
+
+  @override
   String get bookDetailDetailsTitle => 'Details';
 
   @override

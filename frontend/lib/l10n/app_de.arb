@@ -439,6 +439,7 @@
     "bookDetailAvailableChip":  "Verfügbar zum Tausch",
     "bookDetailViewCount":  "{count} Aufrufe",
     "bookDetailDescriptionTitle":  "Beschreibung",
+    "bookDetailSellerNoteTitle":  "Note from the owner",
     "bookDetailDetailsTitle":  "Details",
     "bookDetailPublisherLabel":  "Verlag",
     "bookDetailYearLabel":  "Erscheinungsjahr",

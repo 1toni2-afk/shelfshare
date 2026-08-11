@@ -442,6 +442,7 @@
     "bookDetailAvailableChip":  "Available for exchange",
     "bookDetailViewCount":  "{count} views",
     "bookDetailDescriptionTitle":  "Description",
+    "bookDetailSellerNoteTitle":  "Note from the owner",
     "bookDetailDetailsTitle":  "Details",
     "bookDetailPublisherLabel":  "Publisher",
     "bookDetailYearLabel":  "Year published",

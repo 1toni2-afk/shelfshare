@@ -1287,6 +1287,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookDetailDescriptionTitle => 'Descriere';
 
   @override
+  String get bookDetailSellerNoteTitle => 'Notă de la proprietar';
+
+  @override
   String get bookDetailDetailsTitle => 'Detalii';
 
   @override

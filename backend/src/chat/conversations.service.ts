@@ -14,6 +14,7 @@ import { MailService } from '../mail/mail.service';
 import { PresenceService } from './presence.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ReportConversationDto } from './dto/report-conversation.dto';
+import { RealtimeService } from '../common/realtime/realtime.service';
 
 const PARTICIPANT_SELECT = {
   id: true,
@@ -68,6 +69,7 @@ export class ConversationsService {
     private safety: SafetyService,
     private mail: MailService,
     private presence: PresenceService,
+    private realtime: RealtimeService,
   ) {}
 
   /**
@@ -298,13 +300,46 @@ export class ConversationsService {
     const [message] = await this.prisma.$transaction([
       this.prisma.message.create({
         data: { conversationId, senderId, content, priceOfferId },
+        include: MESSAGE_INCLUDE,
       }),
       this.prisma.conversation.update({
         where: { id: conversationId },
         data: { updatedAt: new Date() },
       }),
     ]);
+
+    // Spre deosebire de sendMessage(), acest mesaj nu trece prin
+    // ChatGateway.handleMessage (vine din OffersService, nu de pe socket), deci
+    // fără difuzarea explicită de aici participanții nu-l văd decât la
+    // următoarea reîncărcare a conversației.
+    const mapped = this.mapMessage(message);
+    this.realtime.emitToConversation(conversationId, 'new_message', mapped);
+    const participants = await this.getParticipants(conversationId);
+    const otherUserId = participants.find((id) => id !== senderId);
+    if (otherUserId) {
+      this.realtime.emitToUser(otherUserId, 'message_notification', {
+        conversationId,
+        message: mapped,
+      });
+    }
     return message;
+  }
+
+  /**
+   * Accept/Respinge o ofertă doar schimbă statusul, fără mesaj nou - dar
+   * cardul din chat al ambilor participanți trebuie să reflecte imediat
+   * starea, nu doar la reîncărcare. Vezi OffersService#accept/#reject.
+   */
+  broadcastPriceOfferUpdate(
+    conversationId: string,
+    priceOfferId: string,
+    status: string,
+  ) {
+    this.realtime.emitToConversation(conversationId, 'price_offer_updated', {
+      conversationId,
+      priceOfferId,
+      status,
+    });
   }
 
   async sendPhotoMessage(

@@ -439,6 +439,7 @@
     "bookDetailAvailableChip":  "Elérhető cserére",
     "bookDetailViewCount":  "{count} megtekintés",
     "bookDetailDescriptionTitle":  "Leírás",
+    "bookDetailSellerNoteTitle":  "Note from the owner",
     "bookDetailDetailsTitle":  "Részletek",
     "bookDetailPublisherLabel":  "Kiadó",
     "bookDetailYearLabel":  "Megjelenés éve",

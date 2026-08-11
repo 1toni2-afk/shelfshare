@@ -1293,6 +1293,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookDetailDescriptionTitle => 'Leírás';
 
   @override
+  String get bookDetailSellerNoteTitle => 'Note from the owner';
+
+  @override
   String get bookDetailDetailsTitle => 'Részletek';
 
   @override

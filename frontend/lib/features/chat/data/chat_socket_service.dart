@@ -132,6 +132,13 @@ class ChatSocketService {
   /// `emitWithAck` pe el se pierdea în tăcere, iar userul trebuia să dea
   /// refresh la toată pagina (care repornea conexiunea de la zero, de data
   /// asta cu timp să se stabilească înainte de următoarea încercare).
+  /// [onSent] primește mesajul salvat direct din ack-ul serverului, ca
+  /// expeditorul să-l vadă imediat în listă fără să aștepte ecoul de pe
+  /// camera conversației (`new_message`) - acel ecou poate întârzia sau, dacă
+  /// join_conversation nu a apucat încă să se termine (rasă la deschiderea
+  /// unui chat nou), să nu ajungă deloc la acest socket, lăsând mesajul
+  /// „trimis" invizibil până la un refresh de pagină. `_handleNewMessage`
+  /// deduplică după id, deci un ecou ulterior pentru același mesaj e ignorat.
   Future<void> sendMessage({
     required String conversationId,
     String? content,
@@ -141,6 +148,7 @@ class ChatSocketService {
     String? meetingAt,
     String? replyToId,
     void Function([String? reason])? onFailed,
+    void Function(ChatMessage)? onSent,
   }) async {
     io.Socket socket;
     try {
@@ -170,6 +178,13 @@ class ChatSocketService {
         if (!isMessage) {
           final reason = data is Map ? data['error']?.toString() : null;
           onFailed?.call(reason);
+          return;
+        }
+        try {
+          onSent?.call(ChatMessage.fromJson(Map<String, dynamic>.from(data)));
+        } catch (_) {
+          // Ecoul de pe cameră tot poate aduce mesajul mai târziu; nu tratăm
+          // ca eșec de trimitere doar fiindcă parsarea locală a picat.
         }
       },
     );
@@ -216,6 +231,18 @@ class ChatSocketService {
   }
 
   void offMessagesRead() => _socket?.off('messages_read');
+
+  /// Accept/Respinge/Contra-ofertă schimbă statusul unei oferte deja postate
+  /// în chat, fără mesaj nou - fără acest eveniment, celălalt participant
+  /// vede cardul vechi (Pending, cu butoane) până reîncarcă manual conversația.
+  void onPriceOfferUpdated(void Function(String priceOfferId, String status) handler) {
+    _socket?.on('price_offer_updated', (data) {
+      final map = Map<String, dynamic>.from(data as Map);
+      handler(map['priceOfferId'] as String, map['status'] as String);
+    });
+  }
+
+  void offPriceOfferUpdated() => _socket?.off('price_offer_updated');
 
   /// Prezența vine pe camera personală (`user:<id>`), nu pe cea a conversației -
   /// e utilă și în lista de conversații, nu doar în chatul deschis.

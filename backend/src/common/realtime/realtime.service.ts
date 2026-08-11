@@ -38,4 +38,21 @@ export class RealtimeService {
     }
     this.server.to(`user:${userId}`).emit(event, payload);
   }
+
+  /**
+   * Emite direct în camera unei conversații (`conversation:<id>`), aceeași
+   * cameră în care ChatGateway bagă participanții la join_conversation.
+   * Folosit de servicii care postează mesaje/actualizări în chat pe alt drum
+   * decât handleMessage al gateway-ului (ex. ofertele de preț), ca ambii
+   * participanți să vadă schimbarea live, fără să reintre în conversație.
+   */
+  emitToConversation(conversationId: string, event: string, payload: unknown) {
+    if (!this.server) {
+      this.logger.warn(
+        `emitToConversation fără server înregistrat (event ${event}, conv ${conversationId})`,
+      );
+      return;
+    }
+    this.server.to(`conversation:${conversationId}`).emit(event, payload);
+  }
 }

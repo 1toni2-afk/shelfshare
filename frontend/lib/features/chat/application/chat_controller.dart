@@ -117,6 +117,7 @@ class ChatController extends Notifier<ChatState> {
     _socketService.onUserTyping(_handleUserTyping);
     _socketService.onMessagesRead(_handleMessagesRead);
     _socketService.onUserPresence(_handlePresence);
+    _socketService.onPriceOfferUpdated(_handlePriceOfferUpdated);
     _markRead();
   }
 
@@ -191,8 +192,18 @@ class ChatController extends Notifier<ChatState> {
       content: trimmed,
       replyToId: state.replyTo?.id,
       onFailed: _markSendFailed,
+      onSent: _appendSentMessage,
     );
     state = state.copyWith(clearReplyTo: true, sendFailed: false);
+  }
+
+  /// Adaugă local mesajul confirmat de server, ca expeditorul să-l vadă
+  /// imediat (nu doar destinatarul, prin ecoul de pe cameră). Vezi comentariul
+  /// din ChatSocketService.sendMessage.
+  void _appendSentMessage(ChatMessage message) {
+    if (message.conversationId != conversationId) return;
+    if (state.messages.any((m) => m.id == message.id)) return;
+    state = state.copyWith(messages: [...state.messages, message]);
   }
 
   void _markSendFailed([String? reason]) {
@@ -238,7 +249,13 @@ class ChatController extends Notifier<ChatState> {
     required DateTime meetingAt,
   }) {
     final trimmed = location.trim();
-    if (trimmed.isEmpty) return;
+    // Un rezultat de căutare de loc cu nume gol nu ar trebui să existe, dar
+    // dacă totuși se întâmplă, tratăm ca eșec vizibil - altfel userul crede
+    // că punctul de întâlnire a fost trimis, când de fapt n-a plecat nimic.
+    if (trimmed.isEmpty) {
+      _markSendFailed('Locație fără nume');
+      return;
+    }
     _socketService.sendMessage(
       conversationId: conversationId,
       location: trimmed,
@@ -247,6 +264,7 @@ class ChatController extends Notifier<ChatState> {
       meetingAt: meetingAt.toIso8601String(),
       replyToId: state.replyTo?.id,
       onFailed: _markSendFailed,
+      onSent: _appendSentMessage,
     );
     state = state.copyWith(clearReplyTo: true, sendFailed: false);
   }
@@ -289,6 +307,19 @@ class ChatController extends Notifier<ChatState> {
     );
   }
 
+  /// Actualizare live pentru CELĂLALT participant când oferta e acceptată/
+  /// respinsă/contra-ofertată - `updatePriceOfferStatus` de mai sus e doar
+  /// optimistă, pentru cel care apasă butonul; acest handler acoperă partea
+  /// care nu a apăsat nimic și altfel ar vedea starea veche până la reload.
+  void _handlePriceOfferUpdated(String priceOfferId, String status) {
+    for (final m in state.messages) {
+      if (m.priceOffer?.id == priceOfferId) {
+        updatePriceOfferStatus(m.id, status);
+        return;
+      }
+    }
+  }
+
   void notifyTyping() {
     _socketService.notifyTyping(conversationId);
   }
@@ -318,6 +349,7 @@ class ChatController extends Notifier<ChatState> {
     _socketService.offUserTyping();
     _socketService.offMessagesRead();
     _socketService.offUserPresence();
+    _socketService.offPriceOfferUpdated();
   }
 }
 

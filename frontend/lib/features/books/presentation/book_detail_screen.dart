@@ -17,6 +17,7 @@ import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../collections/presentation/add_to_collection_sheet.dart';
+import 'browse_screen.dart';
 import '../../chat/data/chat_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
 import '../../offers/data/offers_repository.dart';
@@ -554,11 +555,18 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
         Text(book.book.title, style: theme.textTheme.headlineMedium),
         if (book.book.author != null) ...[
           const SizedBox(height: 6),
-          Text(
-            book.book.author!,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: AppColors.accent,
-              fontWeight: FontWeight.w600,
+          GestureDetector(
+            onTap: () => context.push(
+              '/browse',
+              extra: SearchScreenArgs(title: book.book.author!),
+            ),
+            child: Text(
+              book.book.author!,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: AppColors.accent,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
         ],
@@ -612,6 +620,20 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
               separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) => _TagChip(label: book.tags[index]),
             ),
+          ),
+        ],
+        // Nota userului la exemplarul lui (UserBook.description) - distinctă
+        // de descrierea operei mai jos, care vine din ISBN/catalog și e
+        // aceeași pentru toate exemplarele acestui titlu. Fără secțiunea asta,
+        // orice text scris la +Share la pasul de descriere era salvat, dar nu
+        // apărea nicăieri pe pagina anunțului.
+        if (book.description != null && book.description!.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Text(l10n.bookDetailSellerNoteTitle, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text(
+            book.description!,
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
           ),
         ],
         if (description != null && description.isNotEmpty) ...[
@@ -1547,7 +1569,7 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
     }
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(offersRepositoryProvider).createOffer(
+      final (_, conversationId) = await ref.read(offersRepositoryProvider).createOffer(
             widget.book.id,
             amount: amount,
             message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),
@@ -1556,6 +1578,11 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.bookDetailOfferSent)));
+        // Oferta e postată direct ca mesaj în chat - ducem cumpărătorul acolo
+        // ca să vadă imediat cardul de ofertă, nu doar un toast.
+        if (conversationId != null) {
+          context.push('/chat/$conversationId', extra: widget.book.owner);
+        }
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -1658,22 +1685,39 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
+    // `canPop: true` explicit + un handler care nu face nimic altceva decât
+    // să lase pop-ul să treacă - fără PopScope, gestul de swipe-back pe
+    // mobil putea, în anumite condiții de tranziție, sări peste ruta asta
+    // (împinsă separat, cu propriul MaterialPageRoute) direct la ecranul de
+    // dedesubt (lista de poze de pe anunț), ieșind din tot anunțul în loc să
+    // închidă doar poza mărită. Cu PopScope, acest pop e mereu tratat ca
+    // aparținând STRICT acestei rute.
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
         backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Text('${_currentIndex + 1} / ${widget.photos.length}'),
-      ),
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: widget.photos.length,
-        onPageChanged: (index) => setState(() => _currentIndex = index),
-        itemBuilder: (context, index) => InteractiveViewer(
-          minScale: 1,
-          maxScale: 4,
-          child: Center(
-            child: Image.network(widget.photos[index], fit: BoxFit.contain),
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          // X explicit în stânga-sus - fără el, singura cale de închidere era
+          // swipe-back, ușor de confundat cu swipe-back-ul care te scoate de
+          // pe tot ecranul anunțului.
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: Text('${_currentIndex + 1} / ${widget.photos.length}'),
+        ),
+        body: PageView.builder(
+          controller: _pageController,
+          itemCount: widget.photos.length,
+          onPageChanged: (index) => setState(() => _currentIndex = index),
+          itemBuilder: (context, index) => InteractiveViewer(
+            minScale: 1,
+            maxScale: 4,
+            child: Center(
+              child: Image.network(widget.photos[index], fit: BoxFit.contain),
+            ),
           ),
         ),
       ),

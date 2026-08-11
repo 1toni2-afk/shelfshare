@@ -1628,6 +1628,31 @@ export class BooksService {
     };
   }
 
+  /**
+   * Adaugă în galerie coperta recomandată aleasă la +Share (Google Books/
+   * Open Library) - fără upload, doar linkul extern direct. `getPublicUrl`
+   * întoarce URL-urile http(s) neschimbate, deci pot sta alături de căile de
+   * storage din `photos` fără nicio conversie specială.
+   */
+  async addPhotoUrl(userId: string, userBookId: string, url: string) {
+    const userBook = await this.getUserBook(userBookId);
+    this.assertOwnership(userBook.userId, userId);
+
+    if (userBook.photos.length >= MAX_PHOTOS_PER_LISTING) {
+      throw new BadRequestException(
+        `Poți adăuga maximum ${MAX_PHOTOS_PER_LISTING} poze per anunț`,
+      );
+    }
+
+    const updated = await this.prisma.userBook.update({
+      where: { id: userBookId },
+      data: { photos: { push: url } },
+      include: { book: true },
+    });
+
+    return this.toPublicPhotos(updated);
+  }
+
   private assertOwnership(ownerId: string, requesterId: string) {
     if (ownerId !== requesterId) {
       throw new ForbiddenException(

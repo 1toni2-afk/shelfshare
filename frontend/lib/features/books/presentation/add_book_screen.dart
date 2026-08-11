@@ -10,6 +10,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
+import '../../../data/models/user_book.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../application/my_library_controller.dart';
@@ -83,6 +84,16 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   int? _mainPhotoIndex;
 
   static const _maxPhotos = 5;
+
+  // ---------- Fix duplicat la retry după submit eșuat ----------
+  /// Setat imediat după ce `addToLibrary` reușește. Dacă un pas ULTERIOR
+  /// (poze, preț/licitație) eșuează (ex. „price must be under 99999") și
+  /// userul apasă din nou Trimite fără să corecteze nimic vizibil legat de
+  /// carte, `_submit()` NU mai creează o a doua listare de la zero - reia
+  /// exact de unde a rămas, pe același UserBook deja creat.
+  UserBook? _createdUserBook;
+  final List<String?> _uploadedPhotoUrls = [];
+  bool _coverUrlAddedToGallery = false;
 
   @override
   void initState() {
@@ -263,50 +274,60 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
     setState(() => _isSubmitting = true);
     try {
-      final userBook = await ref.read(booksRepositoryProvider).addToLibrary(
-            isbn: _isbnFromAutocomplete,
-            title: title,
-            author: _authorController.text.trim().isEmpty
-                ? null
-                : _authorController.text.trim(),
-            condition: _condition,
-            isHardcover: _isHardcover,
-            genre: _genreController.text.trim().isEmpty
-                ? null
-                : _genreController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-            tags: _tags.isEmpty ? null : _tags,
-            city: _city,
-            publisher: _publisherController.text.trim().isEmpty
-                ? null
-                : _publisherController.text.trim(),
-            publishedYear: int.tryParse(_publishedYearController.text.trim()),
-            editionYear: int.tryParse(_editionYearController.text.trim()),
-            pageCount: int.tryParse(_pageCountController.text.trim()),
-            mainPhotoUrl: _selectedCoverUrl,
-          );
-      // Reținem URL-urile pozelor urcate, ca să putem seta ulterior
-      // `mainPhotoUrl` pe una anume dacă user a bifat-o ca principală.
-      final uploadedUrls = <String?>[];
-      for (final photo in _photos) {
+      // `??=`: la un retry după un eșec pe un pas ulterior (poze/preț), NU
+      // recreăm anunțul - vezi comentariul de la `_createdUserBook`.
+      final userBook = _createdUserBook ??=
+          await ref.read(booksRepositoryProvider).addToLibrary(
+                isbn: _isbnFromAutocomplete,
+                title: title,
+                author: _authorController.text.trim().isEmpty
+                    ? null
+                    : _authorController.text.trim(),
+                condition: _condition,
+                isHardcover: _isHardcover,
+                genre: _genreController.text.trim().isEmpty
+                    ? null
+                    : _genreController.text.trim(),
+                description: _descriptionController.text.trim().isEmpty
+                    ? null
+                    : _descriptionController.text.trim(),
+                tags: _tags.isEmpty ? null : _tags,
+                city: _city,
+                publisher: _publisherController.text.trim().isEmpty
+                    ? null
+                    : _publisherController.text.trim(),
+                publishedYear: int.tryParse(_publishedYearController.text.trim()),
+                editionYear: int.tryParse(_editionYearController.text.trim()),
+                pageCount: int.tryParse(_pageCountController.text.trim()),
+                mainPhotoUrl: _selectedCoverUrl,
+              );
+
+      // Coperta recomandată aleasă la +Share apare acum și în galeria
+      // anunțului, nu doar ca `mainPhotoUrl` separat.
+      if (_selectedCoverUrl != null && !_coverUrlAddedToGallery) {
+        await ref.read(booksRepositoryProvider).addPhotoUrl(userBook.id, _selectedCoverUrl!);
+        _coverUrlAddedToGallery = true;
+      }
+
+      // Pornim de unde am rămas: pozele deja urcate la o încercare anterioară
+      // nu se reurcă a doua oară.
+      for (var i = _uploadedPhotoUrls.length; i < _photos.length; i++) {
         final url = await ref.read(booksRepositoryProvider).addPhoto(
               userBook.id,
-              bytes: await photo.readAsBytes(),
-              filename: photo.name,
+              bytes: await _photos[i].readAsBytes(),
+              filename: _photos[i].name,
             );
-        uploadedUrls.add(url);
+        _uploadedPhotoUrls.add(url);
       }
       // Dacă user a bifat o poză urcată drept „principală", suprascrie orice
       // copertă externă aleasă anterior. Batch 8.
       final pickedIndex = _mainPhotoIndex;
       if (pickedIndex != null &&
           pickedIndex >= 0 &&
-          pickedIndex < uploadedUrls.length &&
-          uploadedUrls[pickedIndex] != null) {
+          pickedIndex < _uploadedPhotoUrls.length &&
+          _uploadedPhotoUrls[pickedIndex] != null) {
         await ref.read(booksRepositoryProvider)
-            .setMainPhoto(userBook.id, uploadedUrls[pickedIndex]);
+            .setMainPhoto(userBook.id, _uploadedPhotoUrls[pickedIndex]);
       }
       if (_listingMode == _ListingMode.sale) {
         await ref.read(booksRepositoryProvider).markForSale(

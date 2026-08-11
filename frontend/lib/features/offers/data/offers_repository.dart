@@ -6,13 +6,21 @@ class OffersRepository {
   OffersRepository(this._ref);
   final Ref _ref;
 
-  Future<PriceOffer> createOffer(String userBookId, {required double amount, String? message}) async {
+  /// Backend-ul întoarce și `conversationId` (oferta se postează direct în
+  /// chat) - vezi book_detail_screen.dart#_MakeOfferSheet, care deschide
+  /// conversația imediat după trimitere.
+  Future<(PriceOffer, String?)> createOffer(
+    String userBookId, {
+    required double amount,
+    String? message,
+  }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books/$userBookId/offers', data: {
       'amount': amount,
       if (message != null && message.isNotEmpty) 'message': message,
     });
-    return PriceOffer.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    return (PriceOffer.fromJson(data), data['conversationId'] as String?);
   }
 
   Future<List<PriceOffer>> getSent() async {

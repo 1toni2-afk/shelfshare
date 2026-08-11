@@ -44,6 +44,13 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   // și apăsarea butonului de send scot focusul, iar userul trebuie să dea din
   // nou click în câmp ca să mai scrie un mesaj.
   final _messageFocusNode = FocusNode();
+  // Butonul de send nu trebuie să poată prelua focusul: dacă ar putea, un tap
+  // pe el mută focusul de pe câmp -> tastatura se închide -> apoi cererea
+  // noastră de focus din _send() o redeschide imediat, vizibil ca un
+  // pâlpâit. Cu `canRequestFocus: false`, tap-ul pe buton nu mai atinge deloc
+  // focusul câmpului, deci tastatura rămâne deschisă tot timpul (la fel ca la
+  // Enter de pe tastatură, care oricum nu mișcă focusul).
+  final _sendButtonFocusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
   final _scrollController = ScrollController();
   bool _safetyBannerDismissed = false;
   BlockStatus? _blockStatus;
@@ -71,6 +78,18 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             otherUserId;
       });
     }
+    // Deschiderea tastaturii micșorează zona listei (Scaffold se redimensionează
+    // automat), dar asta singur nu re-scrollează nimic - fără acest listener,
+    // ultimul mesaj rămâne ascuns sub tastatură până apare un mesaj nou.
+    // Delay-ul acoperă animația de deschidere a tastaturii (~250-300ms); fără
+    // el, am scrolla înainte ca zona vizibilă să se fi micșorat efectiv.
+    _messageFocusNode.addListener(() {
+      if (_messageFocusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) _scrollToBottom();
+        });
+      }
+    });
   }
 
   @override
@@ -78,6 +97,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     _highlightTimer?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
+    _sendButtonFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -334,15 +354,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     if (text.trim().isEmpty) return;
     ref.read(chatControllerProvider(widget.conversationId).notifier).sendMessage(text);
     _messageController.clear();
-    // Readucem focusul pe câmp, ca userul să poată scrie următorul mesaj fără
-    // să dea din nou click (onSubmitted / butonul de send scot focusul). Un
-    // apel sincron aici nu e de ajuns: butonul de send își reia singur focusul
-    // imediat DUPĂ ce rulează onPressed, suprascriind cererea noastră - de
-    // aceea cerem focusul din frame-ul următor, după ce Flutter a terminat de
-    // mutat focusul pe buton.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _messageFocusNode.requestFocus();
-    });
+    // Butonul de send nu poate prelua focus (canRequestFocus: false pe
+    // _sendButtonFocusNode), deci focusul rămâne pe câmp și tastatura nu se
+    // închide - userul poate scrie imediat următorul mesaj.
+    if (!_messageFocusNode.hasFocus) _messageFocusNode.requestFocus();
   }
 
   Future<void> _shareLocation() async {
@@ -456,6 +471,21 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       }
     });
 
+    // `ref.listen` de mai sus prinde doar SCHIMBĂRI de stare de-acum înainte -
+    // dacă redeschizi o conversație a cărei stare a rămas încărcată de la o
+    // vizită anterioară (chatControllerProvider nu e autoDispose), niciun
+    // event nu mai are loc și saltul inițial din ramura de mai sus nu se
+    // declanșează niciodată, lăsând lista la offsetul 0 (primul mesaj din
+    // pagina curent încărcată) în loc de ultimul. Verificăm și starea curentă
+    // direct, o singură dată per instanță de ecran.
+    if (!_didInitialScroll && state.messages.isNotEmpty) {
+      _didInitialScroll = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_scrollController.hasClients) return;
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      });
+    }
+
     final isBlocked = (_blockStatus?.blockedByMe ?? false) || (_blockStatus?.blockedByThem ?? false);
     final l10n = context.l10n;
 
@@ -507,6 +537,13 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         ],
       ),
       body: SafeArea(
+        // Scaffold-ul deja se redimensionează pentru tastatură
+        // (resizeToAvoidBottomInset implicit true) - dacă SafeArea mai adaugă
+        // și el padding jos peste asta, apare un gol vizibil între tastatură
+        // și câmpul de scris. Jos nu mai e nevoie de SafeArea oricum, fiindcă
+        // fie tastatura, fie insets-urile normale ale sistemului sunt deja
+        // acoperite de padding-ul fix al rândului de input.
+        bottom: false,
         child: Column(
           children: [
             if (!_safetyBannerDismissed) _SafetyBanner(onDismiss: () => setState(() => _safetyBannerDismissed = true)),
@@ -527,6 +564,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                           onOfferAction: _handleOfferAction,
                           onCounterOffer: _handleCounterOffer,
                           onMessageLongPress: _showMessageActions,
+                          otherUserName: widget.otherUser?.name,
+                          currentUserName:
+                              authState is AuthAuthenticated ? authState.user.name : null,
                         ),
             ),
             if (state.otherUserTyping)
@@ -563,7 +603,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               )
             else
               Padding(
-                padding: const EdgeInsets.all(12),
+                // SafeArea de sus e bottom:false, deci jos trebuie adăugat
+                // manual golul sistemului (home indicator etc.) cât tastatura
+                // e închisă - Scaffold acoperă deja golul tastaturii cât e
+                // deschisă (viewInsets.bottom devine 0 din perspectiva
+                // MediaQuery.padding în acel moment).
+                padding: EdgeInsets.fromLTRB(12, 12, 12, 12 + MediaQuery.of(context).padding.bottom),
                 child: Row(
                   children: [
                     IconButton(
@@ -593,7 +638,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton.filled(onPressed: _send, icon: const Icon(Icons.send)),
+                    IconButton.filled(
+                      focusNode: _sendButtonFocusNode,
+                      onPressed: _send,
+                      icon: const Icon(Icons.send),
+                    ),
                   ],
                 ),
               ),
@@ -675,6 +724,8 @@ class _MessageList extends StatelessWidget {
     required this.onOfferAction,
     required this.onCounterOffer,
     required this.onMessageLongPress,
+    required this.otherUserName,
+    required this.currentUserName,
   });
 
   final List<ChatMessage> messages;
@@ -687,6 +738,8 @@ class _MessageList extends StatelessWidget {
   final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
   final Future<void> Function(ChatMessage message) onCounterOffer;
   final Future<void> Function(ChatMessage message) onMessageLongPress;
+  final String? otherUserName;
+  final String? currentUserName;
 
   /// Ultimul mesaj trimis de mine - singurul sub care se afișează „Văzut",
   /// ca în orice aplicație de chat (bifă pe conversație, nu pe fiecare bulă).
@@ -797,6 +850,8 @@ class _MessageList extends StatelessWidget {
                         isMine: isMine,
                         onOfferAction: onOfferAction,
                         onCounterOffer: onCounterOffer,
+                        senderName: isMine ? currentUserName : otherUserName,
+                        otherPartyName: isMine ? otherUserName : currentUserName,
                       ),
                     ],
                   ),
@@ -1233,20 +1288,35 @@ class _MessageContent extends StatelessWidget {
     required this.isMine,
     required this.onOfferAction,
     required this.onCounterOffer,
+    required this.senderName,
+    required this.otherPartyName,
   });
   final ChatMessage message;
   final bool isMine;
   final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
   final Future<void> Function(ChatMessage message) onCounterOffer;
 
+  /// Numele celui care a trimis mesajul de locație/mesajul curent - folosit
+  /// doar la generarea .ics (vezi _downloadMeetingIcs).
+  final String? senderName;
+  final String? otherPartyName;
+
   @override
   Widget build(BuildContext context) {
     final textColor = isMine ? AppColors.primaryForeground : AppColors.foreground;
     final l10n = context.l10n;
     if (message.photo != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(message.photo!, width: 180, height: 180, fit: BoxFit.cover),
+      return GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => _ChatImageViewer(url: message.photo!),
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(message.photo!, width: 180, height: 180, fit: BoxFit.cover),
+        ),
       );
     }
     if (message.priceOffer != null) {
@@ -1358,22 +1428,134 @@ class _MessageContent extends StatelessWidget {
         '${d.year.toString().padLeft(4, '0')}${d.month.toString().padLeft(2, '0')}${d.day.toString().padLeft(2, '0')}'
         'T${d.hour.toString().padLeft(2, '0')}${d.minute.toString().padLeft(2, '0')}${d.second.toString().padLeft(2, '0')}Z';
 
+    // Fără escape, o virgulă/punct-virgulă/backslash în numele locului sau al
+    // userului ar rupe parsarea .ics la import (ex. Google Calendar respinge
+    // tot fișierul, nu doar câmpul).
+    String escape(String text) => text
+        .replaceAll('\\', '\\\\')
+        .replaceAll(',', '\\,')
+        .replaceAll(';', '\\;')
+        .replaceAll('\n', '\\n');
+
+    final other = otherPartyName ?? 'celălalt participant';
+    final summary = 'Schimb carte cu $other';
+    final descriptionParts = <String>[
+      if (senderName != null) 'Întâlnire pentru schimb de carte, stabilită de $senderName cu $other.',
+      'Locație: ${message.location}',
+    ];
+
     final ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//ShelfShare//Chat//RO',
+      'CALSCALE:GREGORIAN',
       'BEGIN:VEVENT',
-      'UID:${message.id}@shelfshare.demo',
+      'UID:${message.id}@shelfshare.app',
       'DTSTAMP:${formatIcs(DateTime.now().toUtc())}',
       'DTSTART:${formatIcs(start)}',
       'DTEND:${formatIcs(end)}',
-      'SUMMARY:Schimb de carte',
-      'LOCATION:${message.location}',
+      'SUMMARY:${escape(summary)}',
+      'LOCATION:${escape(message.location ?? '')}',
+      'DESCRIPTION:${escape(descriptionParts.join('\\n'))}',
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Reminder',
+      'TRIGGER:-P1D',
+      'END:VALARM',
       'END:VEVENT',
       'END:VCALENDAR',
     ].join('\r\n');
 
     downloadTextFile(filename: 'intalnire-shelfshare.ics', content: ics, mimeType: 'text/calendar');
+  }
+}
+
+/// Poză mărită la tap pe o bulă de chat, disponibilă pentru ambii participanți
+/// (nu doar cel care a trimis-o). Dublu-tap face zoom in/out, iar butonul X
+/// din stânga-sus închide vizualizarea și revine în conversație - swipe-back
+/// pe mobil face același lucru fiindcă e o rută separată, nu iese din chat.
+class _ChatImageViewer extends StatefulWidget {
+  const _ChatImageViewer({required this.url});
+  final String url;
+
+  @override
+  State<_ChatImageViewer> createState() => _ChatImageViewerState();
+}
+
+class _ChatImageViewerState extends State<_ChatImageViewer> with SingleTickerProviderStateMixin {
+  final _transformationController = TransformationController();
+  TapDownDetails? _doubleTapDetails;
+  late final AnimationController _animationController;
+  Animation<Matrix4>? _zoomAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 200))
+      ..addListener(() {
+        if (_zoomAnimation != null) {
+          _transformationController.value = _zoomAnimation!.value;
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  void _onDoubleTapDown(TapDownDetails details) => _doubleTapDetails = details;
+
+  void _onDoubleTap() {
+    final position = _doubleTapDetails?.localPosition;
+    final isZoomedIn = _transformationController.value != Matrix4.identity();
+    final Matrix4 end;
+    if (isZoomedIn || position == null) {
+      end = Matrix4.identity();
+    } else {
+      end = Matrix4.identity()
+        ..translate(-position.dx * 2, -position.dy * 2)
+        ..scale(3.0);
+    }
+    _zoomAnimation = Matrix4Tween(begin: _transformationController.value, end: end)
+        .animate(CurveTween(curve: Curves.easeOut).animate(_animationController));
+    _animationController.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onDoubleTapDown: _onDoubleTapDown,
+              onDoubleTap: _onDoubleTap,
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 1,
+                maxScale: 5,
+                child: Center(child: Image.network(widget.url)),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            left: 8,
+            child: SafeArea(
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                style: IconButton.styleFrom(backgroundColor: Colors.black45),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
