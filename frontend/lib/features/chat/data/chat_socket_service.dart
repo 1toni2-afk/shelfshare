@@ -66,7 +66,14 @@ class ChatSocketService {
     // înainte ca `_init()` să fi apucat să stabilească efectiv conexiunea)
     // emitea pe un socket încă neconectat, care pierde evenimentul în tăcere.
     final completer = Completer<io.Socket>();
-    void onConnect(dynamic _) {
+    // Așteptăm 'ready' (emis de server DUPĂ ce a terminat client.join() pe
+    // camera user:<id>), nu simplul 'connect' al socket.io - 'connect' se
+    // declanșează la finalul handshake-ului, înainte ca handler-ul async de
+    // pe server să apuce să termine join()-ul. Dacă am rezolva conexiunea pe
+    // 'connect', un event emis chiar în acea fereastră (ex. o notificare de
+    // schimb primită imediat după login/reload) ar fi pierdut în tăcere de
+    // RealtimeService, fiindcă socketul încă nu era în camera lui.
+    void onReady(dynamic _) {
       if (!completer.isCompleted) completer.complete(socket);
     }
 
@@ -79,7 +86,7 @@ class ChatSocketService {
     // Singura cale de eșec rămâne timeout-ul de mai jos, care lasă loc pentru
     // reîncercările interne să-și facă treaba.
 
-    socket.on('connect', onConnect);
+    socket.on('ready', onReady);
     socket.connect();
 
     try {
@@ -87,7 +94,7 @@ class ChatSocketService {
     } finally {
       // Fără argument de handler, la fel ca restul clasei (ex. `offNewMessage`)
       // - sigur aici, fiindcă doar `_doConnect` ascultă vreodată acest eveniment.
-      socket.off('connect');
+      socket.off('ready');
       _connecting = null;
     }
   }
@@ -244,6 +251,18 @@ class ChatSocketService {
 
   void offPriceOfferUpdated() => _socket?.off('price_offer_updated');
 
+  /// Analog cu onPriceOfferUpdated, pentru cereri de schimb carte-contra-carte.
+  void onExchangeRequestUpdated(
+    void Function(String exchangeRequestId, String status) handler,
+  ) {
+    _socket?.on('exchange_request_updated', (data) {
+      final map = Map<String, dynamic>.from(data as Map);
+      handler(map['exchangeRequestId'] as String, map['status'] as String);
+    });
+  }
+
+  void offExchangeRequestUpdated() => _socket?.off('exchange_request_updated');
+
   /// Prezența vine pe camera personală (`user:<id>`), nu pe cea a conversației -
   /// e utilă și în lista de conversații, nu doar în chatul deschis.
   void onUserPresence(
@@ -275,17 +294,33 @@ class ChatSocketService {
   /// modul de backend și împinsă live pe camera personală `user:<id>`. Payload-ul
   /// e notificarea salvată; nu ne interesează conținutul aici - doar declanșăm
   /// un refetch al listei, ca badge-ul și lista să fie la zi fără refresh.
+  ///
+  /// Mai mulți consumatori (badge-ul de notificări ȘI ecranul "Schimburile
+  /// mele") ascultă acest eveniment în paralel - `socket.off('notification')`
+  /// fără argument de handler ar șterge TOȚI ascultătorii, nu doar pe al
+  /// apelantului curent, deci ținem noi lista și facem un singur `on` real.
+  final _notificationHandlers = <void Function()>{};
+  bool _notificationBound = false;
+
   void onNotification(void Function() handler) {
-    _socket?.on('notification', (_) => handler());
+    _notificationHandlers.add(handler);
+    if (_notificationBound) return;
+    _notificationBound = true;
+    void forward(dynamic _) {
+      for (final h in List.of(_notificationHandlers)) {
+        h();
+      }
+    }
+
+    _socket?.on('notification', forward);
     // O notificare din clopoțel poate fi rezolvată indirect (ex. deschiderea
     // conversației marchează ca citită notificarea „mesaj nou" aferentă) -
     // badge-ul are nevoie de același refetch și pentru acest caz.
-    _socket?.on('notification_read', (_) => handler());
+    _socket?.on('notification_read', forward);
   }
 
-  void offNotification() {
-    _socket?.off('notification');
-    _socket?.off('notification_read');
+  void offNotification(void Function() handler) {
+    _notificationHandlers.remove(handler);
   }
 }
 

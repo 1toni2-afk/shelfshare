@@ -763,6 +763,7 @@
                              },
     "bookDetailDescriptionTitle":  "Descriere",
     "bookDetailSellerNoteTitle":  "Notă de la proprietar",
+    "bookDetailAboutButton":  "Despre carte",
     "bookDetailDetailsTitle":  "Detalii",
     "bookDetailPublisherLabel":  "Editură",
     "bookDetailYearLabel":  "An apariție",
@@ -1030,6 +1031,25 @@
                                                                     "type":  "String"
                                                                 },
                                                      "bookTitle":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                 }
+                            },
+    "chatExchangeCardLabel":  "Schimb: {offeredTitle} pentru {requestedTitle}",
+    "@chatExchangeCardLabel":  {
+                                "placeholders":  {
+                                                     "offeredTitle":  {
+                                                                    "type":  "String"
+                                                                },
+                                                     "requestedTitle":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                 }
+                            },
+    "chatExchangeCardLabelNoOffer":  "Cerere de schimb: {requestedTitle}",
+    "@chatExchangeCardLabelNoOffer":  {
+                                "placeholders":  {
+                                                     "requestedTitle":  {
                                                                        "type":  "String"
                                                                    }
                                                  }

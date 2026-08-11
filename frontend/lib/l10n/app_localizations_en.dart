@@ -1288,6 +1288,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookDetailSellerNoteTitle => 'Note from the owner';
 
   @override
+  String get bookDetailAboutButton => 'About this book';
+
+  @override
   String get bookDetailDetailsTitle => 'Details';
 
   @override
@@ -1762,6 +1765,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String chatOfferCardLabel(String amount, String bookTitle) {
     return '$amount lei · $bookTitle';
+  }
+
+  @override
+  String chatExchangeCardLabel(String offeredTitle, String requestedTitle) {
+    return 'Swap: $offeredTitle for $requestedTitle';
+  }
+
+  @override
+  String chatExchangeCardLabelNoOffer(String requestedTitle) {
+    return 'Swap request: $requestedTitle';
   }
 
   @override

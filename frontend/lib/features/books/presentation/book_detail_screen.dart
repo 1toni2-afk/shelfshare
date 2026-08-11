@@ -390,7 +390,16 @@ class _CoverPanel extends ConsumerWidget {
           Center(child: _PriceBlock(book: book)),
         ],
         const SizedBox(height: 16),
-        _AddToCollectionButton(bookId: book.book.id),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(child: _AddToCollectionButton(bookId: book.book.id)),
+            if (book.book.description != null && book.book.description!.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Flexible(child: _AboutBookButton(book: book.book)),
+            ],
+          ],
+        ),
         if (canPromote) ...[
           const SizedBox(height: 8),
           _PromoteButton(userBookId: book.id, isPromoted: book.isPromoted),
@@ -434,6 +443,12 @@ class _CoverPanel extends ConsumerWidget {
                     width: 92,
                     height: 92,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 92,
+                      height: 92,
+                      color: AppColors.muted,
+                      child: Icon(Icons.broken_image_outlined, color: AppColors.mutedForeground),
+                    ),
                   ),
                 ),
               ),
@@ -483,7 +498,14 @@ class _BookPhotoCarouselState extends State<_BookPhotoCarousel> {
               onPageChanged: (i) => setState(() => _index = i),
               itemBuilder: (context, index) => GestureDetector(
                 onTap: () => _openPhotoViewer(context, widget.photos, index),
-                child: Image.network(widget.photos[index], fit: BoxFit.cover),
+                child: Image.network(
+                  widget.photos[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: AppColors.muted,
+                    child: Icon(Icons.broken_image_outlined, color: AppColors.mutedForeground, size: 40),
+                  ),
+                ),
               ),
             ),
             if (widget.photos.length > 1)
@@ -1155,6 +1177,76 @@ class _AddToCollectionButton extends ConsumerWidget {
   }
 }
 
+/// Buton dedicat lângă "Add to collection" care arată descrierea din catalog
+/// (ISBN) într-un bottom sheet - fără să oblige userul să deruleze pagina
+/// până jos, unde secțiunea "Descriere" oricum apare (dacă e destul de lungă).
+class _AboutBookButton extends StatelessWidget {
+  const _AboutBookButton({required this.book});
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => _AboutBookSheet(book: book),
+      ),
+      icon: const Icon(Icons.info_outline, size: 18),
+      label: Text(context.l10n.bookDetailAboutButton),
+    );
+  }
+}
+
+class _AboutBookSheet extends StatelessWidget {
+  const _AboutBookSheet({required this.book});
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+        child: ListView(
+          controller: scrollController,
+          children: [
+            Text(book.title, style: Theme.of(context).textTheme.titleLarge),
+            if (book.author != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                book.author!,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.mutedForeground),
+              ),
+            ],
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                if (book.genre != null) _MetaItem(icon: Icons.category_outlined, text: book.genre!),
+                if (book.publishedYear != null)
+                  _MetaItem(icon: Icons.calendar_today_outlined, text: '${book.publishedYear}'),
+                if (book.pageCount != null)
+                  _MetaItem(
+                    icon: Icons.description_outlined,
+                    text: '${l10n.bookDetailPagesLabel}: ${book.pageCount}',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(book.description ?? '', style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PromoteButton extends ConsumerWidget {
   const _PromoteButton({required this.userBookId, required this.isPromoted});
   final String userBookId;
@@ -1447,7 +1539,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
 
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(exchangesRepositoryProvider).createRequest(
+      final (_, conversationId) = await ref.read(exchangesRepositoryProvider).createRequest(
             requestedBookId: widget.requestedBook.id,
             offeredBookId: _offeredBookId,
             message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),
@@ -1456,6 +1548,11 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.bookDetailRequestSent)));
+        // Cererea e postată direct ca mesaj în chat - ducem userul acolo ca
+        // să vadă imediat cardul, nu doar un toast (la fel ca la oferta de preț).
+        if (conversationId != null) {
+          context.push('/chat/$conversationId', extra: widget.requestedBook.owner);
+        }
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -1708,18 +1805,70 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
           ),
           title: Text('${_currentIndex + 1} / ${widget.photos.length}'),
         ),
-        body: PageView.builder(
-          controller: _pageController,
-          itemCount: widget.photos.length,
-          onPageChanged: (index) => setState(() => _currentIndex = index),
-          itemBuilder: (context, index) => InteractiveViewer(
-            minScale: 1,
-            maxScale: 4,
-            child: Center(
-              child: Image.network(widget.photos[index], fit: BoxFit.contain),
+        body: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: widget.photos.length,
+              onPageChanged: (index) => setState(() => _currentIndex = index),
+              itemBuilder: (context, index) => InteractiveViewer(
+                minScale: 1,
+                maxScale: 4,
+                child: Center(
+                  child: Image.network(widget.photos[index], fit: BoxFit.contain),
+                ),
+              ),
             ),
-          ),
+            if (widget.photos.length > 1) ...[
+              if (_currentIndex > 0)
+                Positioned(
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(child: _PhotoNavArrow(
+                    icon: Icons.chevron_left,
+                    onPressed: () => _pageController.previousPage(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                    ),
+                  )),
+                ),
+              if (_currentIndex < widget.photos.length - 1)
+                Positioned(
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(child: _PhotoNavArrow(
+                    icon: Icons.chevron_right,
+                    onPressed: () => _pageController.nextPage(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                    ),
+                  )),
+                ),
+            ],
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _PhotoNavArrow extends StatelessWidget {
+  const _PhotoNavArrow({required this.icon, required this.onPressed});
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
       ),
     );
   }

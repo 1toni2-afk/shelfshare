@@ -26,6 +26,30 @@ class MyLibraryScreen extends ConsumerStatefulWidget {
 
 enum _StatusFilter { all, available, unavailable, transferred }
 
+/// Categoria de anunț - derivată din câmpurile UserBook, nu stocată separat
+/// (nu există coloană `listingType`; vezi și add_book_screen.dart#_ListingMode,
+/// unde „donație" = preț 0 nenegociabil, aceeași convenție folosită aici).
+enum _ListingCategory { swap, sale, auction, donation }
+
+_ListingCategory _categoryOf(UserBook b) {
+  if (b.isAuction) return _ListingCategory.auction;
+  if (b.isForSale) {
+    return (b.salePrice == null || b.salePrice == 0)
+        ? _ListingCategory.donation
+        : _ListingCategory.sale;
+  }
+  return _ListingCategory.swap;
+}
+
+extension on _ListingCategory {
+  String label(AppLocalizations l10n) => switch (this) {
+        _ListingCategory.swap => l10n.shareListingModeSwap,
+        _ListingCategory.sale => l10n.shareListingModeSale,
+        _ListingCategory.auction => l10n.shareListingModeAuction,
+        _ListingCategory.donation => l10n.shareListingModeDonation,
+      };
+}
+
 class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   bool _sheetOpen = false;
   bool _isGridView = true;
@@ -235,6 +259,43 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
               : () => _openActions(item.userBook),
         );
       },
+    );
+  }
+
+  /// Grupează pe categorie de anunț (Swap/Vânzare/Licitație/Donație), ca în
+  /// structura cerută - „Available: Swap, Donation, etc". Fiecare grup nevid
+  /// primește un mic antet; ordinea e fixă (nu depinde de ce apare primul în
+  /// listă), ca secțiunile să nu-și schimbe locul la fiecare refresh.
+  Widget _categorizedView(List<_ShelfItem> items, {bool trailingAdd = false}) {
+    final l10n = context.l10n;
+    final byCategory = <_ListingCategory, List<_ShelfItem>>{};
+    for (final item in items) {
+      (byCategory[_categoryOf(item.userBook)] ??= []).add(item);
+    }
+    final nonEmptyCategories = [
+      for (final category in _ListingCategory.values)
+        if (byCategory[category]?.isNotEmpty ?? false) category,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final category in nonEmptyCategories) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Text(
+              '${category.label(l10n)} (${byCategory[category]!.length})',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppColors.mutedForeground),
+            ),
+          ),
+          _booksView(byCategory[category]!),
+          if (category != nonEmptyCategories.last) const SizedBox(height: 20),
+        ],
+        if (trailingAdd) ...[
+          if (nonEmptyCategories.isNotEmpty) const SizedBox(height: 20),
+          _booksView(const [], trailingAdd: true),
+        ],
+      ],
     );
   }
 
@@ -496,16 +557,16 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   const Divider(height: 1),
                   const SizedBox(height: 18),
                   if (showCollapsedUnavailable) ...[
-                    _booksView(available, trailingAdd: true),
+                    _categorizedView(available, trailingAdd: true),
                     if (unavailableOrTransferred.isNotEmpty) ...[
                       const SizedBox(height: 18),
                       _UnavailableSection(
                         count: unavailableOrTransferred.length,
-                        child: _booksView(unavailableOrTransferred),
+                        child: _categorizedView(unavailableOrTransferred),
                       ),
                     ],
                   ] else
-                    _booksView(filtered, trailingAdd: true),
+                    _categorizedView(filtered, trailingAdd: true),
                 ],
               );
 

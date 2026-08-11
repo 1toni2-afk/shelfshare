@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ConversationsService } from '../chat/conversations.service';
 import { NotificationType } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
@@ -56,6 +57,7 @@ export class ExchangesService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private conversations: ConversationsService,
   ) {}
 
   /**
@@ -109,9 +111,19 @@ export class ExchangesService {
       );
     }
 
+    let offeredBook: {
+      userId: string;
+      availableForSwap: boolean;
+      book: { title: string };
+    } | null = null;
     if (dto.offeredBookId) {
-      const offeredBook = await this.prisma.userBook.findUnique({
+      offeredBook = await this.prisma.userBook.findUnique({
         where: { id: dto.offeredBookId },
+        select: {
+          userId: true,
+          availableForSwap: true,
+          book: { select: { title: true } },
+        },
       });
       if (!offeredBook) {
         throw new NotFoundException('Cartea oferită nu a fost găsită');
@@ -148,7 +160,23 @@ export class ExchangesService {
       { exchangeRequestId: created.id },
     );
 
-    return this.sanitizeParties(created);
+    // Cererea devine vizibilă și acționabilă direct în chat, nu doar o
+    // notificare separată - la fel ca oferta de preț (offers.service.ts).
+    const conversation = await this.conversations.findOrCreateConversation(
+      requesterId,
+      requestedBook.userId,
+    );
+    const content = offeredBook
+      ? `Cerere de schimb: „${offeredBook.book.title}" pentru „${requestedBook.book.title}"`
+      : `Cerere de schimb pentru „${requestedBook.book.title}"`;
+    await this.conversations.createExchangeRequestMessage(
+      conversation.id,
+      requesterId,
+      created.id,
+      content,
+    );
+
+    return { ...this.sanitizeParties(created), conversationId: conversation.id };
   }
 
   async getSentRequests(userId: string) {
@@ -236,6 +264,7 @@ export class ExchangesService {
       });
     });
 
+    await this.broadcastStatusToConversation(id, 'ACCEPTED');
     await this.notifySafe(
       request.requesterId,
       'EXCHANGE_REQUEST_ACCEPTED',
@@ -257,6 +286,7 @@ export class ExchangesService {
       include: INCLUDE_FULL,
     });
 
+    await this.broadcastStatusToConversation(id, 'REJECTED');
     await this.notifySafe(
       request.requesterId,
       'EXCHANGE_REQUEST_REJECTED',
@@ -265,6 +295,24 @@ export class ExchangesService {
     );
 
     return this.sanitizeParties(updated);
+  }
+
+  /** Regăsește conversația unde a fost postată cererea, ca schimbarea de status să apară live pe cardul din chat. */
+  private async broadcastStatusToConversation(
+    exchangeRequestId: string,
+    status: string,
+  ) {
+    const message = await this.prisma.message.findFirst({
+      where: { exchangeRequestId },
+      select: { conversationId: true },
+    });
+    if (message) {
+      this.conversations.broadcastExchangeRequestUpdate(
+        message.conversationId,
+        exchangeRequestId,
+        status,
+      );
+    }
   }
 
   async cancel(id: string, userId: string) {

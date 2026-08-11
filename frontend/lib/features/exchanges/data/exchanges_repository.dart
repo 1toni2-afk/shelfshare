@@ -7,7 +7,10 @@ class ExchangesRepository {
   ExchangesRepository(this._ref);
   final Ref _ref;
 
-  Future<ExchangeRequest> createRequest({
+  /// Backend-ul întoarce și `conversationId` (cererea se postează direct în
+  /// chat, la fel ca oferta de preț) - vezi book_detail_screen.dart, care
+  /// deschide conversația imediat după trimitere.
+  Future<(ExchangeRequest, String?)> createRequest({
     required String requestedBookId,
     String? offeredBookId,
     double? offeredAmount,
@@ -20,7 +23,8 @@ class ExchangesRepository {
       'offeredAmount': ?offeredAmount,
       if (message != null && message.isNotEmpty) 'message': message,
     });
-    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    return (ExchangeRequest.fromJson(data), data['conversationId'] as String?);
   }
 
   Future<List<ExchangeRequest>> getSent() => _getList('/exchanges/sent');

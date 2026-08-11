@@ -440,6 +440,7 @@
     "bookDetailViewCount":  "{count} Aufrufe",
     "bookDetailDescriptionTitle":  "Beschreibung",
     "bookDetailSellerNoteTitle":  "Note from the owner",
+    "bookDetailAboutButton":  "About this book",
     "bookDetailDetailsTitle":  "Details",
     "bookDetailPublisherLabel":  "Verlag",
     "bookDetailYearLabel":  "Erscheinungsjahr",
@@ -604,6 +605,25 @@
                                                                     "type":  "String"
                                                                 },
                                                      "bookTitle":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                 }
+                            },
+    "chatExchangeCardLabel":  "Swap: {offeredTitle} for {requestedTitle}",
+    "@chatExchangeCardLabel":  {
+                                "placeholders":  {
+                                                     "offeredTitle":  {
+                                                                    "type":  "String"
+                                                                },
+                                                     "requestedTitle":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                 }
+                            },
+    "chatExchangeCardLabelNoOffer":  "Swap request: {requestedTitle}",
+    "@chatExchangeCardLabelNoOffer":  {
+                                "placeholders":  {
+                                                     "requestedTitle":  {
                                                                        "type":  "String"
                                                                    }
                                                  }

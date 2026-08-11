@@ -17,6 +17,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../offers/data/offers_repository.dart';
+import '../../exchanges/data/exchanges_repository.dart';
 import '../../safety/data/safety_repository.dart';
 import '../application/chat_controller.dart';
 import '../application/conversations_controller.dart';
@@ -425,6 +426,30 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     }
   }
 
+  /// Analog cu _handleOfferAction, pentru cereri de schimb - backend-ul nu
+  /// are contra-ofertă pentru schimburi (doar pentru oferte de preț), deci
+  /// cardul din chat oferă doar Accept/Respinge.
+  Future<void> _handleExchangeRequestAction(ChatMessage message, {required bool accept}) async {
+    final requestId = message.exchangeRequest?.id;
+    if (requestId == null) return;
+    try {
+      if (accept) {
+        await ref.read(exchangesRepositoryProvider).accept(requestId);
+      } else {
+        await ref.read(exchangesRepositoryProvider).reject(requestId);
+      }
+      ref.read(chatControllerProvider(widget.conversationId).notifier).updateExchangeRequestStatus(
+            message.id,
+            accept ? 'ACCEPTED' : 'REJECTED',
+          );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.chatOfferActionError)));
+      }
+    }
+  }
+
   void _scrollToBottom() {
     if (!_scrollController.hasClients) return;
     _scrollController.animateTo(
@@ -563,10 +588,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                               ref.read(chatControllerProvider(widget.conversationId).notifier).loadMore(),
                           onOfferAction: _handleOfferAction,
                           onCounterOffer: _handleCounterOffer,
+                          onExchangeRequestAction: _handleExchangeRequestAction,
                           onMessageLongPress: _showMessageActions,
                           otherUserName: widget.otherUser?.name,
                           currentUserName:
                               authState is AuthAuthenticated ? authState.user.name : null,
+                          conversationId: widget.conversationId,
                         ),
             ),
             if (state.otherUserTyping)
@@ -723,9 +750,11 @@ class _MessageList extends StatelessWidget {
     required this.onLoadMore,
     required this.onOfferAction,
     required this.onCounterOffer,
+    required this.onExchangeRequestAction,
     required this.onMessageLongPress,
     required this.otherUserName,
     required this.currentUserName,
+    required this.conversationId,
   });
 
   final List<ChatMessage> messages;
@@ -737,15 +766,47 @@ class _MessageList extends StatelessWidget {
   final VoidCallback onLoadMore;
   final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
   final Future<void> Function(ChatMessage message) onCounterOffer;
+  final Future<void> Function(ChatMessage message, {required bool accept}) onExchangeRequestAction;
   final Future<void> Function(ChatMessage message) onMessageLongPress;
   final String? otherUserName;
   final String? currentUserName;
+  final String conversationId;
 
   /// Ultimul mesaj trimis de mine - singurul sub care se afișează „Văzut",
   /// ca în orice aplicație de chat (bifă pe conversație, nu pe fiecare bulă).
   String? get _lastOwnMessageId {
     for (final message in messages.reversed) {
       if (message.senderId == currentUserId) return message.id;
+    }
+    return null;
+  }
+
+  /// Cel mai recent schimb ACCEPTAT din conversație (ofertă de preț sau
+  /// cerere de swap) - folosit doar ca sursă de context pentru .ics-ul
+  /// mesajelor de locație (titlu carte, ce oferă fiecare parte), vezi
+  /// _MessageContent._downloadMeetingIcs. Mesajul de locație în sine nu are
+  /// nicio legătură salvată în DB cu oferta/cererea - întâlnirea programată
+  /// e aproape mereu urmarea directă a ultimului schimb acceptat din chat.
+  _ChatDealInfo? get _acceptedDeal {
+    for (final message in messages.reversed) {
+      final offer = message.priceOffer;
+      if (offer != null && offer.status == 'ACCEPTED') {
+        return _ChatDealInfo(
+          requestedBookTitle: offer.bookTitle,
+          requestedBookAuthor: offer.bookAuthor,
+          amount: offer.amount,
+        );
+      }
+      final request = message.exchangeRequest;
+      if (request != null && request.status == 'ACCEPTED') {
+        return _ChatDealInfo(
+          requestedBookTitle: request.requestedBookTitle,
+          requestedBookAuthor: request.requestedBookAuthor,
+          offeredBookTitle: request.offeredBookTitle,
+          offeredBookAuthor: request.offeredBookAuthor,
+          amount: request.offeredAmount,
+        );
+      }
     }
     return null;
   }
@@ -850,8 +911,11 @@ class _MessageList extends StatelessWidget {
                         isMine: isMine,
                         onOfferAction: onOfferAction,
                         onCounterOffer: onCounterOffer,
+                        onExchangeRequestAction: onExchangeRequestAction,
                         senderName: isMine ? currentUserName : otherUserName,
                         otherPartyName: isMine ? otherUserName : currentUserName,
+                        deal: _acceptedDeal,
+                        conversationId: conversationId,
                       ),
                     ],
                   ),
@@ -1282,24 +1346,47 @@ class _SafetyAdvisoryCard extends StatelessWidget {
   }
 }
 
+/// Contextul schimbului acceptat (ofertă/cerere), doar cât e nevoie pentru
+/// textul din .ics - vezi _MessageList._acceptedDeal.
+class _ChatDealInfo {
+  const _ChatDealInfo({
+    required this.requestedBookTitle,
+    this.requestedBookAuthor,
+    this.offeredBookTitle,
+    this.offeredBookAuthor,
+    this.amount,
+  });
+  final String requestedBookTitle;
+  final String? requestedBookAuthor;
+  final String? offeredBookTitle;
+  final String? offeredBookAuthor;
+  final double? amount;
+}
+
 class _MessageContent extends StatelessWidget {
   const _MessageContent({
     required this.message,
     required this.isMine,
     required this.onOfferAction,
     required this.onCounterOffer,
+    required this.onExchangeRequestAction,
     required this.senderName,
     required this.otherPartyName,
+    required this.deal,
+    required this.conversationId,
   });
   final ChatMessage message;
   final bool isMine;
   final Future<void> Function(ChatMessage message, {required bool accept}) onOfferAction;
   final Future<void> Function(ChatMessage message) onCounterOffer;
+  final Future<void> Function(ChatMessage message, {required bool accept}) onExchangeRequestAction;
 
   /// Numele celui care a trimis mesajul de locație/mesajul curent - folosit
   /// doar la generarea .ics (vezi _downloadMeetingIcs).
   final String? senderName;
   final String? otherPartyName;
+  final _ChatDealInfo? deal;
+  final String conversationId;
 
   @override
   Widget build(BuildContext context) {
@@ -1358,6 +1445,51 @@ class _MessageContent extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () => onOfferAction(message, accept: true),
+                  child: Text(l10n.exchangeAccept),
+                ),
+              ],
+            ),
+          ],
+        ],
+      );
+    }
+    if (message.exchangeRequest != null) {
+      final request = message.exchangeRequest!;
+      final status = OfferStatusX.fromJson(request.status);
+      final label = request.offeredBookTitle != null
+          ? l10n.chatExchangeCardLabel(request.offeredBookTitle!, request.requestedBookTitle)
+          : l10n.chatExchangeCardLabelNoOffer(request.requestedBookTitle);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.swap_horiz, size: 16, color: textColor),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(status.label, style: TextStyle(color: textColor, fontSize: 13)),
+          if (!isMine && status == OfferStatus.pending) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                OutlinedButton(
+                  onPressed: () => onExchangeRequestAction(message, accept: false),
+                  child: Text(l10n.exchangeReject),
+                ),
+                ElevatedButton(
+                  onPressed: () => onExchangeRequestAction(message, accept: true),
                   child: Text(l10n.exchangeAccept),
                 ),
               ],
@@ -1438,10 +1570,29 @@ class _MessageContent extends StatelessWidget {
         .replaceAll('\n', '\\n');
 
     final other = otherPartyName ?? 'celălalt participant';
-    final summary = 'Schimb carte cu $other';
+    final currentDeal = deal;
+
+    // Titlul principal - cartea cerută/cumpărată. Fără un schimb acceptat
+    // asociat (deal == null), nu avem de unde ști despre ce carte e vorba -
+    // rămâne generic, dar restul informațiilor (participanți, locație, link)
+    // tot apar.
+    final titleWithAuthor = currentDeal == null
+        ? null
+        : currentDeal.requestedBookAuthor != null
+            ? '${currentDeal.requestedBookTitle} (${currentDeal.requestedBookAuthor})'
+            : currentDeal.requestedBookTitle;
+
+    final summary = titleWithAuthor != null
+        ? 'Schimb carte: $titleWithAuthor cu $other'
+        : 'Schimb de carte cu $other';
+
     final descriptionParts = <String>[
-      if (senderName != null) 'Întâlnire pentru schimb de carte, stabilită de $senderName cu $other.',
-      'Locație: ${message.location}',
+      if (titleWithAuthor != null) 'Carte: $titleWithAuthor',
+      if (currentDeal?.offeredBookTitle != null)
+        'Se oferă la schimb: ${currentDeal!.offeredBookAuthor != null ? '${currentDeal.offeredBookTitle} (${currentDeal.offeredBookAuthor})' : currentDeal.offeredBookTitle}',
+      if (currentDeal?.amount != null) 'Sumă: ${currentDeal!.amount!.toStringAsFixed(0)} lei',
+      if (senderName != null) 'Participanți: $senderName și $other',
+      'Chat: https://shelfshare.ro/chat/$conversationId',
     ];
 
     final ics = [

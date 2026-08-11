@@ -3,6 +3,7 @@ class PriceOfferSummary {
   final double amount;
   final String status;
   final String bookTitle;
+  final String? bookAuthor;
   final String? bookCoverUrl;
 
   const PriceOfferSummary({
@@ -10,6 +11,7 @@ class PriceOfferSummary {
     required this.amount,
     required this.status,
     required this.bookTitle,
+    this.bookAuthor,
     this.bookCoverUrl,
   });
 
@@ -25,7 +27,51 @@ class PriceOfferSummary {
       amount: (json['amount'] as num).toDouble(),
       status: json['status'] as String,
       bookTitle: book?['title'] as String? ?? '',
+      bookAuthor: book?['author'] as String?,
       bookCoverUrl: book?['coverUrl'] as String?,
+    );
+  }
+}
+
+/// Analog cu PriceOfferSummary, pentru o cerere de schimb carte-contra-carte.
+class ExchangeRequestSummary {
+  final String id;
+  final String status;
+  final double? offeredAmount;
+  final String requestedBookTitle;
+  final String? requestedBookAuthor;
+  final String? requestedBookCoverUrl;
+  final String? offeredBookTitle;
+  final String? offeredBookAuthor;
+  final String? offeredBookCoverUrl;
+
+  const ExchangeRequestSummary({
+    required this.id,
+    required this.status,
+    this.offeredAmount,
+    required this.requestedBookTitle,
+    this.requestedBookAuthor,
+    this.requestedBookCoverUrl,
+    this.offeredBookTitle,
+    this.offeredBookAuthor,
+    this.offeredBookCoverUrl,
+  });
+
+  factory ExchangeRequestSummary.fromJson(Map<String, dynamic> json) {
+    final requestedBook = json['requestedBook'] as Map<String, dynamic>?;
+    final requestedCatalog = requestedBook?['book'] as Map<String, dynamic>?;
+    final offeredBook = json['offeredBook'] as Map<String, dynamic>?;
+    final offeredCatalog = offeredBook?['book'] as Map<String, dynamic>?;
+    return ExchangeRequestSummary(
+      id: json['id'] as String,
+      status: json['status'] as String,
+      offeredAmount: (json['offeredAmount'] as num?)?.toDouble(),
+      requestedBookTitle: requestedCatalog?['title'] as String? ?? '',
+      requestedBookAuthor: requestedCatalog?['author'] as String?,
+      requestedBookCoverUrl: requestedCatalog?['coverUrl'] as String?,
+      offeredBookTitle: offeredCatalog?['title'] as String?,
+      offeredBookAuthor: offeredCatalog?['author'] as String?,
+      offeredBookCoverUrl: offeredCatalog?['coverUrl'] as String?,
     );
   }
 }
@@ -69,6 +115,7 @@ class ChatMessage {
   final double? locationLng;
   final DateTime? meetingAt;
   final PriceOfferSummary? priceOffer;
+  final ExchangeRequestSummary? exchangeRequest;
   final ReplyPreview? replyTo;
   final bool isRead;
   final DateTime createdAt;
@@ -84,12 +131,17 @@ class ChatMessage {
     this.locationLng,
     this.meetingAt,
     this.priceOffer,
+    this.exchangeRequest,
     this.replyTo,
     this.isRead = false,
     required this.createdAt,
   });
 
-  ChatMessage copyWith({PriceOfferSummary? priceOffer, bool? isRead}) {
+  ChatMessage copyWith({
+    PriceOfferSummary? priceOffer,
+    ExchangeRequestSummary? exchangeRequest,
+    bool? isRead,
+  }) {
     return ChatMessage(
       id: id,
       conversationId: conversationId,
@@ -101,6 +153,7 @@ class ChatMessage {
       locationLng: locationLng,
       meetingAt: meetingAt,
       priceOffer: priceOffer ?? this.priceOffer,
+      exchangeRequest: exchangeRequest ?? this.exchangeRequest,
       replyTo: replyTo,
       isRead: isRead ?? this.isRead,
       createdAt: createdAt,
@@ -120,6 +173,9 @@ class ChatMessage {
       meetingAt: json['meetingAt'] != null ? DateTime.parse(json['meetingAt'] as String) : null,
       priceOffer: json['priceOffer'] != null
           ? PriceOfferSummary.fromJson(json['priceOffer'] as Map<String, dynamic>)
+          : null,
+      exchangeRequest: json['exchangeRequest'] != null
+          ? ExchangeRequestSummary.fromJson(json['exchangeRequest'] as Map<String, dynamic>)
           : null,
       replyTo: json['replyTo'] != null
           ? ReplyPreview.fromJson(json['replyTo'] as Map<String, dynamic>)

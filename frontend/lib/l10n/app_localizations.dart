@@ -2364,6 +2364,12 @@ abstract class AppLocalizations {
   /// **'Notă de la proprietar'**
   String get bookDetailSellerNoteTitle;
 
+  /// No description provided for @bookDetailAboutButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Despre carte'**
+  String get bookDetailAboutButton;
+
   /// No description provided for @bookDetailDetailsTitle.
   ///
   /// In ro, this message translates to:
@@ -3221,6 +3227,18 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'{amount} lei · {bookTitle}'**
   String chatOfferCardLabel(String amount, String bookTitle);
+
+  /// No description provided for @chatExchangeCardLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb: {offeredTitle} pentru {requestedTitle}'**
+  String chatExchangeCardLabel(String offeredTitle, String requestedTitle);
+
+  /// No description provided for @chatExchangeCardLabelNoOffer.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cerere de schimb: {requestedTitle}'**
+  String chatExchangeCardLabelNoOffer(String requestedTitle);
 
   /// No description provided for @chatSearchPlaceHint.
   ///

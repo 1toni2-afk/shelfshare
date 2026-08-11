@@ -118,6 +118,7 @@ class ChatController extends Notifier<ChatState> {
     _socketService.onMessagesRead(_handleMessagesRead);
     _socketService.onUserPresence(_handlePresence);
     _socketService.onPriceOfferUpdated(_handlePriceOfferUpdated);
+    _socketService.onExchangeRequestUpdated(_handleExchangeRequestUpdated);
     _markRead();
   }
 
@@ -298,6 +299,7 @@ class ChatController extends Notifier<ChatState> {
                 amount: m.priceOffer!.amount,
                 status: newStatus,
                 bookTitle: m.priceOffer!.bookTitle,
+                bookAuthor: m.priceOffer!.bookAuthor,
                 bookCoverUrl: m.priceOffer!.bookCoverUrl,
               ),
             )
@@ -318,6 +320,41 @@ class ChatController extends Notifier<ChatState> {
         return;
       }
     }
+  }
+
+  void _handleExchangeRequestUpdated(String exchangeRequestId, String status) {
+    for (final m in state.messages) {
+      if (m.exchangeRequest?.id == exchangeRequestId) {
+        updateExchangeRequestStatus(m.id, status);
+        return;
+      }
+    }
+  }
+
+  /// Actualizare optimistă/live pentru un card de cerere de schimb - analog
+  /// cu updatePriceOfferStatus.
+  void updateExchangeRequestStatus(String messageId, String newStatus) {
+    state = state.copyWith(
+      messages: [
+        for (final m in state.messages)
+          if (m.id == messageId && m.exchangeRequest != null)
+            m.copyWith(
+              exchangeRequest: ExchangeRequestSummary(
+                id: m.exchangeRequest!.id,
+                status: newStatus,
+                offeredAmount: m.exchangeRequest!.offeredAmount,
+                requestedBookTitle: m.exchangeRequest!.requestedBookTitle,
+                requestedBookAuthor: m.exchangeRequest!.requestedBookAuthor,
+                requestedBookCoverUrl: m.exchangeRequest!.requestedBookCoverUrl,
+                offeredBookTitle: m.exchangeRequest!.offeredBookTitle,
+                offeredBookAuthor: m.exchangeRequest!.offeredBookAuthor,
+                offeredBookCoverUrl: m.exchangeRequest!.offeredBookCoverUrl,
+              ),
+            )
+          else
+            m,
+      ],
+    );
   }
 
   void notifyTyping() {
@@ -350,6 +387,7 @@ class ChatController extends Notifier<ChatState> {
     _socketService.offMessagesRead();
     _socketService.offUserPresence();
     _socketService.offPriceOfferUpdated();
+    _socketService.offExchangeRequestUpdated();
   }
 }
 

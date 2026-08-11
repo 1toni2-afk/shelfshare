@@ -1290,6 +1290,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookDetailSellerNoteTitle => 'Notă de la proprietar';
 
   @override
+  String get bookDetailAboutButton => 'Despre carte';
+
+  @override
   String get bookDetailDetailsTitle => 'Detalii';
 
   @override
@@ -1764,6 +1767,16 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String chatOfferCardLabel(String amount, String bookTitle) {
     return '$amount lei · $bookTitle';
+  }
+
+  @override
+  String chatExchangeCardLabel(String offeredTitle, String requestedTitle) {
+    return 'Schimb: $offeredTitle pentru $requestedTitle';
+  }
+
+  @override
+  String chatExchangeCardLabelNoOffer(String requestedTitle) {
+    return 'Cerere de schimb: $requestedTitle';
   }
 
   @override

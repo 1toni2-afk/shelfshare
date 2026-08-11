@@ -755,6 +755,8 @@ model ExchangeRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  messages Message[]
+
   @@map("exchange_requests")
 }
 
@@ -815,6 +817,12 @@ model Message {
   // acționabilă direct în chat, nu doar ca o notificare separată.
   priceOfferId String?
   priceOffer   PriceOffer? @relation(fields: [priceOfferId], references: [id], onDelete: SetNull)
+
+  // Setat doar pe mesajul generat automat când cineva face o cerere de
+  // schimb (vezi exchanges.service.ts#createRequest) - aceeași idee ca
+  // priceOfferId, dar pentru schimb carte-contra-carte, nu preț.
+  exchangeRequestId String?
+  exchangeRequest   ExchangeRequest? @relation(fields: [exchangeRequestId], references: [id], onDelete: SetNull)
 
   // Reply la un mesaj anterior. SetNull, nu Cascade: dacă mesajul citat
   // dispare, răspunsul rămâne - doar citatul se pierde (UI-ul afișează

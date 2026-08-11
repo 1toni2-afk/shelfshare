@@ -35,7 +35,24 @@ const PRICE_OFFER_SELECT = {
     id: true,
     amount: true,
     status: true,
-    userBook: { select: { book: { select: { title: true, coverUrl: true } } } },
+    userBook: {
+      select: { book: { select: { title: true, author: true, coverUrl: true } } },
+    },
+  },
+} as const;
+
+/** Analog cu PRICE_OFFER_SELECT, dar pentru o cerere de schimb carte-contra-carte. */
+const EXCHANGE_REQUEST_SELECT = {
+  select: {
+    id: true,
+    status: true,
+    offeredAmount: true,
+    requestedBook: {
+      select: { book: { select: { title: true, author: true, coverUrl: true } } },
+    },
+    offeredBook: {
+      select: { book: { select: { title: true, author: true, coverUrl: true } } },
+    },
   },
 } as const;
 
@@ -52,6 +69,7 @@ const REPLY_TO_SELECT = {
 
 const MESSAGE_INCLUDE = {
   priceOffer: PRICE_OFFER_SELECT,
+  exchangeRequest: EXCHANGE_REQUEST_SELECT,
   replyTo: REPLY_TO_SELECT,
 } as const;
 
@@ -297,9 +315,36 @@ export class ConversationsService {
     priceOfferId: string,
     content: string,
   ) {
+    return this.createSpecialOfferMessage(conversationId, senderId, content, {
+      priceOfferId,
+    });
+  }
+
+  /**
+   * Analog cu createPriceOfferMessage, pentru o cerere de schimb carte-contra-
+   * carte (vezi exchanges.service.ts#createRequest). Cardul din chat arată
+   * ambele cărți implicate, cu Accept/Respinge pentru owner.
+   */
+  async createExchangeRequestMessage(
+    conversationId: string,
+    senderId: string,
+    exchangeRequestId: string,
+    content: string,
+  ) {
+    return this.createSpecialOfferMessage(conversationId, senderId, content, {
+      exchangeRequestId,
+    });
+  }
+
+  private async createSpecialOfferMessage(
+    conversationId: string,
+    senderId: string,
+    content: string,
+    ids: { priceOfferId?: string; exchangeRequestId?: string },
+  ) {
     const [message] = await this.prisma.$transaction([
       this.prisma.message.create({
-        data: { conversationId, senderId, content, priceOfferId },
+        data: { conversationId, senderId, content, ...ids },
         include: MESSAGE_INCLUDE,
       }),
       this.prisma.conversation.update({
@@ -309,9 +354,9 @@ export class ConversationsService {
     ]);
 
     // Spre deosebire de sendMessage(), acest mesaj nu trece prin
-    // ChatGateway.handleMessage (vine din OffersService, nu de pe socket), deci
-    // fără difuzarea explicită de aici participanții nu-l văd decât la
-    // următoarea reîncărcare a conversației.
+    // ChatGateway.handleMessage (vine din OffersService/ExchangesService, nu
+    // de pe socket), deci fără difuzarea explicită de aici participanții nu-l
+    // văd decât la următoarea reîncărcare a conversației.
     const mapped = this.mapMessage(message);
     this.realtime.emitToConversation(conversationId, 'new_message', mapped);
     const participants = await this.getParticipants(conversationId);
@@ -338,6 +383,19 @@ export class ConversationsService {
     this.realtime.emitToConversation(conversationId, 'price_offer_updated', {
       conversationId,
       priceOfferId,
+      status,
+    });
+  }
+
+  /** Analog cu broadcastPriceOfferUpdate, pentru cereri de schimb. */
+  broadcastExchangeRequestUpdate(
+    conversationId: string,
+    exchangeRequestId: string,
+    status: string,
+  ) {
+    this.realtime.emitToConversation(conversationId, 'exchange_request_updated', {
+      conversationId,
+      exchangeRequestId,
       status,
     });
   }
