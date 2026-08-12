@@ -12,16 +12,21 @@
  * siguranță pe o bază de date cu utilizatori reali - nicio altă înregistrare
  * nu e atinsă.
  *
+ * Versiune .js (nu .ts): imaginea de producție nu are pnpm/ts-node - doar
+ * `node dist/main`. @prisma/client, @prisma/adapter-pg, bcrypt și dotenv
+ * rămân în node_modules după `pnpm prune --prod` (sunt dependencies, nu
+ * devDependencies), deci scriptul rulează direct cu `node`, fără compilare.
+ *
  * Rulează în interiorul containerului backend (DATABASE_URL rezolvă "postgres"
  * ca host doar acolo):
  *   docker compose -f docker-compose.prod.yml exec backend \
- *     pnpm exec ts-node prisma/seed-test-accounts.ts
+ *     node prisma/seed-test-accounts.js
  */
-import 'dotenv/config';
-import { PrismaClient, BookCondition } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
+require('dotenv/config');
+const { PrismaClient, BookCondition } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -118,17 +123,17 @@ const BOOKS_PER_ACCOUNT = [
   ],
 ];
 
-const CONDITIONS: BookCondition[] = [
+const CONDITIONS = [
   BookCondition.FOARTE_BUNA,
   BookCondition.BUNA,
   BookCondition.ACCEPTABILA,
 ];
 
-function coverUrl(isbn: string): string {
+function coverUrl(isbn) {
   return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
 }
 
-function photos(seedKey: string, count: number): string[] {
+function photos(seedKey, count) {
   return Array.from(
     { length: count },
     (_, i) => `https://picsum.photos/seed/${seedKey}-${i}/600/800`,
@@ -136,7 +141,7 @@ function photos(seedKey: string, count: number): string[] {
 }
 
 /** Cod de referral unic, la fel ca în UsersService.generateReferralCode. */
-async function uniqueReferralCode(): Promise<string> {
+async function uniqueReferralCode() {
   for (;;) {
     const code = crypto.randomBytes(8).toString('hex').toUpperCase().slice(0, 8);
     const exists = await prisma.user.findUnique({ where: { referralCode: code } });
@@ -234,7 +239,7 @@ async function main() {
     console.log(`  - ${BOOKS_PER_ACCOUNT[i].length} anunțuri listate`);
   }
 
-  console.log(`\nGata. Parola pentru toate trei: ${PASSWORD}`);
+  console.log(`\nGata. Parola pentru toate cinci: ${PASSWORD}`);
 }
 
 main()

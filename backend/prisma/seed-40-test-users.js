@@ -13,16 +13,21 @@
  * „- TEST" sunt recunoscuți după domeniul de email (@shelfshare.test) și
  * anunțurile lor recreate de la zero, fără duplicare.
  *
+ * Versiune .js (nu .ts): imaginea de producție nu are pnpm/ts-node - doar
+ * `node dist/main`. @prisma/client, @prisma/adapter-pg, bcrypt și dotenv
+ * rămân în node_modules după `pnpm prune --prod` (sunt dependencies, nu
+ * devDependencies), deci scriptul rulează direct cu `node`, fără compilare.
+ *
  * Rulează în interiorul containerului backend (DATABASE_URL rezolvă "postgres"
  * ca host doar acolo):
  *   docker compose -f docker-compose.prod.yml exec backend \
- *     pnpm exec ts-node prisma/seed-40-test-users.ts
+ *     node prisma/seed-40-test-users.js
  */
-import 'dotenv/config';
-import { PrismaClient, BookCondition, AuctionStatus } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
+require('dotenv/config');
+const { PrismaClient, BookCondition, AuctionStatus } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -34,7 +39,7 @@ const EMAIL_DOMAIN = 'shelfshare.test';
 /** Marcaj pe cărțile create de scriptul ăsta, ca să le putem recunoaște. */
 const SOURCE = '40-test-users-seed';
 
-const CONDITIONS: BookCondition[] = [
+const CONDITIONS = [
   BookCondition.NOUA,
   BookCondition.FOARTE_BUNA,
   BookCondition.BUNA,
@@ -65,20 +70,10 @@ const BIOS = [
   'Mereu cu o carte la mine',
 ];
 
-type BookTemplate = {
-  isbn: string;
-  title: string;
-  author: string;
-  genre: string;
-  language: string;
-  pageCount: number;
-  publishedYear: number;
-};
-
 /** 8 titluri per categorie - ciclate pe useri, ca fiecare user să primească
  * 3 titluri diferite din categoria respectivă, dar cărțile (catalogul) să
  * rămână partajate între useri, exact ca la un add-book normal. */
-const SWAP_BOOKS: BookTemplate[] = [
+const SWAP_BOOKS = [
   { isbn: '9780439708180', title: "Harry Potter and the Sorcerer's Stone", author: 'J.K. Rowling', genre: 'Fantasy', language: 'Engleză', pageCount: 309, publishedYear: 1997 },
   { isbn: '9780547928227', title: 'The Hobbit', author: 'J.R.R. Tolkien', genre: 'Fantasy', language: 'Engleză', pageCount: 310, publishedYear: 1937 },
   { isbn: '9780451524935', title: '1984', author: 'George Orwell', genre: 'Distopie', language: 'Engleză', pageCount: 328, publishedYear: 1949 },
@@ -88,7 +83,7 @@ const SWAP_BOOKS: BookTemplate[] = [
   { isbn: '9780756404741', title: 'The Name of the Wind', author: 'Patrick Rothfuss', genre: 'Fantasy', language: 'Engleză', pageCount: 662, publishedYear: 2007 },
   { isbn: '9780765311788', title: 'Mistborn', author: 'Brandon Sanderson', genre: 'Fantasy', language: 'Engleză', pageCount: 541, publishedYear: 2006 },
 ];
-const SALE_BOOKS: (BookTemplate & { price: number })[] = [
+const SALE_BOOKS = [
   { isbn: '9780062316097', title: 'Sapiens', author: 'Yuval Noah Harari', genre: 'Non-ficțiune', language: 'Engleză', pageCount: 464, publishedYear: 2011, price: 45 },
   { isbn: '9780735211292', title: 'Atomic Habits', author: 'James Clear', genre: 'Dezvoltare personală', language: 'Engleză', pageCount: 320, publishedYear: 2018, price: 39 },
   { isbn: '9781250301697', title: 'The Silent Patient', author: 'Alex Michaelides', genre: 'Thriller', language: 'Engleză', pageCount: 336, publishedYear: 2019, price: 35 },
@@ -98,7 +93,7 @@ const SALE_BOOKS: (BookTemplate & { price: number })[] = [
   { isbn: '9780593135204', title: 'Project Hail Mary', author: 'Andy Weir', genre: 'Science Fiction', language: 'Engleză', pageCount: 496, publishedYear: 2021, price: 48 },
   { isbn: '9780062060624', title: 'The Song of Achilles', author: 'Madeline Miller', genre: 'Ficțiune istorică', language: 'Engleză', pageCount: 416, publishedYear: 2011, price: 36 },
 ];
-const AUCTION_BOOKS: (BookTemplate & { startingPrice: number })[] = [
+const AUCTION_BOOKS = [
   { isbn: '9780593098233', title: 'Dune Messiah', author: 'Frank Herbert', genre: 'Science Fiction', language: 'Engleză', pageCount: 256, publishedYear: 1969, startingPrice: 25 },
   { isbn: '9780553293357', title: 'Foundation', author: 'Isaac Asimov', genre: 'Science Fiction', language: 'Engleză', pageCount: 255, publishedYear: 1951, startingPrice: 30 },
   { isbn: '9780062572110', title: 'American Gods', author: 'Neil Gaiman', genre: 'Fantasy', language: 'Engleză', pageCount: 635, publishedYear: 2001, startingPrice: 28 },
@@ -108,7 +103,7 @@ const AUCTION_BOOKS: (BookTemplate & { startingPrice: number })[] = [
   { isbn: '9780307387899', title: 'The Road', author: 'Cormac McCarthy', genre: 'Ficțiune', language: 'Engleză', pageCount: 287, publishedYear: 2006, startingPrice: 26 },
   { isbn: '9780440180296', title: 'Slaughterhouse-Five', author: 'Kurt Vonnegut', genre: 'Science Fiction', language: 'Engleză', pageCount: 275, publishedYear: 1969, startingPrice: 24 },
 ];
-const DONATION_BOOKS: BookTemplate[] = [
+const DONATION_BOOKS = [
   { isbn: '9780062315007', title: 'The Alchemist', author: 'Paulo Coelho', genre: 'Ficțiune', language: 'Engleză', pageCount: 197, publishedYear: 1988 },
   { isbn: '9780807014295', title: "Man's Search for Meaning", author: 'Viktor Frankl', genre: 'Non-ficțiune', language: 'Engleză', pageCount: 165, publishedYear: 1946 },
   { isbn: '9780156012195', title: 'The Little Prince', author: 'Antoine de Saint-Exupéry', genre: 'Ficțiune', language: 'Engleză', pageCount: 96, publishedYear: 1943 },
@@ -119,18 +114,18 @@ const DONATION_BOOKS: BookTemplate[] = [
   { isbn: '9780141439518', title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Roman', language: 'Engleză', pageCount: 432, publishedYear: 1813 },
 ];
 
-function coverUrl(isbn: string): string {
+function coverUrl(isbn) {
   return `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`;
 }
 
-function photos(seedKey: string, count: number): string[] {
+function photos(seedKey, count) {
   return Array.from(
     { length: count },
     (_, i) => `https://picsum.photos/seed/${seedKey}-${i}/600/800`,
   );
 }
 
-function slugify(text: string): string {
+function slugify(text) {
   return text
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
@@ -140,7 +135,7 @@ function slugify(text: string): string {
 }
 
 /** Cod de referral unic, la fel ca în UsersService.generateReferralCode. */
-async function uniqueReferralCode(): Promise<string> {
+async function uniqueReferralCode() {
   for (;;) {
     const code = crypto.randomBytes(8).toString('hex').toUpperCase().slice(0, 8);
     const exists = await prisma.user.findUnique({ where: { referralCode: code } });
@@ -148,7 +143,7 @@ async function uniqueReferralCode(): Promise<string> {
   }
 }
 
-async function upsertBook(b: BookTemplate): Promise<{ id: string }> {
+async function upsertBook(b) {
   const existing = await prisma.book.findFirst({ where: { isbn: b.isbn } });
   if (existing) return existing;
   return prisma.book.create({
