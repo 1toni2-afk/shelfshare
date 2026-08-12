@@ -849,6 +849,11 @@ class _ShelfOverviewCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          // Fără asta, Column-ul (implicit MainAxisSize.max) se întindea pe
+          // toată înălțimea disponibilă în coloana dreaptă a layout-ului de
+          // desktop - cardul ajungea cât tot ecranul, cu mult gol dedesubtul
+          // conținutului real (Available/Unavailable/Transferred/Total).
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l10n.libraryOverviewTitle, style: Theme.of(context).textTheme.titleSmall),
