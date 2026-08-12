@@ -330,13 +330,25 @@ class _BookDetailContent extends ConsumerWidget {
           );
         }
 
-        // Mobil: totul pe o coloană, în ordinea firească de citire.
+        // Mobil: totul pe o coloană, în ordinea firească de citire. Coperta
+        // se întinde pe toată lățimea containerului cu aspect ratio fix
+        // (5/7) - pe un telefon normal asta dă o înălțime rezonabilă, dar
+        // pe o fereastră de desktop îngustată sub pragul de 900 (ex. jumătate
+        // de ecran), lățimea disponibilă e mult mai mare decât a unui telefon,
+        // deci înălțimea rezultată devine uriașă. Un plafon de lățime ține
+        // coperta la o dimensiune rezonabilă indiferent cât de lat e
+        // containerul, fără să afecteze telefoanele (sub plafon oricum).
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              cover,
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: cover,
+                ),
+              ),
               const SizedBox(height: 24),
               main,
               const SizedBox(height: 24),
