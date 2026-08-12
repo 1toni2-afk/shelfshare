@@ -186,6 +186,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               final args = state.extra as SearchScreenArgs?;
               return BrowseScreen(
                 initialTitle: args?.title,
+                initialAuthor: args?.author,
                 initialGenre: args?.genre,
                 initialListingType: args?.listingType,
                 initialCity: args?.city,

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/user.dart';
+import '../../support/data/support_repository.dart' show CaptchaChallenge;
 import '../data/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -21,12 +22,39 @@ class AuthController extends Notifier<AuthState> {
     state = user != null ? AuthAuthenticated(user) : const AuthUnauthenticated();
   }
 
-  Future<void> login({required String email, required String password}) async {
+  Future<void> login({
+    required String email,
+    required String password,
+    String? captchaToken,
+    int? captchaAnswer,
+  }) async {
     state = const AuthLoading();
     try {
-      final user = await _repository.login(email: email, password: password);
+      final user = await _repository.login(
+        email: email,
+        password: password,
+        captchaToken: captchaToken,
+        captchaAnswer: captchaAnswer,
+      );
       state = AuthAuthenticated(user);
     } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map && data['requiresCaptcha'] == true && data['captcha'] is Map) {
+        try {
+          final captcha = CaptchaChallenge.fromJson(
+            (data['captcha'] as Map).cast<String, dynamic>(),
+          );
+          state = AuthCaptchaRequired(
+            captcha: captcha,
+            email: email,
+            password: password,
+            message: _extractMessage(e),
+          );
+          return;
+        } catch (_) {
+          // dacă payload-ul de captcha e malformat, cădem pe eroarea normală
+        }
+      }
       state = AuthError(_extractMessage(e));
     }
   }

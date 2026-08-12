@@ -16,11 +16,6 @@ const kSidebarBreakpoint = 900.0;
 /// Lățimea sidebar-ului pe desktop. Egală cu ce am folosit pe mockup.
 const kSidebarWidth = 240.0;
 
-/// Rădăcinile celor 5 branch-uri din StatefulShellRoute (vezi app_router.dart) -
-/// singurele ecrane fără back-button în AppBar, deci fără nevoie de spațiu
-/// pentru el lângă butonul de meniu.
-const _tabRootRoutes = {'/', '/search', '/library', '/chat', '/profile'};
-
 /// Cheie stabilă pentru Scaffold-ul exterior (cel cu drawer-ul), instanțiată
 /// o singură dată la nivel de modul - MainScaffold e shell-ul unic al
 /// aplicației, deci o singură instanță trăiește la un moment dat.
@@ -76,24 +71,16 @@ class MainScaffold extends ConsumerWidget {
     // de la `_shellScaffoldKey`) - butonul flotant de mai jos deschide
     // drawer-ul direct, indiferent de ecranul curent.
     //
-    // Rămâne mereu vizibil, pe orice ecran - varianta anterioară îl ascundea
-    // când `canPop()` era true (ecrane deschise cu push, ex. detaliul unei
-    // cărți), presupunând că AppBar-ul acelui ecran are deja o săgeată de
-    // back. În practică, după ce userul apăsa acel back și revenea la un
-    // ecran „rădăcină", butonul rămânea dispărut - fără nicio cale de a mai
-    // deschide meniul. Când există și o săgeată de back, butonul se mută
-    // puțin la dreapta ei, în loc să dispară.
-    //
-    // NU folosim `context.canPop()` (GoRouter) pentru asta: reflectă stiva
-    // AGREGATĂ de rute a routerului, nu strict ecranul curent - branch-urile
-    // StatefulShellRoute (Home/Discover/My Shelf/Chat/Profil) își păstrează
-    // fiecare propriul stack intern, așa că after un push în afara branch-ului
-    // (ex. My Shelf -> detaliul unei cărți) și un pop înapoi, valoarea putea
-    // rămâne agățată pe `true` - butonul rămânea mutat la dreapta deși nu mai
-    // exista nicio săgeată de back vizibilă. Verificăm în schimb direct dacă
-    // suntem pe una din rădăcinile de tab (unde sigur NU există back-button).
-    final isTabRoot = _tabRootRoutes.contains(currentLocation);
-    final canPop = !isTabRoot;
+    // Rămâne mereu vizibil, în exact același loc, pe orice ecran - varianta
+    // anterioară îl muta la dreapta când ecranul curent avea (sau părea că
+    // are) propria săgeată de back, ca să nu se suprapună cu ea. În practică
+    // asta producea două probleme: poziția „sare" stânga-dreapta la navigare
+    // (calculul de `canPop` pe stiva agregată a routerului nu reflecta mereu
+    // ecranul curent), și la deplasarea spre dreapta bula ajungea peste
+    // titlul din AppBar (ex. „Schimburile mele"). Pe telefon/web nu ai nevoie
+    // de o săgeată de back separată oricum - gesturile/butonul de sistem fac
+    // asta - deci butonul de meniu stă fix în același colț și acoperă vizual
+    // orice săgeată de back automată a AppBar-ului ecranului curent.
     return Scaffold(
       key: _shellScaffoldKey,
       // Lățime mai mare pentru gestul de swipe-din-margine: cea implicită din
@@ -109,7 +96,7 @@ class MainScaffold extends ConsumerWidget {
         children: [
           child,
           Positioned(
-            left: canPop ? 52 : 8,
+            left: 8,
             top: 8,
             child: SafeArea(
               child: _MenuFab(onTap: () => _shellScaffoldKey.currentState?.openDrawer()),

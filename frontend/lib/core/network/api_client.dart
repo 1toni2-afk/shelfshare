@@ -22,6 +22,11 @@ class ApiClient {
         baseUrl: ApiConfig.baseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
+        // Pe web, fetch-ul de sub Dio respectă cache-ul HTTP al browserului,
+        // care nu ține cont de header-ul Authorization - fără asta, un GET
+        // autentificat poate întoarce răspunsul cache-uit al userului
+        // anterior logat pe același browser (ex. /profile/me după login).
+        headers: {'Cache-Control': 'no-cache'},
       ),
     );
 

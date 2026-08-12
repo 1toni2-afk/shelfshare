@@ -12,7 +12,7 @@ class NotificationsController extends AsyncNotifier<List<AppNotification>> {
     final socketService = ref.read(chatSocketServiceProvider);
     await socketService.connect();
     socketService.onNotification(_reload);
-    ref.onDispose(() => socketService.offNotification());
+    ref.onDispose(() => socketService.offNotification(_reload));
 
     return ref.read(notificationsRepositoryProvider).getNotifications();
   }

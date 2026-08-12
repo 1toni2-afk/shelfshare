@@ -1,12 +1,12 @@
 /**
- * Creează cele trei conturi de test folosite pentru probe manuale
- * (test1/test2/test3@yahoo.com, parola `pass123`), cu emailul deja verificat
+ * Creează cele cinci conturi de test folosite pentru probe manuale
+ * (test1-test5@yahoo.com, parola `pass123`), cu emailul deja verificat
  * și cu profilul completat: username, oraș, bio, chestionarul de cititor
  * marcat ca parcurs și câteva cărți listate, ca să se poată da schimburi,
  * oferte și mesaje între ele.
  *
  * SPRE DEOSEBIRE de `seed.ts`, scriptul ăsta NU șterge nimic. E idempotent:
- * rularea repetată actualizează aceleași trei conturi și nu duplică anunțuri
+ * rularea repetată actualizează aceleași cinci conturi și nu duplică anunțuri
  * (cărțile sunt legate de un `source` propriu, iar `UserBook`-urile existente
  * ale conturilor sunt recreate, nu adăugate peste). Poate fi rulat în
  * siguranță pe o bază de date cu utilizatori reali - nicio altă înregistrare
@@ -67,6 +67,26 @@ const ACCOUNTS = [
     favoriteAuthors: ['Mihail Sadoveanu', 'Marin Preda'],
     readingPace: 'lent',
   },
+  {
+    email: 'test4@yahoo.com',
+    username: 'test_patru',
+    name: 'Test Patru',
+    city: 'Timișoara',
+    bio: 'Dezvoltare personala',
+    favoriteGenres: ['Non-ficțiune', 'Biografie'],
+    favoriteAuthors: ['James Clear', 'Yuval Noah Harari'],
+    readingPace: 'moderat',
+  },
+  {
+    email: 'test5@yahoo.com',
+    username: 'test_cinci',
+    name: 'Test Cinci',
+    city: 'Iași',
+    bio: 'Aventura si istorie',
+    favoriteGenres: ['Aventură', 'Istorie'],
+    favoriteAuthors: ['Isaac Asimov', 'Ken Follett'],
+    readingPace: 'rapid',
+  },
 ];
 
 /** Câte trei cărți per cont, ca fiecare să aibă ce oferi la schimb. */
@@ -85,6 +105,16 @@ const BOOKS_PER_ACCOUNT = [
     { isbn: '9789731047560', title: 'Baltagul', author: 'Mihail Sadoveanu', genre: 'Ficțiune', language: 'Română', pageCount: 192, publishedYear: 1930 },
     { isbn: '9789734603312', title: 'Moromeții', author: 'Marin Preda', genre: 'Ficțiune', language: 'Română', pageCount: 560, publishedYear: 1955 },
     { isbn: '9789731043128', title: 'Enigma Otiliei', author: 'George Călinescu', genre: 'Ficțiune', language: 'Română', pageCount: 448, publishedYear: 1938 },
+  ],
+  [
+    { isbn: '9780735211292', title: 'Atomic Habits', author: 'James Clear', genre: 'Dezvoltare personală', language: 'Engleză', pageCount: 320, publishedYear: 2018 },
+    { isbn: '9780062316097', title: 'Sapiens', author: 'Yuval Noah Harari', genre: 'Non-ficțiune', language: 'Engleză', pageCount: 464, publishedYear: 2011 },
+    { isbn: '9780399590504', title: 'Educated', author: 'Tara Westover', genre: 'Memorii', language: 'Engleză', pageCount: 352, publishedYear: 2018 },
+  ],
+  [
+    { isbn: '9780553293357', title: 'Foundation', author: 'Isaac Asimov', genre: 'Science Fiction', language: 'Engleză', pageCount: 255, publishedYear: 1951 },
+    { isbn: '9780593135204', title: 'Project Hail Mary', author: 'Andy Weir', genre: 'Science Fiction', language: 'Engleză', pageCount: 496, publishedYear: 2021 },
+    { isbn: '9780307346612', title: 'World War Z', author: 'Max Brooks', genre: 'Science Fiction', language: 'Engleză', pageCount: 342, publishedYear: 2006 },
   ],
 ];
 

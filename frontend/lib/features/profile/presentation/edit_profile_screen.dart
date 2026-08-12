@@ -2,9 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../core/locale/l10n_extensions.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
@@ -52,8 +50,8 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
   late final _usernameController = TextEditingController(text: widget.user.username);
   late final _bioController = TextEditingController(text: widget.user.bio);
   late String? _city = widget.user.city;
-  late int? _birthdayDay = widget.user.birthdayDay;
-  late int? _birthdayMonth = widget.user.birthdayMonth;
+  late final int? _birthdayDay = widget.user.birthdayDay;
+  late final int? _birthdayMonth = widget.user.birthdayMonth;
   late final Set<String> _languages = widget.user.languages.toSet();
   late bool _nameVisible = widget.user.nameVisible;
   late bool _showAcquisitionHistory = widget.user.showAcquisitionHistory;
@@ -74,13 +72,6 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
     const preset = ['Română', 'English', 'Magyar', 'Deutsch', 'Français', 'Español', 'Italiano'];
     final extras = selected.where((l) => !preset.contains(l));
     return [...preset, ...extras];
-  }
-
-  /// Numele lunii în limba curentă, luat din intl - nu are rost să ținem 12
-  /// chei de traducere pe limbă pentru ceva ce `DateFormat` știe deja.
-  String _monthName(AppLocalizations l10n, int month) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return DateFormat.MMMM(locale).format(DateTime(2000, month));
   }
 
   Future<void> _submit() async {
@@ -166,38 +157,6 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                 controller: _bioController,
                 maxLength: kBioMaxLength,
                 decoration: InputDecoration(labelText: l10n.profileAboutMe),
-              ),
-              const SizedBox(height: 8),
-              // Doar zi și lună - anul nu ne trebuie pentru un „La mulți ani"
-              // în salutul paginii principale, iar ce nu cerem nu stocăm.
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<int?>(
-                      initialValue: _birthdayDay,
-                      decoration: InputDecoration(labelText: l10n.profileBirthdayDay),
-                      items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.profileBirthdayNone)),
-                        for (var d = 1; d <= 31; d++)
-                          DropdownMenuItem(value: d, child: Text('$d')),
-                      ],
-                      onChanged: (value) => setState(() => _birthdayDay = value),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<int?>(
-                      initialValue: _birthdayMonth,
-                      decoration: InputDecoration(labelText: l10n.profileBirthdayMonth),
-                      items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.profileBirthdayNone)),
-                        for (var m = 1; m <= 12; m++)
-                          DropdownMenuItem(value: m, child: Text(_monthName(l10n, m))),
-                      ],
-                      onChanged: (value) => setState(() => _birthdayMonth = value),
-                    ),
-                  ),
-                ],
               ),
               const SizedBox(height: 16),
               Text(l10n.profileLanguagesTitle,

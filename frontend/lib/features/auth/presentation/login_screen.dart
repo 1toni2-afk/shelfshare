@@ -21,6 +21,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _captchaAnswerController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
 
@@ -43,6 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _captchaAnswerController.dispose();
     super.dispose();
   }
 
@@ -54,10 +56,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
   }
 
+  void _submitCaptcha(AuthCaptchaRequired pending) {
+    final answer = int.tryParse(_captchaAnswerController.text.trim());
+    if (answer == null) return;
+    ref.read(authControllerProvider.notifier).login(
+          email: pending.email,
+          password: pending.password,
+          captchaToken: pending.captcha.token,
+          captchaAnswer: answer,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
     final isLoading = state is AuthLoading;
+    final captchaRequired = state is AuthCaptchaRequired ? state : null;
     final l10n = context.l10n;
 
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
@@ -65,6 +79,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.message)),
         );
+      }
+      if (next is AuthCaptchaRequired) {
+        _captchaAnswerController.clear();
+        if (next.message != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(next.message!)),
+          );
+        }
       }
       // Abia după un login reușit închidem contextul de autofill - asta e
       // ce declanșează în Chrome (și în managerele de parole de pe mobil)
@@ -182,9 +204,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: Text(l10n.authForgotPasswordLink),
                               ),
                             ),
+                            if (captchaRequired != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                captchaRequired.captcha.question,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _captchaAnswerController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                textInputAction: TextInputAction.done,
+                                onFieldSubmitted: (_) {
+                                  if (!isLoading) _submitCaptcha(captchaRequired);
+                                },
+                                decoration: InputDecoration(
+                                  labelText: l10n.supportCaptchaAnswerLabel,
+                                  prefixIcon: const Icon(Icons.shield_outlined),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             ElevatedButton(
-                              onPressed: isLoading ? null : _submit,
+                              onPressed: isLoading
+                                  ? null
+                                  : (captchaRequired != null
+                                      ? () => _submitCaptcha(captchaRequired)
+                                      : _submit),
                               child: isLoading
                                   ? const SizedBox(
                                       height: 20,

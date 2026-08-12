@@ -288,13 +288,17 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
               style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppColors.mutedForeground),
             ),
           ),
-          _booksView(byCategory[category]!),
+          // Cardul de adăugare intră direct în grila ultimei categorii, ca
+          // ultimul element din rând - nu într-o grilă separată doar pentru
+          // el, care îi dădea un rând întreg numai al lui (bară goală, prea
+          // mare, sub ultima carte).
+          _booksView(
+            byCategory[category]!,
+            trailingAdd: trailingAdd && category == nonEmptyCategories.last,
+          ),
           if (category != nonEmptyCategories.last) const SizedBox(height: 20),
         ],
-        if (trailingAdd) ...[
-          if (nonEmptyCategories.isNotEmpty) const SizedBox(height: 20),
-          _booksView(const [], trailingAdd: true),
-        ],
+        if (trailingAdd && nonEmptyCategories.isEmpty) _booksView(const [], trailingAdd: true),
       ],
     );
   }
@@ -532,26 +536,29 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _StatusPill(
-                        label: l10n.libraryFilterAll(all.length),
-                        selected: _filter == _StatusFilter.all,
-                        onTap: () => setState(() => _filter = _StatusFilter.all),
-                      ),
-                      _StatusPill(
-                        label: l10n.libraryFilterAvailable(available.length),
-                        selected: _filter == _StatusFilter.available,
-                        onTap: () => setState(() => _filter = _StatusFilter.available),
-                      ),
-                      _StatusPill(
-                        label: l10n.libraryFilterUnavailable(unavailableOrTransferred.length),
-                        selected: _filter == _StatusFilter.unavailable,
-                        onTap: () => setState(() => _filter = _StatusFilter.unavailable),
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _StatusPill(
+                          label: l10n.libraryFilterAll(all.length),
+                          selected: _filter == _StatusFilter.all,
+                          onTap: () => setState(() => _filter = _StatusFilter.all),
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusPill(
+                          label: l10n.libraryFilterAvailable(available.length),
+                          selected: _filter == _StatusFilter.available,
+                          onTap: () => setState(() => _filter = _StatusFilter.available),
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusPill(
+                          label: l10n.libraryFilterUnavailable(unavailableOrTransferred.length),
+                          selected: _filter == _StatusFilter.unavailable,
+                          onTap: () => setState(() => _filter = _StatusFilter.unavailable),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 14),
                   const Divider(height: 1),

@@ -3,6 +3,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../core/network/token_storage.dart';
 import '../../../data/models/user.dart';
+import '../../support/data/support_repository.dart' show CaptchaChallenge;
 
 class AuthRepository {
   AuthRepository(this._apiClient, this._tokenStorage);
@@ -26,10 +27,25 @@ class AuthRepository {
     );
   }
 
-  Future<AppUser> login({required String email, required String password}) async {
+  Future<CaptchaChallenge> getLoginCaptcha() async {
+    final response = await _apiClient.dio.get('/auth/captcha');
+    return CaptchaChallenge.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<AppUser> login({
+    required String email,
+    required String password,
+    String? captchaToken,
+    int? captchaAnswer,
+  }) async {
     final response = await _apiClient.dio.post(
       '/auth/login',
-      data: {'email': email, 'password': password},
+      data: {
+        'email': email,
+        'password': password,
+        if (captchaToken != null) 'captchaToken': captchaToken,
+        if (captchaAnswer != null) 'captchaAnswer': captchaAnswer,
+      },
     );
     await _tokenStorage.saveTokens(
       accessToken: response.data['accessToken'] as String,

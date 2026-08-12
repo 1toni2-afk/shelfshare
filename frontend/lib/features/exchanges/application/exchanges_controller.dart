@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/exchange_request.dart';
+import '../../chat/data/chat_socket_service.dart';
 import '../data/exchanges_repository.dart';
 
 class ExchangesData {
@@ -10,12 +11,28 @@ class ExchangesData {
 
 class ExchangesController extends AsyncNotifier<ExchangesData> {
   @override
-  Future<ExchangesData> build() => _load();
+  Future<ExchangesData> build() async {
+    // O cerere de schimb nouă/actualizată vine ca o notificare live pe
+    // același socket ca cel din clopoțel - fără acest listener, lista
+    // rămânea neschimbată până la un refresh manual de pagină (care
+    // remonta ecranul și forța un refetch).
+    final socketService = ref.read(chatSocketServiceProvider);
+    await socketService.connect();
+    socketService.onNotification(_silentReload);
+    ref.onDispose(() => socketService.offNotification(_silentReload));
+
+    return _load();
+  }
 
   Future<ExchangesData> _load() async {
     final repository = ref.read(exchangesRepositoryProvider);
     final results = await Future.wait([repository.getReceived(), repository.getSent()]);
     return ExchangesData(received: results[0], sent: results[1]);
+  }
+
+  Future<void> _silentReload() async {
+    final result = await AsyncValue.guard(_load);
+    state = result;
   }
 
   Future<void> refresh() async {

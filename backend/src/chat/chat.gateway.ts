@@ -70,6 +70,15 @@ export class ChatGateway
         await this.broadcastPresence(payload.sub, true);
       }
 
+      // Evenimentul 'connect' de pe client se declanșează la finalul
+      // handshake-ului, ÎNAINTE ca acest handler async să apuce să termine
+      // client.join() de mai sus - dacă un event (ex. notificare de schimb)
+      // e emis către camera `user:<id>` în acea fereastră, RealtimeService
+      // îl pierde în tăcere (socketul încă nu e în cameră). Emitem un ack
+      // explicit după join, ca frontend-ul să considere conexiunea "gata"
+      // abia după el, nu la simplul 'connect'.
+      client.emit('ready');
+
       this.logger.log(`Client conectat: user ${payload.sub}`);
     } catch {
       this.logger.warn('Conexiune respinsă: token invalid sau lipsă');

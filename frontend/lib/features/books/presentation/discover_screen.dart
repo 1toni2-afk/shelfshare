@@ -581,7 +581,7 @@ class _PopularAuthorsSection extends ConsumerWidget {
                     label: Text('${a.author}  ·  ${a.count}'),
                     onPressed: () => context.push(
                       '/browse',
-                      extra: SearchScreenArgs(title: a.author),
+                      extra: SearchScreenArgs(author: a.author),
                     ),
                   );
                 },

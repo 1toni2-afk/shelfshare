@@ -29,6 +29,15 @@ async function bootstrap() {
   assertProductionSecrets();
   const app = await NestFactory.create(AppModule);
 
+  app.use((req, res, next) => {
+    // API JSON pură consumată de Flutter web - fără asta, browserul
+    // cache-uiește GET-uri autentificate (ex. /profile/me) fără să țină
+    // cont de header-ul Authorization, deci un login nou poate primi
+    // înapoi profilul cache-uit al userului anterior de pe același browser.
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+
   app.use(
     helmet({
       // API JSON pură, fără pagini HTML - CSP n-are ce să constrângă aici

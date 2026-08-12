@@ -580,7 +580,7 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
           GestureDetector(
             onTap: () => context.push(
               '/browse',
-              extra: SearchScreenArgs(title: book.book.author!),
+              extra: SearchScreenArgs(author: book.book.author!),
             ),
             child: Text(
               book.book.author!,
