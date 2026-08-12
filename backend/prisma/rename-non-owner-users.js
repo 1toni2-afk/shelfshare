@@ -22,11 +22,18 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const OWNER_EMAIL = 'dtoniyi@yahoo.com';
+/** Conturi de sistem (Google Play review, ChatGPT plugin review) - nu sunt
+ * ale userilor reali/de test, deci rămân neatinse la fel ca OWNER_EMAIL. */
+const EXCLUDED_EMAILS = ['google.review@shelfshare.ro', 'test.chatgpt@shelfshare.ro'];
 const PREFIX = 'TEST_';
 
 async function main() {
   const users = await prisma.user.findMany({
-    where: { email: { not: OWNER_EMAIL.toLowerCase() } },
+    where: {
+      email: {
+        notIn: [OWNER_EMAIL.toLowerCase(), ...EXCLUDED_EMAILS.map((e) => e.toLowerCase())],
+      },
+    },
     select: { id: true, email: true, name: true },
   });
 
@@ -45,7 +52,9 @@ async function main() {
     renamed++;
   }
 
-  console.log(`\nGata. ${renamed} useri redenumiți, ${skipped} deja aveau prefixul, contul ${OWNER_EMAIL} neatins.`);
+  console.log(
+    `\nGata. ${renamed} useri redenumiți, ${skipped} deja aveau prefixul, ${[OWNER_EMAIL, ...EXCLUDED_EMAILS].join(', ')} neatinse.`,
+  );
 }
 
 main()
