@@ -44,9 +44,24 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
 
   Future<void> reject(String id) => _apply((r) => r.reject(id));
 
-  Future<void> cancel(String id) => _apply((r) => r.cancel(id));
+  Future<void> cancel(String id, {String? reason, String? details}) =>
+      _apply((r) => r.cancel(id, reason: reason, details: details));
 
-  Future<void> complete(String id) => _apply((r) => r.complete(id));
+  Future<void> postpone(String id) => _apply((r) => r.postpone(id));
+
+  Future<void> markDone(String id, {String? comment}) =>
+      _apply((r) => r.markDone(id, comment: comment));
+
+  Future<void> disputeDone(String id) => _apply((r) => r.disputeDone(id));
+
+  Future<void> shareContact(String id, {String? phone}) =>
+      _apply((r) => r.shareContact(id, phone: phone));
+
+  Future<void> acknowledgeSafety(String id) => _apply((r) => r.acknowledgeSafety(id));
+
+  Future<void> acceptMeeting(String id) => _apply((r) => r.acceptMeeting(id));
+
+  Future<void> declineMeeting(String id) => _apply((r) => r.declineMeeting(id));
 
   Future<void> rate(
     String id,

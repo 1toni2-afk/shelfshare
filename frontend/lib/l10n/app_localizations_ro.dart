@@ -72,6 +72,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get commonConfirm => 'Confirmă';
 
   @override
+  String get commonGenericError => 'Ceva nu a mers bine. Încearcă din nou.';
+
+  @override
+  String get reportSubmitted => 'Raportul a fost trimis.';
+
+  @override
   String get continueWithGoogle => 'Continuă cu Google';
 
   @override
@@ -835,6 +841,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homePendingSwapReview => 'Revizuiește';
 
   @override
+  String get homeOngoingExchangeBanner => 'Ai un schimb în desfășurare';
+
+  @override
   String get homeFeedEnd => 'Ai văzut toate cărțile';
 
   @override
@@ -1554,6 +1563,124 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get exchangeMeetingSaveError => 'Nu am putut salva întâlnirea.';
+
+  @override
+  String get exchangeGoToReady => 'Continuă schimbul';
+
+  @override
+  String get readyTitle => 'Pregătire schimb';
+
+  @override
+  String get readyMeetingAwaitingYou => 'Cealaltă parte a propus o întâlnire';
+
+  @override
+  String get readyMeetingProposedByMe => 'Aștepți confirmarea celeilalte părți';
+
+  @override
+  String get readyMeetingAccept => 'Confirmă ora';
+
+  @override
+  String get readyMeetingDecline => 'Refuză ora';
+
+  @override
+  String get readyContactTitle => 'Detalii de contact';
+
+  @override
+  String get readyContactPhoneLabel => 'Telefon (opțional)';
+
+  @override
+  String get readyContactShare => 'Trimite detaliile mele';
+
+  @override
+  String get readyContactShared => 'Ți-ai trimis detaliile de contact';
+
+  @override
+  String readyContactOtherPhone(String phone) {
+    return 'Telefon: $phone';
+  }
+
+  @override
+  String get readyContactSharedNoPhone =>
+      'Cealaltă parte și-a trimis detaliile, fără număr de telefon.';
+
+  @override
+  String readyContactCall(String name) {
+    return 'Sună pe $name';
+  }
+
+  @override
+  String get readyContactMessageInApp => 'Mesaj în aplicație';
+
+  @override
+  String get readySafetyTitle => 'Recomandări de siguranță';
+
+  @override
+  String get readySafetyViewLink => 'Vezi recomandările de siguranță';
+
+  @override
+  String get readySafetyAck => 'Am citit';
+
+  @override
+  String get readySafetyWaitingOther =>
+      'Aștepți ca cealaltă parte să confirme că a citit recomandările.';
+
+  @override
+  String get readySafetyBothReady => 'Sunteți gata de schimb';
+
+  @override
+  String get readyReportIssue => 'Raportează o problemă';
+
+  @override
+  String get readyCancel => 'Anulează';
+
+  @override
+  String get readyPostpone => 'Amână';
+
+  @override
+  String get readyDone => 'Gata';
+
+  @override
+  String get readyConfirmDone => 'Confirmă finalizarea';
+
+  @override
+  String get readyDisputeDone => 'Nu e finalizat';
+
+  @override
+  String get readyWaitingConfirmation => 'Aștepți confirmarea celeilalte părți';
+
+  @override
+  String get readyOtherMarkedDone =>
+      'Cealaltă parte a marcat schimbul ca finalizat. Confirmi?';
+
+  @override
+  String get doneReviewTitle => 'Cum a fost schimbul?';
+
+  @override
+  String get doneReviewLabel => 'Câteva cuvinte (opțional)';
+
+  @override
+  String get doneReviewSubmit => 'Trimite';
+
+  @override
+  String get cancelReasonTitle => 'Ce s-a întâmplat?';
+
+  @override
+  String get cancelReasonNoShow => 'Cealaltă persoană nu s-a prezentat';
+
+  @override
+  String get cancelReasonBookMismatch => 'Cartea nu a corespuns așteptărilor';
+
+  @override
+  String get cancelReasonChangedMind => 'M-am răzgândit';
+
+  @override
+  String get cancelReasonOther => 'Altceva';
+
+  @override
+  String get cancelReasonDetailsLabel => 'Detalii (opțional)';
+
+  @override
+  String get cancelReasonSubmit => 'Anulează schimbul';
 
   @override
   String get offersEmptyReceived => 'Nu ai primit nicio ofertă de preț.';

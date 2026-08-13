@@ -421,11 +421,30 @@ class _PendingSwapBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final exchanges = ref.watch(exchangesControllerProvider).value;
     final pending = exchanges?.received.where((e) => e.status == ExchangeStatus.pending).length ?? 0;
-    if (pending == 0) return const SizedBox.shrink();
+    final ongoing = [
+      ...?exchanges?.received.where((e) => e.status == ExchangeStatus.accepted),
+      ...?exchanges?.sent.where((e) => e.status == ExchangeStatus.accepted),
+    ];
+
+    if (pending == 0 && ongoing.isEmpty) return const SizedBox.shrink();
 
     final screenWidth = MediaQuery.of(context).size.width;
     final side = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
     final l10n = context.l10n;
+    // Cererile PENDING nedecise au prioritate față de "schimb în desfășurare"
+    // - sunt acțiunea mai urgentă (Milestone: Exchange flow v2, punctul 4).
+    final (icon, text, destination) = pending > 0
+        ? (
+            Icons.swap_horiz,
+            l10n.homePendingSwapBanner(pending),
+            '/exchanges',
+          )
+        : (
+            Icons.handshake_outlined,
+            l10n.homeOngoingExchangeBanner,
+            ongoing.length == 1 ? '/exchanges/${ongoing.first.id}/ready' : '/exchanges',
+          );
+
     return Padding(
       padding: EdgeInsets.fromLTRB(16 + side, 0, 16 + side, 12),
       child: Material(
@@ -433,21 +452,21 @@ class _PendingSwapBanner extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => context.push('/exchanges'),
+          onTap: () => context.push(destination),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(Icons.swap_horiz, color: AppColors.accent),
+                Icon(icon, color: AppColors.accent),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    l10n.homePendingSwapBanner(pending),
+                    text,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.accent),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/exchanges'),
+                  onPressed: () => context.push(destination),
                   child: Text(l10n.homePendingSwapReview),
                 ),
               ],

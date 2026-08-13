@@ -228,6 +228,18 @@ abstract class AppLocalizations {
   /// **'Confirmă'**
   String get commonConfirm;
 
+  /// No description provided for @commonGenericError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ceva nu a mers bine. Încearcă din nou.'**
+  String get commonGenericError;
+
+  /// No description provided for @reportSubmitted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raportul a fost trimis.'**
+  String get reportSubmitted;
+
   /// No description provided for @continueWithGoogle.
   ///
   /// In ro, this message translates to:
@@ -1554,6 +1566,12 @@ abstract class AppLocalizations {
   /// **'Revizuiește'**
   String get homePendingSwapReview;
 
+  /// No description provided for @homeOngoingExchangeBanner.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai un schimb în desfășurare'**
+  String get homeOngoingExchangeBanner;
+
   /// No description provided for @homeFeedEnd.
   ///
   /// In ro, this message translates to:
@@ -2843,6 +2861,228 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nu am putut salva întâlnirea.'**
   String get exchangeMeetingSaveError;
+
+  /// No description provided for @exchangeGoToReady.
+  ///
+  /// In ro, this message translates to:
+  /// **'Continuă schimbul'**
+  String get exchangeGoToReady;
+
+  /// No description provided for @readyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pregătire schimb'**
+  String get readyTitle;
+
+  /// No description provided for @readyMeetingAwaitingYou.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cealaltă parte a propus o întâlnire'**
+  String get readyMeetingAwaitingYou;
+
+  /// No description provided for @readyMeetingProposedByMe.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aștepți confirmarea celeilalte părți'**
+  String get readyMeetingProposedByMe;
+
+  /// No description provided for @readyMeetingAccept.
+  ///
+  /// In ro, this message translates to:
+  /// **'Confirmă ora'**
+  String get readyMeetingAccept;
+
+  /// No description provided for @readyMeetingDecline.
+  ///
+  /// In ro, this message translates to:
+  /// **'Refuză ora'**
+  String get readyMeetingDecline;
+
+  /// No description provided for @readyContactTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii de contact'**
+  String get readyContactTitle;
+
+  /// No description provided for @readyContactPhoneLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Telefon (opțional)'**
+  String get readyContactPhoneLabel;
+
+  /// No description provided for @readyContactShare.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite detaliile mele'**
+  String get readyContactShare;
+
+  /// No description provided for @readyContactShared.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ți-ai trimis detaliile de contact'**
+  String get readyContactShared;
+
+  /// No description provided for @readyContactOtherPhone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Telefon: {phone}'**
+  String readyContactOtherPhone(String phone);
+
+  /// No description provided for @readyContactSharedNoPhone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cealaltă parte și-a trimis detaliile, fără număr de telefon.'**
+  String get readyContactSharedNoPhone;
+
+  /// No description provided for @readyContactCall.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sună pe {name}'**
+  String readyContactCall(String name);
+
+  /// No description provided for @readyContactMessageInApp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaj în aplicație'**
+  String get readyContactMessageInApp;
+
+  /// No description provided for @readySafetyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recomandări de siguranță'**
+  String get readySafetyTitle;
+
+  /// No description provided for @readySafetyViewLink.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi recomandările de siguranță'**
+  String get readySafetyViewLink;
+
+  /// No description provided for @readySafetyAck.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am citit'**
+  String get readySafetyAck;
+
+  /// No description provided for @readySafetyWaitingOther.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aștepți ca cealaltă parte să confirme că a citit recomandările.'**
+  String get readySafetyWaitingOther;
+
+  /// No description provided for @readySafetyBothReady.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunteți gata de schimb'**
+  String get readySafetyBothReady;
+
+  /// No description provided for @readyReportIssue.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raportează o problemă'**
+  String get readyReportIssue;
+
+  /// No description provided for @readyCancel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează'**
+  String get readyCancel;
+
+  /// No description provided for @readyPostpone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Amână'**
+  String get readyPostpone;
+
+  /// No description provided for @readyDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gata'**
+  String get readyDone;
+
+  /// No description provided for @readyConfirmDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Confirmă finalizarea'**
+  String get readyConfirmDone;
+
+  /// No description provided for @readyDisputeDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu e finalizat'**
+  String get readyDisputeDone;
+
+  /// No description provided for @readyWaitingConfirmation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aștepți confirmarea celeilalte părți'**
+  String get readyWaitingConfirmation;
+
+  /// No description provided for @readyOtherMarkedDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cealaltă parte a marcat schimbul ca finalizat. Confirmi?'**
+  String get readyOtherMarkedDone;
+
+  /// No description provided for @doneReviewTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cum a fost schimbul?'**
+  String get doneReviewTitle;
+
+  /// No description provided for @doneReviewLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Câteva cuvinte (opțional)'**
+  String get doneReviewLabel;
+
+  /// No description provided for @doneReviewSubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite'**
+  String get doneReviewSubmit;
+
+  /// No description provided for @cancelReasonTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce s-a întâmplat?'**
+  String get cancelReasonTitle;
+
+  /// No description provided for @cancelReasonNoShow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cealaltă persoană nu s-a prezentat'**
+  String get cancelReasonNoShow;
+
+  /// No description provided for @cancelReasonBookMismatch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cartea nu a corespuns așteptărilor'**
+  String get cancelReasonBookMismatch;
+
+  /// No description provided for @cancelReasonChangedMind.
+  ///
+  /// In ro, this message translates to:
+  /// **'M-am răzgândit'**
+  String get cancelReasonChangedMind;
+
+  /// No description provided for @cancelReasonOther.
+  ///
+  /// In ro, this message translates to:
+  /// **'Altceva'**
+  String get cancelReasonOther;
+
+  /// No description provided for @cancelReasonDetailsLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii (opțional)'**
+  String get cancelReasonDetailsLabel;
+
+  /// No description provided for @cancelReasonSubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează schimbul'**
+  String get cancelReasonSubmit;
 
   /// No description provided for @offersEmptyReceived.
   ///

@@ -72,6 +72,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonConfirm => 'Confirm';
 
   @override
+  String get commonGenericError => 'Something went wrong. Try again.';
+
+  @override
+  String get reportSubmitted => 'Your report was submitted.';
+
+  @override
   String get continueWithGoogle => 'Continue with Google';
 
   @override
@@ -834,6 +840,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homePendingSwapReview => 'Review';
 
   @override
+  String get homeOngoingExchangeBanner => 'You have an ongoing exchange';
+
+  @override
   String get homeFeedEnd => 'You\'ve seen all the books';
 
   @override
@@ -1553,6 +1562,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exchangeMeetingSaveError => 'We couldn\'t save the meeting.';
+
+  @override
+  String get exchangeGoToReady => 'Continue exchange';
+
+  @override
+  String get readyTitle => 'Prepare exchange';
+
+  @override
+  String get readyMeetingAwaitingYou => 'The other party proposed a meeting';
+
+  @override
+  String get readyMeetingProposedByMe =>
+      'Waiting for the other party to confirm';
+
+  @override
+  String get readyMeetingAccept => 'Confirm time';
+
+  @override
+  String get readyMeetingDecline => 'Decline time';
+
+  @override
+  String get readyContactTitle => 'Contact details';
+
+  @override
+  String get readyContactPhoneLabel => 'Phone (optional)';
+
+  @override
+  String get readyContactShare => 'Share my details';
+
+  @override
+  String get readyContactShared => 'You shared your contact details';
+
+  @override
+  String readyContactOtherPhone(String phone) {
+    return 'Phone: $phone';
+  }
+
+  @override
+  String get readyContactSharedNoPhone =>
+      'The other party shared their details, without a phone number.';
+
+  @override
+  String readyContactCall(String name) {
+    return 'Call $name';
+  }
+
+  @override
+  String get readyContactMessageInApp => 'Message in app';
+
+  @override
+  String get readySafetyTitle => 'Safety recommendations';
+
+  @override
+  String get readySafetyViewLink => 'View safety recommendations';
+
+  @override
+  String get readySafetyAck => 'I have read this';
+
+  @override
+  String get readySafetyWaitingOther =>
+      'Waiting for the other party to confirm they have read the recommendations.';
+
+  @override
+  String get readySafetyBothReady => 'You are ready to exchange';
+
+  @override
+  String get readyReportIssue => 'Report an issue';
+
+  @override
+  String get readyCancel => 'Cancel';
+
+  @override
+  String get readyPostpone => 'Postpone';
+
+  @override
+  String get readyDone => 'Done';
+
+  @override
+  String get readyConfirmDone => 'Confirm it is done';
+
+  @override
+  String get readyDisputeDone => 'Not done yet';
+
+  @override
+  String get readyWaitingConfirmation =>
+      'Waiting for the other party to confirm';
+
+  @override
+  String get readyOtherMarkedDone =>
+      'The other party marked the exchange as done. Confirm?';
+
+  @override
+  String get doneReviewTitle => 'How was the exchange?';
+
+  @override
+  String get doneReviewLabel => 'A few words (optional)';
+
+  @override
+  String get doneReviewSubmit => 'Submit';
+
+  @override
+  String get cancelReasonTitle => 'What happened?';
+
+  @override
+  String get cancelReasonNoShow => 'The other person did not show up';
+
+  @override
+  String get cancelReasonBookMismatch => 'The book was not as expected';
+
+  @override
+  String get cancelReasonChangedMind => 'Changed my mind';
+
+  @override
+  String get cancelReasonOther => 'Something else';
+
+  @override
+  String get cancelReasonDetailsLabel => 'Details (optional)';
+
+  @override
+  String get cancelReasonSubmit => 'Cancel exchange';
 
   @override
   String get offersEmptyReceived => 'You haven\'t received any price offers.';

@@ -1,10 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/widgets/scannable_qr.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/exchange_request.dart';
@@ -15,15 +11,8 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../books/presentation/relist_book_sheet.dart';
 import '../../chat/data/chat_repository.dart';
-import '../../chat/data/places_repository.dart';
 import '../../offers/application/offers_controller.dart';
 import '../application/exchanges_controller.dart';
-
-String _formatDateTime(DateTime dateTime) {
-  final local = dateTime.toLocal();
-  String two(int n) => n.toString().padLeft(2, '0');
-  return '${two(local.day)}.${two(local.month)}.${local.year}, ${two(local.hour)}:${two(local.minute)}';
-}
 
 String _formatRelative(BuildContext context, DateTime time) {
   final l10n = context.l10n;
@@ -379,39 +368,13 @@ class _Actions extends ConsumerWidget {
     }
 
     if (exchange.status == ExchangeStatus.accepted) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (exchange.meetingTime != null) ...[
-            _MeetingInfo(request: exchange),
-            const SizedBox(height: 8),
-          ],
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              OutlinedButton(
-                onPressed: () => _openMeetingSheet(context, exchange),
-                child: Text(exchange.meetingTime == null ? l10n.exchangeScheduleMeeting : l10n.exchangeReschedule),
-              ),
-              if (exchange.meetingTime != null) ...[
-                OutlinedButton(
-                  onPressed: () => _openCalendar(context, ref, exchange.id),
-                  child: Text(l10n.exchangeAddToCalendar),
-                ),
-                OutlinedButton(
-                  onPressed: () => _showQrDialog(context, exchange.id),
-                  child: Text(l10n.exchangeQrCode),
-                ),
-              ],
-              ElevatedButton(
-                onPressed: () => notifier.complete(exchange.id),
-                child: Text(l10n.exchangeMarkComplete),
-              ),
-            ],
-          ),
-        ],
+      return Align(
+        alignment: Alignment.centerRight,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.handshake_outlined, size: 18),
+          label: Text(l10n.exchangeGoToReady),
+          onPressed: () => context.push('/exchanges/${exchange.id}/ready', extra: exchange),
+        ),
       );
     }
 
@@ -468,37 +431,6 @@ class _Actions extends ConsumerWidget {
     }
   }
 
-  Future<void> _openMeetingSheet(BuildContext context, ExchangeRequest request) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _MeetingSheet(request: request),
-    );
-  }
-
-  Future<void> _openCalendar(BuildContext context, WidgetRef ref, String id) async {
-    try {
-      final notifier = ref.read(exchangesControllerProvider.notifier);
-      final url = await notifier.calendarUrl(id);
-      final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      if (!launched && context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.exchangeCalendarError)));
-      }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.exchangeCalendarError)));
-      }
-    }
-  }
-
-  void _showQrDialog(BuildContext context, String exchangeId) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => _ExchangeQrDialog(exchangeId: exchangeId),
-    );
-  }
 }
 
 class RatingResult {
@@ -611,260 +543,6 @@ class _RatingDialogState extends State<_RatingDialog> {
           child: Text(l10n.commonSubmit),
         ),
       ],
-    );
-  }
-}
-
-/// Codul QR încodează un link către /exchanges/:id/confirm - celălalt
-/// participant îl scanează cu orice cameră/aplicație de scanare de pe
-/// telefon și pagina se deschide direct în browser, fără nevoie de o
-/// funcție de scanare separată în aplicație.
-class _ExchangeQrDialog extends StatelessWidget {
-  const _ExchangeQrDialog({required this.exchangeId});
-  final String exchangeId;
-
-  @override
-  Widget build(BuildContext context) {
-    final link = '${Uri.base.origin}/exchanges/$exchangeId/confirm';
-    final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(l10n.exchangeQrDialogTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            l10n.exchangeQrDialogBody,
-            style: Theme.of(context).textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ScannableQr(data: link),
-        ],
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonClose)),
-      ],
-    );
-  }
-}
-
-class _MeetingInfo extends StatelessWidget {
-  const _MeetingInfo({required this.request});
-  final ExchangeRequest request;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.event, size: 18, color: AppColors.primary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '${_formatDateTime(request.meetingTime!)} • ${request.meetingLocation}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MeetingSheet extends ConsumerStatefulWidget {
-  const _MeetingSheet({required this.request});
-  final ExchangeRequest request;
-
-  @override
-  ConsumerState<_MeetingSheet> createState() => _MeetingSheetState();
-}
-
-class _MeetingSheetState extends ConsumerState<_MeetingSheet> {
-  late DateTime? _dateTime = widget.request.meetingTime?.toLocal();
-  late final _locationController = TextEditingController(text: widget.request.meetingLocation);
-  bool _isSubmitting = false;
-
-  // Autocomplete de locație, la fel ca sheet-ul din chat: debounce 400ms peste
-  // /places/search, sugestii sub câmp. Lipsea complet aici (Milestone 18).
-  Timer? _locationDebounce;
-  List<PlaceResult>? _locationSuggestions;
-  bool _searchingLocation = false;
-
-  @override
-  void dispose() {
-    _locationDebounce?.cancel();
-    _locationController.dispose();
-    super.dispose();
-  }
-
-  void _onLocationChanged(String value) {
-    _locationDebounce?.cancel();
-    final query = value.trim();
-    // Nominatim ignoră query-urile < 3 caractere; evităm și cererea inutilă.
-    if (query.length < 3) {
-      setState(() {
-        _locationSuggestions = null;
-        _searchingLocation = false;
-      });
-      return;
-    }
-    setState(() => _searchingLocation = true);
-    _locationDebounce = Timer(const Duration(milliseconds: 400), () async {
-      try {
-        final results =
-            await ref.read(placesRepositoryProvider).search(query);
-        if (mounted) {
-          setState(() {
-            _locationSuggestions = results;
-            _searchingLocation = false;
-          });
-        }
-      } catch (_) {
-        if (mounted) {
-          setState(() {
-            _locationSuggestions = const [];
-            _searchingLocation = false;
-          });
-        }
-      }
-    });
-  }
-
-  void _selectSuggestion(PlaceResult place) {
-    _locationController.text = place.displayName;
-    _locationController.selection = TextSelection.fromPosition(
-      TextPosition(offset: _locationController.text.length),
-    );
-    setState(() => _locationSuggestions = null);
-  }
-
-  Future<void> _pickDateTime() async {
-    final now = DateTime.now();
-    final initial = _dateTime ?? now.add(const Duration(days: 1));
-    final date = await showDatePicker(
-      context: context,
-      initialDate: initial.isBefore(now) ? now : initial,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (date == null || !mounted) return;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(initial),
-    );
-    if (time == null) return;
-    setState(() {
-      _dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    });
-  }
-
-  Future<void> _submit() async {
-    final dateTime = _dateTime;
-    final location = _locationController.text.trim();
-    if (dateTime == null || location.isEmpty) return;
-
-    setState(() => _isSubmitting = true);
-    try {
-      await ref.read(exchangesControllerProvider.notifier).setMeeting(
-            widget.request.id,
-            meetingTime: dateTime,
-            meetingLocation: location,
-          );
-      if (mounted) Navigator.of(context).pop();
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.exchangeMeetingSaveError)));
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(l10n.exchangeMeetingSheetTitle, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 20),
-          OutlinedButton.icon(
-            onPressed: _pickDateTime,
-            icon: const Icon(Icons.calendar_today),
-            label: Text(_dateTime == null ? l10n.exchangePickDateTime : _formatDateTime(_dateTime!)),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _locationController,
-            maxLength: 200,
-            onChanged: _onLocationChanged,
-            decoration: InputDecoration(
-              labelText: l10n.exchangeLocationLabel,
-              suffixIcon: _searchingLocation
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : const Icon(Icons.search),
-            ),
-          ),
-          if (_locationSuggestions != null &&
-              _locationSuggestions!.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 220),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _locationSuggestions!.length,
-                itemBuilder: (context, index) {
-                  final place = _locationSuggestions![index];
-                  return ListTile(
-                    dense: true,
-                    leading: const Icon(Icons.place_outlined),
-                    title: Text(
-                      place.displayName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onTap: () => _selectSuggestion(place),
-                  );
-                },
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: _isSubmitting ? null : _submit,
-            child: _isSubmitting
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(l10n.commonSave),
-          ),
-        ],
-      ),
     );
   }
 }

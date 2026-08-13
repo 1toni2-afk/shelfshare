@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ExchangesService } from './exchanges.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ConversationsService } from '../chat/conversations.service';
 import { XP_EXCHANGE_COMPLETED } from '../common/utils/xp';
 
 describe('ExchangesService', () => {
@@ -11,6 +12,7 @@ describe('ExchangesService', () => {
     userBook: Record<string, jest.Mock>;
     exchangeRequest: Record<string, jest.Mock>;
     user: Record<string, jest.Mock>;
+    message: Record<string, jest.Mock>;
     $transaction: jest.Mock;
   };
   let notifications: jest.Mocked<NotificationsService>;
@@ -42,13 +44,14 @@ describe('ExchangesService', () => {
       },
       exchangeRequest: {
         create: jest.fn(),
-        findMany: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn(),
         update: jest.fn(),
         updateMany: jest.fn(),
         findUniqueOrThrow: jest.fn(),
       },
       user: { update: jest.fn() },
+      message: { findFirst: jest.fn() },
       $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb(prisma)),
     };
 
@@ -59,6 +62,14 @@ describe('ExchangesService', () => {
         {
           provide: NotificationsService,
           useValue: { create: jest.fn() },
+        },
+        {
+          provide: ConversationsService,
+          useValue: {
+            findOrCreateConversation: jest.fn().mockResolvedValue({ id: 'conv-1' }),
+            createExchangeRequestMessage: jest.fn(),
+            broadcastExchangeRequestUpdate: jest.fn(),
+          },
         },
       ],
     }).compile();
@@ -108,7 +119,7 @@ describe('ExchangesService', () => {
         requestedBookId: 'ub-requested',
       });
 
-      expect(result).toEqual(createdRequest);
+      expect(result).toEqual({ ...createdRequest, conversationId: 'conv-1' });
       expect(notifications.create).toHaveBeenCalledWith(
         'owner-1',
         'EXCHANGE_REQUEST_RECEIVED',
@@ -126,7 +137,7 @@ describe('ExchangesService', () => {
         requestedBookId: 'ub-requested',
       });
 
-      expect(result).toEqual(createdRequest);
+      expect(result).toEqual({ ...createdRequest, conversationId: 'conv-1' });
     });
   });
 
@@ -207,14 +218,17 @@ describe('ExchangesService', () => {
     });
   });
 
-  describe('complete', () => {
-    it('respinge daca nu esti parte in schimb', async () => {
-      prisma.exchangeRequest.findUnique.mockResolvedValue({
-        ...pendingRequest,
-        status: 'ACCEPTED',
-      });
+  describe('markDone', () => {
+    const acceptedRequest = {
+      ...pendingRequest,
+      status: 'ACCEPTED',
+      requestedBook: { book: { title: 'Cartea Cerută' } },
+    };
 
-      await expect(service.complete('ex-1', 'strain')).rejects.toThrow(
+    it('respinge daca nu esti parte in schimb', async () => {
+      prisma.exchangeRequest.findUnique.mockResolvedValue(acceptedRequest);
+
+      await expect(service.markDone('ex-1', 'strain', {})).rejects.toThrow(
         ForbiddenException,
       );
     });
@@ -222,22 +236,47 @@ describe('ExchangesService', () => {
     it('respinge daca schimbul nu e ACCEPTED', async () => {
       prisma.exchangeRequest.findUnique.mockResolvedValue(pendingRequest);
 
-      await expect(service.complete('ex-1', 'owner-1')).rejects.toThrow(
+      await expect(service.markDone('ex-1', 'owner-1', {})).rejects.toThrow(
         BadRequestException,
       );
     });
 
-    it('finalizeaza si incrementeaza contorul ambilor participanti', async () => {
-      prisma.exchangeRequest.findUnique.mockResolvedValue({
-        ...pendingRequest,
-        status: 'ACCEPTED',
-      });
+    it('doar seteaza doneAt si notifica cealalta parte cand doar unul a apasat Done', async () => {
+      prisma.exchangeRequest.findUnique.mockResolvedValue(acceptedRequest);
       prisma.exchangeRequest.update.mockResolvedValue({
-        ...pendingRequest,
-        status: 'COMPLETED',
+        ...acceptedRequest,
+        ownerDoneAt: new Date(),
+        requesterDoneAt: null,
       });
 
-      await service.complete('ex-1', 'owner-1');
+      await service.markDone('ex-1', 'owner-1', {});
+
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(notifications.create).toHaveBeenCalledWith(
+        'requester-1',
+        'EXCHANGE_DONE_PENDING_CONFIRMATION',
+        expect.any(String),
+        { exchangeRequestId: 'ex-1' },
+      );
+    });
+
+    it('finalizeaza si incrementeaza contorul ambilor participanti cand ambii au apasat Done', async () => {
+      prisma.exchangeRequest.findUnique.mockResolvedValue(acceptedRequest);
+      prisma.exchangeRequest.update
+        .mockResolvedValueOnce({
+          ...acceptedRequest,
+          ownerDoneAt: new Date(),
+          requesterDoneAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          ...acceptedRequest,
+          status: 'COMPLETED',
+          ownerDoneAt: new Date(),
+          requesterDoneAt: new Date(),
+        });
+      prisma.exchangeRequest.findMany.mockResolvedValue([]);
+
+      await service.markDone('ex-1', 'owner-1', {});
 
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'requester-1' },

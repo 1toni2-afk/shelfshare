@@ -10,12 +10,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
+import '../../../data/models/exchange_request.dart';
 import '../../../data/models/message.dart';
 import '../../../data/models/price_offer.dart';
 import '../../../data/models/user.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
+import '../../exchanges/application/exchanges_controller.dart';
 import '../../offers/data/offers_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
 import '../../safety/data/safety_repository.dart';
@@ -523,6 +525,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           lastSeenAt: state.otherUserLastSeenAt ?? widget.otherUser?.lastSeenAt,
           isTyping: state.otherUserTyping,
         ),
+        bottom: widget.otherUser != null
+            ? _OngoingExchangeStrip(otherUserId: widget.otherUser!.id)
+            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -1109,6 +1114,52 @@ class _ReplyComposerBar extends StatelessWidget {
 
 /// Antetul cu numele celuilalt: tap pe el duce la profilul public, iar sub el
 /// stă starea „online" / „văzut ultima dată".
+/// "You have an ongoing exchange" (punctul 4 din flow) - o bandă subțire sub
+/// titlul conversației, vizibilă doar cât timp există un schimb ACCEPTED cu
+/// interlocutorul curent. Tap -> pagina Ready to exchange.
+class _OngoingExchangeStrip extends ConsumerWidget implements PreferredSizeWidget {
+  const _OngoingExchangeStrip({required this.otherUserId});
+  final String otherUserId;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(32);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exchanges = ref.watch(exchangesControllerProvider).value;
+    final ongoing = [
+      ...?exchanges?.received.where(
+        (e) => e.status == ExchangeStatus.accepted && e.requesterId == otherUserId,
+      ),
+      ...?exchanges?.sent.where(
+        (e) => e.status == ExchangeStatus.accepted && e.ownerId == otherUserId,
+      ),
+    ];
+    if (ongoing.isEmpty) return const SizedBox.shrink();
+
+    final l10n = context.l10n;
+    return InkWell(
+      onTap: () => context.push('/exchanges/${ongoing.first.id}/ready', extra: ongoing.first),
+      child: Container(
+        height: 32,
+        color: AppColors.accent.withValues(alpha: 0.1),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.handshake_outlined, size: 16, color: AppColors.accent),
+            const SizedBox(width: 6),
+            Text(
+              l10n.homeOngoingExchangeBanner,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.accent),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ConversationTitle extends StatelessWidget {
   const _ConversationTitle({
     required this.otherUser,

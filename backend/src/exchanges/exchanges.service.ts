@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
@@ -12,6 +13,9 @@ import { NotificationType } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
+import { CancelExchangeDto } from './dto/cancel-exchange.dto';
+import { ShareContactDto } from './dto/share-contact.dto';
+import { DoneExchangeDto } from './dto/done-exchange.dto';
 import { publicName } from '../common/utils/user-visibility';
 import {
   awardXp,
@@ -22,6 +26,18 @@ import {
 // Offer Expiration (Milestone 3) - o cerere PENDING neatinsă expiră automat
 // după atâtea zile, ca să nu rămână la nesfârșit "în așteptare" fără răspuns.
 const OFFER_EXPIRY_DAYS = 7;
+
+// Timeout-ul schimbului "în desfășurare" (Milestone: Exchange flow v2) - dacă
+// nu ajunge la Done în atâtea zile de la acceptare, se anulează automat.
+const EXCHANGE_TIMEOUT_DAYS = 7;
+
+const CANCEL_REASON_MESSAGES: Record<string, string> = {
+  no_show: 'cealaltă persoană nu s-a prezentat',
+  book_mismatch: 'cartea nu a corespuns așteptărilor',
+  changed_mind: 's-a răzgândit',
+  other: 'motiv nespecificat',
+  expired: 'termenul de 7 zile a expirat fără nicio confirmare',
+};
 
 const INCLUDE_FULL = {
   requestedBook: { include: { book: true } },
@@ -217,6 +233,9 @@ export class ExchangesService {
   /**
    * Owner-ul acceptă cererea. Ambele cărți implicate devin indisponibile,
    * cât timp schimbul e în desfășurare (nu mai apar în alte căutări).
+   * Ceilalți solicitanți PENDING pentru aceeași carte sunt doar informați -
+   * cererile lor rămân deschise, ca să se redeschidă natural dacă schimbul
+   * acesta nu se finalizează (vezi performCancel/rejectSiblingRequests).
    */
   async accept(id: string, userId: string) {
     const request = await this.findRequestForAction(id);
@@ -228,7 +247,7 @@ export class ExchangesService {
       // different pending requests for the same book) from both succeeding.
       const requestClaim = await tx.exchangeRequest.updateMany({
         where: { id, status: 'PENDING' },
-        data: { status: 'ACCEPTED' },
+        data: { status: 'ACCEPTED', acceptedAt: new Date() },
       });
       if (requestClaim.count === 0) {
         throw new BadRequestException(
@@ -270,6 +289,12 @@ export class ExchangesService {
       'EXCHANGE_REQUEST_ACCEPTED',
       `${publicName(updated.owner)} a acceptat cererea ta de schimb pentru "${updated.requestedBook.book.title}"`,
       { exchangeRequestId: id },
+    );
+    await this.notifyOtherPendingRequesters(
+      request.requestedBookId,
+      id,
+      'EXCHANGE_BOOK_PENDING',
+      `"${updated.requestedBook.book.title}" este acum într-un schimb în desfășurare cu altcineva`,
     );
 
     return this.sanitizeParties(updated);
@@ -315,69 +340,270 @@ export class ExchangesService {
     }
   }
 
-  async cancel(id: string, userId: string) {
+  /**
+   * Retragere (PENDING, doar solicitantul) sau anulare a unui schimb "în
+   * desfășurare" (ACCEPTED, oricare parte - necesită motiv, vezi formularul
+   * "What happened?"). Anularea din ACCEPTED eliberează cărțile și redeschide
+   * (informativ) cererile PENDING ale altor solicitanți pentru aceeași carte.
+   */
+  async cancel(id: string, userId: string, dto: CancelExchangeDto = {}) {
     const request = await this.findRequestForAction(id);
-    this.assertIsRequester(request, userId);
-    this.assertStatus(request, 'PENDING');
 
-    const updated = await this.prisma.exchangeRequest.update({
-      where: { id },
-      data: { status: 'CANCELLED' },
-      include: INCLUDE_FULL,
-    });
-    return this.sanitizeParties(updated);
+    if (request.status === 'PENDING') {
+      this.assertIsRequester(request, userId);
+      const updated = await this.prisma.exchangeRequest.update({
+        where: { id },
+        data: {
+          status: 'CANCELLED',
+          cancelReason: dto.reason,
+          cancelDetails: dto.details,
+          cancelledBy: userId,
+        },
+        include: INCLUDE_FULL,
+      });
+      await this.broadcastStatusToConversation(id, 'CANCELLED');
+      return this.sanitizeParties(updated);
+    }
+
+    if (request.status === 'ACCEPTED') {
+      if (request.requesterId !== userId && request.ownerId !== userId) {
+        throw new ForbiddenException('Nu ești parte în acest schimb');
+      }
+      if (!dto.reason) {
+        throw new BadRequestException('Trebuie să alegi un motiv pentru anulare');
+      }
+      return this.performCancel(id, request, dto.reason, dto.details, userId);
+    }
+
+    throw new BadRequestException(
+      `Acțiunea nu este permisă - cererea are statusul "${request.status}"`,
+    );
   }
 
-  /**
-   * Oricare dintre cei doi participanți poate marca schimbul ca finalizat.
-   * Incrementăm contorul de cărți schimbate pentru amândoi - folosit
-   * pentru rating și statistici pe profil.
-   */
-  async complete(id: string, userId: string) {
-    const request = await this.findRequestForAction(id);
-    if (request.requesterId !== userId && request.ownerId !== userId) {
-      throw new ForbiddenException('Nu ești parte în acest schimb');
-    }
-    this.assertStatus(request, 'ACCEPTED');
-
+  /** Corpul comun al anulării unui schimb ACCEPTED - folosit atât de cancel() cât și de cron-ul de timeout. */
+  private async performCancel(
+    id: string,
+    request: {
+      requesterId: string;
+      ownerId: string;
+      requestedBookId: string;
+      offeredBookId: string | null;
+    },
+    reason: string,
+    details: string | undefined,
+    cancelledBy: string,
+  ) {
     const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: request.requesterId },
+      const claim = await tx.exchangeRequest.updateMany({
+        where: { id, status: 'ACCEPTED' },
         data: {
-          booksExchangedCount: { increment: 1 },
-          booksReceivedCount: { increment: 1 },
-          xp: { increment: XP_EXCHANGE_COMPLETED },
+          status: 'CANCELLED',
+          cancelReason: reason,
+          cancelDetails: details,
+          cancelledBy,
         },
       });
-      await tx.user.update({
-        where: { id: request.ownerId },
-        data: {
-          booksExchangedCount: { increment: 1 },
-          booksSharedCount: { increment: 1 },
-          xp: { increment: XP_EXCHANGE_COMPLETED },
-        },
-      });
+      if (claim.count === 0) {
+        throw new BadRequestException('Acest schimb nu mai este în desfășurare');
+      }
 
-      // Milestone 10: cartea confirmată ca schimbată devine permanent
-      // indisponibilă în acea listare - user cerea ca butonul de „marchează
-      // disponibil" să nu o poată reînvia.
-      await tx.userBook.update({
+      await tx.userBook.updateMany({
         where: { id: request.requestedBookId },
-        data: { permanentlyTransferred: true, availableForSwap: false },
+        data: { availableForSwap: true },
       });
       if (request.offeredBookId) {
-        await tx.userBook.update({
+        await tx.userBook.updateMany({
           where: { id: request.offeredBookId },
-          data: { permanentlyTransferred: true, availableForSwap: false },
+          data: { availableForSwap: true },
         });
       }
 
-      return tx.exchangeRequest.update({
+      return tx.exchangeRequest.findUniqueOrThrow({
         where: { id },
-        data: { status: 'COMPLETED' },
         include: INCLUDE_FULL,
       });
     });
+
+    await this.broadcastStatusToConversation(id, 'CANCELLED');
+
+    const reasonMessage = CANCEL_REASON_MESSAGES[reason] ?? details ?? 'motiv nespecificat';
+    if (cancelledBy === 'system') {
+      const timeoutMessage = `Schimbul pentru "${updated.requestedBook.book.title}" a expirat automat (${reasonMessage})`;
+      await this.notifySafe(request.requesterId, 'EXCHANGE_CANCELLED', timeoutMessage, {
+        exchangeRequestId: id,
+      });
+      await this.notifySafe(request.ownerId, 'EXCHANGE_CANCELLED', timeoutMessage, {
+        exchangeRequestId: id,
+      });
+    } else {
+      const otherUserId =
+        cancelledBy === request.requesterId ? request.ownerId : request.requesterId;
+      await this.notifySafe(
+        otherUserId,
+        'EXCHANGE_CANCELLED',
+        `Schimbul pentru "${updated.requestedBook.book.title}" a fost anulat: ${reasonMessage}`,
+        { exchangeRequestId: id },
+      );
+    }
+
+    await this.notifyOtherPendingRequesters(
+      request.requestedBookId,
+      id,
+      'EXCHANGE_REOPENED',
+      `"${updated.requestedBook.book.title}" e din nou disponibilă la schimb (${reasonMessage})`,
+    );
+
+    return this.sanitizeParties(updated);
+  }
+
+  /** Informează solicitanții PENDING ai aceleiași cărți, fără să le atingă cererea. */
+  private async notifyOtherPendingRequesters(
+    bookId: string,
+    excludeId: string,
+    type: NotificationType,
+    message: string,
+  ) {
+    const siblings = await this.prisma.exchangeRequest.findMany({
+      where: { requestedBookId: bookId, status: 'PENDING', id: { not: excludeId } },
+      select: { id: true, requesterId: true },
+    });
+    for (const sibling of siblings) {
+      await this.notifySafe(sibling.requesterId, type, message, {
+        exchangeRequestId: sibling.id,
+      });
+    }
+  }
+
+  /** La finalizarea schimbului, cererile PENDING rămase pentru aceeași carte nu mai au sens - se refuză. */
+  private async rejectSiblingRequests(
+    bookId: string,
+    excludeId: string,
+    message: string,
+  ) {
+    const siblings = await this.prisma.exchangeRequest.findMany({
+      where: { requestedBookId: bookId, status: 'PENDING', id: { not: excludeId } },
+      select: { id: true, requesterId: true },
+    });
+    if (siblings.length === 0) return;
+    await this.prisma.exchangeRequest.updateMany({
+      where: { id: { in: siblings.map((s) => s.id) } },
+      data: { status: 'REJECTED', cancelReason: 'book_mismatch', cancelDetails: message },
+    });
+    for (const sibling of siblings) {
+      await this.notifySafe(sibling.requesterId, 'EXCHANGE_REQUEST_REJECTED', message, {
+        exchangeRequestId: sibling.id,
+      });
+    }
+  }
+
+  /**
+   * Oricare parte marchează schimbul ca finalizat din partea ei. Doar când
+   * ambele au apăsat Done schimbul devine efectiv COMPLETED (cărțile trec
+   * definitiv, XP-ul se acordă) - altfel celălalt e doar notificat să
+   * confirme sau să conteste (vezi disputeDone).
+   */
+  async markDone(id: string, userId: string, dto: DoneExchangeDto) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    const isRequester = userId === request.requesterId;
+
+    let updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: isRequester
+        ? { requesterDoneAt: new Date(), requesterReviewForOwner: dto.comment }
+        : { ownerDoneAt: new Date(), ownerReviewForRequester: dto.comment },
+      include: INCLUDE_FULL,
+    });
+
+    if (updated.requesterDoneAt && updated.ownerDoneAt) {
+      updated = await this.prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: updated.requesterId },
+          data: {
+            booksExchangedCount: { increment: 1 },
+            booksReceivedCount: { increment: 1 },
+            xp: { increment: XP_EXCHANGE_COMPLETED },
+          },
+        });
+        await tx.user.update({
+          where: { id: updated.ownerId },
+          data: {
+            booksExchangedCount: { increment: 1 },
+            booksSharedCount: { increment: 1 },
+            xp: { increment: XP_EXCHANGE_COMPLETED },
+          },
+        });
+
+        await tx.userBook.update({
+          where: { id: updated.requestedBookId },
+          data: { permanentlyTransferred: true, availableForSwap: false },
+        });
+        if (updated.offeredBookId) {
+          await tx.userBook.update({
+            where: { id: updated.offeredBookId },
+            data: { permanentlyTransferred: true, availableForSwap: false },
+          });
+        }
+
+        return tx.exchangeRequest.update({
+          where: { id },
+          data: { status: 'COMPLETED' },
+          include: INCLUDE_FULL,
+        });
+      });
+
+      await this.broadcastStatusToConversation(id, 'COMPLETED');
+      const doneMessage = `Schimbul pentru "${updated.requestedBook.book.title}" a fost finalizat`;
+      await this.notifySafe(updated.requesterId, 'EXCHANGE_COMPLETED', doneMessage, {
+        exchangeRequestId: id,
+      });
+      await this.notifySafe(updated.ownerId, 'EXCHANGE_COMPLETED', doneMessage, {
+        exchangeRequestId: id,
+      });
+      await this.rejectSiblingRequests(
+        updated.requestedBookId,
+        id,
+        `"${updated.requestedBook.book.title}" a fost deja dat altcuiva`,
+      );
+    } else {
+      const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
+      const actorName = publicName(isRequester ? updated.requester : updated.owner);
+      await this.notifySafe(
+        otherUserId,
+        'EXCHANGE_DONE_PENDING_CONFIRMATION',
+        `${actorName} a marcat schimbul pentru "${updated.requestedBook.book.title}" ca finalizat - confirmă și tu`,
+        { exchangeRequestId: id },
+      );
+    }
+
+    return this.sanitizeParties(updated);
+  }
+
+  /** Cealaltă parte nu e de acord că schimbul s-a încheiat - anulează Done-ul primit, fără să anuleze tot schimbul. */
+  async disputeDone(id: string, userId: string) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    const isRequester = userId === request.requesterId;
+    const otherAlreadyDone = isRequester ? request.ownerDoneAt : request.requesterDoneAt;
+    if (!otherAlreadyDone) {
+      throw new BadRequestException('Cealaltă parte nu a marcat schimbul ca finalizat');
+    }
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: isRequester ? { ownerDoneAt: null } : { requesterDoneAt: null },
+      include: INCLUDE_FULL,
+    });
+
+    const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
+    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    await this.notifySafe(
+      otherUserId,
+      'EXCHANGE_DONE_DISPUTED',
+      `${actorName} nu a confirmat finalizarea schimbului pentru "${updated.requestedBook.book.title}"`,
+      { exchangeRequestId: id },
+    );
+
     return this.sanitizeParties(updated);
   }
 
@@ -429,10 +655,11 @@ export class ExchangesService {
   }
 
   /**
-   * Oricare dintre cei doi participanți poate programa/reprograma
-   * întâlnirea, cât timp schimbul e ACCEPTED.
+   * Oricare dintre cei doi participanți poate propune/reprograma
+   * întâlnirea, cât timp schimbul e ACCEPTED. Necesită confirmarea
+   * celeilalte părți (acceptMeeting) înainte de a debloca restul flow-ului.
    */
-  async setMeeting(id: string, userId: string, dto: SetMeetingDto) {
+  async proposeMeeting(id: string, userId: string, dto: SetMeetingDto) {
     const request = await this.findOwnedRequest(id, userId);
     this.assertStatus(request, 'ACCEPTED');
 
@@ -441,6 +668,8 @@ export class ExchangesService {
       data: {
         meetingTime: new Date(dto.meetingTime),
         meetingLocation: dto.meetingLocation,
+        meetingProposedBy: userId,
+        meetingAcceptedAt: null,
       },
       include: INCLUDE_FULL,
     });
@@ -450,10 +679,146 @@ export class ExchangesService {
     const actorName = publicName(isRequester ? updated.requester : updated.owner);
     await this.notifySafe(
       otherUserId,
-      'EXCHANGE_MEETING_SCHEDULED',
-      `${actorName} a programat întâlnirea pentru "${updated.requestedBook.book.title}"`,
+      'EXCHANGE_MEETING_PROPOSED',
+      `${actorName} a propus o întâlnire pentru "${updated.requestedBook.book.title}" - confirmă sau propune altă oră`,
       { exchangeRequestId: updated.id },
     );
+
+    return this.sanitizeParties(updated);
+  }
+
+  async acceptMeeting(id: string, userId: string) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    if (!request.meetingTime || !request.meetingProposedBy) {
+      throw new BadRequestException('Nu există nicio întâlnire propusă');
+    }
+    if (request.meetingProposedBy === userId) {
+      throw new BadRequestException(
+        'Așteaptă răspunsul celeilalte părți la propunerea ta',
+      );
+    }
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: { meetingAcceptedAt: new Date() },
+      include: INCLUDE_FULL,
+    });
+
+    await this.notifySafe(
+      request.meetingProposedBy,
+      'EXCHANGE_MEETING_ACCEPTED',
+      `Întâlnirea pentru "${updated.requestedBook.book.title}" a fost confirmată`,
+      { exchangeRequestId: id },
+    );
+
+    return this.sanitizeParties(updated);
+  }
+
+  async declineMeeting(id: string, userId: string) {
+    return this.resetMeeting(
+      id,
+      userId,
+      'EXCHANGE_MEETING_DECLINED',
+      (name, title) => `${name ?? 'Cineva'} a refuzat ora propusă pentru "${title}" - propune o oră nouă`,
+    );
+  }
+
+  /** Postpone (pagina Ready to exchange) - identic tehnic cu declineMeeting, dar declanșat mai târziu în flow. */
+  async postpone(id: string, userId: string) {
+    return this.resetMeeting(
+      id,
+      userId,
+      'EXCHANGE_POSTPONED',
+      (name, title) => `${name ?? 'Cineva'} a amânat schimbul pentru "${title}" - propuneți o nouă întâlnire`,
+    );
+  }
+
+  private async resetMeeting(
+    id: string,
+    userId: string,
+    type: NotificationType,
+    messageFor: (actorName: string | null, bookTitle: string) => string,
+  ) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    if (!request.meetingTime) {
+      throw new BadRequestException('Nu există nicio întâlnire programată');
+    }
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: {
+        meetingTime: null,
+        meetingLocation: null,
+        meetingProposedBy: null,
+        meetingAcceptedAt: null,
+      },
+      include: INCLUDE_FULL,
+    });
+
+    const isRequester = userId === updated.requesterId;
+    const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
+    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    await this.notifySafe(
+      otherUserId,
+      type,
+      messageFor(actorName, updated.requestedBook.book.title),
+      { exchangeRequestId: id },
+    );
+
+    return this.sanitizeParties(updated);
+  }
+
+  /** Formularul de contact (nume/telefon opțional) - telefonul rămâne opțional, fallback-ul e mereu chatul din aplicație. */
+  async shareContact(id: string, userId: string, dto: ShareContactDto) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    const isRequester = userId === request.requesterId;
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: isRequester
+        ? { requesterContactPhone: dto.phone ?? null, requesterContactSharedAt: new Date() }
+        : { ownerContactPhone: dto.phone ?? null, ownerContactSharedAt: new Date() },
+      include: INCLUDE_FULL,
+    });
+
+    const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
+    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    await this.notifySafe(
+      otherUserId,
+      'EXCHANGE_CONTACT_SHARED',
+      `${actorName} ți-a trimis detaliile de contact pentru schimb`,
+      { exchangeRequestId: id },
+    );
+
+    return this.sanitizeParties(updated);
+  }
+
+  /** Checkbox-ul obligatoriu "I've read this" de pe safety recommendations - trebuie bifat de ambele părți. */
+  async acknowledgeSafety(id: string, userId: string) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    const isRequester = userId === request.requesterId;
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: isRequester
+        ? { requesterSafetyAckAt: new Date() }
+        : { ownerSafetyAckAt: new Date() },
+      include: INCLUDE_FULL,
+    });
+
+    if (updated.requesterSafetyAckAt && updated.ownerSafetyAckAt) {
+      const message = `Sunteți gata de schimb pentru "${updated.requestedBook.book.title}"`;
+      await this.notifySafe(updated.requesterId, 'EXCHANGE_READY', message, {
+        exchangeRequestId: id,
+      });
+      await this.notifySafe(updated.ownerId, 'EXCHANGE_READY', message, {
+        exchangeRequestId: id,
+      });
+    }
 
     return this.sanitizeParties(updated);
   }
@@ -565,6 +930,37 @@ export class ExchangesService {
         avgConditionRating: average(conditionValues),
       },
     });
+  }
+
+  /**
+   * Timeout-ul de 7 zile (punctul 11 din flow): un schimb ACCEPTED care nu
+   * ajunge la Done în 7 zile de la acceptare se anulează automat, cu același
+   * mecanism ca un cancel manual (eliberare cărți + redeschidere informativă
+   * a celorlalte cereri PENDING). Rulează orar, per rând cu try/catch - o
+   * eroare pe un schimb nu blochează restul (același pattern ca
+   * account-deletion.service.ts#purgeExpiredAccounts).
+   */
+  @Cron(CronExpression.EVERY_HOUR)
+  async expireStaleAccepted(): Promise<void> {
+    const cutoff = new Date(Date.now() - EXCHANGE_TIMEOUT_DAYS * 86_400_000);
+    const stale = await this.prisma.exchangeRequest.findMany({
+      where: { status: 'ACCEPTED', acceptedAt: { lt: cutoff } },
+      select: { id: true },
+    });
+    if (stale.length === 0) {
+      return;
+    }
+
+    this.logger.log(`Expir ${stale.length} schimburi ACCEPTED peste ${EXCHANGE_TIMEOUT_DAYS} zile`);
+    for (const { id } of stale) {
+      try {
+        const request = await this.prisma.exchangeRequest.findUnique({ where: { id } });
+        if (!request || request.status !== 'ACCEPTED') continue;
+        await this.performCancel(id, request, 'expired', undefined, 'system');
+      } catch (error) {
+        this.logger.error(`Nu am putut expira schimbul ${id}`, error);
+      }
+    }
   }
 
   // ---------- Helpers ----------

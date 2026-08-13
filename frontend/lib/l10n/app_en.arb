@@ -21,6 +21,8 @@
     "commonShowMore":  "Show more",
     "commonShowLess":  "Show less",
     "commonConfirm":  "Confirm",
+    "commonGenericError":  "Something went wrong. Try again.",
+    "reportSubmitted":  "Your report was submitted.",
     "continueWithGoogle":  "Continue with Google",
     "reportDialogTitle":  "Report",
     "trustScoreTitle":  "Trust Score",
@@ -270,6 +272,7 @@
                                                     }
                                },
     "homePendingSwapReview":  "Review",
+    "homeOngoingExchangeBanner":  "You have an ongoing exchange",
     "homeFeedEnd":  "You\u0027ve seen all the books",
     "homeNearYou":  "Near your city",
     "homeNearYouToday":  "Near you today",
@@ -522,6 +525,57 @@
     "exchangeMeetingSheetTitle":  "Schedule the meeting",
     "exchangePickDateTime":  "Pick date and time",
     "exchangeLocationLabel":  "Location",
+    "exchangeGoToReady":  "Continue exchange",
+    "readyTitle":  "Prepare exchange",
+    "readyMeetingAwaitingYou":  "The other party proposed a meeting",
+    "readyMeetingProposedByMe":  "Waiting for the other party to confirm",
+    "readyMeetingAccept":  "Confirm time",
+    "readyMeetingDecline":  "Decline time",
+    "readyContactTitle":  "Contact details",
+    "readyContactPhoneLabel":  "Phone (optional)",
+    "readyContactShare":  "Share my details",
+    "readyContactShared":  "You shared your contact details",
+    "readyContactOtherPhone":  "Phone: {phone}",
+    "@readyContactOtherPhone":  {
+                                    "placeholders":  {
+                                                         "phone":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                     }
+                                },
+    "readyContactSharedNoPhone":  "The other party shared their details, without a phone number.",
+    "readyContactCall":  "Call {name}",
+    "@readyContactCall":  {
+                              "placeholders":  {
+                                                   "name":  {
+                                                                "type":  "String"
+                                                            }
+                                               }
+                          },
+    "readyContactMessageInApp":  "Message in app",
+    "readySafetyTitle":  "Safety recommendations",
+    "readySafetyViewLink":  "View safety recommendations",
+    "readySafetyAck":  "I have read this",
+    "readySafetyWaitingOther":  "Waiting for the other party to confirm they have read the recommendations.",
+    "readySafetyBothReady":  "You are ready to exchange",
+    "readyReportIssue":  "Report an issue",
+    "readyCancel":  "Cancel",
+    "readyPostpone":  "Postpone",
+    "readyDone":  "Done",
+    "readyConfirmDone":  "Confirm it is done",
+    "readyDisputeDone":  "Not done yet",
+    "readyWaitingConfirmation":  "Waiting for the other party to confirm",
+    "readyOtherMarkedDone":  "The other party marked the exchange as done. Confirm?",
+    "doneReviewTitle":  "How was the exchange?",
+    "doneReviewLabel":  "A few words (optional)",
+    "doneReviewSubmit":  "Submit",
+    "cancelReasonTitle":  "What happened?",
+    "cancelReasonNoShow":  "The other person did not show up",
+    "cancelReasonBookMismatch":  "The book was not as expected",
+    "cancelReasonChangedMind":  "Changed my mind",
+    "cancelReasonOther":  "Something else",
+    "cancelReasonDetailsLabel":  "Details (optional)",
+    "cancelReasonSubmit":  "Cancel exchange",
     "exchangeMeetingSaveError":  "We couldn\u0027t save the meeting.",
     "offersEmptyReceived":  "You haven\u0027t received any price offers.",
     "offersEmptySent":  "You haven\u0027t sent any price offers.",

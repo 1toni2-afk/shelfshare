@@ -15,6 +15,18 @@ const _exchangeTypes = {
   NotificationType.exchangeRequestAccepted,
   NotificationType.exchangeRequestRejected,
   NotificationType.exchangeMeetingScheduled,
+  NotificationType.exchangeMeetingProposed,
+  NotificationType.exchangeMeetingAccepted,
+  NotificationType.exchangeMeetingDeclined,
+  NotificationType.exchangeContactShared,
+  NotificationType.exchangeReady,
+  NotificationType.exchangePostponed,
+  NotificationType.exchangeDonePendingConfirmation,
+  NotificationType.exchangeDoneDisputed,
+  NotificationType.exchangeCompleted,
+  NotificationType.exchangeCancelled,
+  NotificationType.exchangeBookPending,
+  NotificationType.exchangeReopened,
   NotificationType.priceOfferReceived,
   NotificationType.priceOfferAccepted,
   NotificationType.priceOfferRejected,
@@ -287,7 +299,24 @@ class _NotificationRow extends ConsumerWidget {
       case NotificationType.exchangeRequestRejected:
         return Icons.swap_horiz;
       case NotificationType.exchangeMeetingScheduled:
+      case NotificationType.exchangeMeetingProposed:
+      case NotificationType.exchangeMeetingAccepted:
+      case NotificationType.exchangeMeetingDeclined:
+      case NotificationType.exchangePostponed:
         return Icons.event;
+      case NotificationType.exchangeContactShared:
+        return Icons.contact_phone_outlined;
+      case NotificationType.exchangeReady:
+        return Icons.handshake_outlined;
+      case NotificationType.exchangeDonePendingConfirmation:
+      case NotificationType.exchangeCompleted:
+        return Icons.task_alt;
+      case NotificationType.exchangeDoneDisputed:
+      case NotificationType.exchangeCancelled:
+        return Icons.cancel_outlined;
+      case NotificationType.exchangeBookPending:
+      case NotificationType.exchangeReopened:
+        return Icons.hourglass_empty;
       case NotificationType.priceOfferReceived:
       case NotificationType.priceOfferAccepted:
       case NotificationType.priceOfferRejected:

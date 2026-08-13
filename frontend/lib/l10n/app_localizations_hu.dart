@@ -72,6 +72,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get commonConfirm => 'Megerősítés';
 
   @override
+  String get commonGenericError => 'Valami hiba történt. Próbáld újra.';
+
+  @override
+  String get reportSubmitted => 'A bejelentésedet elküldtük.';
+
+  @override
   String get continueWithGoogle => 'Folytatás Google-lal';
 
   @override
@@ -840,6 +846,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get homePendingSwapReview => 'Áttekintés';
 
   @override
+  String get homeOngoingExchangeBanner => 'Folyamatban lévő cserét indítottál';
+
+  @override
   String get homeFeedEnd => 'Minden könyvet láttál';
 
   @override
@@ -1560,6 +1569,125 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get exchangeMeetingSaveError => 'Nem sikerült menteni a találkozót.';
+
+  @override
+  String get exchangeGoToReady => 'Csere folytatása';
+
+  @override
+  String get readyTitle => 'Csere előkészítése';
+
+  @override
+  String get readyMeetingAwaitingYou => 'A másik fél találkozót javasolt';
+
+  @override
+  String get readyMeetingProposedByMe => 'A másik fél megerősítésére vársz';
+
+  @override
+  String get readyMeetingAccept => 'Időpont elfogadása';
+
+  @override
+  String get readyMeetingDecline => 'Időpont elutasítása';
+
+  @override
+  String get readyContactTitle => 'Elérhetőségek';
+
+  @override
+  String get readyContactPhoneLabel => 'Telefonszám (opcionális)';
+
+  @override
+  String get readyContactShare => 'Adataim megosztása';
+
+  @override
+  String get readyContactShared => 'Megosztottad az elérhetőségeidet';
+
+  @override
+  String readyContactOtherPhone(String phone) {
+    return 'Telefon: $phone';
+  }
+
+  @override
+  String get readyContactSharedNoPhone =>
+      'A másik fél megosztotta az adatait, telefonszám nélkül.';
+
+  @override
+  String readyContactCall(String name) {
+    return '$name hívása';
+  }
+
+  @override
+  String get readyContactMessageInApp => 'Üzenet az appban';
+
+  @override
+  String get readySafetyTitle => 'Biztonsági ajánlások';
+
+  @override
+  String get readySafetyViewLink => 'Biztonsági ajánlások megtekintése';
+
+  @override
+  String get readySafetyAck => 'Elolvastam';
+
+  @override
+  String get readySafetyWaitingOther =>
+      'Arra vársz, hogy a másik fél is megerősítse, hogy elolvasta.';
+
+  @override
+  String get readySafetyBothReady => 'Készen álltok a cserére';
+
+  @override
+  String get readyReportIssue => 'Probléma bejelentése';
+
+  @override
+  String get readyCancel => 'Mégse';
+
+  @override
+  String get readyPostpone => 'Elhalasztás';
+
+  @override
+  String get readyDone => 'Kész';
+
+  @override
+  String get readyConfirmDone => 'Befejezés megerősítése';
+
+  @override
+  String get readyDisputeDone => 'Még nincs kész';
+
+  @override
+  String get readyWaitingConfirmation => 'A másik fél megerősítésére vársz';
+
+  @override
+  String get readyOtherMarkedDone =>
+      'A másik fél késznek jelölte a cserét. Megerősíted?';
+
+  @override
+  String get doneReviewTitle => 'Milyen volt a csere?';
+
+  @override
+  String get doneReviewLabel => 'Néhány szó (opcionális)';
+
+  @override
+  String get doneReviewSubmit => 'Küldés';
+
+  @override
+  String get cancelReasonTitle => 'Mi történt?';
+
+  @override
+  String get cancelReasonNoShow => 'A másik fél nem jelent meg';
+
+  @override
+  String get cancelReasonBookMismatch =>
+      'A könyv nem felelt meg az elvárásoknak';
+
+  @override
+  String get cancelReasonChangedMind => 'Meggondoltam magam';
+
+  @override
+  String get cancelReasonOther => 'Valami más';
+
+  @override
+  String get cancelReasonDetailsLabel => 'Részletek (opcionális)';
+
+  @override
+  String get cancelReasonSubmit => 'Csere lemondása';
 
   @override
   String get offersEmptyReceived => 'Még nem kaptál árajánlatot.';

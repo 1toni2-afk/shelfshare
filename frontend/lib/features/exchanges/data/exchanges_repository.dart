@@ -27,6 +27,12 @@ class ExchangesRepository {
     return (ExchangeRequest.fromJson(data), data['conversationId'] as String?);
   }
 
+  Future<ExchangeRequest> getOne(String id) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/exchanges/$id');
+    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<List<ExchangeRequest>> getSent() => _getList('/exchanges/sent');
 
   Future<List<ExchangeRequest>> getReceived() => _getList('/exchanges/received');
@@ -43,9 +49,42 @@ class ExchangesRepository {
 
   Future<ExchangeRequest> reject(String id) => _action(id, 'reject');
 
-  Future<ExchangeRequest> cancel(String id) => _action(id, 'cancel');
+  /// [reason]/[details] sunt obligatorii doar când schimbul e ACCEPTED
+  /// (formularul "What happened?") - o cerere PENDING se poate retrage fără motiv.
+  Future<ExchangeRequest> cancel(String id, {String? reason, String? details}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/exchanges/$id/cancel', data: {
+      'reason': ?reason,
+      'details': ?details,
+    });
+    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
 
-  Future<ExchangeRequest> complete(String id) => _action(id, 'complete');
+  Future<ExchangeRequest> postpone(String id) => _action(id, 'postpone');
+
+  Future<ExchangeRequest> markDone(String id, {String? comment}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/exchanges/$id/done', data: {
+      'comment': ?comment,
+    });
+    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ExchangeRequest> disputeDone(String id) => _action(id, 'done/dispute');
+
+  Future<ExchangeRequest> shareContact(String id, {String? phone}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/exchanges/$id/contact', data: {
+      'phone': ?phone,
+    });
+    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ExchangeRequest> acknowledgeSafety(String id) => _action(id, 'safety-ack');
+
+  Future<ExchangeRequest> acceptMeeting(String id) => _action(id, 'meeting/accept');
+
+  Future<ExchangeRequest> declineMeeting(String id) => _action(id, 'meeting/decline');
 
   Future<ExchangeRequest> _action(String id, String action) async {
     final dio = _ref.read(apiClientProvider).dio;

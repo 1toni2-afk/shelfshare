@@ -23,10 +23,28 @@ void openNotification(
         context.push('/chat/$conversationId');
       }
     case NotificationType.exchangeRequestReceived:
-    case NotificationType.exchangeRequestAccepted:
     case NotificationType.exchangeRequestRejected:
     case NotificationType.exchangeMeetingScheduled:
+    case NotificationType.exchangeBookPending:
+    case NotificationType.exchangeReopened:
       context.push('/exchanges');
+    case NotificationType.exchangeRequestAccepted:
+    case NotificationType.exchangeMeetingProposed:
+    case NotificationType.exchangeMeetingAccepted:
+    case NotificationType.exchangeMeetingDeclined:
+    case NotificationType.exchangeContactShared:
+    case NotificationType.exchangeReady:
+    case NotificationType.exchangePostponed:
+    case NotificationType.exchangeDonePendingConfirmation:
+    case NotificationType.exchangeDoneDisputed:
+    case NotificationType.exchangeCompleted:
+    case NotificationType.exchangeCancelled:
+      final exchangeRequestId = notification.data?['exchangeRequestId'] as String?;
+      if (exchangeRequestId != null) {
+        context.push('/exchanges/$exchangeRequestId/ready');
+      } else {
+        context.push('/exchanges');
+      }
     case NotificationType.priceOfferReceived:
     case NotificationType.priceOfferAccepted:
     case NotificationType.priceOfferRejected:

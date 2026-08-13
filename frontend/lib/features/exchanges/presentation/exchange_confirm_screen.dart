@@ -28,7 +28,7 @@ class _ExchangeConfirmScreenState extends ConsumerState<ExchangeConfirmScreen> {
       _error = null;
     });
     try {
-      await ref.read(exchangesRepositoryProvider).complete(widget.exchangeId);
+      await ref.read(exchangesRepositoryProvider).markDone(widget.exchangeId);
       if (mounted) setState(() => _done = true);
     } on DioException catch (e) {
       if (mounted) {

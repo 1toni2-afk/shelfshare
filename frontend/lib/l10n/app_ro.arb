@@ -21,6 +21,8 @@
     "commonShowMore":  "Vezi mai mult",
     "commonShowLess":  "Vezi mai puțin",
     "commonConfirm":  "Confirmă",
+    "commonGenericError":  "Ceva nu a mers bine. Încearcă din nou.",
+    "reportSubmitted":  "Raportul a fost trimis.",
     "continueWithGoogle":  "Continuă cu Google",
     "reportDialogTitle":  "Raportează",
     "trustScoreTitle":  "Scor de încredere",
@@ -517,6 +519,7 @@
                                                     }
                                },
     "homePendingSwapReview":  "Revizuiește",
+    "homeOngoingExchangeBanner":  "Ai un schimb în desfășurare",
     "homeFeedEnd":  "Ai văzut toate cărțile",
     "homeNearYou":  "Din orașul tău",
     "homeNearYouToday":  "Astăzi, aproape de tine",
@@ -916,6 +919,57 @@
     "exchangePickDateTime":  "Alege data și ora",
     "exchangeLocationLabel":  "Locație",
     "exchangeMeetingSaveError":  "Nu am putut salva întâlnirea.",
+    "exchangeGoToReady":  "Continuă schimbul",
+    "readyTitle":  "Pregătire schimb",
+    "readyMeetingAwaitingYou":  "Cealaltă parte a propus o întâlnire",
+    "readyMeetingProposedByMe":  "Aștepți confirmarea celeilalte părți",
+    "readyMeetingAccept":  "Confirmă ora",
+    "readyMeetingDecline":  "Refuză ora",
+    "readyContactTitle":  "Detalii de contact",
+    "readyContactPhoneLabel":  "Telefon (opțional)",
+    "readyContactShare":  "Trimite detaliile mele",
+    "readyContactShared":  "Ți-ai trimis detaliile de contact",
+    "readyContactOtherPhone":  "Telefon: {phone}",
+    "@readyContactOtherPhone":  {
+                                    "placeholders":  {
+                                                         "phone":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                     }
+                                },
+    "readyContactSharedNoPhone":  "Cealaltă parte și-a trimis detaliile, fără număr de telefon.",
+    "readyContactCall":  "Sună pe {name}",
+    "@readyContactCall":  {
+                              "placeholders":  {
+                                                   "name":  {
+                                                                "type":  "String"
+                                                            }
+                                               }
+                          },
+    "readyContactMessageInApp":  "Mesaj în aplicație",
+    "readySafetyTitle":  "Recomandări de siguranță",
+    "readySafetyViewLink":  "Vezi recomandările de siguranță",
+    "readySafetyAck":  "Am citit",
+    "readySafetyWaitingOther":  "Aștepți ca cealaltă parte să confirme că a citit recomandările.",
+    "readySafetyBothReady":  "Sunteți gata de schimb",
+    "readyReportIssue":  "Raportează o problemă",
+    "readyCancel":  "Anulează",
+    "readyPostpone":  "Amână",
+    "readyDone":  "Gata",
+    "readyConfirmDone":  "Confirmă finalizarea",
+    "readyDisputeDone":  "Nu e finalizat",
+    "readyWaitingConfirmation":  "Aștepți confirmarea celeilalte părți",
+    "readyOtherMarkedDone":  "Cealaltă parte a marcat schimbul ca finalizat. Confirmi?",
+    "doneReviewTitle":  "Cum a fost schimbul?",
+    "doneReviewLabel":  "Câteva cuvinte (opțional)",
+    "doneReviewSubmit":  "Trimite",
+    "cancelReasonTitle":  "Ce s-a întâmplat?",
+    "cancelReasonNoShow":  "Cealaltă persoană nu s-a prezentat",
+    "cancelReasonBookMismatch":  "Cartea nu a corespuns așteptărilor",
+    "cancelReasonChangedMind":  "M-am răzgândit",
+    "cancelReasonOther":  "Altceva",
+    "cancelReasonDetailsLabel":  "Detalii (opțional)",
+    "cancelReasonSubmit":  "Anulează schimbul",
     "offersEmptyReceived":  "Nu ai primit nicio ofertă de preț.",
     "offersEmptySent":  "Nu ai trimis nicio ofertă de preț.",
     "offersLoadError":  "Nu am putut încărca ofertele.",

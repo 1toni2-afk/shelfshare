@@ -752,6 +752,41 @@ model ExchangeRequest {
   meetingTime     DateTime?
   meetingLocation String?
 
+  // Programare cu accept/decline: cel care propune ora e reținut ca să știm
+  // cui îi cerem confirmarea; meetingAcceptedAt rămâne null cât timp
+  // propunerea așteaptă răspunsul celeilalte părți.
+  meetingProposedBy  String?
+  meetingAcceptedAt  DateTime?
+
+  // Ancora pentru timeout-ul de 7 zile (job programat, nu expirare leneșă -
+  // vezi expireStaleAccepted în exchanges.service.ts). Setat în accept().
+  acceptedAt DateTime?
+
+  // Detalii de contact partajate opțional de fiecare parte după acceptare;
+  // numele/poza vin deja din User, telefonul e opțional - fallback-ul e
+  // mereu "Message in app".
+  requesterContactPhone    String?
+  ownerContactPhone        String?
+  requesterContactSharedAt DateTime?
+  ownerContactSharedAt     DateTime?
+
+  // Checkbox obligatoriu "I've read this" pe pagina de safety recommendations
+  // - trebuie bifat de ambele părți înainte de a debloca "Ready to exchange".
+  requesterSafetyAckAt DateTime?
+  ownerSafetyAckAt     DateTime?
+
+  // Confirmare mutuală pentru Done: primul care apasă setează câmpul lui;
+  // schimbul devine COMPLETED abia când sunt setate ambele.
+  requesterDoneAt DateTime?
+  ownerDoneAt     DateTime?
+
+  // Motivul cancelului (formularul "What happened?") - reținut ca să poată fi
+  // arătat celorlalți solicitanți ai aceleiași cărți când cererile lor se
+  // redeschid automat.
+  cancelReason  String?
+  cancelDetails String?
+  cancelledBy   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -874,6 +909,18 @@ enum NotificationType {
   OUTBID
   AUCTION_WON
   AUCTION_ENDED
+  EXCHANGE_MEETING_PROPOSED
+  EXCHANGE_MEETING_ACCEPTED
+  EXCHANGE_MEETING_DECLINED
+  EXCHANGE_CONTACT_SHARED
+  EXCHANGE_READY
+  EXCHANGE_POSTPONED
+  EXCHANGE_DONE_PENDING_CONFIRMATION
+  EXCHANGE_DONE_DISPUTED
+  EXCHANGE_COMPLETED
+  EXCHANGE_CANCELLED
+  EXCHANGE_BOOK_PENDING
+  EXCHANGE_REOPENED
 }
 
 /// Token FCM al unui dispozitiv (telefon/tabletă) pe care userul e logat, ca

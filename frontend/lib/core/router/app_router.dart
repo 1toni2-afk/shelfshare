@@ -21,6 +21,8 @@ import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
 import '../../features/exchanges/presentation/exchange_confirm_screen.dart';
 import '../../features/exchanges/presentation/exchanges_screen.dart';
+import '../../features/exchanges/presentation/ready_to_exchange_screen.dart';
+import '../../data/models/exchange_request.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/about_app_screen.dart';
@@ -198,6 +200,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/exchanges/:id/confirm',
             builder: (context, state) => ExchangeConfirmScreen(exchangeId: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: '/exchanges/:id/ready',
+            builder: (context, state) => ReadyToExchangeScreen(
+              exchangeId: state.pathParameters['id']!,
+              initial: state.extra as ExchangeRequest?,
+            ),
           ),
           GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
           GoRoute(path: '/safety-center', builder: (context, state) => const SafetyCenterScreen()),

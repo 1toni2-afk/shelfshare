@@ -18,6 +18,9 @@ import { ExchangesService } from './exchanges.service';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
+import { CancelExchangeDto } from './dto/cancel-exchange.dto';
+import { ShareContactDto } from './dto/share-contact.dto';
+import { DoneExchangeDto } from './dto/done-exchange.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -67,16 +70,56 @@ export class ExchangesController {
 
   @Post(':id/cancel')
   @HttpCode(HttpStatus.OK)
-  cancel(@Req() req: Request, @Param('id') id: string) {
+  cancel(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: CancelExchangeDto,
+  ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.exchangesService.cancel(id, userId!);
+    return this.exchangesService.cancel(id, userId!, dto);
   }
 
-  @Post(':id/complete')
+  @Post(':id/postpone')
   @HttpCode(HttpStatus.OK)
-  complete(@Req() req: Request, @Param('id') id: string) {
+  postpone(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.exchangesService.complete(id, userId!);
+    return this.exchangesService.postpone(id, userId!);
+  }
+
+  @Post(':id/done')
+  @HttpCode(HttpStatus.OK)
+  markDone(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: DoneExchangeDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.markDone(id, userId!, dto);
+  }
+
+  @Post(':id/done/dispute')
+  @HttpCode(HttpStatus.OK)
+  disputeDone(@Req() req: Request, @Param('id') id: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.disputeDone(id, userId!);
+  }
+
+  @Post(':id/contact')
+  @HttpCode(HttpStatus.OK)
+  shareContact(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: ShareContactDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.shareContact(id, userId!, dto);
+  }
+
+  @Post(':id/safety-ack')
+  @HttpCode(HttpStatus.OK)
+  acknowledgeSafety(@Req() req: Request, @Param('id') id: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.acknowledgeSafety(id, userId!);
   }
 
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
@@ -92,13 +135,27 @@ export class ExchangesController {
   }
 
   @Patch(':id/meeting')
-  setMeeting(
+  proposeMeeting(
     @Req() req: Request,
     @Param('id') id: string,
     @Body() dto: SetMeetingDto,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.exchangesService.setMeeting(id, userId!, dto);
+    return this.exchangesService.proposeMeeting(id, userId!, dto);
+  }
+
+  @Post(':id/meeting/accept')
+  @HttpCode(HttpStatus.OK)
+  acceptMeeting(@Req() req: Request, @Param('id') id: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.acceptMeeting(id, userId!);
+  }
+
+  @Post(':id/meeting/decline')
+  @HttpCode(HttpStatus.OK)
+  declineMeeting(@Req() req: Request, @Param('id') id: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.declineMeeting(id, userId!);
   }
 
   @Get(':id/calendar.ics')

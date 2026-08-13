@@ -15,6 +15,18 @@ enum NotificationType {
   outbid,
   auctionWon,
   auctionEnded,
+  exchangeMeetingProposed,
+  exchangeMeetingAccepted,
+  exchangeMeetingDeclined,
+  exchangeContactShared,
+  exchangeReady,
+  exchangePostponed,
+  exchangeDonePendingConfirmation,
+  exchangeDoneDisputed,
+  exchangeCompleted,
+  exchangeCancelled,
+  exchangeBookPending,
+  exchangeReopened,
 
   /// Tip trimis de backend pe care versiunea asta de aplicație nu îl cunoaște.
   /// Notificarea se afișează cu textul primit de la server și fără acțiune la
@@ -57,6 +69,30 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.auctionWon;
       case 'AUCTION_ENDED':
         return NotificationType.auctionEnded;
+      case 'EXCHANGE_MEETING_PROPOSED':
+        return NotificationType.exchangeMeetingProposed;
+      case 'EXCHANGE_MEETING_ACCEPTED':
+        return NotificationType.exchangeMeetingAccepted;
+      case 'EXCHANGE_MEETING_DECLINED':
+        return NotificationType.exchangeMeetingDeclined;
+      case 'EXCHANGE_CONTACT_SHARED':
+        return NotificationType.exchangeContactShared;
+      case 'EXCHANGE_READY':
+        return NotificationType.exchangeReady;
+      case 'EXCHANGE_POSTPONED':
+        return NotificationType.exchangePostponed;
+      case 'EXCHANGE_DONE_PENDING_CONFIRMATION':
+        return NotificationType.exchangeDonePendingConfirmation;
+      case 'EXCHANGE_DONE_DISPUTED':
+        return NotificationType.exchangeDoneDisputed;
+      case 'EXCHANGE_COMPLETED':
+        return NotificationType.exchangeCompleted;
+      case 'EXCHANGE_CANCELLED':
+        return NotificationType.exchangeCancelled;
+      case 'EXCHANGE_BOOK_PENDING':
+        return NotificationType.exchangeBookPending;
+      case 'EXCHANGE_REOPENED':
+        return NotificationType.exchangeReopened;
       default:
         // Deliberat NU aruncăm: un tip adăugat pe backend înaintea unui release
         // de aplicație ar face să crape întreaga listă de notificări, nu doar

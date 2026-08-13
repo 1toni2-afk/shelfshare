@@ -18,6 +18,8 @@
     "commonClose":  "Bezárás",
     "commonDelete":  "Törlés",
     "commonConfirm":  "Megerősítés",
+    "commonGenericError":  "Valami hiba történt. Próbáld újra.",
+    "reportSubmitted":  "A bejelentésedet elküldtük.",
     "continueWithGoogle":  "Folytatás Google-lal",
     "reportDialogTitle":  "Bejelentés",
     "trustScoreTitle":  "Megbízhatósági pontszám",
@@ -267,6 +269,7 @@
                                                     }
                                },
     "homePendingSwapReview":  "Áttekintés",
+    "homeOngoingExchangeBanner":  "Folyamatban lévő cserét indítottál",
     "homeFeedEnd":  "Minden könyvet láttál",
     "homeNearYou":  "A városodban",
     "homeNearYouToday":  "Ma, a közeledben",
@@ -513,6 +516,57 @@
     "exchangeMeetingSheetTitle":  "Találkozó ütemezése",
     "exchangePickDateTime":  "Válassz dátumot és időt",
     "exchangeLocationLabel":  "Helyszín",
+    "exchangeGoToReady":  "Csere folytatása",
+    "readyTitle":  "Csere előkészítése",
+    "readyMeetingAwaitingYou":  "A másik fél találkozót javasolt",
+    "readyMeetingProposedByMe":  "A másik fél megerősítésére vársz",
+    "readyMeetingAccept":  "Időpont elfogadása",
+    "readyMeetingDecline":  "Időpont elutasítása",
+    "readyContactTitle":  "Elérhetőségek",
+    "readyContactPhoneLabel":  "Telefonszám (opcionális)",
+    "readyContactShare":  "Adataim megosztása",
+    "readyContactShared":  "Megosztottad az elérhetőségeidet",
+    "readyContactOtherPhone":  "Telefon: {phone}",
+    "@readyContactOtherPhone":  {
+                                    "placeholders":  {
+                                                         "phone":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                     }
+                                },
+    "readyContactSharedNoPhone":  "A másik fél megosztotta az adatait, telefonszám nélkül.",
+    "readyContactCall":  "{name} hívása",
+    "@readyContactCall":  {
+                              "placeholders":  {
+                                                   "name":  {
+                                                                "type":  "String"
+                                                            }
+                                               }
+                          },
+    "readyContactMessageInApp":  "Üzenet az appban",
+    "readySafetyTitle":  "Biztonsági ajánlások",
+    "readySafetyViewLink":  "Biztonsági ajánlások megtekintése",
+    "readySafetyAck":  "Elolvastam",
+    "readySafetyWaitingOther":  "Arra vársz, hogy a másik fél is megerősítse, hogy elolvasta.",
+    "readySafetyBothReady":  "Készen álltok a cserére",
+    "readyReportIssue":  "Probléma bejelentése",
+    "readyCancel":  "Mégse",
+    "readyPostpone":  "Elhalasztás",
+    "readyDone":  "Kész",
+    "readyConfirmDone":  "Befejezés megerősítése",
+    "readyDisputeDone":  "Még nincs kész",
+    "readyWaitingConfirmation":  "A másik fél megerősítésére vársz",
+    "readyOtherMarkedDone":  "A másik fél késznek jelölte a cserét. Megerősíted?",
+    "doneReviewTitle":  "Milyen volt a csere?",
+    "doneReviewLabel":  "Néhány szó (opcionális)",
+    "doneReviewSubmit":  "Küldés",
+    "cancelReasonTitle":  "Mi történt?",
+    "cancelReasonNoShow":  "A másik fél nem jelent meg",
+    "cancelReasonBookMismatch":  "A könyv nem felelt meg az elvárásoknak",
+    "cancelReasonChangedMind":  "Meggondoltam magam",
+    "cancelReasonOther":  "Valami más",
+    "cancelReasonDetailsLabel":  "Részletek (opcionális)",
+    "cancelReasonSubmit":  "Csere lemondása",
     "exchangeMeetingSaveError":  "Nem sikerült menteni a találkozót.",
     "offersEmptyReceived":  "Még nem kaptál árajánlatot.",
     "offersEmptySent":  "Még nem küldtél árajánlatot.",

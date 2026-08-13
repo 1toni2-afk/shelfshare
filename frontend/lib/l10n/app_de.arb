@@ -18,6 +18,8 @@
     "commonClose":  "Schließen",
     "commonDelete":  "Löschen",
     "commonConfirm":  "Bestätigen",
+    "commonGenericError":  "Etwas ist schiefgelaufen. Versuche es erneut.",
+    "reportSubmitted":  "Deine Meldung wurde gesendet.",
     "continueWithGoogle":  "Weiter mit Google",
     "reportDialogTitle":  "Melden",
     "trustScoreTitle":  "Vertrauens-Score",
@@ -267,6 +269,7 @@
                                                     }
                                },
     "homePendingSwapReview":  "Prüfen",
+    "homeOngoingExchangeBanner":  "Du hast einen laufenden Tausch",
     "homeFeedEnd":  "Du hast alle Bücher gesehen",
     "homeNearYou":  "In deiner Stadt",
     "homeNearYouToday":  "Heute in deiner Nähe",
@@ -513,6 +516,57 @@
     "exchangeMeetingSheetTitle":  "Treffen planen",
     "exchangePickDateTime":  "Datum und Uhrzeit wählen",
     "exchangeLocationLabel":  "Ort",
+    "exchangeGoToReady":  "Tausch fortsetzen",
+    "readyTitle":  "Tausch vorbereiten",
+    "readyMeetingAwaitingYou":  "Die andere Partei hat ein Treffen vorgeschlagen",
+    "readyMeetingProposedByMe":  "Warte auf Bestätigung der anderen Partei",
+    "readyMeetingAccept":  "Uhrzeit bestätigen",
+    "readyMeetingDecline":  "Uhrzeit ablehnen",
+    "readyContactTitle":  "Kontaktdaten",
+    "readyContactPhoneLabel":  "Telefon (optional)",
+    "readyContactShare":  "Meine Daten senden",
+    "readyContactShared":  "Du hast deine Kontaktdaten gesendet",
+    "readyContactOtherPhone":  "Telefon: {phone}",
+    "@readyContactOtherPhone":  {
+                                    "placeholders":  {
+                                                         "phone":  {
+                                                                       "type":  "String"
+                                                                   }
+                                                     }
+                                },
+    "readyContactSharedNoPhone":  "Die andere Partei hat ihre Daten ohne Telefonnummer gesendet.",
+    "readyContactCall":  "{name} anrufen",
+    "@readyContactCall":  {
+                              "placeholders":  {
+                                                   "name":  {
+                                                                "type":  "String"
+                                                            }
+                                               }
+                          },
+    "readyContactMessageInApp":  "In der App schreiben",
+    "readySafetyTitle":  "Sicherheitshinweise",
+    "readySafetyViewLink":  "Sicherheitshinweise ansehen",
+    "readySafetyAck":  "Gelesen",
+    "readySafetyWaitingOther":  "Warte darauf, dass die andere Partei die Hinweise bestätigt.",
+    "readySafetyBothReady":  "Ihr seid bereit für den Tausch",
+    "readyReportIssue":  "Problem melden",
+    "readyCancel":  "Abbrechen",
+    "readyPostpone":  "Verschieben",
+    "readyDone":  "Fertig",
+    "readyConfirmDone":  "Abschluss bestätigen",
+    "readyDisputeDone":  "Noch nicht fertig",
+    "readyWaitingConfirmation":  "Warte auf Bestätigung der anderen Partei",
+    "readyOtherMarkedDone":  "Die andere Partei hat den Tausch als abgeschlossen markiert. Bestätigen?",
+    "doneReviewTitle":  "Wie war der Tausch?",
+    "doneReviewLabel":  "Ein paar Worte (optional)",
+    "doneReviewSubmit":  "Senden",
+    "cancelReasonTitle":  "Was ist passiert?",
+    "cancelReasonNoShow":  "Die andere Person ist nicht erschienen",
+    "cancelReasonBookMismatch":  "Das Buch entsprach nicht den Erwartungen",
+    "cancelReasonChangedMind":  "Ich habe es mir anders überlegt",
+    "cancelReasonOther":  "Etwas anderes",
+    "cancelReasonDetailsLabel":  "Details (optional)",
+    "cancelReasonSubmit":  "Tausch abbrechen",
     "exchangeMeetingSaveError":  "Das Treffen konnte nicht gespeichert werden.",
     "offersEmptyReceived":  "Du hast noch keine Preisangebote erhalten.",
     "offersEmptySent":  "Du hast noch keine Preisangebote gesendet.",

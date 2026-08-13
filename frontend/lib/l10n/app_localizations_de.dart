@@ -72,6 +72,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonConfirm => 'Bestätigen';
 
   @override
+  String get commonGenericError =>
+      'Etwas ist schiefgelaufen. Versuche es erneut.';
+
+  @override
+  String get reportSubmitted => 'Deine Meldung wurde gesendet.';
+
+  @override
   String get continueWithGoogle => 'Weiter mit Google';
 
   @override
@@ -846,6 +853,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homePendingSwapReview => 'Prüfen';
 
   @override
+  String get homeOngoingExchangeBanner => 'Du hast einen laufenden Tausch';
+
+  @override
   String get homeFeedEnd => 'Du hast alle Bücher gesehen';
 
   @override
@@ -1577,6 +1587,128 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get exchangeMeetingSaveError =>
       'Das Treffen konnte nicht gespeichert werden.';
+
+  @override
+  String get exchangeGoToReady => 'Tausch fortsetzen';
+
+  @override
+  String get readyTitle => 'Tausch vorbereiten';
+
+  @override
+  String get readyMeetingAwaitingYou =>
+      'Die andere Partei hat ein Treffen vorgeschlagen';
+
+  @override
+  String get readyMeetingProposedByMe =>
+      'Warte auf Bestätigung der anderen Partei';
+
+  @override
+  String get readyMeetingAccept => 'Uhrzeit bestätigen';
+
+  @override
+  String get readyMeetingDecline => 'Uhrzeit ablehnen';
+
+  @override
+  String get readyContactTitle => 'Kontaktdaten';
+
+  @override
+  String get readyContactPhoneLabel => 'Telefon (optional)';
+
+  @override
+  String get readyContactShare => 'Meine Daten senden';
+
+  @override
+  String get readyContactShared => 'Du hast deine Kontaktdaten gesendet';
+
+  @override
+  String readyContactOtherPhone(String phone) {
+    return 'Telefon: $phone';
+  }
+
+  @override
+  String get readyContactSharedNoPhone =>
+      'Die andere Partei hat ihre Daten ohne Telefonnummer gesendet.';
+
+  @override
+  String readyContactCall(String name) {
+    return '$name anrufen';
+  }
+
+  @override
+  String get readyContactMessageInApp => 'In der App schreiben';
+
+  @override
+  String get readySafetyTitle => 'Sicherheitshinweise';
+
+  @override
+  String get readySafetyViewLink => 'Sicherheitshinweise ansehen';
+
+  @override
+  String get readySafetyAck => 'Gelesen';
+
+  @override
+  String get readySafetyWaitingOther =>
+      'Warte darauf, dass die andere Partei die Hinweise bestätigt.';
+
+  @override
+  String get readySafetyBothReady => 'Ihr seid bereit für den Tausch';
+
+  @override
+  String get readyReportIssue => 'Problem melden';
+
+  @override
+  String get readyCancel => 'Abbrechen';
+
+  @override
+  String get readyPostpone => 'Verschieben';
+
+  @override
+  String get readyDone => 'Fertig';
+
+  @override
+  String get readyConfirmDone => 'Abschluss bestätigen';
+
+  @override
+  String get readyDisputeDone => 'Noch nicht fertig';
+
+  @override
+  String get readyWaitingConfirmation =>
+      'Warte auf Bestätigung der anderen Partei';
+
+  @override
+  String get readyOtherMarkedDone =>
+      'Die andere Partei hat den Tausch als abgeschlossen markiert. Bestätigen?';
+
+  @override
+  String get doneReviewTitle => 'Wie war der Tausch?';
+
+  @override
+  String get doneReviewLabel => 'Ein paar Worte (optional)';
+
+  @override
+  String get doneReviewSubmit => 'Senden';
+
+  @override
+  String get cancelReasonTitle => 'Was ist passiert?';
+
+  @override
+  String get cancelReasonNoShow => 'Die andere Person ist nicht erschienen';
+
+  @override
+  String get cancelReasonBookMismatch =>
+      'Das Buch entsprach nicht den Erwartungen';
+
+  @override
+  String get cancelReasonChangedMind => 'Ich habe es mir anders überlegt';
+
+  @override
+  String get cancelReasonOther => 'Etwas anderes';
+
+  @override
+  String get cancelReasonDetailsLabel => 'Details (optional)';
+
+  @override
+  String get cancelReasonSubmit => 'Tausch abbrechen';
 
   @override
   String get offersEmptyReceived =>

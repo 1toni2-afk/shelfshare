@@ -15,6 +15,18 @@ IconData notificationIcon(NotificationType type) {
     case NotificationType.exchangeRequestAccepted:
     case NotificationType.exchangeRequestRejected:
     case NotificationType.exchangeMeetingScheduled:
+    case NotificationType.exchangeMeetingProposed:
+    case NotificationType.exchangeMeetingAccepted:
+    case NotificationType.exchangeMeetingDeclined:
+    case NotificationType.exchangePostponed:
+    case NotificationType.exchangeContactShared:
+    case NotificationType.exchangeReady:
+    case NotificationType.exchangeDonePendingConfirmation:
+    case NotificationType.exchangeDoneDisputed:
+    case NotificationType.exchangeCompleted:
+    case NotificationType.exchangeCancelled:
+    case NotificationType.exchangeBookPending:
+    case NotificationType.exchangeReopened:
       return Icons.swap_horiz;
     case NotificationType.priceOfferReceived:
     case NotificationType.priceOfferAccepted:
