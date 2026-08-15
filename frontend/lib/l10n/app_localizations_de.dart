@@ -3522,4 +3522,64 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingFlowFinish => 'Zu ShelfShare';
+
+  @override
+  String get genreFiction => 'Belletristik';
+
+  @override
+  String get genreNonFiction => 'Sachbuch';
+
+  @override
+  String get genreClassic => 'Klassiker';
+
+  @override
+  String get genreRomanianClassic => 'Rumänischer Klassiker';
+
+  @override
+  String get genreFantasy => 'Fantasy';
+
+  @override
+  String get genreSciFi => 'Science-Fiction';
+
+  @override
+  String get genreThriller => 'Thriller';
+
+  @override
+  String get genreMystery => 'Krimi';
+
+  @override
+  String get genreDystopia => 'Dystopie';
+
+  @override
+  String get genreRomance => 'Liebesroman';
+
+  @override
+  String get genreHistorical => 'Historisch';
+
+  @override
+  String get genreBiography => 'Biografie';
+
+  @override
+  String get genreSelfHelp => 'Selbsthilfe';
+
+  @override
+  String get genrePsychology => 'Psychologie';
+
+  @override
+  String get genrePhilosophy => 'Philosophie';
+
+  @override
+  String get genreBusiness => 'Business';
+
+  @override
+  String get genrePoetry => 'Lyrik';
+
+  @override
+  String get genreChildren => 'Kinder';
+
+  @override
+  String get genreYoungAdult => 'Young Adult';
+
+  @override
+  String get genreComics => 'Comics';
 }

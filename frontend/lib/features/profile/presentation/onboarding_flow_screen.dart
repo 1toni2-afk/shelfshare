@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
 import '../../book_match/presentation/book_match_screen.dart';
 import '../../books/presentation/add_book_screen.dart';
+import '../../../shared/utils/genre_localization.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
 
@@ -345,7 +346,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
         children: [
           for (final genre in genres)
             FilterChip(
-              label: Text(genre),
+              label: Text(localizedGenre(context, genre)),
               selected: _selectedGenres.contains(genre),
               onSelected: (selected) => setState(() {
                 if (selected) {

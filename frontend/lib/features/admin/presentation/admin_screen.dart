@@ -6,6 +6,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/admin_models.dart';
 import '../../../data/models/upcoming_release.dart';
+import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/admin_controller.dart';
@@ -422,7 +423,7 @@ class _MarketplaceStatsGrid extends StatelessWidget {
                       separatorBuilder: (_, _) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         final g = stats.topGenresByListings[index];
-                        return Chip(label: Text('${g.genre} (${g.count})'));
+                        return Chip(label: Text('${localizedGenre(context, g.genre)} (${g.count})'));
                       },
                     ),
                   ),

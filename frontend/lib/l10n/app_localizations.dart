@@ -6305,6 +6305,126 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Intră în ShelfShare'**
   String get onboardingFlowFinish;
+
+  /// No description provided for @genreFiction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ficțiune'**
+  String get genreFiction;
+
+  /// No description provided for @genreNonFiction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Non-ficțiune'**
+  String get genreNonFiction;
+
+  /// No description provided for @genreClassic.
+  ///
+  /// In ro, this message translates to:
+  /// **'Clasic'**
+  String get genreClassic;
+
+  /// No description provided for @genreRomanianClassic.
+  ///
+  /// In ro, this message translates to:
+  /// **'Clasic românesc'**
+  String get genreRomanianClassic;
+
+  /// No description provided for @genreFantasy.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fantasy'**
+  String get genreFantasy;
+
+  /// No description provided for @genreSciFi.
+  ///
+  /// In ro, this message translates to:
+  /// **'SF'**
+  String get genreSciFi;
+
+  /// No description provided for @genreThriller.
+  ///
+  /// In ro, this message translates to:
+  /// **'Thriller'**
+  String get genreThriller;
+
+  /// No description provided for @genreMystery.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mister'**
+  String get genreMystery;
+
+  /// No description provided for @genreDystopia.
+  ///
+  /// In ro, this message translates to:
+  /// **'Distopie'**
+  String get genreDystopia;
+
+  /// No description provided for @genreRomance.
+  ///
+  /// In ro, this message translates to:
+  /// **'Romantic'**
+  String get genreRomance;
+
+  /// No description provided for @genreHistorical.
+  ///
+  /// In ro, this message translates to:
+  /// **'Istoric'**
+  String get genreHistorical;
+
+  /// No description provided for @genreBiography.
+  ///
+  /// In ro, this message translates to:
+  /// **'Biografie'**
+  String get genreBiography;
+
+  /// No description provided for @genreSelfHelp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dezvoltare personală'**
+  String get genreSelfHelp;
+
+  /// No description provided for @genrePsychology.
+  ///
+  /// In ro, this message translates to:
+  /// **'Psihologie'**
+  String get genrePsychology;
+
+  /// No description provided for @genrePhilosophy.
+  ///
+  /// In ro, this message translates to:
+  /// **'Filosofie'**
+  String get genrePhilosophy;
+
+  /// No description provided for @genreBusiness.
+  ///
+  /// In ro, this message translates to:
+  /// **'Business'**
+  String get genreBusiness;
+
+  /// No description provided for @genrePoetry.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poezie'**
+  String get genrePoetry;
+
+  /// No description provided for @genreChildren.
+  ///
+  /// In ro, this message translates to:
+  /// **'Copii'**
+  String get genreChildren;
+
+  /// No description provided for @genreYoungAdult.
+  ///
+  /// In ro, this message translates to:
+  /// **'Young adult'**
+  String get genreYoungAdult;
+
+  /// No description provided for @genreComics.
+  ///
+  /// In ro, this message translates to:
+  /// **'Benzi desenate'**
+  String get genreComics;
 }
 
 class _AppLocalizationsDelegate

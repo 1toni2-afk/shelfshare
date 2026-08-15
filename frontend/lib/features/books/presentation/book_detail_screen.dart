@@ -13,6 +13,7 @@ import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../data/models/price_offer.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
+import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
@@ -612,7 +613,8 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            if (book.book.genre != null) _GenrePill(label: book.book.genre!),
+            if (book.book.genre != null)
+              _GenrePill(label: localizedGenre(context, book.book.genre!)),
             _OutlinePill(
               icon: Icons.auto_stories_outlined,
               label: book.condition.label(l10n),
@@ -1240,7 +1242,11 @@ class _AboutBookSheet extends StatelessWidget {
               spacing: 16,
               runSpacing: 8,
               children: [
-                if (book.genre != null) _MetaItem(icon: Icons.category_outlined, text: book.genre!),
+                if (book.genre != null)
+                  _MetaItem(
+                    icon: Icons.category_outlined,
+                    text: localizedGenre(context, book.genre!),
+                  ),
                 if (book.publishedYear != null)
                   _MetaItem(icon: Icons.calendar_today_outlined, text: '${book.publishedYear}'),
                 if (book.pageCount != null)

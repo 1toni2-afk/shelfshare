@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../data/book_match_repository.dart';
@@ -503,7 +504,7 @@ class _BookMatchCardView extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final meta = [
-      if (card.genre != null && card.genre!.isNotEmpty) card.genre!,
+      if (card.genre != null && card.genre!.isNotEmpty) localizedGenre(context, card.genre!),
       if (card.publishedYear != null) '${card.publishedYear}',
     ].join(' · ');
 

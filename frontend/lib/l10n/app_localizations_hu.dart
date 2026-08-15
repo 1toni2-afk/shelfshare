@@ -3489,4 +3489,64 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get onboardingFlowFinish => 'Belépés a ShelfShare-be';
+
+  @override
+  String get genreFiction => 'Szépirodalom';
+
+  @override
+  String get genreNonFiction => 'Ismeretterjesztő';
+
+  @override
+  String get genreClassic => 'Klasszikus';
+
+  @override
+  String get genreRomanianClassic => 'Román klasszikus';
+
+  @override
+  String get genreFantasy => 'Fantasy';
+
+  @override
+  String get genreSciFi => 'Sci-Fi';
+
+  @override
+  String get genreThriller => 'Thriller';
+
+  @override
+  String get genreMystery => 'Krimi';
+
+  @override
+  String get genreDystopia => 'Disztópia';
+
+  @override
+  String get genreRomance => 'Romantikus';
+
+  @override
+  String get genreHistorical => 'Történelmi';
+
+  @override
+  String get genreBiography => 'Életrajz';
+
+  @override
+  String get genreSelfHelp => 'Önsegítő';
+
+  @override
+  String get genrePsychology => 'Pszichológia';
+
+  @override
+  String get genrePhilosophy => 'Filozófia';
+
+  @override
+  String get genreBusiness => 'Üzlet';
+
+  @override
+  String get genrePoetry => 'Költészet';
+
+  @override
+  String get genreChildren => 'Gyerekeknek';
+
+  @override
+  String get genreYoungAdult => 'Young Adult';
+
+  @override
+  String get genreComics => 'Képregény';
 }
