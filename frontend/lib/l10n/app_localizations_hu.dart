@@ -3303,4 +3303,190 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
+
+  @override
+  String get bookMatchTitle => 'Könyvpárosítás';
+
+  @override
+  String get bookMatchEntryTooltip => 'Könyvpárosítás';
+
+  @override
+  String get bookMatchYesTooltip => 'Tetszik';
+
+  @override
+  String get bookMatchNoTooltip => 'Nem érdekel';
+
+  @override
+  String get bookMatchSkip => 'Kihagyom';
+
+  @override
+  String get bookMatchHint =>
+      'Húzd jobbra az igenhez, balra a nemhez, felfelé a kihagyáshoz.';
+
+  @override
+  String get bookMatchStampYes => 'IGEN';
+
+  @override
+  String get bookMatchStampNo => 'NEM';
+
+  @override
+  String get bookMatchStampSkip => 'SKIP';
+
+  @override
+  String get bookMatchDiscoveryBadge => 'Felfedezés';
+
+  @override
+  String get bookMatchEmptyTitle => 'Egyelőre ennyi';
+
+  @override
+  String get bookMatchEmptyBody =>
+      'Mindent láttál, amit most tudtunk ajánlani, nézz vissza később.';
+
+  @override
+  String get bookMatchLoadError => 'Nem sikerült betölteni az ajánlásokat.';
+
+  @override
+  String get bookMatchRecalibrateTooltip => 'Újrakalibrálás';
+
+  @override
+  String get bookMatchRecalibrateTitle => 'Újrakalibrálod az ízlésedet?';
+
+  @override
+  String get bookMatchRecalibrateWarning =>
+      'A preferenciáid részben visszaállnak: a műfaji pontszámok csökkennek, és egy ideig újra vegyesebb könyveket látsz majd. A művelet nem vonható vissza.';
+
+  @override
+  String get bookMatchRecalibrateConfirm => 'Újrakalibrálás';
+
+  @override
+  String get bookMatchRecalibrateDone => 'A preferenciáid újrakalibrálva.';
+
+  @override
+  String get bookMatchRecalibrateError =>
+      'Most nem sikerült az újrakalibrálás.';
+
+  @override
+  String get bookMatchRecalibrateCooldownTitle =>
+      'Az újrakalibrálás nem érhető el';
+
+  @override
+  String bookMatchRecalibrateCooldownBody(int days) {
+    return '$days nap múlva kalibrálhatsz újra.';
+  }
+
+  @override
+  String onboardingFlowStepLabel(int step, int total) {
+    return '$step. lépés / $total';
+  }
+
+  @override
+  String get onboardingFlowSkip => 'Kihagyom';
+
+  @override
+  String get onboardingFlowBackTooltip => 'Vissza';
+
+  @override
+  String get onboardingFlowGenresTitle => 'Mit szeretsz olvasni?';
+
+  @override
+  String get onboardingFlowGenresSubtitle =>
+      'Válassz néhány műfajt - ezekből állítjuk össze az első könyvajánlásaidat.';
+
+  @override
+  String get onboardingFlowFrequencyTitle => 'Milyen gyakran olvasol?';
+
+  @override
+  String get onboardingFlowFrequencySubtitle =>
+      'Segít beállítani, milyen gyakran mutassunk új könyveket.';
+
+  @override
+  String get onboardingFlowFrequencyLowTitle => 'Keveset';
+
+  @override
+  String get onboardingFlowFrequencyLowDesc => '1-2 könyv havonta';
+
+  @override
+  String get onboardingFlowFrequencyMidTitle => 'Közepesen';
+
+  @override
+  String get onboardingFlowFrequencyMidDesc => 'Kb. egy könyv hetente';
+
+  @override
+  String get onboardingFlowFrequencyHighTitle => 'Sokat';
+
+  @override
+  String get onboardingFlowFrequencyHighDesc => 'Több könyv hetente';
+
+  @override
+  String get onboardingFlowLocationTitle => 'Hol találunk meg?';
+
+  @override
+  String get onboardingFlowLocationSubtitle =>
+      'A helyszínedet arra használjuk, hogy valós, közeli cseréket mutassunk.';
+
+  @override
+  String get onboardingFlowLanguagesLabel => 'Nyelvek, amiken olvasol';
+
+  @override
+  String get onboardingFlowPurposeTitle => 'Mit keresel a ShelfShare-en?';
+
+  @override
+  String get onboardingFlowPurposeSubtitle =>
+      'Segít személyre szabni a kezdőlapodat.';
+
+  @override
+  String get onboardingFlowPurposeSwapTitle => 'Könyvcsere';
+
+  @override
+  String get onboardingFlowPurposeSwapDesc =>
+      'Adok és kapok könyveket más tagoktól';
+
+  @override
+  String get onboardingFlowPurposeSellTitle => 'Könyveket adok el';
+
+  @override
+  String get onboardingFlowPurposeSellDesc =>
+      'Főleg a polcaimat szeretném kiüríteni';
+
+  @override
+  String get onboardingFlowPurposeDiscoverTitle => 'Csak nézelődöm';
+
+  @override
+  String get onboardingFlowPurposeDiscoverDesc =>
+      'Ajánlásokat böngészek, cserék nélkül egyelőre';
+
+  @override
+  String get onboardingFlowPurposeAllTitle => 'Mindegyik a fentiek közül';
+
+  @override
+  String get onboardingFlowPurposeAllDesc => 'Mindenért itt vagyok';
+
+  @override
+  String get onboardingFlowBookMatchTitle => 'Nézzük, mi tetszik neked';
+
+  @override
+  String get onboardingFlowBookMatchSubtitle =>
+      'Pörgess át néhány könyvet - ez segít jobb ajánlásokat készíteni már az elejétől.';
+
+  @override
+  String get onboardingFlowAddBooksTitle =>
+      'Tedd fel az első könyveidet a polcra';
+
+  @override
+  String get onboardingFlowAddBooksSubtitle =>
+      'Adj hozzá 2-3 könyvet, amelyek otthon vannak nálad - rögtön megjelennek a profilodban.';
+
+  @override
+  String get onboardingFlowAddBooksCta => 'Könyv hozzáadása';
+
+  @override
+  String get onboardingFlowAddBooksCtaSubtitle =>
+      'Keress egy címet vagy szkenneld be a vonalkódot';
+
+  @override
+  String get onboardingFlowAddBooksSkipNote =>
+      'Ezt a lépést kihagyhatod, és később a Polcomból is hozzáadhatsz könyveket.';
+
+  @override
+  String get onboardingFlowFinish => 'Belépés a ShelfShare-be';
 }

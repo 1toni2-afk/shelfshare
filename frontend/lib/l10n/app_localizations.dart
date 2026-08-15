@@ -5975,6 +5975,336 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Astăzi este Ziua Internațională a Cărții! 📚'**
   String get greetBookDay;
+
+  /// No description provided for @bookMatchTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Potriviri de cărți'**
+  String get bookMatchTitle;
+
+  /// No description provided for @bookMatchEntryTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Potriviri de cărți'**
+  String get bookMatchEntryTooltip;
+
+  /// No description provided for @bookMatchYesTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Îmi place'**
+  String get bookMatchYesTooltip;
+
+  /// No description provided for @bookMatchNoTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu mă interesează'**
+  String get bookMatchNoTooltip;
+
+  /// No description provided for @bookMatchSkip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sari peste'**
+  String get bookMatchSkip;
+
+  /// No description provided for @bookMatchHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trage cardul la dreapta pentru da, la stânga pentru nu sau în sus ca să sari peste.'**
+  String get bookMatchHint;
+
+  /// No description provided for @bookMatchStampYes.
+  ///
+  /// In ro, this message translates to:
+  /// **'DA'**
+  String get bookMatchStampYes;
+
+  /// No description provided for @bookMatchStampNo.
+  ///
+  /// In ro, this message translates to:
+  /// **'NU'**
+  String get bookMatchStampNo;
+
+  /// No description provided for @bookMatchStampSkip.
+  ///
+  /// In ro, this message translates to:
+  /// **'SKIP'**
+  String get bookMatchStampSkip;
+
+  /// No description provided for @bookMatchDiscoveryBadge.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descoperire'**
+  String get bookMatchDiscoveryBadge;
+
+  /// No description provided for @bookMatchEmptyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gata pentru moment'**
+  String get bookMatchEmptyTitle;
+
+  /// No description provided for @bookMatchEmptyBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai văzut tot ce aveam pentru tine acum, revino mai târziu.'**
+  String get bookMatchEmptyBody;
+
+  /// No description provided for @bookMatchLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca recomandările.'**
+  String get bookMatchLoadError;
+
+  /// No description provided for @bookMatchRecalibrateTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recalibrare'**
+  String get bookMatchRecalibrateTooltip;
+
+  /// No description provided for @bookMatchRecalibrateTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recalibrezi preferințele?'**
+  String get bookMatchRecalibrateTitle;
+
+  /// No description provided for @bookMatchRecalibrateWarning.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preferințele tale vor fi semi-resetate: scorurile pe genuri se atenuează și o perioadă vei vedea din nou cărți variate. Acțiunea nu poate fi anulată.'**
+  String get bookMatchRecalibrateWarning;
+
+  /// No description provided for @bookMatchRecalibrateConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recalibrează'**
+  String get bookMatchRecalibrateConfirm;
+
+  /// No description provided for @bookMatchRecalibrateDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preferințele au fost recalibrate.'**
+  String get bookMatchRecalibrateDone;
+
+  /// No description provided for @bookMatchRecalibrateError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut recalibra acum.'**
+  String get bookMatchRecalibrateError;
+
+  /// No description provided for @bookMatchRecalibrateCooldownTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recalibrare indisponibilă'**
+  String get bookMatchRecalibrateCooldownTitle;
+
+  /// No description provided for @bookMatchRecalibrateCooldownBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai poți recalibra peste {days} zile.'**
+  String bookMatchRecalibrateCooldownBody(int days);
+
+  /// No description provided for @onboardingFlowStepLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pasul {step} din {total}'**
+  String onboardingFlowStepLabel(int step, int total);
+
+  /// No description provided for @onboardingFlowSkip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sari peste'**
+  String get onboardingFlowSkip;
+
+  /// No description provided for @onboardingFlowBackTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Înapoi'**
+  String get onboardingFlowBackTooltip;
+
+  /// No description provided for @onboardingFlowGenresTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce-ți place să citești?'**
+  String get onboardingFlowGenresTitle;
+
+  /// No description provided for @onboardingFlowGenresSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege câteva genuri - le folosim ca să-ți pregătim primele potriviri de cărți.'**
+  String get onboardingFlowGenresSubtitle;
+
+  /// No description provided for @onboardingFlowFrequencyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cât de des citești?'**
+  String get onboardingFlowFrequencyTitle;
+
+  /// No description provided for @onboardingFlowFrequencySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ne ajută să calibrăm cât de des îți arătăm cărți noi.'**
+  String get onboardingFlowFrequencySubtitle;
+
+  /// No description provided for @onboardingFlowFrequencyLowTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Puțin'**
+  String get onboardingFlowFrequencyLowTitle;
+
+  /// No description provided for @onboardingFlowFrequencyLowDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'1-2 cărți pe lună'**
+  String get onboardingFlowFrequencyLowDesc;
+
+  /// No description provided for @onboardingFlowFrequencyMidTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mediu'**
+  String get onboardingFlowFrequencyMidTitle;
+
+  /// No description provided for @onboardingFlowFrequencyMidDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'O carte pe săptămână'**
+  String get onboardingFlowFrequencyMidDesc;
+
+  /// No description provided for @onboardingFlowFrequencyHighTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mult'**
+  String get onboardingFlowFrequencyHighTitle;
+
+  /// No description provided for @onboardingFlowFrequencyHighDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Câteva cărți pe săptămână'**
+  String get onboardingFlowFrequencyHighDesc;
+
+  /// No description provided for @onboardingFlowLocationTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Unde te găsim?'**
+  String get onboardingFlowLocationTitle;
+
+  /// No description provided for @onboardingFlowLocationSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Folosim locația ca să-ți arătăm schimburi realiste, în apropiere.'**
+  String get onboardingFlowLocationSubtitle;
+
+  /// No description provided for @onboardingFlowLanguagesLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Limbi în care citești'**
+  String get onboardingFlowLanguagesLabel;
+
+  /// No description provided for @onboardingFlowPurposeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce cauți pe ShelfShare?'**
+  String get onboardingFlowPurposeTitle;
+
+  /// No description provided for @onboardingFlowPurposeSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ne ajută să-ți personalizăm pagina principală.'**
+  String get onboardingFlowPurposeSubtitle;
+
+  /// No description provided for @onboardingFlowPurposeSwapTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb cărți'**
+  String get onboardingFlowPurposeSwapTitle;
+
+  /// No description provided for @onboardingFlowPurposeSwapDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dau și primesc cărți de la alți membri'**
+  String get onboardingFlowPurposeSwapDesc;
+
+  /// No description provided for @onboardingFlowPurposeSellTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vând cărți'**
+  String get onboardingFlowPurposeSellTitle;
+
+  /// No description provided for @onboardingFlowPurposeSellDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vreau mai ales să-mi eliberez rafturile'**
+  String get onboardingFlowPurposeSellDesc;
+
+  /// No description provided for @onboardingFlowPurposeDiscoverTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Doar descopăr'**
+  String get onboardingFlowPurposeDiscoverTitle;
+
+  /// No description provided for @onboardingFlowPurposeDiscoverDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Explorez recomandări, fără schimburi încă'**
+  String get onboardingFlowPurposeDiscoverDesc;
+
+  /// No description provided for @onboardingFlowPurposeAllTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate de mai sus'**
+  String get onboardingFlowPurposeAllTitle;
+
+  /// No description provided for @onboardingFlowPurposeAllDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sunt aici pentru tot'**
+  String get onboardingFlowPurposeAllDesc;
+
+  /// No description provided for @onboardingFlowBookMatchTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Hai să vedem ce-ți place'**
+  String get onboardingFlowBookMatchTitle;
+
+  /// No description provided for @onboardingFlowBookMatchSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dă swipe la câteva cărți - ne ajută să-ți pregătim recomandări mai bune chiar de la început.'**
+  String get onboardingFlowBookMatchSubtitle;
+
+  /// No description provided for @onboardingFlowAddBooksTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pune primele cărți pe raft'**
+  String get onboardingFlowAddBooksTitle;
+
+  /// No description provided for @onboardingFlowAddBooksSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă 2-3 cărți pe care le ai acasă - apar direct în profilul tău.'**
+  String get onboardingFlowAddBooksSubtitle;
+
+  /// No description provided for @onboardingFlowAddBooksCta.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă o carte'**
+  String get onboardingFlowAddBooksCta;
+
+  /// No description provided for @onboardingFlowAddBooksCtaSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută titlu sau scanează'**
+  String get onboardingFlowAddBooksCtaSubtitle;
+
+  /// No description provided for @onboardingFlowAddBooksSkipNote.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți sări peste pasul ăsta și să adaugi cărți mai târziu, din Raftul meu.'**
+  String get onboardingFlowAddBooksSkipNote;
+
+  /// No description provided for @onboardingFlowFinish.
+  ///
+  /// In ro, this message translates to:
+  /// **'Intră în ShelfShare'**
+  String get onboardingFlowFinish;
 }
 
 class _AppLocalizationsDelegate

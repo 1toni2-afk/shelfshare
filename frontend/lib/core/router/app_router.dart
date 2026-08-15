@@ -16,6 +16,7 @@ import '../../features/books/presentation/books_map_screen.dart';
 import '../../features/books/presentation/browse_screen.dart';
 import '../../features/books/presentation/discover_screen.dart';
 import '../../features/books/presentation/trash_screen.dart';
+import '../../features/book_match/presentation/book_match_screen.dart';
 import '../../features/books/presentation/my_library_screen.dart';
 import '../../features/chat/presentation/conversation_screen.dart';
 import '../../features/chat/presentation/conversations_list_screen.dart';
@@ -43,7 +44,7 @@ import '../../features/collections/presentation/collection_detail_screen.dart';
 import '../../features/groups/presentation/groups_screen.dart';
 import '../../features/groups/presentation/group_detail_screen.dart';
 import '../../features/profile/presentation/seller_analytics_screen.dart';
-import '../../features/profile/presentation/onboarding_screen.dart';
+import '../../features/profile/presentation/onboarding_flow_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/safety/presentation/help_center_screen.dart';
 import '../../features/safety/presentation/safety_center_screen.dart';
@@ -90,15 +91,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
       if (!isAuthenticated && !goingToAuth) return '/login';
       if (isAuthenticated && goingToAuth) return '/';
-      // Primul login - userul nu și-a ales încă username-ul. Nu blocăm
-      // autentificarea, doar restul aplicației până completează.
+      // Onboarding-ul e un wizard unic (username + chestionar de cititor +
+      // BookMatch + primele cărți, vezi onboarding_flow_screen.dart) - rămânem
+      // pe /onboarding cât timp oricare din cele două semnale de completare
+      // lipsește, ca userul să nu fie scos din mijlocul wizard-ului. Wizard-ul
+      // salvează username-ul imediat la pasul 1, dar restul răspunsurilor abia
+      // la final (readingSurveyCompletedAt), deci un refresh la jumătatea
+      // wizard-ului reintră direct la pasul de chestionar, nu de la username.
       if (isAuthenticated &&
-          authState.user.username == null &&
+          (authState.user.username == null ||
+              authState.user.readingSurveyCompletedAt == null) &&
           !goingToOnboarding) {
         return '/onboarding';
       }
       if (isAuthenticated &&
           authState.user.username != null &&
+          authState.user.readingSurveyCompletedAt != null &&
           goingToOnboarding) {
         return '/';
       }
@@ -119,7 +127,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           code: state.uri.queryParameters['code'],
         ),
       ),
-      GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingScreen()),
+      GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingFlowScreen()),
 
       // ShellRoute exterior - toate rutele autentificate stau înăuntru. Aici
       // se randează MainScaffold cu sidebar-ul. Când user-ul navighează între
@@ -218,6 +226,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/bookshelf', builder: (context, state) => const MyBookshelfScreen()),
           GoRoute(path: '/activity-feed', builder: (context, state) => const ActivityFeedScreen()),
           GoRoute(path: '/smart-matches', builder: (context, state) => const SmartMatchesScreen()),
+          GoRoute(path: '/book-match', builder: (context, state) => const BookMatchScreen()),
           GoRoute(
             path: '/auctions/:id',
             builder: (context, state) => AuctionDetailScreen(auctionId: state.pathParameters['id']!),

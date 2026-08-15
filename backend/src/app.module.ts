@@ -30,6 +30,7 @@ import { GroupsModule } from './groups/groups.module';
 import { AccountDeletionModule } from './account-deletion/account-deletion.module';
 import { PreRegistrationModule } from './pre-registration/pre-registration.module';
 import { RealtimeModule } from './common/realtime/realtime.module';
+import { BookMatchModule } from './book-match/book-match.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { RealtimeModule } from './common/realtime/realtime.module';
     GroupsModule,
     AccountDeletionModule,
     PreRegistrationModule,
+    BookMatchModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: HttpThrottlerGuard }],

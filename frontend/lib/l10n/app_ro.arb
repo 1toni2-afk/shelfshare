@@ -1,1806 +1,1878 @@
-﻿{
-    "@@locale":  "ro",
-    "navHome":  "Acasă",
-    "navSearch":  "Descoperă",
-    "navLibrary":  "Raftul meu",
-    "navChat":  "Chat",
-    "navProfile":  "Profil",
-    "commonCancel":  "Anulează",
-    "commonSubmit":  "Trimite",
-    "commonSave":  "Salvează",
-    "commonSeeAll":  "Vezi tot",
-    "commonUnknownUser":  "Utilizator",
-    "commonAbout":  "Despre",
-    "commonRating":  "Rating",
-    "commonBooksExchanged":  "Cărți schimbate",
-    "commonRetry":  "Încearcă din nou",
-    "commonDone":  "Gata",
-    "commonClose":  "Închide",
-    "commonDelete":  "Șterge",
-    "commonEdit":  "Editează",
-    "commonShowMore":  "Vezi mai mult",
-    "commonShowLess":  "Vezi mai puțin",
-    "commonConfirm":  "Confirmă",
-    "commonGenericError":  "Ceva nu a mers bine. Încearcă din nou.",
-    "reportSubmitted":  "Raportul a fost trimis.",
-    "continueWithGoogle":  "Continuă cu Google",
-    "reportDialogTitle":  "Raportează",
-    "trustScoreTitle":  "Scor de încredere",
-    "trustScoreSubtitle":  "Calculat din activitatea din aplicație, nu e o verificare de identitate",
-    "trustScoreEmailVerified":  "Email verificat",
-    "trustScoreCompletedRate":  "{percent}% schimburi finalizate",
-    "@trustScoreCompletedRate":  {
-                                     "placeholders":  {
-                                                          "percent":  {
-                                                                          "type":  "int"
-                                                                      }
-                                                      }
-                                 },
-    "trustScoreRespondsIn":  "Răspunde în ~{time}",
-    "@trustScoreRespondsIn":  {
-                                  "placeholders":  {
-                                                       "time":  {
-                                                                    "type":  "String"
-                                                                }
-                                                   }
-                              },
-    "trustScoreLastActiveToday":  "Activ astăzi",
-    "trustScoreLastActiveDays":  "Activ acum {days} zile",
-    "@trustScoreLastActiveDays":  {
-                                      "placeholders":  {
-                                                           "days":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                       }
-                                  },
-    "trustScoreResponseRate":  "{percent}% rată de răspuns",
-    "@trustScoreResponseRate":  {
-                                    "placeholders":  {
-                                                         "percent":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                     }
-                                },
-    "trustScoreAverageSwapTime":  "Schimb finalizat în ~{time}",
-    "@trustScoreAverageSwapTime":  {
-                                       "placeholders":  {
-                                                            "time":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                        }
-                                   },
-    "memberSinceDays":  "Membru din {days} zile",
-    "@memberSinceDays":  {
-                             "placeholders":  {
-                                                  "days":  {
-                                                               "type":  "int"
-                                                           }
-                                              }
-                         },
-    "memberSinceMonths":  "Membru de {months} luni",
-    "@memberSinceMonths":  {
-                               "placeholders":  {
-                                                    "months":  {
-                                                                   "type":  "int"
-                                                               }
-                                                }
-                           },
-    "memberSinceYears":  "Membru de {years} ani",
-    "@memberSinceYears":  {
-                              "placeholders":  {
-                                                   "years":  {
-                                                                 "type":  "int"
-                                                             }
-                                               }
-                          },
-    "durationMinutes":  "{minutes} min",
-    "@durationMinutes":  {
-                             "placeholders":  {
-                                                  "minutes":  {
-                                                                  "type":  "int"
-                                                              }
-                                              }
-                         },
-    "durationHours":  "{hours}h",
-    "@durationHours":  {
-                           "placeholders":  {
-                                                "hours":  {
-                                                              "type":  "int"
-                                                          }
-                                            }
-                       },
-    "durationDays":  "{days} zile",
-    "@durationDays":  {
-                          "placeholders":  {
-                                               "days":  {
-                                                            "type":  "int"
-                                                        }
-                                           }
-                      },
-    "priceLei":  "{amount} lei",
-    "@priceLei":  {
-                      "placeholders":  {
-                                           "amount":  {
-                                                          "type":  "String"
-                                                      }
-                                       }
-                  },
-    "bookAvailableForSwapShort":  "Schimb",
-    "commonEmailLabel":  "Email",
-    "commonEmailInvalid":  "Email invalid",
-    "commonOr":  "sau",
-    "commonRequired":  "Obligatoriu",
-    "commonContinue":  "Continuă",
-    "loginWelcomeBack":  "Bun venit înapoi",
-    "authPasswordLabel":  "Parolă",
-    "authEnterPasswordError":  "Introdu parola",
-    "authMinEightChars":  "Minim 8 caractere",
-    "authForgotPasswordLink":  "Ai uitat parola?",
-    "authLoginSubmit":  "Autentificare",
-    "authNoAccount":  "Nu ai cont? ",
-    "authCreateOne":  "Creează unul",
-    "authGoogleFailed":  "Autentificarea cu Google a eșuat. Încearcă din nou.",
-    "supportContactButton":  "Nu te poți loga? Contactează-ne",
-    "supportDialogTitle":  "Contactează support",
-    "supportDialogSubtitle":  "Spune-ne ce problemă ai și îți răspundem pe email.",
-    "supportNameLabel":  "Nume",
-    "supportPhoneLabel":  "Telefon (opțional)",
-    "supportMessageLabel":  "Mesajul tău",
-    "supportCaptchaAnswerLabel":  "Răspunsul tău",
-    "supportSubmit":  "Trimite mesajul",
-    "supportSuccessMessage":  "Mesaj trimis! Îți răspundem cât mai curând pe email.",
-    "supportGenericError":  "Nu am putut trimite mesajul. Încearcă din nou.",
-    "authRegisterTitle":  "Creează cont",
-    "authRegisterSubtitle":  "Alătură-te comunității ShelfShare",
-    "authReferralCodeLabel":  "Cod de invitație (opțional)",
-    "verifyCodeTooShort":  "Codul trebuie să aibă 6 cifre",
-    "verifySuccessSnackbar":  "Cont confirmat cu succes!",
-    "verifyInvalidOrExpired":  "Cod invalid sau expirat.",
-    "verifyResendSnackbar":  "Am retrimis codul, dacă e cazul.",
-    "verifyEmailHeading":  "Verifică-ți emailul",
-    "verifySentTo":  "Ți-am trimis un cod de confirmare pe {email}",
-    "@verifySentTo":  {
-                          "placeholders":  {
-                                               "email":  {
-                                                             "type":  "String"
-                                                         }
-                                           }
-                      },
-    "verifyConfirmButton":  "Confirmă",
-    "verifyResending":  "Se retrimite...",
-    "verifyResendPrompt":  "Nu ai primit codul? Retrimite",
-    "forgotPasswordTitle":  "Resetează parola",
-    "forgotPasswordSubtitle":  "Îți trimitem un cod de resetare pe email.",
-    "forgotPasswordSubmit":  "Trimite cod",
-    "forgotPasswordCodeHeading":  "Introdu codul primit pe email",
-    "forgotPasswordCodeSentTo":  "Ți-am trimis un cod de resetare pe {email}",
-    "@forgotPasswordCodeSentTo":  {
-                                      "placeholders":  {
-                                                           "email":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                       }
-                                  },
-    "resetPasswordTitle":  "Setează o parolă nouă",
-    "resetPasswordSubtitle":  "Alege o parolă nouă pentru contul tău",
-    "resetPasswordNewLabel":  "Parolă nouă",
-    "resetPasswordSubmit":  "Setează parola",
-    "resetPasswordSuccessHeading":  "Parolă schimbată",
-    "resetPasswordSuccessBody":  "Parola ta a fost actualizată. Te poți autentifica acum.",
-    "resetPasswordGoToLogin":  "Mergi la autentificare",
-    "resetPasswordGenericError":  "Nu am putut reseta parola. Încearcă din nou.",
-    "authConfirmPasswordLabel":  "Confirmă parola",
-    "authPasswordMismatch":  "Parolele nu coincid",
-    "onboardingTitle":  "Aproape gata!",
-    "onboardingSubtitle":  "Spune-ne cum vrei să te vadă ceilalți",
-    "onboardingFirstName":  "Prenume",
-    "onboardingLastName":  "Nume",
-    "onboardingUsername":  "Username",
-    "onboardingUsernameFormatError":  "3-20 caractere: litere, cifre sau underscore",
-    "onboardingGenericError":  "A apărut o eroare. Încearcă din nou.",
-    "onboardingNameVisibleSwitch":  "Fă numele vizibil public",
-    "onboardingUsernameAlwaysVisible":  "Username-ul rămâne mereu vizibil",
-    "profileTitle":  "Profilul meu",
-    "surveyTitle":  "Ce îți place să citești?",
-    "surveySubtitle":  "Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.",
-    "surveyGenresQuestion":  "Ce genuri te atrag?",
-    "surveyGenresLoadError":  "Nu am putut încărca lista de genuri.",
-    "surveyAuthorsQuestion":  "Autori preferați (opțional)",
-    "surveyAuthorsHint":  "Ex.: Mihail Sadoveanu, Ursula K. Le Guin",
-    "surveyPaceQuestion":  "Câte cărți citești pe lună?",
-    "surveySubmit":  "Salvează",
-    "surveySkip":  "Sar peste deocamdată",
-    "surveySaveError":  "Nu am putut salva răspunsurile. Încearcă din nou.",
-    "surveyChangeLaterHint":  "Poți schimba oricând răspunsurile din profil.",
-    "surveyPaceOption":  "{pace} cărți pe lună",
-    "@surveyPaceOption":  {
-        "placeholders":  {
-            "pace":  {
-                "type":  "String"
+{
+    "@@locale": "ro",
+    "navHome": "Acasă",
+    "navSearch": "Descoperă",
+    "navLibrary": "Raftul meu",
+    "navChat": "Chat",
+    "navProfile": "Profil",
+    "commonCancel": "Anulează",
+    "commonSubmit": "Trimite",
+    "commonSave": "Salvează",
+    "commonSeeAll": "Vezi tot",
+    "commonUnknownUser": "Utilizator",
+    "commonAbout": "Despre",
+    "commonRating": "Rating",
+    "commonBooksExchanged": "Cărți schimbate",
+    "commonRetry": "Încearcă din nou",
+    "commonDone": "Gata",
+    "commonClose": "Închide",
+    "commonDelete": "Șterge",
+    "commonEdit": "Editează",
+    "commonShowMore": "Vezi mai mult",
+    "commonShowLess": "Vezi mai puțin",
+    "commonConfirm": "Confirmă",
+    "commonGenericError": "Ceva nu a mers bine. Încearcă din nou.",
+    "reportSubmitted": "Raportul a fost trimis.",
+    "continueWithGoogle": "Continuă cu Google",
+    "reportDialogTitle": "Raportează",
+    "trustScoreTitle": "Scor de încredere",
+    "trustScoreSubtitle": "Calculat din activitatea din aplicație, nu e o verificare de identitate",
+    "trustScoreEmailVerified": "Email verificat",
+    "trustScoreCompletedRate": "{percent}% schimburi finalizate",
+    "@trustScoreCompletedRate": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
             }
         }
     },
-    "profilePhotoChoose":  "Alege o poză",
-    "profilePhotoRemove":  "Șterge poza",
-    "profilePhotoError":  "Nu am putut actualiza poza de profil.",
-    "profileCopyLink":  "Copiază linkul",
-    "profileLoadError":  "Nu am putut încărca profilul.",
-    "profileAboutMe":  "Despre mine",
-    "profileBadgesTitle":  "Insigne",
-    "profileMyExchanges":  "Schimburile mele",
-    "profileSafetyCenter":  "Centru de siguranță",
-    "profileHelpCenter":  "Întrebări frecvente",
-    "profileLeaderboard":  "Clasament",
-    "profileSendFeedback":  "Trimite feedback",
-    "profileEditProfile":  "Editează profilul",
-    "profileAdminPanel":  "Panou de administrare",
-    "profileLogout":  "Deconectare",
-    "profileLanguage":  "Limbă",
-    "profileDarkModeSection":  "Mod întunecat",
-    "profileThemeSystem":  "Automat (sistem)",
-    "profileThemeLight":  "Deschis",
-    "profileThemeDark":  "Întunecat",
-    "profileQrTooltip":  "Cod QR",
-    "profileQrDialogTitle":  "Codul tău QR",
-    "profileQrDialogBody":  "Oricine scanează acest cod îți poate deschide profilul.",
-    "profileReferralTitle":  "Codul tău de invitație",
-    "profileReferralSubtitle":  "Trimite-l prietenilor ca să te descopere pe ShelfShare",
-    "profileReferralCountLabel":  "{count} prieteni invitați",
-    "@profileReferralCountLabel":  {
-                                       "placeholders":  {
-                                                            "count":  {
-                                                                          "type":  "int"
-                                                                      }
-                                                        }
-                                   },
-    "profileReferralCopied":  "Cod copiat în clipboard",
-    "profileFeedbackHint":  "Ce ai vrea să ne spui?",
-    "profileFeedbackThanks":  "Mulțumim pentru feedback!",
-    "profileFeedbackError":  "Nu am putut trimite feedback-ul",
-    "profileUsernameLabel":  "Username",
-    "profileCityLabel":  "Oraș",
-    "profileNoCity":  "Fără oraș",
-    "profileShowAcquisitionHistory":  "Arată istoricul de achiziții pe profil",
-    "profileShowAcquisitionHistorySubtitle":  "Cărțile pe care le-ai primit prin schimburi sau cumpărături din aplicație",
-    "profileSaveError":  "Nu am putut salva profilul.",
-    "commonSendMessage":  "Trimite mesaj",
-    "publicProfileTitle":  "Profil",
-    "publicProfileFollowUpdateError":  "Nu am putut actualiza urmărirea",
-    "publicProfileMessageError":  "Nu am putut porni conversația.",
-    "publicProfileMemberSince":  "Membru din {year}",
-    "@publicProfileMemberSince":  {
-                                      "placeholders":  {
-                                                           "year":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                       }
-                                  },
-    "publicProfileFollowersFollowing":  "{followers} urmăritori · {following} urmăriți",
-    "@publicProfileFollowersFollowing":  {
-                                             "placeholders":  {
-                                                                  "followers":  {
-                                                                                    "type":  "int"
-                                                                                },
-                                                                  "following":  {
-                                                                                    "type":  "int"
-                                                                                }
-                                                              }
-                                         },
-    "publicProfileUnfollow":  "Nu mai urmări",
-    "publicProfileFollow":  "Urmărește",
-    "publicProfileReadingStats":  "Statistici de citit",
-    "publicProfileBooksListed":  "Cărți listate",
-    "publicProfileTotalPages":  "Total pagini",
-    "publicProfileFavoriteGenre":  "Gen preferat",
-    "publicProfileBooksShared":  "Cărți date",
-    "publicProfileBooksReceived":  "Cărți primite",
-    "publicProfileLongestBook":  "Cea mai lungă carte",
-    "publicProfileListedBooksCount":  "Cărți listate ({count})",
-    "@publicProfileListedBooksCount":  {
-                                           "placeholders":  {
-                                                                "count":  {
-                                                                              "type":  "int"
-                                                                          }
-                                                            }
-                                       },
-    "publicProfileAcquisitionHistory":  "Istoric cărți primite prin aplicație",
-    "publicProfileNoAcquisitions":  "Niciun schimb sau cumpărare finalizată încă.",
-    "publicProfileReviewsCount":  "Recenzii ({count})",
-    "@publicProfileReviewsCount":  {
-                                       "placeholders":  {
-                                                            "count":  {
-                                                                          "type":  "int"
-                                                                      }
-                                                        }
-                                   },
-    "leaderboardEmpty":  "Niciun oraș cu activitate încă.",
-    "leaderboardUnknownCity":  "Necunoscut",
-    "leaderboardExchangesCount":  "{count} schimburi",
-    "@leaderboardExchangesCount":  {
-                                       "placeholders":  {
-                                                            "count":  {
-                                                                          "type":  "int"
-                                                                      }
-                                                        }
-                                   },
-    "leaderboardLoadError":  "Nu am putut încărca clasamentul.",
-    "leaderboardTabCity":  "Pe orașe",
-    "leaderboardTabNational":  "Național",
-    "leaderboardTabTopReaders":  "Cititori",
-    "leaderboardPagesCount":  "{count} pagini",
-    "@leaderboardPagesCount":  {
-                                   "placeholders":  {
-                                                        "count":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                    }
-                               },
-    "profileGlobalStats":  "Statistici globale",
-    "profileMyBookshelf":  "Raftul meu",
-    "bookshelfTitle":  "Raftul meu",
-    "bookshelfTabReading":  "Citesc",
-    "bookshelfTabWantToRead":  "Vreau să citesc",
-    "bookshelfTabFinished":  "Terminate",
-    "bookshelfTabShared":  "Împărtășite",
-    "bookshelfEmpty":  "Nicio carte aici încă.",
-    "bookshelfLoadError":  "Nu am putut încărca raftul.",
-    "bookshelfImportTooltip":  "Importă din Goodreads sau StoryGraph",
-    "bookshelfImportGoodreads":  "Importă din Goodreads (CSV)",
-    "bookshelfImportStoryGraph":  "Importă din StoryGraph (CSV)",
-    "bookshelfImportSummary":  "{imported} cărți importate, {skipped} sărite",
-    "@bookshelfImportSummary":  {
-                                    "placeholders":  {
-                                                         "imported":  {
-                                                                          "type":  "int"
-                                                                      },
-                                                         "skipped":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                     }
-                                },
-    "bookshelfImportError":  "Nu am putut importa fișierul. Verifică dacă e un export CSV valid.",
-    "bookDetailShelfSectionTitle":  "Adaugă în raftul tău",
-    "gamificationLevel":  "Nivel {level}",
-    "@gamificationLevel":  {
-                               "placeholders":  {
-                                                    "level":  {
-                                                                  "type":  "int"
-                                                              }
-                                                }
-                           },
-    "gamificationXp":  "{xp} XP",
-    "@gamificationXp":  {
-                            "placeholders":  {
-                                                 "xp":  {
-                                                            "type":  "int"
-                                                        }
-                                             }
-                        },
-    "gamificationXpToNextLevel":  "{xp} XP până la nivelul următor",
-    "@gamificationXpToNextLevel":  {
-                                       "placeholders":  {
-                                                            "xp":  {
-                                                                       "type":  "int"
-                                                                   }
-                                                        }
-                                   },
-    "gamificationStreak":  "{days} zile la rând",
-    "@gamificationStreak":  {
-                                "placeholders":  {
-                                                     "days":  {
-                                                                  "type":  "int"
-                                                              }
-                                                 }
-                            },
-    "gamificationLongestStreak":  "Record: {days} zile",
-    "@gamificationLongestStreak":  {
-                                       "placeholders":  {
-                                                            "days":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                        }
-                                   },
-    "profileMonthlyChallenges":  "Provocări lunare",
-    "monthlyChallengesTitle":  "Provocări lunare",
-    "profileReadingChallenge":  "Provocarea de citit",
-    "readingChallengeTitle":  "Provocarea de citit {year}",
-    "@readingChallengeTitle":  {
-                                   "placeholders":  {
-                                                        "year":  {
-                                                                     "type":  "int"
-                                                                 }
-                                                    }
-                               },
-    "readingChallengeNoGoal":  "Nu ai setat încă un obiectiv pentru anul acesta.",
-    "readingChallengeProgress":  "{progress} din {goal} cărți terminate",
-    "@readingChallengeProgress":  {
-                                      "placeholders":  {
-                                                           "progress":  {
-                                                                            "type":  "int"
-                                                                        },
-                                                           "goal":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                       }
-                                  },
-    "readingChallengeSetGoal":  "Setează un obiectiv",
-    "readingChallengeGoalLabel":  "Câte cărți vrei să termini anul acesta?",
-    "profileActivityFeed":  "Activitate recentă",
-    "activityFeedTitle":  "Activitate recentă",
-    "activityFeedEmpty":  "Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.",
-    "activityFeedLoadError":  "Nu am putut încărca activitatea.",
-    "activityNewListing":  "{name} a listat o carte nouă",
-    "@activityNewListing":  {
-                                "placeholders":  {
-                                                     "name":  {
-                                                                  "type":  "String"
-                                                              }
-                                                 }
-                            },
-    "activityFinishedBook":  "{name} a terminat de citit",
-    "@activityFinishedBook":  {
-                                  "placeholders":  {
-                                                       "name":  {
-                                                                    "type":  "String"
-                                                                }
-                                                   }
-                              },
-    "activityCompletedExchange":  "{name} a finalizat un schimb",
-    "@activityCompletedExchange":  {
-                                       "placeholders":  {
-                                                            "name":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                        }
-                                   },
-    "bookDetailShelfRemove":  "Elimină din raft",
-    "publicProfileBookshelfTitle":  "Raftul de cărți",
-    "globalStatsTitle":  "Statistici globale",
-    "globalStatsTabMostShared":  "Cele mai schimbate",
-    "globalStatsTabTrending":  "În tendințe",
-    "globalStatsTabPopularAuthors":  "Autori populari",
-    "globalStatsEmpty":  "Nicio dată încă.",
-    "globalStatsLoadError":  "Nu am putut încărca statisticile.",
-    "globalStatsTransferCount":  "{count} schimburi/vânzări",
-    "@globalStatsTransferCount":  {
-                                      "placeholders":  {
-                                                           "count":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                       }
-                                  },
-    "globalStatsViewCount":  "{count} vizualizări (14 zile)",
-    "@globalStatsViewCount":  {
-                                  "placeholders":  {
-                                                       "count":  {
-                                                                     "type":  "int"
-                                                                 }
-                                                   }
-                              },
-    "profileFavoriteSellers":  "Vânzători favoriți",
-    "favoriteSellersTitle":  "Vânzători favoriți",
-    "favoriteSellersEmpty":  "Nu urmărești încă niciun utilizator.",
-    "favoriteSellersLoadError":  "Nu am putut încărca lista.",
-    "publicProfileTopGenres":  "Genuri preferate",
-    "impactStatsTitle":  "Impact",
-    "impactStatsTotalValue":  "Valoare totală schimbată",
-    "impactStatsMoneySaved":  "Bani economisiți",
-    "impactStatsCo2Saved":  "CO₂ economisit (estimativ)",
-    "impactStatsCo2Value":  "{kg} kg",
-    "@impactStatsCo2Value":  {
-                                 "placeholders":  {
-                                                      "kg":  {
-                                                                 "type":  "String"
-                                                             }
-                                                  }
-                             },
-    "homeGreeting":  "Salut, {name}!",
-    "@homeGreeting":  {
-                          "placeholders":  {
-                                               "name":  {
-                                                            "type":  "String"
-                                                        }
-                                           }
-                      },
-    "homeWelcome":  "Bine ai venit!",
-    "homeLoadError":  "Nu am putut încărca cărțile.",
-    "homeEmpty":  "Nu există încă cărți disponibile.",
-    "homeCategories":  "Categorii",
-    "homeRecentlyAdded":  "Adăugate recent",
-    "homeMostViewed":  "Cele mai vizualizate",
-    "homeMostSearched":  "Cele mai căutate",
-    "homeSeeAll":  "Vezi toate",
-    "homePendingSwapBanner":  "{count} cereri de schimb te așteaptă",
-    "@homePendingSwapBanner":  {
-                                   "placeholders":  {
-                                                        "count":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                    }
-                               },
-    "homePendingSwapReview":  "Revizuiește",
-    "homeOngoingExchangeBanner":  "Ai un schimb în desfășurare",
-    "homeFeedEnd":  "Ai văzut toate cărțile",
-    "homeNearYou":  "Din orașul tău",
-    "homeNearYouToday":  "Astăzi, aproape de tine",
-    "homeRecommendedForYou":  "Recomandate pentru tine",
-    "homeHiddenGems":  "Comori ascunse",
-    "homeCompleteYourCollection":  "Completează-ți colecția",
-    "homeSimilarTaste":  "Gusturi asemănătoare",
-    "profileSmartMatches":  "Potriviri de schimb",
-    "smartMatchesTitle":  "Potriviri de schimb",
-    "smartMatchesEmpty":  "Nicio potrivire încă - adaugă cărți pe wishlist și listează cărți disponibile.",
-    "smartMatchesLoadError":  "Nu am putut încărca potrivirile.",
-    "smartMatchesTheyHave":  "Are ce vrei tu",
-    "smartMatchesTheyWant":  "Vrea ce ai tu",
-    "homeUpcomingBooks":  "Cărți viitoare",
-    "homeActiveMembers":  "Membri activi",
-    "browseTitle":  "Caută cărți",
-    "browseMapTooltip":  "Hartă cărți din apropiere",
-    "browseSearchHint":  "Caută după titlu",
-    "browseEmpty":  "Nicio carte găsită.",
-    "filtersTitle":  "Filtre",
-    "filtersAuthor":  "Autor",
-    "filtersGenre":  "Gen",
-    "filtersLanguage":  "Limbă",
-    "filtersAnyCity":  "Orice oraș",
-    "filtersCondition":  "Stare",
-    "bookConditionNew":  "Nouă",
-    "bookConditionVeryGood":  "Foarte bună",
-    "bookConditionGood":  "Bună",
-    "bookConditionAcceptable":  "Acceptabilă",
-    "filtersAnyCondition":  "Orice stare",
-    "filtersListingType":  "Tip de anunț",
-    "filtersListingTypeSwap":  "Schimb",
-    "filtersListingTypeSale":  "Vânzare",
-    "filtersListingTypeAuction":  "Licitație",
-    "filtersNearbyOnly":  "Doar din apropiere",
-    "filtersNearbyOnlyHintOff":  "Ordonează și filtrează după distanța reală față de orașul tău",
-    "filtersNearbyOnlyHintOn":  "Până la {km} km de orașul tău",
-    "@filtersNearbyOnlyHintOn":  {
-                                     "placeholders":  {
-                                                          "km":  {
-                                                                     "type":  "int"
-                                                                 }
-                                                      }
-                                 },
-    "filtersDistanceKm":  "{km} km",
-    "@filtersDistanceKm":  {
-                               "placeholders":  {
-                                                    "km":  {
-                                                               "type":  "int"
-                                                           }
-                                                }
-                           },
-    "filtersReset":  "Resetează",
-    "filtersApply":  "Aplică filtre",
-    "commonYes":  "Da",
-    "commonNo":  "Nu",
-    "commonGiveUp":  "Renunță",
-    "libraryTitle":  "Raftul meu",
-    "libraryViewAsList":  "Vezi ca listă",
-    "libraryViewAsGrid":  "Vezi ca grilă",
-    "libraryExportCsv":  "Exportă în CSV",
-    "libraryBulkAdd":  "Adaugă mai multe cărți (scanare)",
-    "libraryImportCsv":  "Importă anunțuri din CSV",
-    "libraryImportSummary":  "{created} anunțuri create, {failed} eșuate",
-    "@libraryImportSummary":  {
-                                  "placeholders":  {
-                                                       "created":  {
-                                                                       "type":  "int"
-                                                                   },
-                                                       "failed":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                   }
-                              },
-    "libraryImportError":  "Nu am putut importa fișierul. Verifică dacă e un CSV valid.",
-    "libraryEmpty":  "Nu ai nicio carte în bibliotecă încă.",
-    "libraryLoadError":  "Nu am putut încărca biblioteca.",
-    "libraryAvailable":  "Disponibilă",
-    "libraryUnavailable":  "Indisponibilă",
-    "libraryShelfSubtitle":  "{total} cărți · {available} disponibile la schimb",
-    "@libraryShelfSubtitle":  {
-                                  "placeholders":  {
-                                                       "total":  {
-                                                                     "type":  "int"
-                                                                 },
-                                                       "available":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                   }
-                              },
-    "libraryFilterAll":  "Toate {count}",
-    "@libraryFilterAll":  {
-                              "placeholders":  {
-                                                   "count":  {
-                                                                 "type":  "int"
-                                                             }
-                                               }
-                          },
-    "libraryFilterAvailable":  "Disponibile {count}",
-    "@libraryFilterAvailable":  {
-                                    "placeholders":  {
-                                                         "count":  {
-                                                                       "type":  "int"
-                                                                   }
-                                                     }
-                                },
-    "libraryFilterUnavailable":  "Indisponibile {count}",
-    "@libraryFilterUnavailable":  {
-                                      "placeholders":  {
-                                                           "count":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                       }
-                                  },
-    "libraryFilterTransferred":  "Transferate {count}",
-    "@libraryFilterTransferred":  {
-                                      "placeholders":  {
-                                                           "count":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                       }
-                                  },
-    "libraryOverviewTitle":  "Rezumatul raftului",
-    "libraryOverviewTotal":  "Total",
-    "libraryDeleteConfirmTitle":  "Ștergi cartea?",
-    "libraryDeleteConfirmBody":  "„{title}\" va fi eliminată din bibliotecă.",
-    "@libraryDeleteConfirmBody":  {
-                                      "placeholders":  {
-                                                           "title":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                       }
-                                  },
-    "libraryAvailableForSwap":  "Disponibilă pentru schimb",
-    "libraryDeleteBook":  "Șterge cartea",
-    "libraryEditListing":  "Editează anunțul",
-    "libraryEditListingTitle":  "Editează anunțul",
-    "libraryEditListingSuccess":  "Anunțul a fost actualizat.",
-    "csvHeaderTitle":  "Titlu",
-    "csvHeaderAvailableForSwap":  "Disponibilă la schimb",
-    "csvHeaderForSale":  "De vânzare",
-    "csvHeaderPrice":  "Preț",
-    "addBookTitle":  "Adaugă o carte",
-    "addBookSearchHint":  "Titlu sau ISBN",
-    "addBookSearchButton":  "Caută",
-    "addBookSearchFailed":  "Căutarea a eșuat. Încearcă din nou.",
-    "addBookSearchPrompt":  "Caută o carte după titlu sau ISBN.",
-    "addBookManualEntry":  "Adaugă manual",
-    "addBookNotFoundManual":  "Nu găsești cartea? Adaugă manual",
-    "addBookChange":  "Schimbă",
-    "addBookTitleLabel":  "Titlu",
-    "addBookSearchInstead":  "Caută în schimb",
-    "addBookLanguageOptional":  "Limbă (opțional)",
-    "addBookEditionOptional":  "Ediție (opțional)",
-    "addBookHardcoverSwitch":  "Ediție cartonată",
-    "addBookForSaleSwitch":  "De vânzare",
-    "addBookForSaleHint":  "Pe lângă schimb, poți vinde cartea la un preț fix",
-    "addBookPriceLabel":  "Preț (lei)",
-    "addBookNonNegotiable":  "Preț fix, nenegociabil",
-    "addBookNonNegotiableHint":  "Cumpărătorii nu vor putea face oferte de preț",
-    "addBookAuctionSwitch":  "Pornește o licitație",
-    "addBookAuctionHint":  "Cumpărătorii vor licita, câștigă oferta cea mai mare la final",
-    "addBookAuctionStartingPrice":  "Preț de pornire",
-    "addBookAuctionReservePrice":  "Preț de rezervă (opțional)",
-    "addBookAuctionReservePriceHint":  "Prețul minim sub care nu vinzi cartea",
-    "addBookAuctionBuyNowPrice":  "Preț \"Cumpără acum\" (opțional)",
-    "addBookAuctionBuyNowPriceHint":  "Disponibil doar înainte de prima ofertă",
-    "addBookAuctionDuration":  "Durata licitației",
-    "addBookAuctionDuration24h":  "24 ore",
-    "addBookAuctionDuration3d":  "3 zile",
-    "addBookAuctionDuration7d":  "7 zile",
-    "addBookPhotosLabelRequired":  "Poze cu cartea (obligatoriu, cel puțin 1)",
-    "addBookPhotosLabelOptional":  "Poze cu cartea (opțional)",
-    "addBookSubmit":  "Adaugă în bibliotecă",
-    "addBookTitleRequired":  "Titlul este obligatoriu",
-    "addBookInvalidPrice":  "Introdu un preț valid",
-    "addBookNeedPhoto":  "Adaugă cel puțin o poză cu cartea înainte de a o pune la vânzare",
-    "addBookSuccess":  "Carte adăugată în bibliotecă",
-    "addBookGenericError":  "Nu am putut adăuga cartea. Încearcă din nou.",
-    "relistNeedPhoto":  "Adaugă cel puțin o poză înainte de a o pune la vânzare",
-    "relistSuccess":  "Cartea a fost adăugată în biblioteca ta",
-    "relistGenericError":  "Nu am putut adăuga cartea.",
-    "relistHeading":  "Adaugă „{title}\" în biblioteca ta",
-    "@relistHeading":  {
-                           "placeholders":  {
-                                                "title":  {
-                                                              "type":  "String"
-                                                          }
-                                            }
-                       },
-    "relistSubtitle":  "Descrie starea în care ai primit-o - rămâne legată de istoricul cărții.",
-    "mapTitle":  "Cărți din apropiere",
-    "mapLoadError":  "Nu am putut încărca harta.",
-    "mapEmpty":  "Nicio carte disponibilă momentan în vreun oraș.",
-    "mapCityBooksCount":  "{count, plural, one{{count} carte} other{{count} cărți}}",
-    "@mapCityBooksCount":  {
-                               "placeholders":  {
-                                                    "count":  {
-                                                                  "type":  "int"
-                                                              }
-                                                }
-                           },
-    "bookDetailTitle":  "Detalii carte",
-    "bookDetailReportTooltip":  "Raportează anunțul",
-    "bookDetailReportedFrom":  "Raportat de pe anunțul \"{title}\"",
-    "@bookDetailReportedFrom":  {
-                                    "placeholders":  {
-                                                         "title":  {
-                                                                       "type":  "String"
-                                                                   }
-                                                     }
-                                },
-    "bookDetailReportSent":  "Raport trimis. Mulțumim!",
-    "bookDetailWishlistError":  "Nu am putut actualiza lista de dorințe",
-    "bookDetailReportError":  "Nu am putut trimite raportul",
-    "bookDetailLoadError":  "Nu am putut încărca cartea.",
-    "bookDetailViewsTitle":  "Vizualizări",
-    "bookDetailViewsLoadError":  "Nu am putut încărca vizualizările.",
-    "bookDetailUniqueViews":  "{count} vizualizări unice",
-    "@bookDetailUniqueViews":  {
-                                   "placeholders":  {
-                                                        "count":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                    }
-                               },
-    "bookDetailTotalViews":  "{count} vizualizări în total, inclusiv reîncărcări de pagină",
-    "@bookDetailTotalViews":  {
-                                  "placeholders":  {
-                                                       "count":  {
-                                                                     "type":  "int"
-                                                                 }
-                                                   }
-                              },
-    "bookDetailHardcoverChip":  "Cartonată",
-    "bookDetailAvailableChip":  "Disponibilă la schimb",
-    "bookDetailViewCount":  "{count} vizualizări",
-    "@bookDetailViewCount":  {
-                                 "placeholders":  {
-                                                      "count":  {
-                                                                    "type":  "int"
-                                                                }
-                                                  }
-                             },
-    "bookDetailDescriptionTitle":  "Descriere",
-    "bookDetailSellerNoteTitle":  "Notă de la proprietar",
-    "bookDetailAboutButton":  "Despre carte",
-    "bookDetailDetailsTitle":  "Detalii",
-    "bookDetailPublisherLabel":  "Editură",
-    "bookDetailYearLabel":  "An apariție",
-    "bookDetailPagesLabel":  "Pagini",
-    "bookDetailOwnerTitle":  "Proprietar",
-    "bookDetailPhotosTitle":  "Poze",
-    "bookDetailRequestExchange":  "Cere la schimb",
-    "bookDetailUnavailableForExchange":  "Indisponibilă la schimb",
-    "bookDetailMakeOffer":  "Fă o ofertă",
-    "bookDetailMessageOwner":  "Mesaj",
-    "bookDetailAvailabilityTitle":  "Disponibilitate",
-    "bookDetailReadyToExchange":  "Gata de schimb",
-    "bookDetailLocationTitle":  "Locație",
-    "bookDetailViewOnMap":  "Vezi pe hartă",
-    "bookDetailAvailableForExchangeHint":  "Această carte este disponibilă la schimb",
-    "bookDetailHistoryTitle":  "Istoricul acestei cărți",
-    "bookDetailHistorySubtitle":  "Cum a circulat cartea prin aplicație, cu poze puse de fiecare proprietar.",
-    "bookDetailHistorySold":  "vândută",
-    "bookDetailHistoryExchanged":  "dată la schimb",
-    "bookDetailHistoryListedOn":  "listată pe {date}",
-    "@bookDetailHistoryListedOn":  {
-                                       "placeholders":  {
-                                                            "date":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                        }
-                                   },
-    "bookDetailHistoryTransferredOn":  " · {action} pe {date}",
-    "@bookDetailHistoryTransferredOn":  {
-                                            "placeholders":  {
-                                                                 "action":  {
-                                                                                "type":  "String"
-                                                                            },
-                                                                 "date":  {
-                                                                              "type":  "String"
-                                                                          }
-                                                             }
-                                        },
-    "bookDetailHistoryCurrentlyOwned":  " · deținută în prezent",
-    "bookDetailSimilarBooksTitle":  "Cărți similare",
-    "bookDetailLibraryPriceLabel":  "Preț în librării: {price}",
-    "@bookDetailLibraryPriceLabel":  {
-                                         "placeholders":  {
-                                                              "price":  {
-                                                                            "type":  "String"
-                                                                        }
-                                                          }
-                                     },
-    "bookDetailRequestedTitle":  "Cere „{title}\" la schimb",
-    "@bookDetailRequestedTitle":  {
-                                      "placeholders":  {
-                                                           "title":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                       }
-                                  },
-    "bookDetailNoBooksToOffer":  "Nu ai cărți disponibile de oferit - poți trimite cererea și fără.",
-    "bookDetailOfferOneOfYourBooks":  "Oferă una din cărțile tale (opțional)",
-    "bookDetailNoOffer":  "Fără ofertă",
-    "bookDetailMessageOptional":  "Mesaj (opțional)",
-    "bookDetailSendRequest":  "Trimite cererea",
-    "bookDetailRequestSent":  "Cerere de schimb trimisă",
-    "bookDetailRequestError":  "Nu am putut trimite cererea.",
-    "bookDetailFirstExchangeTitle":  "Primul tău schimb",
-    "bookDetailFirstExchangeBody":  "Câteva sfaturi înainte de primul schimb: întâlnește-te ziua, într-un loc public, și verifică starea cărții înainte să confirmi schimbul ca finalizat.",
-    "bookDetailUnderstood":  "Am înțeles, continuă",
-    "bookDetailMakeOfferTitle":  "Fă o ofertă pentru „{title}\"",
-    "@bookDetailMakeOfferTitle":  {
-                                      "placeholders":  {
-                                                           "title":  {
-                                                                         "type":  "String"
-                                                                     }
-                                                       }
-                                  },
-    "bookDetailAskingPrice":  "Preț cerut: {price}",
-    "@bookDetailAskingPrice":  {
-                                   "placeholders":  {
-                                                        "price":  {
-                                                                      "type":  "String"
-                                                                  }
-                                                    }
-                               },
-    "bookDetailOfferAmountLabel":  "Suma oferită",
-    "bookDetailSendOffer":  "Trimite oferta",
-    "bookDetailOfferSent":  "Ofertă trimisă",
-    "bookDetailOfferError":  "Nu am putut trimite oferta.",
-    "bookDetailInvalidAmount":  "Introdu o sumă validă",
-    "commonAddToLibrary":  "Adaugă în biblioteca ta",
-    "commonAnonymousUser":  "un utilizator",
-    "exchangesTitle":  "Schimburile mele",
-    "exchangesTabReceived":  "Schimburi primite",
-    "exchangesTabSent":  "Schimburi trimise",
-    "offersTabReceived":  "Oferte primite",
-    "offersTabSent":  "Oferte trimise",
-    "exchangesEmptyReceived":  "Nu ai primit nicio cerere de schimb.",
-    "exchangesEmptySent":  "Nu ai trimis nicio cerere de schimb.",
-    "exchangesLoadError":  "Nu am putut încărca schimburile.",
-    "exchangeRequestedBy":  "Cerută de {name}",
-    "@exchangeRequestedBy":  {
-                                 "placeholders":  {
-                                                      "name":  {
-                                                                   "type":  "String"
-                                                               }
-                                                  }
-                             },
-    "exchangeFrom":  "De la {name}",
-    "@exchangeFrom":  {
-                          "placeholders":  {
-                                               "name":  {
-                                                            "type":  "String"
-                                                        }
-                                           }
-                      },
-    "exchangeOffersBook":  "Oferă: {title}",
-    "@exchangeOffersBook":  {
-                                "placeholders":  {
-                                                     "title":  {
-                                                                   "type":  "String"
-                                                               }
-                                                 }
-                            },
-    "exchangeOffersAmount":  "Oferă: {amount} RON",
-    "@exchangeOffersAmount":  {
-                                  "placeholders":  {
-                                                       "amount":  {
-                                                                      "type":  "String"
-                                                                  }
-                                                   }
-                              },
-    "exchangeReject":  "Refuză",
-    "exchangeAccept":  "Acceptă",
-    "exchangeCancelRequest":  "Anulează cererea",
-    "exchangeScheduleMeeting":  "Programează întâlnirea",
-    "exchangeReschedule":  "Reprogramează",
-    "exchangeAddToCalendar":  "Adaugă în calendar",
-    "exchangeQrCode":  "Cod QR",
-    "exchangeMarkComplete":  "Marchează finalizat",
-    "exchangeRated":  "Evaluat",
-    "exchangeRate":  "Evaluează",
-    "exchangeCalendarError":  "Nu am putut deschide calendarul.",
-    "exchangeRatingDialogTitle":  "Cum a fost schimbul?",
-    "exchangeRatingOverall":  "Per ansamblu",
-    "exchangeRatingCommunication":  "Comunicare",
-    "exchangeRatingPunctuality":  "Punctualitate",
-    "exchangeRatingCondition":  "Starea cărții primite",
-    "exchangeReviewOptional":  "Recenzie (opțional)",
-    "exchangeQrDialogTitle":  "Cod QR de confirmare",
-    "exchangeQrDialogBody":  "Celălalt participant scanează acest cod la întâlnire ca să confirme schimbul.",
-    "exchangeMeetingSheetTitle":  "Programează întâlnirea",
-    "exchangePickDateTime":  "Alege data și ora",
-    "exchangeLocationLabel":  "Locație",
-    "exchangeMeetingSaveError":  "Nu am putut salva întâlnirea.",
-    "exchangeGoToReady":  "Continuă schimbul",
-    "readyTitle":  "Pregătire schimb",
-    "readyMeetingAwaitingYou":  "Cealaltă parte a propus o întâlnire",
-    "readyMeetingProposedByMe":  "Aștepți confirmarea celeilalte părți",
-    "readyMeetingAccept":  "Confirmă ora",
-    "readyMeetingDecline":  "Refuză ora",
-    "readyContactTitle":  "Detalii de contact",
-    "readyContactPhoneLabel":  "Telefon (opțional)",
-    "readyContactShare":  "Trimite detaliile mele",
-    "readyContactShared":  "Ți-ai trimis detaliile de contact",
-    "readyContactOtherPhone":  "Telefon: {phone}",
-    "@readyContactOtherPhone":  {
-                                    "placeholders":  {
-                                                         "phone":  {
-                                                                       "type":  "String"
-                                                                   }
-                                                     }
-                                },
-    "readyContactSharedNoPhone":  "Cealaltă parte și-a trimis detaliile, fără număr de telefon.",
-    "readyContactCall":  "Sună pe {name}",
-    "@readyContactCall":  {
-                              "placeholders":  {
-                                                   "name":  {
-                                                                "type":  "String"
-                                                            }
-                                               }
-                          },
-    "readyContactMessageInApp":  "Mesaj în aplicație",
-    "readySafetyTitle":  "Recomandări de siguranță",
-    "readySafetyViewLink":  "Vezi recomandările de siguranță",
-    "readySafetyAck":  "Am citit",
-    "readySafetyWaitingOther":  "Aștepți ca cealaltă parte să confirme că a citit recomandările.",
-    "readySafetyBothReady":  "Sunteți gata de schimb",
-    "readyReportIssue":  "Raportează o problemă",
-    "readyCancel":  "Anulează",
-    "readyPostpone":  "Amână",
-    "readyDone":  "Gata",
-    "readyConfirmDone":  "Confirmă finalizarea",
-    "readyDisputeDone":  "Nu e finalizat",
-    "readyWaitingConfirmation":  "Aștepți confirmarea celeilalte părți",
-    "readyOtherMarkedDone":  "Cealaltă parte a marcat schimbul ca finalizat. Confirmi?",
-    "doneReviewTitle":  "Cum a fost schimbul?",
-    "doneReviewLabel":  "Câteva cuvinte (opțional)",
-    "doneReviewSubmit":  "Trimite",
-    "cancelReasonTitle":  "Ce s-a întâmplat?",
-    "cancelReasonNoShow":  "Cealaltă persoană nu s-a prezentat",
-    "cancelReasonBookMismatch":  "Cartea nu a corespuns așteptărilor",
-    "cancelReasonChangedMind":  "M-am răzgândit",
-    "cancelReasonOther":  "Altceva",
-    "cancelReasonDetailsLabel":  "Detalii (opțional)",
-    "cancelReasonSubmit":  "Anulează schimbul",
-    "offersEmptyReceived":  "Nu ai primit nicio ofertă de preț.",
-    "offersEmptySent":  "Nu ai trimis nicio ofertă de preț.",
-    "offersLoadError":  "Nu am putut încărca ofertele.",
-    "offerTo":  "Către {name}",
-    "@offerTo":  {
-                     "placeholders":  {
-                                          "name":  {
-                                                       "type":  "String"
-                                                   }
-                                      }
-                 },
-    "offerAmountLine":  "Ofertă: {amount}",
-    "@offerAmountLine":  {
-                             "placeholders":  {
-                                                  "amount":  {
-                                                                 "type":  "String"
-                                                             }
-                                              }
-                         },
-    "offerCancel":  "Anulează oferta",
-    "exchangeConfirmTitle":  "Confirmă schimbul",
-    "exchangeConfirmError":  "Nu am putut confirma schimbul.",
-    "exchangeConfirmDone":  "Schimb marcat ca finalizat!",
-    "exchangeConfirmQuestion":  "Confirmi că schimbul de cărți s-a finalizat?",
-    "exchangeConfirmButton":  "Confirmă finalizarea",
-    "chatEmptyConversations":  "Nu ai nicio conversație încă.",
-    "chatStartConversation":  "Începe conversația",
-    "chatPhotoPreview":  "📷 Poză",
-    "chatLocationPreview":  "📍 Locație",
-    "chatLoadError":  "Nu am putut încărca conversațiile.",
-    "chatConversationFallbackTitle":  "Conversație",
-    "chatUnblock":  "Deblochează",
-    "chatBlock":  "Blochează",
-    "chatUserUnblocked":  "Utilizator deblocat",
-    "chatUserBlocked":  "Utilizator blocat",
-    "chatBlockUpdateError":  "Nu am putut actualiza blocarea",
-    "chatTyping":  "scrie...",
-    "chatSendFailed":  "Mesajul nu a putut fi trimis. Verifică conexiunea.",
-    "chatOnline":  "online",
-    "chatOffline":  "offline",
-    "chatLastSeenJustNow":  "văzut adineauri",
-    "chatLastSeenMinutes":  "văzut acum {minutes} min",
-    "@chatLastSeenMinutes":  {
-        "placeholders":  {
-            "minutes":  {
-                "type":  "int"
+    "trustScoreRespondsIn": "Răspunde în ~{time}",
+    "@trustScoreRespondsIn": {
+        "placeholders": {
+            "time": {
+                "type": "String"
             }
         }
     },
-    "chatLastSeenHours":  "văzut acum {hours} h",
-    "@chatLastSeenHours":  {
-        "placeholders":  {
-            "hours":  {
-                "type":  "int"
+    "trustScoreLastActiveToday": "Activ astăzi",
+    "trustScoreLastActiveDays": "Activ acum {days} zile",
+    "@trustScoreLastActiveDays": {
+        "placeholders": {
+            "days": {
+                "type": "int"
             }
         }
     },
-    "chatLastSeenDays":  "văzut acum {days} z",
-    "@chatLastSeenDays":  {
-        "placeholders":  {
-            "days":  {
-                "type":  "int"
+    "trustScoreResponseRate": "{percent}% rată de răspuns",
+    "@trustScoreResponseRate": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
             }
         }
     },
-    "chatSeen":  "Văzut",
-    "chatSent":  "Trimis",
-    "chatReply":  "Răspunde",
-    "chatCopyMessage":  "Copiază mesajul",
-    "chatMessageCopied":  "Mesaj copiat",
-    "chatReplyToYou":  "Tu",
-    "chatReplyToThem":  "Mesaj citat",
-    "chatAttachPhoto":  "Trimite o poză",
-    "chatPhotoSendError":  "Nu am putut trimite poza.",
-    "chatSearchInConversation":  "Caută în conversație",
-    "chatSearchNoResults":  "Niciun mesaj găsit.",
-    "chatArchive":  "Arhivează",
-    "chatUnarchive":  "Dezarhivează",
-    "chatArchived":  "Conversație arhivată",
-    "chatArchivedTitle":  "Arhivate",
-    "chatEmptyArchived":  "Nu ai nicio conversație arhivată.",
-    "chatDeleteTitle":  "Șterge chatul",
-    "chatDeleteConfirm":  "Conversația dispare doar pentru tine. Celălalt utilizator își păstrează mesajele.",
-    "chatActionError":  "Nu am putut face asta. Încearcă din nou.",
-    "chatReportConversation":  "Raportează conversația",
-    "chatConversationReported":  "Conversația a fost raportată. Echipa o va analiza.",
-    "chatBlockedNotice":  "Nu poți trimite mesaje acestui utilizator - conversația este blocată.",
-    "chatShareLocationTooltip":  "Trimite locația întâlnirii",
-    "chatMessageHint":  "Scrie un mesaj...",
-    "chatSafetyBannerBody":  "Nu trimite bani în avans și întâlnește-te într-un loc public pentru schimb. Dacă ceva pare suspect, raportează sau blochează utilizatorul din meniul de sus.",
-    "chatSafetyBannerLearnMore":  "Află mai multe",
-    "chatEmptyMessages":  "Niciun mesaj încă. Spune salut!",
-    "chatMapLabel":  "Hartă",
-    "chatCalendarLabel":  "Calendar",
-    "chatMeetingAt":  "{date}, ora {time}",
-    "@chatMeetingAt":  {
-                           "placeholders":  {
-                                                "date":  {
-                                                             "type":  "String"
-                                                         },
-                                                "time":  {
-                                                             "type":  "String"
-                                                         }
-                                            }
-                       },
-    "chatSafetyAdvisorLabel":  "Safety advisor",
-    "chatSafetyAdvisorBody":  "Asigură-te că respecți regulile de siguranță la întâlnire.",
-    "chatOfferActionError":  "Nu am putut actualiza oferta. Încearcă din nou.",
-    "chatOfferCardLabel":  "{amount} lei · {bookTitle}",
-    "@chatOfferCardLabel":  {
-                                "placeholders":  {
-                                                     "amount":  {
-                                                                    "type":  "String"
-                                                                },
-                                                     "bookTitle":  {
-                                                                       "type":  "String"
-                                                                   }
-                                                 }
-                            },
-    "chatExchangeCardLabel":  "Schimb: {offeredTitle} pentru {requestedTitle}",
-    "@chatExchangeCardLabel":  {
-                                "placeholders":  {
-                                                     "offeredTitle":  {
-                                                                    "type":  "String"
-                                                                },
-                                                     "requestedTitle":  {
-                                                                       "type":  "String"
-                                                                   }
-                                                 }
-                            },
-    "chatExchangeCardLabelNoOffer":  "Cerere de schimb: {requestedTitle}",
-    "@chatExchangeCardLabelNoOffer":  {
-                                "placeholders":  {
-                                                     "requestedTitle":  {
-                                                                       "type":  "String"
-                                                                   }
-                                                 }
-                            },
-    "chatSearchPlaceHint":  "Caută o adresă sau un loc (ex: Cafeneaua X, Cluj)",
-    "chatNoResults":  "Niciun rezultat.",
-    "chatSuggestedMeetingPoints":  "Sugestii de întâlnire în apropiere",
-    "chatPickDate":  "Alege data",
-    "chatPickTime":  "Alege ora",
-    "wishlistTitle":  "Lista de dorințe",
-    "wishlistCount":  "{count} cărți",
-    "@wishlistCount":  {
-                           "placeholders":  {
-                                                "count":  {
-                                                              "type":  "int"
-                                                          }
-                                            }
-                       },
-    "wishlistEmpty":  "Nu ai adăugat încă nicio carte în lista de dorințe.",
-    "wishlistLoadError":  "Nu am putut încărca lista de dorințe.",
-    "notificationsTitle":  "Notificări",
-    "notificationsMarkAllRead":  "Marchează tot ca citit",
-    "notificationsEmpty":  "Nu ai nicio notificare.",
-    "notificationsFilterAll":  "Toate",
-    "notificationsFilterUnread":  "Necitite",
-    "notificationsFilterExchanges":  "Schimburi",
-    "notificationsFilterMessages":  "Mesaje",
-    "notificationsToday":  "Astăzi",
-    "notificationsYesterday":  "Ieri",
-    "notificationsEarlier":  "Mai vechi",
-    "notificationsToastNewMessage":  "Ai un mesaj nou",
-    "notificationsToastNewReply":  "Ai un răspuns nou",
-    "notificationsToastMultiple":  "Ai mai multe notificări",
-    "notificationsToastGeneric":  "Ai o notificare nouă",
-    "notificationsRepeatedCount":  "×{count}",
-    "@notificationsRepeatedCount":  {
-                                        "placeholders":  {
-                                                             "count":  {
-                                                                           "type":  "int"
-                                                                       }
-                                                         }
-                                    },
-    "notificationsUnreadCount":  "{count} necitite",
-    "@notificationsUnreadCount":  {
-                                      "placeholders":  {
-                                                           "count":  {
-                                                                         "type":  "int"
-                                                                     }
-                                                       }
-                                  },
-    "notificationsLoadError":  "Nu am putut încărca notificările.",
-    "timeJustNow":  "acum",
-    "timeMinutesAgo":  "acum {minutes} min",
-    "@timeMinutesAgo":  {
-                            "placeholders":  {
-                                                 "minutes":  {
-                                                                 "type":  "int"
-                                                             }
-                                             }
-                        },
-    "timeHoursAgo":  "acum {hours} h",
-    "@timeHoursAgo":  {
-                          "placeholders":  {
-                                               "hours":  {
-                                                             "type":  "int"
-                                                         }
-                                           }
-                      },
-    "timeDaysAgo":  "acum {days} zile",
-    "@timeDaysAgo":  {
-                         "placeholders":  {
-                                              "days":  {
-                                                           "type":  "int"
-                                                       }
-                                          }
-                     },
-    "safetyCenterTitle":  "Centru de siguranță",
-    "safetyCenterIntro":  "Câteva reguli simple ca schimburile prin ShelfShare să fie plăcute și sigure.",
-    "safetyTip1Title":  "Întâlnește-te ziua",
-    "safetyTip1Desc":  "Programează schimbul într-un interval orar cu lumină naturală, ideal dimineața sau după-amiaza.",
-    "safetyTip2Title":  "Alege un loc public",
-    "safetyTip2Desc":  "O cafenea, o librărie sau un mall sunt variante mai sigure decât adresa personală a cuiva.",
-    "safetyTip3Title":  "Preferă locații cu supraveghere video",
-    "safetyTip3Desc":  "Zonele cu camere de securitate descurajează comportamentul neplăcut.",
-    "safetyTip4Title":  "Nu distribui date personale",
-    "safetyTip4Desc":  "Nu ai nevoie să dai adresa de acasă, CNP sau alte date sensibile ca să faci un schimb.",
-    "safetyTip5Title":  "Verifică rating-ul și scorul de încredere",
-    "safetyTip5Desc":  "Un istoric bun de schimburi finalizate e un semn bun înainte să te întâlnești cu cineva.",
-    "safetyTip6Title":  "O poză de profil reală crește încrederea",
-    "safetyTip6Desc":  "Profilurile cu poză și bio completă inspiră mai multă siguranță celorlalți utilizatori.",
-    "safetyTip7Title":  "Verifică starea cărții înainte de schimb",
-    "safetyTip7Desc":  "Compară cartea cu descrierea din anunț înainte să confirmi schimbul ca finalizat.",
-    "safetyTip8Title":  "Raportează orice comportament suspect",
-    "safetyTip8Desc":  "Poți raporta sau bloca un utilizator direct din profilul lui sau din conversație.",
-    "helpCenterTitle":  "Întrebări frecvente",
-    "helpGroupSwapping":  "Schimburi",
-    "helpGroupPricing":  "Prețuri",
-    "helpGroupSafety":  "Încredere și siguranță",
-    "helpStillStuck":  "Nu ai găsit răspunsul?",
-    "helpContactModerator":  "Contactează un moderator",
-    "helpFaq1Question":  "Cum funcționează un schimb de cărți?",
-    "helpFaq1Answer":  "Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat.",
-    "helpFaq2Question":  "Ce e Scorul de încredere?",
-    "helpFaq2Answer":  "Un indicator 0-100 calculat automat din activitatea din aplicație: vechimea contului, email verificat, câte schimburi ai finalizat, rating-ul primit, cât de des răspunzi și cât de rar anulezi cereri. Nu e o verificare de identitate, doar un semnal de comportament.",
-    "helpFaq3Question":  "Cum se calculează prețul „din librării”?",
-    "helpFaq3Answer":  "Când adaugi o carte cu ISBN, încercăm să găsim prețul de listă pe Google Books. Acoperirea e parțială - nu toate cărțile au preț disponibil acolo, mai ales edițiile mai vechi sau românești.",
-    "helpFaq4Question":  "Ce înseamnă „Preț fix, nenegociabil”?",
-    "helpFaq4Answer":  "Dacă cel care vinde o carte bifează asta, cumpărătorii nu mai pot trimite oferte de preț - cartea se cumpără doar la prețul afișat.",
-    "helpFaq5Question":  "Cum raportez sau blochez un utilizator?",
-    "helpFaq5Answer":  "Din meniul din colțul din dreapta sus al unei conversații, sau din pagina de detalii a unui anunț (iconița de steag). Blocarea oprește mesajele în ambele direcții.",
-    "helpFaq6Question":  "Ce se întâmplă cu cartea după ce o vând sau o dau la schimb?",
-    "helpFaq6Answer":  "Anunțul devine indisponibil definitiv. Dacă persoana care a primit-o vrea să o listeze mai departe, poate face asta din ecranul de Schimburi/Oferte (\"Adaugă în biblioteca ta\") - istoricul cărții rămâne urmăribil pe pagina ei de detalii, cu poze puse de fiecare proprietar.",
-    "helpFaq7Question":  "De ce nu-mi apare o carte în Categorii sau la Cărți similare?",
-    "helpFaq7Answer":  "Genul unei cărți vine din Open Library sau Google Books la adăugare - unele cărți nu au gen completat în sursele externe, mai ales edițiile mai puțin populare.",
-    "helpCenterFooter":  "Nu ai găsit răspunsul? Poți raporta o problemă direct din conversația cu utilizatorul implicat.",
-    "adminLoadError":  "Nu am putut încărca datele de admin.",
-    "adminStatsTitle":  "Statistici",
-    "adminMarketplaceStatsTitle":  "Statistici marketplace",
-    "adminMarketplaceGmv":  "Volum total tranzacționat",
-    "adminMarketplaceCompletedSales":  "Vânzări finalizate",
-    "adminMarketplaceCompletedAuctions":  "Licitații finalizate",
-    "adminMarketplaceAvgPrice":  "Preț mediu vânzare",
-    "adminMarketplaceTopGenres":  "Top genuri (anunțuri active)",
-    "adminActiveZonesTitle":  "Zone active",
-    "adminActiveZonesDesc":  "Densitatea anunțurilor active pe oraș",
-    "adminActiveZonesEmpty":  "Niciun anunț activ încă.",
-    "adminUsersCount":  "Utilizatori ({count})",
-    "@adminUsersCount":  {
-                             "placeholders":  {
-                                                  "count":  {
-                                                                "type":  "int"
-                                                            }
-                                              }
-                         },
-    "adminInactiveListingsCount":  "Anunțuri fără nicio cerere ({count})",
-    "@adminInactiveListingsCount":  {
-                                        "placeholders":  {
-                                                             "count":  {
-                                                                           "type":  "int"
-                                                                       }
-                                                         }
-                                    },
-    "adminInactiveListingsDesc":  "Cărți puse la schimb pentru care nimeni nu a trimis nicio cerere.",
-    "adminNoInactiveListings":  "Niciun anunț inactiv.",
-    "adminUserReportsCount":  "Rapoarte utilizatori ({count})",
-    "@adminUserReportsCount":  {
-                                   "placeholders":  {
-                                                        "count":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                    }
-                               },
-    "adminNoReports":  "Niciun raport.",
-    "adminUpcomingReleasesCount":  "Cărți viitoare ({count})",
-    "@adminUpcomingReleasesCount":  {
-                                        "placeholders":  {
-                                                             "count":  {
-                                                                           "type":  "int"
-                                                                       }
-                                                         }
-                                    },
-    "adminUpcomingReleasesDesc":  "Afișate pe ecranul principal, în secțiunea \"Cărți viitoare\".",
-    "adminNoUpcomingReleases":  "Nicio carte viitoare adăugată.",
-    "adminFeedbackCount":  "Feedback primit ({count})",
-    "@adminFeedbackCount":  {
-                                "placeholders":  {
-                                                     "count":  {
-                                                                   "type":  "int"
-                                                               }
-                                                 }
-                            },
-    "adminNoFeedback":  "Niciun feedback trimis încă.",
-    "adminSupportRequestsCount":  "Mesaje de support ({count})",
-    "@adminSupportRequestsCount":  {
-                                       "placeholders":  {
-                                                            "count":  {
-                                                                          "type":  "int"
-                                                                      }
-                                                        }
-                                   },
-    "adminNoSupportRequests":  "Niciun mesaj de support trimis încă.",
-    "adminReportedBy":  "Raportat de {name}",
-    "@adminReportedBy":  {
-                             "placeholders":  {
-                                                  "name":  {
-                                                               "type":  "String"
-                                                           }
-                                              }
-                         },
-    "adminUnknownAuthor":  "Autor necunoscut",
-    "adminAuthorOptional":  "Autor (opțional)",
-    "adminCoverUrlOptional":  "URL copertă (opțional)",
-    "adminPickReleaseDate":  "Alege data lansării",
-    "adminReleaseDateLabel":  "Lansare: {date}",
-    "@adminReleaseDateLabel":  {
-                                   "placeholders":  {
-                                                        "date":  {
-                                                                     "type":  "String"
-                                                                 }
-                                                    }
-                               },
-    "adminAdd":  "Adaugă",
-    "adminTitleDateRequired":  "Titlul și data lansării sunt obligatorii",
-    "adminAddBookError":  "Nu am putut adăuga cartea",
-    "adminDeleteUserTitle":  "Șterge utilizatorul?",
-    "adminDeleteUserBody":  "Se șterg definitiv contul lui {name} și toate datele asociate (cărți, schimburi, mesaje). Nu se poate anula.",
-    "@adminDeleteUserBody":  {
-                                 "placeholders":  {
-                                                      "name":  {
-                                                                   "type":  "String"
-                                                               }
-                                                  }
-                             },
-    "adminStatsUsersLabel":  "Utilizatori",
-    "adminStatsUsersSubtitle":  "din care {count} verificați",
-    "@adminStatsUsersSubtitle":  {
-                                     "placeholders":  {
-                                                          "count":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                      }
-                                 },
-    "adminStatsBooksLabel":  "Cărți în catalog",
-    "adminStatsBooksSubtitle":  "{count} exemplare listate",
-    "@adminStatsBooksSubtitle":  {
-                                     "placeholders":  {
-                                                          "count":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                      }
-                                 },
-    "adminStatsExchangesLabel":  "Schimburi",
-    "adminStatsExchangesSubtitle":  "{completed} finalizate · {pending} în așteptare",
-    "@adminStatsExchangesSubtitle":  {
-                                         "placeholders":  {
-                                                              "completed":  {
-                                                                                "type":  "int"
-                                                                            },
-                                                              "pending":  {
-                                                                              "type":  "int"
-                                                                          }
-                                                          }
-                                     },
-    "auctionTitle":  "Licitație",
-    "auctionCurrentPrice":  "Preț curent",
-    "auctionBidsCount":  "oferte",
-    "auctionReserveMet":  "Prețul de rezervă a fost atins",
-    "auctionReserveNotMet":  "Prețul de rezervă nu a fost încă atins",
-    "auctionEndedWithWinner":  "Licitația s-a încheiat - a câștigat cineva",
-    "auctionEndedNoWinner":  "Licitația s-a încheiat fără câștigător",
-    "auctionBidAmountLabel":  "Ofertă (minim {amount} lei)",
-    "@auctionBidAmountLabel":  {
-                                   "placeholders":  {
-                                                        "amount":  {
-                                                                       "type":  "String"
-                                                                   }
-                                                    }
-                               },
-    "auctionPlaceBid":  "Licitează",
-    "auctionBuyNowFor":  "Cumpără acum cu {amount} lei",
-    "@auctionBuyNowFor":  {
-                              "placeholders":  {
-                                                   "amount":  {
-                                                                  "type":  "String"
-                                                              }
-                                               }
-                          },
-    "auctionBidHistory":  "Istoricul ofertelor",
-    "auctionNoBidsYet":  "Nicio ofertă încă",
-    "auctionWatch":  "Urmărește licitația",
-    "auctionBidPlaced":  "Ofertă plasată",
-    "auctionBoughtNow":  "Cumpărat cu succes",
-    "auctionGenericError":  "A apărut o eroare, încearcă din nou",
-    "auctionEnded":  "Încheiată",
-    "auctionEndsInDays":  "se încheie în {days} zile",
-    "@auctionEndsInDays":  {
-                               "placeholders":  {
-                                                    "days":  {
-                                                                 "type":  "int"
-                                                             }
-                                                }
-                           },
-    "auctionEndsInHours":  "se încheie în {hours} h",
-    "@auctionEndsInHours":  {
-                                "placeholders":  {
-                                                     "hours":  {
-                                                                   "type":  "int"
-                                                               }
-                                                 }
-                            },
-    "auctionEndsInMinutes":  "se încheie în {minutes} min",
-    "@auctionEndsInMinutes":  {
-                                  "placeholders":  {
-                                                       "minutes":  {
-                                                                       "type":  "int"
-                                                                   }
-                                                   }
-                              },
-    "bulkAddTitle":  "Adaugă mai multe cărți",
-    "bulkAddScanTooltip":  "Scanează cod de bare",
-    "bulkAddManualEntry":  "Introducere manuală",
-    "bulkAddManualHint":  "Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)",
-    "bulkAddManualPlaceholder":  "9780439023481\n9780441172719",
-    "bulkAddAddIsbns":  "Adaugă în listă",
-    "bulkAddQueueEmpty":  "Nicio carte adăugată încă - scanează sau introdu un ISBN.",
-    "bulkAddSubmit":  "Adaugă {count} cărți",
-    "@bulkAddSubmit":  {
-                           "placeholders":  {
-                                                "count":  {
-                                                              "type":  "int"
-                                                          }
-                                            }
-                       },
-    "bulkAddResultSummary":  "{created} cărți adăugate, {failed} eșuate",
-    "@bulkAddResultSummary":  {
-                                  "placeholders":  {
-                                                       "created":  {
-                                                                       "type":  "int"
-                                                                   },
-                                                       "failed":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                   }
-                              },
-    "inventorySelectedCount":  "{count} selectate",
-    "@inventorySelectedCount":  {
-                                    "placeholders":  {
-                                                         "count":  {
-                                                                       "type":  "int"
-                                                                   }
-                                                     }
-                                },
-    "inventoryMarkUnavailable":  "Marchează indisponibile",
-    "inventoryChangePriceTitle":  "Schimbă prețul",
-    "inventoryPriceChangedCount":  "Preț schimbat la {count} anunțuri",
-    "@inventoryPriceChangedCount":  {
-                                        "placeholders":  {
-                                                             "count":  {
-                                                                           "type":  "int"
-                                                                       }
-                                                         }
-                                    },
-    "inventoryDeleteConfirmTitle":  "Ștergi anunțurile selectate?",
-    "inventoryDeleteConfirmBody":  "Se șterg definitiv {count} anunțuri. Nu se poate anula.",
-    "@inventoryDeleteConfirmBody":  {
-                                        "placeholders":  {
-                                                             "count":  {
-                                                                           "type":  "int"
-                                                                       }
-                                                         }
-                                    },
-    "inventoryBulkDone":  "Acțiune aplicată",
-    "collectionsTitle":  "Colecții",
-    "collectionsEmpty":  "Nicio colecție încă.",
-    "collectionsLoadError":  "Nu am putut încărca colecțiile.",
-    "collectionsCreateTitle":  "Colecție nouă",
-    "collectionsNameLabel":  "Nume",
-    "collectionsPublicSwitch":  "Publică",
-    "collectionsBookCount":  "{count} cărți",
-    "@collectionsBookCount":  {
-                                  "placeholders":  {
-                                                       "count":  {
-                                                                     "type":  "int"
-                                                                 }
-                                                   }
-                              },
-    "collectionsEmptyItems":  "Nicio carte în această colecție încă.",
-    "collectionsDeleteConfirmTitle":  "Ștergi această colecție?",
-    "collectionsAddToTitle":  "Adaugă în colecție",
-    "collectionsNewInline":  "Colecție nouă...",
-    "groupsTitle":  "Grupuri",
-    "groupsTabDiscover":  "Descoperă",
-    "groupsTabMine":  "Ale mele",
-    "groupsEmpty":  "Niciun grup încă.",
-    "groupsLoadError":  "Nu am putut încărca grupul.",
-    "groupsCreateTitle":  "Grup nou",
-    "groupsNameLabel":  "Nume",
-    "groupsDescriptionLabel":  "Descriere (opțional)",
-    "groupsMemberCount":  "{count} membri",
-    "@groupsMemberCount":  {
-                               "placeholders":  {
-                                                    "count":  {
-                                                                  "type":  "int"
-                                                              }
-                                                }
-                           },
-    "groupsJoin":  "Alătură-te",
-    "groupsLeave":  "Părăsește grupul",
-    "groupsDeleteConfirmTitle":  "Ștergi acest grup?",
-    "groupsEventsTitle":  "Evenimente",
-    "groupsNoEvents":  "Niciun eveniment programat.",
-    "groupsAddEventTitle":  "Adaugă eveniment",
-    "groupsEventTitleLabel":  "Titlu",
-    "groupsEventLocationLabel":  "Locație (opțional)",
-    "groupsDiscussionTitle":  "Discuții",
-    "groupsPostHint":  "Scrie un mesaj...",
-    "groupsNoPosts":  "Niciun mesaj încă.",
-    "premiumBadgeTooltip":  "Membru Premium",
-    "adminGrantPremium":  "Acordă Premium",
-    "adminRemovePremium":  "Elimină Premium",
-    "premiumPromoteListing":  "Promovează anunțul",
-    "premiumUnpromoteListing":  "Anulează promovarea",
-    "premiumAnalyticsTitle":  "Statistici avansate",
-    "premiumAnalyticsTotalListings":  "Anunțuri active",
-    "premiumAnalyticsTotalViews":  "Vizualizări totale",
-    "premiumAnalyticsOffersReceived":  "Oferte primite",
-    "premiumAnalyticsConversionRate":  "Rată de conversie",
-    "premiumAnalyticsRevenue":  "Venit total",
-    "premiumAnalyticsTopListings":  "Cele mai vizualizate anunțuri",
-    "premiumAnalyticsLocked":  "Statisticile avansate sunt o funcție Premium.",
-    "premiumAnalyticsLoadError":  "Nu am putut încărca statisticile.",
-    "discoverMostWishedFor":  "Cele mai dorite",
-    "discoverMostLookedFor":  "Cele mai căutate",
-    "discoverSearchTooltip":  "Caută cărți",
-    "discoverTopSearches":  "Top căutări",
-    "discoverAuctions":  "Licitații active",
-    "discoverHiddenGems":  "Comori ascunse",
-    "discoverSwapOnly":  "Doar la schimb",
-    "discoverMoreGenres":  "+ {count} altele",
-    "@discoverMoreGenres":  {
-                                "placeholders":  {
-                                                     "count":  {
-                                                                   "type":  "int"
-                                                               }
-                                                 }
-                            },
-    "discoverUnder30":  "Sub 30 lei",
-    "discoverRecommendedForYou":  "Recomandate pentru tine",
-    "discoverPopularAuthors":  "Autori populari",
-    "discoverQuickFilters":  "Filtre rapide",
-    "discoverNearYou":  "În orașul tău",
-    "inventorySelectAll":  "Selectează toate",
-    "myShelfShare":  "Împarte",
-    "inventoryMarkAvailable":  "Marchează disponibile",
-    "libraryTrashEmpty":  "Coșul de gunoi e gol",
-    "inventoryAppendText":  "Adaugă la sfârșit",
-    "inventoryTransferred":  "Schimbată",
-    "inventoryDeletedDaysLeft":  "Șterge în {days} zile",
-    "libraryEmptiedShelves":  "Cărți date sau schimbate",
-    "libraryRestored":  "Cartea a fost restaurată",
-    "inventoryDescriptionDone":  "Descrierile au fost actualizate",
-    "libraryTrashHint":  "Cărțile șterse rămân aici 7 zile, apoi dispar definitiv",
-    "inventoryBulkEditDescription":  "Editează descriere în bulk",
-    "libraryTrash":  "Coșul de gunoi",
-    "inventoryRemoveText":  "Șterge din text",
-    "libraryRestore":  "Restaurează",
-    "libraryEmptiedShelvesEmpty":  "Nicio carte transferată încă",
-    "@inventoryDeletedDaysLeft":  {
-                                      "placeholders":  {
-                                                           "days":  {
-                                                                        "type":  "int"
-                                                                    }
-                                                       }
-                                  },
-    "shareMaxTagsReached":  "Poți adăuga maxim 5 taguri",
-    "shareTitleHint":  "Titlu carte",
-    "shareTagsHint":  "Taguri (max 5)",
-    "shareEditionYear":  "An ediție",
-    "shareDescriptionHint":  "Descriere (max 256 caractere)",
-    "shareMoreInfo":  "Mai multe informații",
-    "shareAuthorHint":  "Autor",
-    "sharePageCountCustom":  "Număr de pagini (suprascrie autofill)",
-    "shareTagAdd":  "Adaugă tag",
-    "sharePublisher":  "Editura",
-    "shareCityHint":  "Localitatea unde se face schimbul",
-    "sharePublishedYear":  "An apariție",
-    "shareSubmit":  "Publică",
-    "shareListingModeAuction":  "Licitație",
-    "shareSectionBook":  "Cartea",
-    "shareSectionListing":  "Anunțul",
-    "shareListingMode":  "Mod de schimb",
-    "shareDescriptionCharsLeft":  "{n} caractere rămase",
-    "shareListingModeSwap":  "Schimb normal",
-    "shareListingModeSale":  "Vânzare",
-    "shareListingModeDonation":  "Donație",
-    "shareTitleAutocomplete":  "Începe să scrii ca să vezi sugestii",
-    "shareGenreHint":  "Gen",
-    "shareAddPhotos":  "Adaugă poze",
-    "@shareDescriptionCharsLeft":  {
-                                       "placeholders":  {
-                                                            "n":  {
-                                                                      "type":  "int"
-                                                                  }
-                                                        }
-                                   },
-    "preRegisterAlreadyLoggedIn":  "Vom folosi emailul tău dacă nu completezi altul",
-    "preRegisterAndroidHeadline":  "Vine în curând pe telefoanele tale",
-    "preRegisterSuccess":  "Te-ai înscris. Îți dăm de veste când e gata.",
-    "profilePreRegister":  "Pre-înscriere Android",
-    "preRegisterAndroidBody":  "Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.",
-    "preRegisterSubmit":  "Adaugă-mă pe listă",
-    "preRegisterAndroidTitle":  "Pre-înscrie-te pentru Android",
-    "preRegisterEmailHint":  "Email pentru anunț",
-    "preRegisterError":  "Nu am putut înregistra emailul. Încearcă din nou.",
-    "profileSettingsSubtitle":  "Toate opțiunile contului într-un singur loc",
-    "profileGroupProfile":  "Profil",
-    "profileGroupPreferences":  "Preferințe",
-    "profileGroupAccount":  "Cont",
-    "profileGroupLibrary":  "Biblioteca mea",
-    "profileGroupDiscovery":  "Descoperire",
-    "profileGroupStats":  "Statistici",
-    "profileGroupSupport":  "Suport",
-    "profileRecentActivity":  "Activitate recentă",
-    "profileStatSwaps":  "schimburi",
-    "profileActivityAdded":  "Ai adăugat",
-    "profileMoreInSettings":  "Mai multe opțiuni în „⚙\" sus",
-    "profileLibraryAvailable":  "{n} disponibile",
-    "profileStatRating":  "rating",
-    "profileStatBooks":  "cărți",
-    "profileSettings":  "Setări",
-    "profileKeepAlive":  "Keep the app alive",
-    "profileKeepAliveSubtitle":  "ShelfShare rulează pe un server de acasă. Un cafea ajută.",
-    "aboutDevTitle":  "About dev",
-    "aboutDevHeadline":  "Omul din spatele ShelfShare",
-    "aboutDevBodyWho":  "Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.",
-    "aboutDevBodyWhy":  "Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.",
-    "aboutDevBodyHosting":  "Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️",
-    "aboutDevSupportTitle":  "Keep the app alive",
-    "aboutDevSupportSubtitle":  "Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.",
-    "aboutDevCoffeeButton":  "Buy me a coffee",
-    "aboutDevOpenError":  "Nu am putut deschide linkul. Încearcă din nou.",
-    "loginMadeWithLove":  "Made with ❤️ in Transilvanya",
-    "homeRecommendedTitle":  "Recomandate pentru tine",
-    "homeNearbyTitle":  "Aproape de tine ({km} km)",
-    "@homeNearbyTitle":  {
-                             "placeholders":  {
-                                                  "km":  {
-                                                             "type":  "int"
-                                                         }
-                                              }
-                         },
-    "shareTagsSuggestions":  "Sugestii:",
-    "shareCityUnknown":  "Alege un oraș din listă",
-    "gamificationHowItWorks":  "Cum funcționează XP-ul",
-    "gamificationXpIntro":  "Fiecare {n} XP înseamnă un nivel nou. XP-ul se acordă automat, la acțiuni din aplicație:",
-    "@gamificationXpIntro":  {
-                                 "placeholders":  {
-                                                      "n":  {
-                                                                "type":  "int"
-                                                            }
-                                                  }
-                             },
-    "gamificationXpBookListed":  "Listezi o carte",
-    "gamificationXpExchangeCompleted":  "Finalizezi un schimb",
-    "gamificationXpSaleCompleted":  "Finalizezi o vânzare",
-    "gamificationXpReviewWritten":  "Scrii o recenzie",
-    "gamificationNoMaxLevel":  "Nu există nivel maxim - curba e liniară, poți urca oricât.",
-    "@profileLibraryAvailable":  {
-                                     "placeholders":  {
-                                                          "n":  {
-                                                                    "type":  "int"
-                                                                }
-                                                      }
-                                 },
-    "profileBirthdayDay":  "Zi",
-    "profileBirthdayMonth":  "Luna nașterii",
-    "profileBirthdayNone":  "—",
-    "profileLanguagesTitle":  "Limbile în care citești",
-    "profileAboutEmpty":  "Spune ceva despre tine — de exemplu ce genuri îți plac.",
-    "profileMemberSince":  "Membru din",
-    "profileLocation":  "Locație",
-    "profileLanguages":  "Limbi",
-    "countryRomania":  "România",
-    "profileStatsTitle":  "Statistici",
-    "profileStatBooksRead":  "Cărți citite",
-    "profileStatBooksShared":  "Cărți oferite",
-    "profileStatWishlisted":  "Cărți dorite",
-    "profileTopGenresTitle":  "Top genuri",
-    "profileTopGenresEmpty":  "Genurile vor apărea aici pe măsură ce citești și adaugi cărți.",
-    "navNotifications":  "Notificări",
-    "navShortcuts":  "SCURTĂTURI",
-    "shortcutsEditTooltip":  "Editează scurtăturile",
-    "shortcutsDoneTooltip":  "Gata",
-    "shortcutsAddTitle":  "Adaugă scurtătură",
-    "shortcutsAllAdded":  "Toate scurtăturile sunt deja adăugate.",
-    "shortcutFollowing":  "Urmăriți",
-    "shortcutLeaderboard":  "Clasament",
-    "shortcutSellerAnalytics":  "Analize vânzător",
-    "shortcutPreRegister":  "Pre-înregistrare",
-    "shortcutTrash":  "Coș",
-    "shareCoverSelected":  "Coperta cărții",
-    "shareCoverRecommended":  "Coperte recomandate",
-    "shareMainPhotoHint":  "Apasă pe stea pentru a marca poza principală (apare în feed).",
-    "chatOfferCounterAction":  "Contra-ofertă",
-    "chatOfferCounterTitle":  "Trimite o contra-ofertă",
-    "navMyBooks":  "Cărțile mele",
-    "navMyExchanges":  "Schimburile mele",
-    "navWishlist":  "Lista de dorințe",
-    "navMyCollections":  "Colecțiile mele",
-    "navAboutApp":  "Despre aplicație",
-    "aboutAppTitle":  "Despre aplicație",
-    "aboutAppIntro":  "Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.",
-    "aboutAppXpTitle":  "XP și niveluri",
-    "aboutAppTrustTitle":  "Trust Score",
-    "aboutAppTrustBody":  "Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.",
-    "aboutAppShelvesTitle":  "Raftul meu (Public Bookshelf)",
-    "aboutAppShelvesBody":  "Raftul e statusul tău personal de citit pentru o carte, indiferent dacă o deții fizic sau nu.\n\n• Citesc — cartea la care lucrezi acum\n• Vreau să citesc — lista ta de dorințe pentru viitor\n• Citită — cărțile pe care le-ai terminat\n\nCărțile pe care le poți da la schimb sau vinde sunt separate - stau în „Biblioteca mea\" (My Shelf din meniu). O carte poate fi și pe raft (ex. „Vreau să citesc\") și în bibliotecă (ex. „Am un exemplar de vânzare\") - sunt două noțiuni diferite.",
-    "aboutAppHomeSectionsTitle":  "Cele 3 secțiuni de pe Home",
-    "aboutAppHomeSectionsBody":  "Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare",
-    "aboutAppExchangesTitle":  "Schimburi și oferte",
-    "aboutAppExchangesBody":  "Sunt două căi de a obține o carte de la altcineva:\n\n• Schimb — propui o carte din biblioteca ta în schimbul uneia din biblioteca altui user. E gratuit, doar cu costul expedierii\n• Ofertă de preț — dacă o carte e listată la vânzare și marcată „negociabil\", poți trimite o ofertă cu preț diferit. Vânzătorul acceptă, respinge sau vine cu contra-ofertă",
-    "aboutAppBadgesTitle":  "Insigne (Achievements)",
-    "aboutAppBadgesBody":  "Insignele se acordă automat când atingi anumite praguri: primul schimb, 10 schimburi, 50 de schimburi, primul review scris, primul cont al comunității, insigna de supporter (dacă susții proiectul prin „Keep the app alive\"), etc.\n\nSunt vizibile pe profilul tău public. Nu au impact funcțional - doar recunosc contribuția.",
-    "aboutAppChatTitle":  "Chat",
-    "aboutAppChatBody":  "Poți începe o conversație direct din pagina unei cărți sau din profilul altui user. Toate mesajele sunt criptate în timpul transmiterii.\n\nRegulă simplă de siguranță: nu da niciodată date personale (CNP, număr de card, adresa completă) în chat. Pentru schimburi, folosește adresa poștală doar când ești sigur de partener.",
-    "aboutAppAccountDeletionTitle":  "Ștergerea contului",
-    "aboutAppAccountDeletionBody":  "Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.",
-    "chatNewConversationTooltip":  "Conversație nouă",
-    "chatSearchHint":  "Caută în conversații…",
-    "chatFilterAll":  "Toate",
-    "chatFilterUnread":  "Necitite",
-    "chatFilterArchived":  "Arhivate",
-    "chatEmptySearch":  "Nicio conversație nu se potrivește căutării.",
-    "chatEmptyUnread":  "Toate conversațiile sunt citite.",
-    "chatSafetyHeadline":  "Bine ai venit în Chat",
-    "chatSafetyIntro":  "Aici discuți cu ceilalți cititori despre schimburi, oferte și cărți. Alege o conversație din stânga sau ține minte câteva reguli înainte să începi.",
-    "chatSafetyPersonalTitle":  "Nu da date personale",
-    "chatSafetyPersonalBody":  "CNP, număr de card, adresa exactă sau parole — niciodată în chat. Nici măcar dacă „e nevoie pentru livrare\" sau dacă cineva insistă.",
-    "chatSafetyPaymentTitle":  "Plăți sigure",
-    "chatSafetyPaymentBody":  "Pentru vânzări, folosește metode cu protecție (transfer bancar cu factură, ramburs). Evită plățile în avans către useri fără istoric.",
-    "chatSafetyMeetupTitle":  "Întâlnește-te în loc public",
-    "chatSafetyMeetupBody":  "Pentru schimburi în persoană, alege o cafenea, o bibliotecă sau piața centrală. Nu invita pe cineva acasă la primul schimb.",
-    "chatSafetyReportTitle":  "Raportează ce ți se pare suspect",
-    "chatSafetyReportBody":  "Un utilizator care cere date personale, care insistă cu plăți neobișnuite sau al cărui profil e gol — apasă pe „…\" din header și raportează.",
-    "chatSafetyOpenCenter":  "Deschide Centrul de siguranță",
-    "chatSafetyHint":  "Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.",
-    "greetReaderFallback":  "Cititorule",
-    "greetMorningSun":  "Bună dimineața, Soare! ☀️",
-    "greetMorningNamed":  "Bună dimineața, {name}!",
-    "@greetMorningNamed":  {
-                     "placeholders":  {
-                                          "name":  {
-                                                       "type":  "String"
-                                                   }
-                                      }
-                 },
-    "greetMorningCoffeeBook":  "O cafea și o carte?",
-    "greetMorningCoffee":  "Bună dimineața la cafeluță! ☕",
-    "greetMorningStartStory":  "Începe ziua cu o poveste.",
-    "greetMorningAdventure":  "Răsare o nouă aventură.",
-    "greetMorningSleptWell":  "Sper că ai dormit bine!",
-    "greetMorningPerfectBook":  "Astăzi poate găsești cartea perfectă.",
-    "greetMorningNicer":  "Diminețile sunt mai frumoase cu o carte.",
-    "greetDayNamed":  "Salut, {name}!",
-    "@greetDayNamed":  {
-                     "placeholders":  {
-                                          "name":  {
-                                                       "type":  "String"
-                                                   }
-                                      }
-                 },
-    "greetDayDiscover":  "Ce carte descoperi astăzi?",
-    "greetDayAdventure":  "O nouă aventură te așteaptă.",
-    "greetDayLibrary":  "Biblioteca te așteaptă.",
-    "greetDayCorporateCoffee":  "Cafeluța corporatistă?",
-    "greetDayWhatsNext":  "Ce urmează pe lista ta?",
-    "greetDaySwappedToday":  "Ai schimbat o carte azi?",
-    "greetDayNewReader":  "Fiecare carte are un nou cititor.",
-    "greetDayFindNext":  "Găsește-ți următoarea lectură.",
-    "greetEveningHello":  "Bună seara!",
-    "greetEveningHowWasDay":  "Cum a fost ziua ta?",
-    "greetEveningPerfectNow":  "O carte merge perfect acum.",
-    "greetEveningFewPages":  "E timpul pentru câteva pagini.",
-    "greetEveningRelax":  "Relaxează-te cu o poveste.",
-    "greetEveningQuiet":  "O seară liniștită începe cu o carte.",
-    "greetEveningWhatTonight":  "Ce citești în seara asta?",
-    "greetEveningBeforeBed":  "Poate găsești ceva nou înainte de culcare.",
-    "greetNightGoodNight":  "Noapte bună! 🌙",
-    "greetNightSandman":  "Moș Ene pe la gene. 😴",
-    "greetNightCloseBook":  "E timpul să închidem cartea.",
-    "greetNightSleepWell":  "Somn ușor, {name}!",
-    "@greetNightSleepWell":  {
-                     "placeholders":  {
-                                          "name":  {
-                                                       "type":  "String"
-                                                   }
-                                      }
-                 },
-    "greetNightOneMoreChapter":  "Mai citești un capitol?",
-    "greetNightSeeYouTomorrow":  "Ne vedem mâine printre cărți.",
-    "greetNightNiceDay":  "Sper că ai avut o zi frumoasă.",
-    "greetNightQuiet":  "Noapte liniștită!",
-    "greetLateAwake":  "Încă treaz? 📖",
-    "greetLateNightOwl":  "Bufniță de noapte?",
-    "greetLateMidnightReads":  "Lecturile de la miezul nopții sunt speciale.",
-    "greetLateOneChapter":  "Mai e doar un capitol, nu?",
-    "greetLateNeverSleeps":  "ShelfShare nu doarme niciodată.",
-    "greetLateCompany":  "Cărțile țin companie și la ore târzii.",
-    "greetLateLastChapter":  "Noapte bună... când ajungi la ultimul capitol.",
-    "greetLateForgotSleep":  "Sperăm că nu ai uitat de somn.",
-    "greetWeekend":  "E weekend! Ce carte iei cu tine?",
-    "greetMonday":  "Luni... măcar ai o carte bună.",
-    "greetFridayEvening":  "Vineri seara? Perfect pentru citit.",
-    "greetBirthday":  "La mulți ani! 🎉",
-    "greetNationalDay":  "La mulți ani, România! 🇷🇴",
-    "greetChristmas":  "Crăciun fericit! 🎄",
-    "greetEaster":  "Paște fericit! 🐰",
-    "greetNewYear":  "An nou, cărți noi! 🎆",
-    "greetBookDay":  "Astăzi este Ziua Internațională a Cărții! 📚"
+    "trustScoreAverageSwapTime": "Schimb finalizat în ~{time}",
+    "@trustScoreAverageSwapTime": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "memberSinceDays": "Membru din {days} zile",
+    "@memberSinceDays": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "memberSinceMonths": "Membru de {months} luni",
+    "@memberSinceMonths": {
+        "placeholders": {
+            "months": {
+                "type": "int"
+            }
+        }
+    },
+    "memberSinceYears": "Membru de {years} ani",
+    "@memberSinceYears": {
+        "placeholders": {
+            "years": {
+                "type": "int"
+            }
+        }
+    },
+    "durationMinutes": "{minutes} min",
+    "@durationMinutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "durationHours": "{hours}h",
+    "@durationHours": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "durationDays": "{days} zile",
+    "@durationDays": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "priceLei": "{amount} lei",
+    "@priceLei": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "bookAvailableForSwapShort": "Schimb",
+    "commonEmailLabel": "Email",
+    "commonEmailInvalid": "Email invalid",
+    "commonOr": "sau",
+    "commonRequired": "Obligatoriu",
+    "commonContinue": "Continuă",
+    "loginWelcomeBack": "Bun venit înapoi",
+    "authPasswordLabel": "Parolă",
+    "authEnterPasswordError": "Introdu parola",
+    "authMinEightChars": "Minim 8 caractere",
+    "authForgotPasswordLink": "Ai uitat parola?",
+    "authLoginSubmit": "Autentificare",
+    "authNoAccount": "Nu ai cont? ",
+    "authCreateOne": "Creează unul",
+    "authGoogleFailed": "Autentificarea cu Google a eșuat. Încearcă din nou.",
+    "supportContactButton": "Nu te poți loga? Contactează-ne",
+    "supportDialogTitle": "Contactează support",
+    "supportDialogSubtitle": "Spune-ne ce problemă ai și îți răspundem pe email.",
+    "supportNameLabel": "Nume",
+    "supportPhoneLabel": "Telefon (opțional)",
+    "supportMessageLabel": "Mesajul tău",
+    "supportCaptchaAnswerLabel": "Răspunsul tău",
+    "supportSubmit": "Trimite mesajul",
+    "supportSuccessMessage": "Mesaj trimis! Îți răspundem cât mai curând pe email.",
+    "supportGenericError": "Nu am putut trimite mesajul. Încearcă din nou.",
+    "authRegisterTitle": "Creează cont",
+    "authRegisterSubtitle": "Alătură-te comunității ShelfShare",
+    "authReferralCodeLabel": "Cod de invitație (opțional)",
+    "verifyCodeTooShort": "Codul trebuie să aibă 6 cifre",
+    "verifySuccessSnackbar": "Cont confirmat cu succes!",
+    "verifyInvalidOrExpired": "Cod invalid sau expirat.",
+    "verifyResendSnackbar": "Am retrimis codul, dacă e cazul.",
+    "verifyEmailHeading": "Verifică-ți emailul",
+    "verifySentTo": "Ți-am trimis un cod de confirmare pe {email}",
+    "@verifySentTo": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyConfirmButton": "Confirmă",
+    "verifyResending": "Se retrimite...",
+    "verifyResendPrompt": "Nu ai primit codul? Retrimite",
+    "forgotPasswordTitle": "Resetează parola",
+    "forgotPasswordSubtitle": "Îți trimitem un cod de resetare pe email.",
+    "forgotPasswordSubmit": "Trimite cod",
+    "forgotPasswordCodeHeading": "Introdu codul primit pe email",
+    "forgotPasswordCodeSentTo": "Ți-am trimis un cod de resetare pe {email}",
+    "@forgotPasswordCodeSentTo": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordTitle": "Setează o parolă nouă",
+    "resetPasswordSubtitle": "Alege o parolă nouă pentru contul tău",
+    "resetPasswordNewLabel": "Parolă nouă",
+    "resetPasswordSubmit": "Setează parola",
+    "resetPasswordSuccessHeading": "Parolă schimbată",
+    "resetPasswordSuccessBody": "Parola ta a fost actualizată. Te poți autentifica acum.",
+    "resetPasswordGoToLogin": "Mergi la autentificare",
+    "resetPasswordGenericError": "Nu am putut reseta parola. Încearcă din nou.",
+    "authConfirmPasswordLabel": "Confirmă parola",
+    "authPasswordMismatch": "Parolele nu coincid",
+    "onboardingTitle": "Aproape gata!",
+    "onboardingSubtitle": "Spune-ne cum vrei să te vadă ceilalți",
+    "onboardingFirstName": "Prenume",
+    "onboardingLastName": "Nume",
+    "onboardingUsername": "Username",
+    "onboardingUsernameFormatError": "3-20 caractere: litere, cifre sau underscore",
+    "onboardingGenericError": "A apărut o eroare. Încearcă din nou.",
+    "onboardingNameVisibleSwitch": "Fă numele vizibil public",
+    "onboardingUsernameAlwaysVisible": "Username-ul rămâne mereu vizibil",
+    "profileTitle": "Profilul meu",
+    "surveyTitle": "Ce îți place să citești?",
+    "surveySubtitle": "Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.",
+    "surveyGenresQuestion": "Ce genuri te atrag?",
+    "surveyGenresLoadError": "Nu am putut încărca lista de genuri.",
+    "surveyAuthorsQuestion": "Autori preferați (opțional)",
+    "surveyAuthorsHint": "Ex.: Mihail Sadoveanu, Ursula K. Le Guin",
+    "surveyPaceQuestion": "Câte cărți citești pe lună?",
+    "surveySubmit": "Salvează",
+    "surveySkip": "Sar peste deocamdată",
+    "surveySaveError": "Nu am putut salva răspunsurile. Încearcă din nou.",
+    "surveyChangeLaterHint": "Poți schimba oricând răspunsurile din profil.",
+    "surveyPaceOption": "{pace} cărți pe lună",
+    "@surveyPaceOption": {
+        "placeholders": {
+            "pace": {
+                "type": "String"
+            }
+        }
+    },
+    "profilePhotoChoose": "Alege o poză",
+    "profilePhotoRemove": "Șterge poza",
+    "profilePhotoError": "Nu am putut actualiza poza de profil.",
+    "profileCopyLink": "Copiază linkul",
+    "profileLoadError": "Nu am putut încărca profilul.",
+    "profileAboutMe": "Despre mine",
+    "profileBadgesTitle": "Insigne",
+    "profileMyExchanges": "Schimburile mele",
+    "profileSafetyCenter": "Centru de siguranță",
+    "profileHelpCenter": "Întrebări frecvente",
+    "profileLeaderboard": "Clasament",
+    "profileSendFeedback": "Trimite feedback",
+    "profileEditProfile": "Editează profilul",
+    "profileAdminPanel": "Panou de administrare",
+    "profileLogout": "Deconectare",
+    "profileLanguage": "Limbă",
+    "profileDarkModeSection": "Mod întunecat",
+    "profileThemeSystem": "Automat (sistem)",
+    "profileThemeLight": "Deschis",
+    "profileThemeDark": "Întunecat",
+    "profileQrTooltip": "Cod QR",
+    "profileQrDialogTitle": "Codul tău QR",
+    "profileQrDialogBody": "Oricine scanează acest cod îți poate deschide profilul.",
+    "profileReferralTitle": "Codul tău de invitație",
+    "profileReferralSubtitle": "Trimite-l prietenilor ca să te descopere pe ShelfShare",
+    "profileReferralCountLabel": "{count} prieteni invitați",
+    "@profileReferralCountLabel": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "profileReferralCopied": "Cod copiat în clipboard",
+    "profileFeedbackHint": "Ce ai vrea să ne spui?",
+    "profileFeedbackThanks": "Mulțumim pentru feedback!",
+    "profileFeedbackError": "Nu am putut trimite feedback-ul",
+    "profileUsernameLabel": "Username",
+    "profileCityLabel": "Oraș",
+    "profileNoCity": "Fără oraș",
+    "profileShowAcquisitionHistory": "Arată istoricul de achiziții pe profil",
+    "profileShowAcquisitionHistorySubtitle": "Cărțile pe care le-ai primit prin schimburi sau cumpărături din aplicație",
+    "profileSaveError": "Nu am putut salva profilul.",
+    "commonSendMessage": "Trimite mesaj",
+    "publicProfileTitle": "Profil",
+    "publicProfileFollowUpdateError": "Nu am putut actualiza urmărirea",
+    "publicProfileMessageError": "Nu am putut porni conversația.",
+    "publicProfileMemberSince": "Membru din {year}",
+    "@publicProfileMemberSince": {
+        "placeholders": {
+            "year": {
+                "type": "int"
+            }
+        }
+    },
+    "publicProfileFollowersFollowing": "{followers} urmăritori · {following} urmăriți",
+    "@publicProfileFollowersFollowing": {
+        "placeholders": {
+            "followers": {
+                "type": "int"
+            },
+            "following": {
+                "type": "int"
+            }
+        }
+    },
+    "publicProfileUnfollow": "Nu mai urmări",
+    "publicProfileFollow": "Urmărește",
+    "publicProfileReadingStats": "Statistici de citit",
+    "publicProfileBooksListed": "Cărți listate",
+    "publicProfileTotalPages": "Total pagini",
+    "publicProfileFavoriteGenre": "Gen preferat",
+    "publicProfileBooksShared": "Cărți date",
+    "publicProfileBooksReceived": "Cărți primite",
+    "publicProfileLongestBook": "Cea mai lungă carte",
+    "publicProfileListedBooksCount": "Cărți listate ({count})",
+    "@publicProfileListedBooksCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "publicProfileAcquisitionHistory": "Istoric cărți primite prin aplicație",
+    "publicProfileNoAcquisitions": "Niciun schimb sau cumpărare finalizată încă.",
+    "publicProfileReviewsCount": "Recenzii ({count})",
+    "@publicProfileReviewsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "leaderboardEmpty": "Niciun oraș cu activitate încă.",
+    "leaderboardUnknownCity": "Necunoscut",
+    "leaderboardExchangesCount": "{count} schimburi",
+    "@leaderboardExchangesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "leaderboardLoadError": "Nu am putut încărca clasamentul.",
+    "leaderboardTabCity": "Pe orașe",
+    "leaderboardTabNational": "Național",
+    "leaderboardTabTopReaders": "Cititori",
+    "leaderboardPagesCount": "{count} pagini",
+    "@leaderboardPagesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "profileGlobalStats": "Statistici globale",
+    "profileMyBookshelf": "Raftul meu",
+    "bookshelfTitle": "Raftul meu",
+    "bookshelfTabReading": "Citesc",
+    "bookshelfTabWantToRead": "Vreau să citesc",
+    "bookshelfTabFinished": "Terminate",
+    "bookshelfTabShared": "Împărtășite",
+    "bookshelfEmpty": "Nicio carte aici încă.",
+    "bookshelfLoadError": "Nu am putut încărca raftul.",
+    "bookshelfImportTooltip": "Importă din Goodreads sau StoryGraph",
+    "bookshelfImportGoodreads": "Importă din Goodreads (CSV)",
+    "bookshelfImportStoryGraph": "Importă din StoryGraph (CSV)",
+    "bookshelfImportSummary": "{imported} cărți importate, {skipped} sărite",
+    "@bookshelfImportSummary": {
+        "placeholders": {
+            "imported": {
+                "type": "int"
+            },
+            "skipped": {
+                "type": "int"
+            }
+        }
+    },
+    "bookshelfImportError": "Nu am putut importa fișierul. Verifică dacă e un export CSV valid.",
+    "bookDetailShelfSectionTitle": "Adaugă în raftul tău",
+    "gamificationLevel": "Nivel {level}",
+    "@gamificationLevel": {
+        "placeholders": {
+            "level": {
+                "type": "int"
+            }
+        }
+    },
+    "gamificationXp": "{xp} XP",
+    "@gamificationXp": {
+        "placeholders": {
+            "xp": {
+                "type": "int"
+            }
+        }
+    },
+    "gamificationXpToNextLevel": "{xp} XP până la nivelul următor",
+    "@gamificationXpToNextLevel": {
+        "placeholders": {
+            "xp": {
+                "type": "int"
+            }
+        }
+    },
+    "gamificationStreak": "{days} zile la rând",
+    "@gamificationStreak": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "gamificationLongestStreak": "Record: {days} zile",
+    "@gamificationLongestStreak": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "profileMonthlyChallenges": "Provocări lunare",
+    "monthlyChallengesTitle": "Provocări lunare",
+    "profileReadingChallenge": "Provocarea de citit",
+    "readingChallengeTitle": "Provocarea de citit {year}",
+    "@readingChallengeTitle": {
+        "placeholders": {
+            "year": {
+                "type": "int"
+            }
+        }
+    },
+    "readingChallengeNoGoal": "Nu ai setat încă un obiectiv pentru anul acesta.",
+    "readingChallengeProgress": "{progress} din {goal} cărți terminate",
+    "@readingChallengeProgress": {
+        "placeholders": {
+            "progress": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "readingChallengeSetGoal": "Setează un obiectiv",
+    "readingChallengeGoalLabel": "Câte cărți vrei să termini anul acesta?",
+    "profileActivityFeed": "Activitate recentă",
+    "activityFeedTitle": "Activitate recentă",
+    "activityFeedEmpty": "Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.",
+    "activityFeedLoadError": "Nu am putut încărca activitatea.",
+    "activityNewListing": "{name} a listat o carte nouă",
+    "@activityNewListing": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "activityFinishedBook": "{name} a terminat de citit",
+    "@activityFinishedBook": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "activityCompletedExchange": "{name} a finalizat un schimb",
+    "@activityCompletedExchange": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailShelfRemove": "Elimină din raft",
+    "publicProfileBookshelfTitle": "Raftul de cărți",
+    "globalStatsTitle": "Statistici globale",
+    "globalStatsTabMostShared": "Cele mai schimbate",
+    "globalStatsTabTrending": "În tendințe",
+    "globalStatsTabPopularAuthors": "Autori populari",
+    "globalStatsEmpty": "Nicio dată încă.",
+    "globalStatsLoadError": "Nu am putut încărca statisticile.",
+    "globalStatsTransferCount": "{count} schimburi/vânzări",
+    "@globalStatsTransferCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "globalStatsViewCount": "{count} vizualizări (14 zile)",
+    "@globalStatsViewCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "profileFavoriteSellers": "Vânzători favoriți",
+    "favoriteSellersTitle": "Vânzători favoriți",
+    "favoriteSellersEmpty": "Nu urmărești încă niciun utilizator.",
+    "favoriteSellersLoadError": "Nu am putut încărca lista.",
+    "publicProfileTopGenres": "Genuri preferate",
+    "impactStatsTitle": "Impact",
+    "impactStatsTotalValue": "Valoare totală schimbată",
+    "impactStatsMoneySaved": "Bani economisiți",
+    "impactStatsCo2Saved": "CO₂ economisit (estimativ)",
+    "impactStatsCo2Value": "{kg} kg",
+    "@impactStatsCo2Value": {
+        "placeholders": {
+            "kg": {
+                "type": "String"
+            }
+        }
+    },
+    "homeGreeting": "Salut, {name}!",
+    "@homeGreeting": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "homeWelcome": "Bine ai venit!",
+    "homeLoadError": "Nu am putut încărca cărțile.",
+    "homeEmpty": "Nu există încă cărți disponibile.",
+    "homeCategories": "Categorii",
+    "homeRecentlyAdded": "Adăugate recent",
+    "homeMostViewed": "Cele mai vizualizate",
+    "homeMostSearched": "Cele mai căutate",
+    "homeSeeAll": "Vezi toate",
+    "homePendingSwapBanner": "{count} cereri de schimb te așteaptă",
+    "@homePendingSwapBanner": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "homePendingSwapReview": "Revizuiește",
+    "homeOngoingExchangeBanner": "Ai un schimb în desfășurare",
+    "homeFeedEnd": "Ai văzut toate cărțile",
+    "homeNearYou": "Din orașul tău",
+    "homeNearYouToday": "Astăzi, aproape de tine",
+    "homeRecommendedForYou": "Recomandate pentru tine",
+    "homeHiddenGems": "Comori ascunse",
+    "homeCompleteYourCollection": "Completează-ți colecția",
+    "homeSimilarTaste": "Gusturi asemănătoare",
+    "profileSmartMatches": "Potriviri de schimb",
+    "smartMatchesTitle": "Potriviri de schimb",
+    "smartMatchesEmpty": "Nicio potrivire încă - adaugă cărți pe wishlist și listează cărți disponibile.",
+    "smartMatchesLoadError": "Nu am putut încărca potrivirile.",
+    "smartMatchesTheyHave": "Are ce vrei tu",
+    "smartMatchesTheyWant": "Vrea ce ai tu",
+    "homeUpcomingBooks": "Cărți viitoare",
+    "homeActiveMembers": "Membri activi",
+    "browseTitle": "Caută cărți",
+    "browseMapTooltip": "Hartă cărți din apropiere",
+    "browseSearchHint": "Caută după titlu",
+    "browseEmpty": "Nicio carte găsită.",
+    "filtersTitle": "Filtre",
+    "filtersAuthor": "Autor",
+    "filtersGenre": "Gen",
+    "filtersLanguage": "Limbă",
+    "filtersAnyCity": "Orice oraș",
+    "filtersCondition": "Stare",
+    "bookConditionNew": "Nouă",
+    "bookConditionVeryGood": "Foarte bună",
+    "bookConditionGood": "Bună",
+    "bookConditionAcceptable": "Acceptabilă",
+    "filtersAnyCondition": "Orice stare",
+    "filtersListingType": "Tip de anunț",
+    "filtersListingTypeSwap": "Schimb",
+    "filtersListingTypeSale": "Vânzare",
+    "filtersListingTypeAuction": "Licitație",
+    "filtersNearbyOnly": "Doar din apropiere",
+    "filtersNearbyOnlyHintOff": "Ordonează și filtrează după distanța reală față de orașul tău",
+    "filtersNearbyOnlyHintOn": "Până la {km} km de orașul tău",
+    "@filtersNearbyOnlyHintOn": {
+        "placeholders": {
+            "km": {
+                "type": "int"
+            }
+        }
+    },
+    "filtersDistanceKm": "{km} km",
+    "@filtersDistanceKm": {
+        "placeholders": {
+            "km": {
+                "type": "int"
+            }
+        }
+    },
+    "filtersReset": "Resetează",
+    "filtersApply": "Aplică filtre",
+    "commonYes": "Da",
+    "commonNo": "Nu",
+    "commonGiveUp": "Renunță",
+    "libraryTitle": "Raftul meu",
+    "libraryViewAsList": "Vezi ca listă",
+    "libraryViewAsGrid": "Vezi ca grilă",
+    "libraryExportCsv": "Exportă în CSV",
+    "libraryBulkAdd": "Adaugă mai multe cărți (scanare)",
+    "libraryImportCsv": "Importă anunțuri din CSV",
+    "libraryImportSummary": "{created} anunțuri create, {failed} eșuate",
+    "@libraryImportSummary": {
+        "placeholders": {
+            "created": {
+                "type": "int"
+            },
+            "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryImportError": "Nu am putut importa fișierul. Verifică dacă e un CSV valid.",
+    "libraryEmpty": "Nu ai nicio carte în bibliotecă încă.",
+    "libraryLoadError": "Nu am putut încărca biblioteca.",
+    "libraryAvailable": "Disponibilă",
+    "libraryUnavailable": "Indisponibilă",
+    "libraryShelfSubtitle": "{total} cărți · {available} disponibile la schimb",
+    "@libraryShelfSubtitle": {
+        "placeholders": {
+            "total": {
+                "type": "int"
+            },
+            "available": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryFilterAll": "Toate {count}",
+    "@libraryFilterAll": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryFilterAvailable": "Disponibile {count}",
+    "@libraryFilterAvailable": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryFilterUnavailable": "Indisponibile {count}",
+    "@libraryFilterUnavailable": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryFilterTransferred": "Transferate {count}",
+    "@libraryFilterTransferred": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryOverviewTitle": "Rezumatul raftului",
+    "libraryOverviewTotal": "Total",
+    "libraryDeleteConfirmTitle": "Ștergi cartea?",
+    "libraryDeleteConfirmBody": "„{title}\" va fi eliminată din bibliotecă.",
+    "@libraryDeleteConfirmBody": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "libraryAvailableForSwap": "Disponibilă pentru schimb",
+    "libraryDeleteBook": "Șterge cartea",
+    "libraryEditListing": "Editează anunțul",
+    "libraryEditListingTitle": "Editează anunțul",
+    "libraryEditListingSuccess": "Anunțul a fost actualizat.",
+    "csvHeaderTitle": "Titlu",
+    "csvHeaderAvailableForSwap": "Disponibilă la schimb",
+    "csvHeaderForSale": "De vânzare",
+    "csvHeaderPrice": "Preț",
+    "addBookTitle": "Adaugă o carte",
+    "addBookSearchHint": "Titlu sau ISBN",
+    "addBookSearchButton": "Caută",
+    "addBookSearchFailed": "Căutarea a eșuat. Încearcă din nou.",
+    "addBookSearchPrompt": "Caută o carte după titlu sau ISBN.",
+    "addBookManualEntry": "Adaugă manual",
+    "addBookNotFoundManual": "Nu găsești cartea? Adaugă manual",
+    "addBookChange": "Schimbă",
+    "addBookTitleLabel": "Titlu",
+    "addBookSearchInstead": "Caută în schimb",
+    "addBookLanguageOptional": "Limbă (opțional)",
+    "addBookEditionOptional": "Ediție (opțional)",
+    "addBookHardcoverSwitch": "Ediție cartonată",
+    "addBookForSaleSwitch": "De vânzare",
+    "addBookForSaleHint": "Pe lângă schimb, poți vinde cartea la un preț fix",
+    "addBookPriceLabel": "Preț (lei)",
+    "addBookNonNegotiable": "Preț fix, nenegociabil",
+    "addBookNonNegotiableHint": "Cumpărătorii nu vor putea face oferte de preț",
+    "addBookAuctionSwitch": "Pornește o licitație",
+    "addBookAuctionHint": "Cumpărătorii vor licita, câștigă oferta cea mai mare la final",
+    "addBookAuctionStartingPrice": "Preț de pornire",
+    "addBookAuctionReservePrice": "Preț de rezervă (opțional)",
+    "addBookAuctionReservePriceHint": "Prețul minim sub care nu vinzi cartea",
+    "addBookAuctionBuyNowPrice": "Preț \"Cumpără acum\" (opțional)",
+    "addBookAuctionBuyNowPriceHint": "Disponibil doar înainte de prima ofertă",
+    "addBookAuctionDuration": "Durata licitației",
+    "addBookAuctionDuration24h": "24 ore",
+    "addBookAuctionDuration3d": "3 zile",
+    "addBookAuctionDuration7d": "7 zile",
+    "addBookPhotosLabelRequired": "Poze cu cartea (obligatoriu, cel puțin 1)",
+    "addBookPhotosLabelOptional": "Poze cu cartea (opțional)",
+    "addBookSubmit": "Adaugă în bibliotecă",
+    "addBookTitleRequired": "Titlul este obligatoriu",
+    "addBookInvalidPrice": "Introdu un preț valid",
+    "addBookNeedPhoto": "Adaugă cel puțin o poză cu cartea înainte de a o pune la vânzare",
+    "addBookSuccess": "Carte adăugată în bibliotecă",
+    "addBookGenericError": "Nu am putut adăuga cartea. Încearcă din nou.",
+    "relistNeedPhoto": "Adaugă cel puțin o poză înainte de a o pune la vânzare",
+    "relistSuccess": "Cartea a fost adăugată în biblioteca ta",
+    "relistGenericError": "Nu am putut adăuga cartea.",
+    "relistHeading": "Adaugă „{title}\" în biblioteca ta",
+    "@relistHeading": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "relistSubtitle": "Descrie starea în care ai primit-o - rămâne legată de istoricul cărții.",
+    "mapTitle": "Cărți din apropiere",
+    "mapLoadError": "Nu am putut încărca harta.",
+    "mapEmpty": "Nicio carte disponibilă momentan în vreun oraș.",
+    "mapCityBooksCount": "{count, plural, one{{count} carte} other{{count} cărți}}",
+    "@mapCityBooksCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "bookDetailTitle": "Detalii carte",
+    "bookDetailReportTooltip": "Raportează anunțul",
+    "bookDetailReportedFrom": "Raportat de pe anunțul \"{title}\"",
+    "@bookDetailReportedFrom": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailReportSent": "Raport trimis. Mulțumim!",
+    "bookDetailWishlistError": "Nu am putut actualiza lista de dorințe",
+    "bookDetailReportError": "Nu am putut trimite raportul",
+    "bookDetailLoadError": "Nu am putut încărca cartea.",
+    "bookDetailViewsTitle": "Vizualizări",
+    "bookDetailViewsLoadError": "Nu am putut încărca vizualizările.",
+    "bookDetailUniqueViews": "{count} vizualizări unice",
+    "@bookDetailUniqueViews": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "bookDetailTotalViews": "{count} vizualizări în total, inclusiv reîncărcări de pagină",
+    "@bookDetailTotalViews": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "bookDetailHardcoverChip": "Cartonată",
+    "bookDetailAvailableChip": "Disponibilă la schimb",
+    "bookDetailViewCount": "{count} vizualizări",
+    "@bookDetailViewCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "bookDetailDescriptionTitle": "Descriere",
+    "bookDetailSellerNoteTitle": "Notă de la proprietar",
+    "bookDetailAboutButton": "Despre carte",
+    "bookDetailDetailsTitle": "Detalii",
+    "bookDetailPublisherLabel": "Editură",
+    "bookDetailYearLabel": "An apariție",
+    "bookDetailPagesLabel": "Pagini",
+    "bookDetailOwnerTitle": "Proprietar",
+    "bookDetailPhotosTitle": "Poze",
+    "bookDetailRequestExchange": "Cere la schimb",
+    "bookDetailUnavailableForExchange": "Indisponibilă la schimb",
+    "bookDetailMakeOffer": "Fă o ofertă",
+    "bookDetailMessageOwner": "Mesaj",
+    "bookDetailAvailabilityTitle": "Disponibilitate",
+    "bookDetailReadyToExchange": "Gata de schimb",
+    "bookDetailLocationTitle": "Locație",
+    "bookDetailViewOnMap": "Vezi pe hartă",
+    "bookDetailAvailableForExchangeHint": "Această carte este disponibilă la schimb",
+    "bookDetailHistoryTitle": "Istoricul acestei cărți",
+    "bookDetailHistorySubtitle": "Cum a circulat cartea prin aplicație, cu poze puse de fiecare proprietar.",
+    "bookDetailHistorySold": "vândută",
+    "bookDetailHistoryExchanged": "dată la schimb",
+    "bookDetailHistoryListedOn": "listată pe {date}",
+    "@bookDetailHistoryListedOn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailHistoryTransferredOn": " · {action} pe {date}",
+    "@bookDetailHistoryTransferredOn": {
+        "placeholders": {
+            "action": {
+                "type": "String"
+            },
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailHistoryCurrentlyOwned": " · deținută în prezent",
+    "bookDetailSimilarBooksTitle": "Cărți similare",
+    "bookDetailLibraryPriceLabel": "Preț în librării: {price}",
+    "@bookDetailLibraryPriceLabel": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailRequestedTitle": "Cere „{title}\" la schimb",
+    "@bookDetailRequestedTitle": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailNoBooksToOffer": "Nu ai cărți disponibile de oferit - poți trimite cererea și fără.",
+    "bookDetailOfferOneOfYourBooks": "Oferă una din cărțile tale (opțional)",
+    "bookDetailNoOffer": "Fără ofertă",
+    "bookDetailMessageOptional": "Mesaj (opțional)",
+    "bookDetailSendRequest": "Trimite cererea",
+    "bookDetailRequestSent": "Cerere de schimb trimisă",
+    "bookDetailRequestError": "Nu am putut trimite cererea.",
+    "bookDetailFirstExchangeTitle": "Primul tău schimb",
+    "bookDetailFirstExchangeBody": "Câteva sfaturi înainte de primul schimb: întâlnește-te ziua, într-un loc public, și verifică starea cărții înainte să confirmi schimbul ca finalizat.",
+    "bookDetailUnderstood": "Am înțeles, continuă",
+    "bookDetailMakeOfferTitle": "Fă o ofertă pentru „{title}\"",
+    "@bookDetailMakeOfferTitle": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailAskingPrice": "Preț cerut: {price}",
+    "@bookDetailAskingPrice": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "bookDetailOfferAmountLabel": "Suma oferită",
+    "bookDetailSendOffer": "Trimite oferta",
+    "bookDetailOfferSent": "Ofertă trimisă",
+    "bookDetailOfferError": "Nu am putut trimite oferta.",
+    "bookDetailInvalidAmount": "Introdu o sumă validă",
+    "commonAddToLibrary": "Adaugă în biblioteca ta",
+    "commonAnonymousUser": "un utilizator",
+    "exchangesTitle": "Schimburile mele",
+    "exchangesTabReceived": "Schimburi primite",
+    "exchangesTabSent": "Schimburi trimise",
+    "offersTabReceived": "Oferte primite",
+    "offersTabSent": "Oferte trimise",
+    "exchangesEmptyReceived": "Nu ai primit nicio cerere de schimb.",
+    "exchangesEmptySent": "Nu ai trimis nicio cerere de schimb.",
+    "exchangesLoadError": "Nu am putut încărca schimburile.",
+    "exchangeRequestedBy": "Cerută de {name}",
+    "@exchangeRequestedBy": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "exchangeFrom": "De la {name}",
+    "@exchangeFrom": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "exchangeOffersBook": "Oferă: {title}",
+    "@exchangeOffersBook": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "exchangeOffersAmount": "Oferă: {amount} RON",
+    "@exchangeOffersAmount": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "exchangeReject": "Refuză",
+    "exchangeAccept": "Acceptă",
+    "exchangeCancelRequest": "Anulează cererea",
+    "exchangeScheduleMeeting": "Programează întâlnirea",
+    "exchangeReschedule": "Reprogramează",
+    "exchangeAddToCalendar": "Adaugă în calendar",
+    "exchangeQrCode": "Cod QR",
+    "exchangeMarkComplete": "Marchează finalizat",
+    "exchangeRated": "Evaluat",
+    "exchangeRate": "Evaluează",
+    "exchangeCalendarError": "Nu am putut deschide calendarul.",
+    "exchangeRatingDialogTitle": "Cum a fost schimbul?",
+    "exchangeRatingOverall": "Per ansamblu",
+    "exchangeRatingCommunication": "Comunicare",
+    "exchangeRatingPunctuality": "Punctualitate",
+    "exchangeRatingCondition": "Starea cărții primite",
+    "exchangeReviewOptional": "Recenzie (opțional)",
+    "exchangeQrDialogTitle": "Cod QR de confirmare",
+    "exchangeQrDialogBody": "Celălalt participant scanează acest cod la întâlnire ca să confirme schimbul.",
+    "exchangeMeetingSheetTitle": "Programează întâlnirea",
+    "exchangePickDateTime": "Alege data și ora",
+    "exchangeLocationLabel": "Locație",
+    "exchangeMeetingSaveError": "Nu am putut salva întâlnirea.",
+    "exchangeGoToReady": "Continuă schimbul",
+    "readyTitle": "Pregătire schimb",
+    "readyMeetingAwaitingYou": "Cealaltă parte a propus o întâlnire",
+    "readyMeetingProposedByMe": "Aștepți confirmarea celeilalte părți",
+    "readyMeetingAccept": "Confirmă ora",
+    "readyMeetingDecline": "Refuză ora",
+    "readyContactTitle": "Detalii de contact",
+    "readyContactPhoneLabel": "Telefon (opțional)",
+    "readyContactShare": "Trimite detaliile mele",
+    "readyContactShared": "Ți-ai trimis detaliile de contact",
+    "readyContactOtherPhone": "Telefon: {phone}",
+    "@readyContactOtherPhone": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "readyContactSharedNoPhone": "Cealaltă parte și-a trimis detaliile, fără număr de telefon.",
+    "readyContactCall": "Sună pe {name}",
+    "@readyContactCall": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "readyContactMessageInApp": "Mesaj în aplicație",
+    "readySafetyTitle": "Recomandări de siguranță",
+    "readySafetyViewLink": "Vezi recomandările de siguranță",
+    "readySafetyAck": "Am citit",
+    "readySafetyWaitingOther": "Aștepți ca cealaltă parte să confirme că a citit recomandările.",
+    "readySafetyBothReady": "Sunteți gata de schimb",
+    "readyReportIssue": "Raportează o problemă",
+    "readyCancel": "Anulează",
+    "readyPostpone": "Amână",
+    "readyDone": "Gata",
+    "readyConfirmDone": "Confirmă finalizarea",
+    "readyDisputeDone": "Nu e finalizat",
+    "readyWaitingConfirmation": "Aștepți confirmarea celeilalte părți",
+    "readyOtherMarkedDone": "Cealaltă parte a marcat schimbul ca finalizat. Confirmi?",
+    "doneReviewTitle": "Cum a fost schimbul?",
+    "doneReviewLabel": "Câteva cuvinte (opțional)",
+    "doneReviewSubmit": "Trimite",
+    "cancelReasonTitle": "Ce s-a întâmplat?",
+    "cancelReasonNoShow": "Cealaltă persoană nu s-a prezentat",
+    "cancelReasonBookMismatch": "Cartea nu a corespuns așteptărilor",
+    "cancelReasonChangedMind": "M-am răzgândit",
+    "cancelReasonOther": "Altceva",
+    "cancelReasonDetailsLabel": "Detalii (opțional)",
+    "cancelReasonSubmit": "Anulează schimbul",
+    "offersEmptyReceived": "Nu ai primit nicio ofertă de preț.",
+    "offersEmptySent": "Nu ai trimis nicio ofertă de preț.",
+    "offersLoadError": "Nu am putut încărca ofertele.",
+    "offerTo": "Către {name}",
+    "@offerTo": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "offerAmountLine": "Ofertă: {amount}",
+    "@offerAmountLine": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "offerCancel": "Anulează oferta",
+    "exchangeConfirmTitle": "Confirmă schimbul",
+    "exchangeConfirmError": "Nu am putut confirma schimbul.",
+    "exchangeConfirmDone": "Schimb marcat ca finalizat!",
+    "exchangeConfirmQuestion": "Confirmi că schimbul de cărți s-a finalizat?",
+    "exchangeConfirmButton": "Confirmă finalizarea",
+    "chatEmptyConversations": "Nu ai nicio conversație încă.",
+    "chatStartConversation": "Începe conversația",
+    "chatPhotoPreview": "📷 Poză",
+    "chatLocationPreview": "📍 Locație",
+    "chatLoadError": "Nu am putut încărca conversațiile.",
+    "chatConversationFallbackTitle": "Conversație",
+    "chatUnblock": "Deblochează",
+    "chatBlock": "Blochează",
+    "chatUserUnblocked": "Utilizator deblocat",
+    "chatUserBlocked": "Utilizator blocat",
+    "chatBlockUpdateError": "Nu am putut actualiza blocarea",
+    "chatTyping": "scrie...",
+    "chatSendFailed": "Mesajul nu a putut fi trimis. Verifică conexiunea.",
+    "chatOnline": "online",
+    "chatOffline": "offline",
+    "chatLastSeenJustNow": "văzut adineauri",
+    "chatLastSeenMinutes": "văzut acum {minutes} min",
+    "@chatLastSeenMinutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "chatLastSeenHours": "văzut acum {hours} h",
+    "@chatLastSeenHours": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "chatLastSeenDays": "văzut acum {days} z",
+    "@chatLastSeenDays": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "chatSeen": "Văzut",
+    "chatSent": "Trimis",
+    "chatReply": "Răspunde",
+    "chatCopyMessage": "Copiază mesajul",
+    "chatMessageCopied": "Mesaj copiat",
+    "chatReplyToYou": "Tu",
+    "chatReplyToThem": "Mesaj citat",
+    "chatAttachPhoto": "Trimite o poză",
+    "chatPhotoSendError": "Nu am putut trimite poza.",
+    "chatSearchInConversation": "Caută în conversație",
+    "chatSearchNoResults": "Niciun mesaj găsit.",
+    "chatArchive": "Arhivează",
+    "chatUnarchive": "Dezarhivează",
+    "chatArchived": "Conversație arhivată",
+    "chatArchivedTitle": "Arhivate",
+    "chatEmptyArchived": "Nu ai nicio conversație arhivată.",
+    "chatDeleteTitle": "Șterge chatul",
+    "chatDeleteConfirm": "Conversația dispare doar pentru tine. Celălalt utilizator își păstrează mesajele.",
+    "chatActionError": "Nu am putut face asta. Încearcă din nou.",
+    "chatReportConversation": "Raportează conversația",
+    "chatConversationReported": "Conversația a fost raportată. Echipa o va analiza.",
+    "chatBlockedNotice": "Nu poți trimite mesaje acestui utilizator - conversația este blocată.",
+    "chatShareLocationTooltip": "Trimite locația întâlnirii",
+    "chatMessageHint": "Scrie un mesaj...",
+    "chatSafetyBannerBody": "Nu trimite bani în avans și întâlnește-te într-un loc public pentru schimb. Dacă ceva pare suspect, raportează sau blochează utilizatorul din meniul de sus.",
+    "chatSafetyBannerLearnMore": "Află mai multe",
+    "chatEmptyMessages": "Niciun mesaj încă. Spune salut!",
+    "chatMapLabel": "Hartă",
+    "chatCalendarLabel": "Calendar",
+    "chatMeetingAt": "{date}, ora {time}",
+    "@chatMeetingAt": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            },
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "chatSafetyAdvisorLabel": "Safety advisor",
+    "chatSafetyAdvisorBody": "Asigură-te că respecți regulile de siguranță la întâlnire.",
+    "chatOfferActionError": "Nu am putut actualiza oferta. Încearcă din nou.",
+    "chatOfferCardLabel": "{amount} lei · {bookTitle}",
+    "@chatOfferCardLabel": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "bookTitle": {
+                "type": "String"
+            }
+        }
+    },
+    "chatExchangeCardLabel": "Schimb: {offeredTitle} pentru {requestedTitle}",
+    "@chatExchangeCardLabel": {
+        "placeholders": {
+            "offeredTitle": {
+                "type": "String"
+            },
+            "requestedTitle": {
+                "type": "String"
+            }
+        }
+    },
+    "chatExchangeCardLabelNoOffer": "Cerere de schimb: {requestedTitle}",
+    "@chatExchangeCardLabelNoOffer": {
+        "placeholders": {
+            "requestedTitle": {
+                "type": "String"
+            }
+        }
+    },
+    "chatSearchPlaceHint": "Caută o adresă sau un loc (ex: Cafeneaua X, Cluj)",
+    "chatNoResults": "Niciun rezultat.",
+    "chatSuggestedMeetingPoints": "Sugestii de întâlnire în apropiere",
+    "chatPickDate": "Alege data",
+    "chatPickTime": "Alege ora",
+    "wishlistTitle": "Lista de dorințe",
+    "wishlistCount": "{count} cărți",
+    "@wishlistCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "wishlistEmpty": "Nu ai adăugat încă nicio carte în lista de dorințe.",
+    "wishlistLoadError": "Nu am putut încărca lista de dorințe.",
+    "notificationsTitle": "Notificări",
+    "notificationsMarkAllRead": "Marchează tot ca citit",
+    "notificationsEmpty": "Nu ai nicio notificare.",
+    "notificationsFilterAll": "Toate",
+    "notificationsFilterUnread": "Necitite",
+    "notificationsFilterExchanges": "Schimburi",
+    "notificationsFilterMessages": "Mesaje",
+    "notificationsToday": "Astăzi",
+    "notificationsYesterday": "Ieri",
+    "notificationsEarlier": "Mai vechi",
+    "notificationsToastNewMessage": "Ai un mesaj nou",
+    "notificationsToastNewReply": "Ai un răspuns nou",
+    "notificationsToastMultiple": "Ai mai multe notificări",
+    "notificationsToastGeneric": "Ai o notificare nouă",
+    "notificationsRepeatedCount": "×{count}",
+    "@notificationsRepeatedCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notificationsUnreadCount": "{count} necitite",
+    "@notificationsUnreadCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notificationsLoadError": "Nu am putut încărca notificările.",
+    "timeJustNow": "acum",
+    "timeMinutesAgo": "acum {minutes} min",
+    "@timeMinutesAgo": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "timeHoursAgo": "acum {hours} h",
+    "@timeHoursAgo": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "timeDaysAgo": "acum {days} zile",
+    "@timeDaysAgo": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "safetyCenterTitle": "Centru de siguranță",
+    "safetyCenterIntro": "Câteva reguli simple ca schimburile prin ShelfShare să fie plăcute și sigure.",
+    "safetyTip1Title": "Întâlnește-te ziua",
+    "safetyTip1Desc": "Programează schimbul într-un interval orar cu lumină naturală, ideal dimineața sau după-amiaza.",
+    "safetyTip2Title": "Alege un loc public",
+    "safetyTip2Desc": "O cafenea, o librărie sau un mall sunt variante mai sigure decât adresa personală a cuiva.",
+    "safetyTip3Title": "Preferă locații cu supraveghere video",
+    "safetyTip3Desc": "Zonele cu camere de securitate descurajează comportamentul neplăcut.",
+    "safetyTip4Title": "Nu distribui date personale",
+    "safetyTip4Desc": "Nu ai nevoie să dai adresa de acasă, CNP sau alte date sensibile ca să faci un schimb.",
+    "safetyTip5Title": "Verifică rating-ul și scorul de încredere",
+    "safetyTip5Desc": "Un istoric bun de schimburi finalizate e un semn bun înainte să te întâlnești cu cineva.",
+    "safetyTip6Title": "O poză de profil reală crește încrederea",
+    "safetyTip6Desc": "Profilurile cu poză și bio completă inspiră mai multă siguranță celorlalți utilizatori.",
+    "safetyTip7Title": "Verifică starea cărții înainte de schimb",
+    "safetyTip7Desc": "Compară cartea cu descrierea din anunț înainte să confirmi schimbul ca finalizat.",
+    "safetyTip8Title": "Raportează orice comportament suspect",
+    "safetyTip8Desc": "Poți raporta sau bloca un utilizator direct din profilul lui sau din conversație.",
+    "helpCenterTitle": "Întrebări frecvente",
+    "helpGroupSwapping": "Schimburi",
+    "helpGroupPricing": "Prețuri",
+    "helpGroupSafety": "Încredere și siguranță",
+    "helpStillStuck": "Nu ai găsit răspunsul?",
+    "helpContactModerator": "Contactează un moderator",
+    "helpFaq1Question": "Cum funcționează un schimb de cărți?",
+    "helpFaq1Answer": "Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat.",
+    "helpFaq2Question": "Ce e Scorul de încredere?",
+    "helpFaq2Answer": "Un indicator 0-100 calculat automat din activitatea din aplicație: vechimea contului, email verificat, câte schimburi ai finalizat, rating-ul primit, cât de des răspunzi și cât de rar anulezi cereri. Nu e o verificare de identitate, doar un semnal de comportament.",
+    "helpFaq3Question": "Cum se calculează prețul „din librării”?",
+    "helpFaq3Answer": "Când adaugi o carte cu ISBN, încercăm să găsim prețul de listă pe Google Books. Acoperirea e parțială - nu toate cărțile au preț disponibil acolo, mai ales edițiile mai vechi sau românești.",
+    "helpFaq4Question": "Ce înseamnă „Preț fix, nenegociabil”?",
+    "helpFaq4Answer": "Dacă cel care vinde o carte bifează asta, cumpărătorii nu mai pot trimite oferte de preț - cartea se cumpără doar la prețul afișat.",
+    "helpFaq5Question": "Cum raportez sau blochez un utilizator?",
+    "helpFaq5Answer": "Din meniul din colțul din dreapta sus al unei conversații, sau din pagina de detalii a unui anunț (iconița de steag). Blocarea oprește mesajele în ambele direcții.",
+    "helpFaq6Question": "Ce se întâmplă cu cartea după ce o vând sau o dau la schimb?",
+    "helpFaq6Answer": "Anunțul devine indisponibil definitiv. Dacă persoana care a primit-o vrea să o listeze mai departe, poate face asta din ecranul de Schimburi/Oferte (\"Adaugă în biblioteca ta\") - istoricul cărții rămâne urmăribil pe pagina ei de detalii, cu poze puse de fiecare proprietar.",
+    "helpFaq7Question": "De ce nu-mi apare o carte în Categorii sau la Cărți similare?",
+    "helpFaq7Answer": "Genul unei cărți vine din Open Library sau Google Books la adăugare - unele cărți nu au gen completat în sursele externe, mai ales edițiile mai puțin populare.",
+    "helpCenterFooter": "Nu ai găsit răspunsul? Poți raporta o problemă direct din conversația cu utilizatorul implicat.",
+    "adminLoadError": "Nu am putut încărca datele de admin.",
+    "adminStatsTitle": "Statistici",
+    "adminMarketplaceStatsTitle": "Statistici marketplace",
+    "adminMarketplaceGmv": "Volum total tranzacționat",
+    "adminMarketplaceCompletedSales": "Vânzări finalizate",
+    "adminMarketplaceCompletedAuctions": "Licitații finalizate",
+    "adminMarketplaceAvgPrice": "Preț mediu vânzare",
+    "adminMarketplaceTopGenres": "Top genuri (anunțuri active)",
+    "adminActiveZonesTitle": "Zone active",
+    "adminActiveZonesDesc": "Densitatea anunțurilor active pe oraș",
+    "adminActiveZonesEmpty": "Niciun anunț activ încă.",
+    "adminUsersCount": "Utilizatori ({count})",
+    "@adminUsersCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminInactiveListingsCount": "Anunțuri fără nicio cerere ({count})",
+    "@adminInactiveListingsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminInactiveListingsDesc": "Cărți puse la schimb pentru care nimeni nu a trimis nicio cerere.",
+    "adminNoInactiveListings": "Niciun anunț inactiv.",
+    "adminUserReportsCount": "Rapoarte utilizatori ({count})",
+    "@adminUserReportsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminNoReports": "Niciun raport.",
+    "adminUpcomingReleasesCount": "Cărți viitoare ({count})",
+    "@adminUpcomingReleasesCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminUpcomingReleasesDesc": "Afișate pe ecranul principal, în secțiunea \"Cărți viitoare\".",
+    "adminNoUpcomingReleases": "Nicio carte viitoare adăugată.",
+    "adminFeedbackCount": "Feedback primit ({count})",
+    "@adminFeedbackCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminNoFeedback": "Niciun feedback trimis încă.",
+    "adminSupportRequestsCount": "Mesaje de support ({count})",
+    "@adminSupportRequestsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminNoSupportRequests": "Niciun mesaj de support trimis încă.",
+    "adminReportedBy": "Raportat de {name}",
+    "@adminReportedBy": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "adminUnknownAuthor": "Autor necunoscut",
+    "adminAuthorOptional": "Autor (opțional)",
+    "adminCoverUrlOptional": "URL copertă (opțional)",
+    "adminPickReleaseDate": "Alege data lansării",
+    "adminReleaseDateLabel": "Lansare: {date}",
+    "@adminReleaseDateLabel": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "adminAdd": "Adaugă",
+    "adminTitleDateRequired": "Titlul și data lansării sunt obligatorii",
+    "adminAddBookError": "Nu am putut adăuga cartea",
+    "adminDeleteUserTitle": "Șterge utilizatorul?",
+    "adminDeleteUserBody": "Se șterg definitiv contul lui {name} și toate datele asociate (cărți, schimburi, mesaje). Nu se poate anula.",
+    "@adminDeleteUserBody": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "adminStatsUsersLabel": "Utilizatori",
+    "adminStatsUsersSubtitle": "din care {count} verificați",
+    "@adminStatsUsersSubtitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminStatsBooksLabel": "Cărți în catalog",
+    "adminStatsBooksSubtitle": "{count} exemplare listate",
+    "@adminStatsBooksSubtitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminStatsExchangesLabel": "Schimburi",
+    "adminStatsExchangesSubtitle": "{completed} finalizate · {pending} în așteptare",
+    "@adminStatsExchangesSubtitle": {
+        "placeholders": {
+            "completed": {
+                "type": "int"
+            },
+            "pending": {
+                "type": "int"
+            }
+        }
+    },
+    "auctionTitle": "Licitație",
+    "auctionCurrentPrice": "Preț curent",
+    "auctionBidsCount": "oferte",
+    "auctionReserveMet": "Prețul de rezervă a fost atins",
+    "auctionReserveNotMet": "Prețul de rezervă nu a fost încă atins",
+    "auctionEndedWithWinner": "Licitația s-a încheiat - a câștigat cineva",
+    "auctionEndedNoWinner": "Licitația s-a încheiat fără câștigător",
+    "auctionBidAmountLabel": "Ofertă (minim {amount} lei)",
+    "@auctionBidAmountLabel": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "auctionPlaceBid": "Licitează",
+    "auctionBuyNowFor": "Cumpără acum cu {amount} lei",
+    "@auctionBuyNowFor": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "auctionBidHistory": "Istoricul ofertelor",
+    "auctionNoBidsYet": "Nicio ofertă încă",
+    "auctionWatch": "Urmărește licitația",
+    "auctionBidPlaced": "Ofertă plasată",
+    "auctionBoughtNow": "Cumpărat cu succes",
+    "auctionGenericError": "A apărut o eroare, încearcă din nou",
+    "auctionEnded": "Încheiată",
+    "auctionEndsInDays": "se încheie în {days} zile",
+    "@auctionEndsInDays": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "auctionEndsInHours": "se încheie în {hours} h",
+    "@auctionEndsInHours": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "auctionEndsInMinutes": "se încheie în {minutes} min",
+    "@auctionEndsInMinutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "bulkAddTitle": "Adaugă mai multe cărți",
+    "bulkAddScanTooltip": "Scanează cod de bare",
+    "bulkAddManualEntry": "Introducere manuală",
+    "bulkAddManualHint": "Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)",
+    "bulkAddManualPlaceholder": "9780439023481\n9780441172719",
+    "bulkAddAddIsbns": "Adaugă în listă",
+    "bulkAddQueueEmpty": "Nicio carte adăugată încă - scanează sau introdu un ISBN.",
+    "bulkAddSubmit": "Adaugă {count} cărți",
+    "@bulkAddSubmit": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "bulkAddResultSummary": "{created} cărți adăugate, {failed} eșuate",
+    "@bulkAddResultSummary": {
+        "placeholders": {
+            "created": {
+                "type": "int"
+            },
+            "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "inventorySelectedCount": "{count} selectate",
+    "@inventorySelectedCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "inventoryMarkUnavailable": "Marchează indisponibile",
+    "inventoryChangePriceTitle": "Schimbă prețul",
+    "inventoryPriceChangedCount": "Preț schimbat la {count} anunțuri",
+    "@inventoryPriceChangedCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "inventoryDeleteConfirmTitle": "Ștergi anunțurile selectate?",
+    "inventoryDeleteConfirmBody": "Se șterg definitiv {count} anunțuri. Nu se poate anula.",
+    "@inventoryDeleteConfirmBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "inventoryBulkDone": "Acțiune aplicată",
+    "collectionsTitle": "Colecții",
+    "collectionsEmpty": "Nicio colecție încă.",
+    "collectionsLoadError": "Nu am putut încărca colecțiile.",
+    "collectionsCreateTitle": "Colecție nouă",
+    "collectionsNameLabel": "Nume",
+    "collectionsPublicSwitch": "Publică",
+    "collectionsBookCount": "{count} cărți",
+    "@collectionsBookCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "collectionsEmptyItems": "Nicio carte în această colecție încă.",
+    "collectionsDeleteConfirmTitle": "Ștergi această colecție?",
+    "collectionsAddToTitle": "Adaugă în colecție",
+    "collectionsNewInline": "Colecție nouă...",
+    "groupsTitle": "Grupuri",
+    "groupsTabDiscover": "Descoperă",
+    "groupsTabMine": "Ale mele",
+    "groupsEmpty": "Niciun grup încă.",
+    "groupsLoadError": "Nu am putut încărca grupul.",
+    "groupsCreateTitle": "Grup nou",
+    "groupsNameLabel": "Nume",
+    "groupsDescriptionLabel": "Descriere (opțional)",
+    "groupsMemberCount": "{count} membri",
+    "@groupsMemberCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "groupsJoin": "Alătură-te",
+    "groupsLeave": "Părăsește grupul",
+    "groupsDeleteConfirmTitle": "Ștergi acest grup?",
+    "groupsEventsTitle": "Evenimente",
+    "groupsNoEvents": "Niciun eveniment programat.",
+    "groupsAddEventTitle": "Adaugă eveniment",
+    "groupsEventTitleLabel": "Titlu",
+    "groupsEventLocationLabel": "Locație (opțional)",
+    "groupsDiscussionTitle": "Discuții",
+    "groupsPostHint": "Scrie un mesaj...",
+    "groupsNoPosts": "Niciun mesaj încă.",
+    "premiumBadgeTooltip": "Membru Premium",
+    "adminGrantPremium": "Acordă Premium",
+    "adminRemovePremium": "Elimină Premium",
+    "premiumPromoteListing": "Promovează anunțul",
+    "premiumUnpromoteListing": "Anulează promovarea",
+    "premiumAnalyticsTitle": "Statistici avansate",
+    "premiumAnalyticsTotalListings": "Anunțuri active",
+    "premiumAnalyticsTotalViews": "Vizualizări totale",
+    "premiumAnalyticsOffersReceived": "Oferte primite",
+    "premiumAnalyticsConversionRate": "Rată de conversie",
+    "premiumAnalyticsRevenue": "Venit total",
+    "premiumAnalyticsTopListings": "Cele mai vizualizate anunțuri",
+    "premiumAnalyticsLocked": "Statisticile avansate sunt o funcție Premium.",
+    "premiumAnalyticsLoadError": "Nu am putut încărca statisticile.",
+    "discoverMostWishedFor": "Cele mai dorite",
+    "discoverMostLookedFor": "Cele mai căutate",
+    "discoverSearchTooltip": "Caută cărți",
+    "discoverTopSearches": "Top căutări",
+    "discoverAuctions": "Licitații active",
+    "discoverHiddenGems": "Comori ascunse",
+    "discoverSwapOnly": "Doar la schimb",
+    "discoverMoreGenres": "+ {count} altele",
+    "@discoverMoreGenres": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "discoverUnder30": "Sub 30 lei",
+    "discoverRecommendedForYou": "Recomandate pentru tine",
+    "discoverPopularAuthors": "Autori populari",
+    "discoverQuickFilters": "Filtre rapide",
+    "discoverNearYou": "În orașul tău",
+    "inventorySelectAll": "Selectează toate",
+    "myShelfShare": "Împarte",
+    "inventoryMarkAvailable": "Marchează disponibile",
+    "libraryTrashEmpty": "Coșul de gunoi e gol",
+    "inventoryAppendText": "Adaugă la sfârșit",
+    "inventoryTransferred": "Schimbată",
+    "inventoryDeletedDaysLeft": "Șterge în {days} zile",
+    "libraryEmptiedShelves": "Cărți date sau schimbate",
+    "libraryRestored": "Cartea a fost restaurată",
+    "inventoryDescriptionDone": "Descrierile au fost actualizate",
+    "libraryTrashHint": "Cărțile șterse rămân aici 7 zile, apoi dispar definitiv",
+    "inventoryBulkEditDescription": "Editează descriere în bulk",
+    "libraryTrash": "Coșul de gunoi",
+    "inventoryRemoveText": "Șterge din text",
+    "libraryRestore": "Restaurează",
+    "libraryEmptiedShelvesEmpty": "Nicio carte transferată încă",
+    "@inventoryDeletedDaysLeft": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "shareMaxTagsReached": "Poți adăuga maxim 5 taguri",
+    "shareTitleHint": "Titlu carte",
+    "shareTagsHint": "Taguri (max 5)",
+    "shareEditionYear": "An ediție",
+    "shareDescriptionHint": "Descriere (max 256 caractere)",
+    "shareMoreInfo": "Mai multe informații",
+    "shareAuthorHint": "Autor",
+    "sharePageCountCustom": "Număr de pagini (suprascrie autofill)",
+    "shareTagAdd": "Adaugă tag",
+    "sharePublisher": "Editura",
+    "shareCityHint": "Localitatea unde se face schimbul",
+    "sharePublishedYear": "An apariție",
+    "shareSubmit": "Publică",
+    "shareListingModeAuction": "Licitație",
+    "shareSectionBook": "Cartea",
+    "shareSectionListing": "Anunțul",
+    "shareListingMode": "Mod de schimb",
+    "shareDescriptionCharsLeft": "{n} caractere rămase",
+    "shareListingModeSwap": "Schimb normal",
+    "shareListingModeSale": "Vânzare",
+    "shareListingModeDonation": "Donație",
+    "shareTitleAutocomplete": "Începe să scrii ca să vezi sugestii",
+    "shareGenreHint": "Gen",
+    "shareAddPhotos": "Adaugă poze",
+    "@shareDescriptionCharsLeft": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "preRegisterAlreadyLoggedIn": "Vom folosi emailul tău dacă nu completezi altul",
+    "preRegisterAndroidHeadline": "Vine în curând pe telefoanele tale",
+    "preRegisterSuccess": "Te-ai înscris. Îți dăm de veste când e gata.",
+    "profilePreRegister": "Pre-înscriere Android",
+    "preRegisterAndroidBody": "Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.",
+    "preRegisterSubmit": "Adaugă-mă pe listă",
+    "preRegisterAndroidTitle": "Pre-înscrie-te pentru Android",
+    "preRegisterEmailHint": "Email pentru anunț",
+    "preRegisterError": "Nu am putut înregistra emailul. Încearcă din nou.",
+    "profileSettingsSubtitle": "Toate opțiunile contului într-un singur loc",
+    "profileGroupProfile": "Profil",
+    "profileGroupPreferences": "Preferințe",
+    "profileGroupAccount": "Cont",
+    "profileGroupLibrary": "Biblioteca mea",
+    "profileGroupDiscovery": "Descoperire",
+    "profileGroupStats": "Statistici",
+    "profileGroupSupport": "Suport",
+    "profileRecentActivity": "Activitate recentă",
+    "profileStatSwaps": "schimburi",
+    "profileActivityAdded": "Ai adăugat",
+    "profileMoreInSettings": "Mai multe opțiuni în „⚙\" sus",
+    "profileLibraryAvailable": "{n} disponibile",
+    "profileStatRating": "rating",
+    "profileStatBooks": "cărți",
+    "profileSettings": "Setări",
+    "profileKeepAlive": "Keep the app alive",
+    "profileKeepAliveSubtitle": "ShelfShare rulează pe un server de acasă. Un cafea ajută.",
+    "aboutDevTitle": "About dev",
+    "aboutDevHeadline": "Omul din spatele ShelfShare",
+    "aboutDevBodyWho": "Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.",
+    "aboutDevBodyWhy": "Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.",
+    "aboutDevBodyHosting": "Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️",
+    "aboutDevSupportTitle": "Keep the app alive",
+    "aboutDevSupportSubtitle": "Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.",
+    "aboutDevCoffeeButton": "Buy me a coffee",
+    "aboutDevOpenError": "Nu am putut deschide linkul. Încearcă din nou.",
+    "loginMadeWithLove": "Made with ❤️ in Transilvanya",
+    "homeRecommendedTitle": "Recomandate pentru tine",
+    "homeNearbyTitle": "Aproape de tine ({km} km)",
+    "@homeNearbyTitle": {
+        "placeholders": {
+            "km": {
+                "type": "int"
+            }
+        }
+    },
+    "shareTagsSuggestions": "Sugestii:",
+    "shareCityUnknown": "Alege un oraș din listă",
+    "gamificationHowItWorks": "Cum funcționează XP-ul",
+    "gamificationXpIntro": "Fiecare {n} XP înseamnă un nivel nou. XP-ul se acordă automat, la acțiuni din aplicație:",
+    "@gamificationXpIntro": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "gamificationXpBookListed": "Listezi o carte",
+    "gamificationXpExchangeCompleted": "Finalizezi un schimb",
+    "gamificationXpSaleCompleted": "Finalizezi o vânzare",
+    "gamificationXpReviewWritten": "Scrii o recenzie",
+    "gamificationNoMaxLevel": "Nu există nivel maxim - curba e liniară, poți urca oricât.",
+    "@profileLibraryAvailable": {
+        "placeholders": {
+            "n": {
+                "type": "int"
+            }
+        }
+    },
+    "profileBirthdayDay": "Zi",
+    "profileBirthdayMonth": "Luna nașterii",
+    "profileBirthdayNone": "—",
+    "profileLanguagesTitle": "Limbile în care citești",
+    "profileAboutEmpty": "Spune ceva despre tine — de exemplu ce genuri îți plac.",
+    "profileMemberSince": "Membru din",
+    "profileLocation": "Locație",
+    "profileLanguages": "Limbi",
+    "countryRomania": "România",
+    "profileStatsTitle": "Statistici",
+    "profileStatBooksRead": "Cărți citite",
+    "profileStatBooksShared": "Cărți oferite",
+    "profileStatWishlisted": "Cărți dorite",
+    "profileTopGenresTitle": "Top genuri",
+    "profileTopGenresEmpty": "Genurile vor apărea aici pe măsură ce citești și adaugi cărți.",
+    "navNotifications": "Notificări",
+    "navShortcuts": "SCURTĂTURI",
+    "shortcutsEditTooltip": "Editează scurtăturile",
+    "shortcutsDoneTooltip": "Gata",
+    "shortcutsAddTitle": "Adaugă scurtătură",
+    "shortcutsAllAdded": "Toate scurtăturile sunt deja adăugate.",
+    "shortcutFollowing": "Urmăriți",
+    "shortcutLeaderboard": "Clasament",
+    "shortcutSellerAnalytics": "Analize vânzător",
+    "shortcutPreRegister": "Pre-înregistrare",
+    "shortcutTrash": "Coș",
+    "shareCoverSelected": "Coperta cărții",
+    "shareCoverRecommended": "Coperte recomandate",
+    "shareMainPhotoHint": "Apasă pe stea pentru a marca poza principală (apare în feed).",
+    "chatOfferCounterAction": "Contra-ofertă",
+    "chatOfferCounterTitle": "Trimite o contra-ofertă",
+    "navMyBooks": "Cărțile mele",
+    "navMyExchanges": "Schimburile mele",
+    "navWishlist": "Lista de dorințe",
+    "navMyCollections": "Colecțiile mele",
+    "navAboutApp": "Despre aplicație",
+    "aboutAppTitle": "Despre aplicație",
+    "aboutAppIntro": "Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.",
+    "aboutAppXpTitle": "XP și niveluri",
+    "aboutAppTrustTitle": "Trust Score",
+    "aboutAppTrustBody": "Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.",
+    "aboutAppShelvesTitle": "Raftul meu (Public Bookshelf)",
+    "aboutAppShelvesBody": "Raftul e statusul tău personal de citit pentru o carte, indiferent dacă o deții fizic sau nu.\n\n• Citesc — cartea la care lucrezi acum\n• Vreau să citesc — lista ta de dorințe pentru viitor\n• Citită — cărțile pe care le-ai terminat\n\nCărțile pe care le poți da la schimb sau vinde sunt separate - stau în „Biblioteca mea\" (My Shelf din meniu). O carte poate fi și pe raft (ex. „Vreau să citesc\") și în bibliotecă (ex. „Am un exemplar de vânzare\") - sunt două noțiuni diferite.",
+    "aboutAppHomeSectionsTitle": "Cele 3 secțiuni de pe Home",
+    "aboutAppHomeSectionsBody": "Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare",
+    "aboutAppExchangesTitle": "Schimburi și oferte",
+    "aboutAppExchangesBody": "Sunt două căi de a obține o carte de la altcineva:\n\n• Schimb — propui o carte din biblioteca ta în schimbul uneia din biblioteca altui user. E gratuit, doar cu costul expedierii\n• Ofertă de preț — dacă o carte e listată la vânzare și marcată „negociabil\", poți trimite o ofertă cu preț diferit. Vânzătorul acceptă, respinge sau vine cu contra-ofertă",
+    "aboutAppBadgesTitle": "Insigne (Achievements)",
+    "aboutAppBadgesBody": "Insignele se acordă automat când atingi anumite praguri: primul schimb, 10 schimburi, 50 de schimburi, primul review scris, primul cont al comunității, insigna de supporter (dacă susții proiectul prin „Keep the app alive\"), etc.\n\nSunt vizibile pe profilul tău public. Nu au impact funcțional - doar recunosc contribuția.",
+    "aboutAppChatTitle": "Chat",
+    "aboutAppChatBody": "Poți începe o conversație direct din pagina unei cărți sau din profilul altui user. Toate mesajele sunt criptate în timpul transmiterii.\n\nRegulă simplă de siguranță: nu da niciodată date personale (CNP, număr de card, adresa completă) în chat. Pentru schimburi, folosește adresa poștală doar când ești sigur de partener.",
+    "aboutAppAccountDeletionTitle": "Ștergerea contului",
+    "aboutAppAccountDeletionBody": "Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.",
+    "chatNewConversationTooltip": "Conversație nouă",
+    "chatSearchHint": "Caută în conversații…",
+    "chatFilterAll": "Toate",
+    "chatFilterUnread": "Necitite",
+    "chatFilterArchived": "Arhivate",
+    "chatEmptySearch": "Nicio conversație nu se potrivește căutării.",
+    "chatEmptyUnread": "Toate conversațiile sunt citite.",
+    "chatSafetyHeadline": "Bine ai venit în Chat",
+    "chatSafetyIntro": "Aici discuți cu ceilalți cititori despre schimburi, oferte și cărți. Alege o conversație din stânga sau ține minte câteva reguli înainte să începi.",
+    "chatSafetyPersonalTitle": "Nu da date personale",
+    "chatSafetyPersonalBody": "CNP, număr de card, adresa exactă sau parole — niciodată în chat. Nici măcar dacă „e nevoie pentru livrare\" sau dacă cineva insistă.",
+    "chatSafetyPaymentTitle": "Plăți sigure",
+    "chatSafetyPaymentBody": "Pentru vânzări, folosește metode cu protecție (transfer bancar cu factură, ramburs). Evită plățile în avans către useri fără istoric.",
+    "chatSafetyMeetupTitle": "Întâlnește-te în loc public",
+    "chatSafetyMeetupBody": "Pentru schimburi în persoană, alege o cafenea, o bibliotecă sau piața centrală. Nu invita pe cineva acasă la primul schimb.",
+    "chatSafetyReportTitle": "Raportează ce ți se pare suspect",
+    "chatSafetyReportBody": "Un utilizator care cere date personale, care insistă cu plăți neobișnuite sau al cărui profil e gol — apasă pe „…\" din header și raportează.",
+    "chatSafetyOpenCenter": "Deschide Centrul de siguranță",
+    "chatSafetyHint": "Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.",
+    "greetReaderFallback": "Cititorule",
+    "greetMorningSun": "Bună dimineața, Soare! ☀️",
+    "greetMorningNamed": "Bună dimineața, {name}!",
+    "@greetMorningNamed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "greetMorningCoffeeBook": "O cafea și o carte?",
+    "greetMorningCoffee": "Bună dimineața la cafeluță! ☕",
+    "greetMorningStartStory": "Începe ziua cu o poveste.",
+    "greetMorningAdventure": "Răsare o nouă aventură.",
+    "greetMorningSleptWell": "Sper că ai dormit bine!",
+    "greetMorningPerfectBook": "Astăzi poate găsești cartea perfectă.",
+    "greetMorningNicer": "Diminețile sunt mai frumoase cu o carte.",
+    "greetDayNamed": "Salut, {name}!",
+    "@greetDayNamed": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "greetDayDiscover": "Ce carte descoperi astăzi?",
+    "greetDayAdventure": "O nouă aventură te așteaptă.",
+    "greetDayLibrary": "Biblioteca te așteaptă.",
+    "greetDayCorporateCoffee": "Cafeluța corporatistă?",
+    "greetDayWhatsNext": "Ce urmează pe lista ta?",
+    "greetDaySwappedToday": "Ai schimbat o carte azi?",
+    "greetDayNewReader": "Fiecare carte are un nou cititor.",
+    "greetDayFindNext": "Găsește-ți următoarea lectură.",
+    "greetEveningHello": "Bună seara!",
+    "greetEveningHowWasDay": "Cum a fost ziua ta?",
+    "greetEveningPerfectNow": "O carte merge perfect acum.",
+    "greetEveningFewPages": "E timpul pentru câteva pagini.",
+    "greetEveningRelax": "Relaxează-te cu o poveste.",
+    "greetEveningQuiet": "O seară liniștită începe cu o carte.",
+    "greetEveningWhatTonight": "Ce citești în seara asta?",
+    "greetEveningBeforeBed": "Poate găsești ceva nou înainte de culcare.",
+    "greetNightGoodNight": "Noapte bună! 🌙",
+    "greetNightSandman": "Moș Ene pe la gene. 😴",
+    "greetNightCloseBook": "E timpul să închidem cartea.",
+    "greetNightSleepWell": "Somn ușor, {name}!",
+    "@greetNightSleepWell": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "greetNightOneMoreChapter": "Mai citești un capitol?",
+    "greetNightSeeYouTomorrow": "Ne vedem mâine printre cărți.",
+    "greetNightNiceDay": "Sper că ai avut o zi frumoasă.",
+    "greetNightQuiet": "Noapte liniștită!",
+    "greetLateAwake": "Încă treaz? 📖",
+    "greetLateNightOwl": "Bufniță de noapte?",
+    "greetLateMidnightReads": "Lecturile de la miezul nopții sunt speciale.",
+    "greetLateOneChapter": "Mai e doar un capitol, nu?",
+    "greetLateNeverSleeps": "ShelfShare nu doarme niciodată.",
+    "greetLateCompany": "Cărțile țin companie și la ore târzii.",
+    "greetLateLastChapter": "Noapte bună... când ajungi la ultimul capitol.",
+    "greetLateForgotSleep": "Sperăm că nu ai uitat de somn.",
+    "greetWeekend": "E weekend! Ce carte iei cu tine?",
+    "greetMonday": "Luni... măcar ai o carte bună.",
+    "greetFridayEvening": "Vineri seara? Perfect pentru citit.",
+    "greetBirthday": "La mulți ani! 🎉",
+    "greetNationalDay": "La mulți ani, România! 🇷🇴",
+    "greetChristmas": "Crăciun fericit! 🎄",
+    "greetEaster": "Paște fericit! 🐰",
+    "greetNewYear": "An nou, cărți noi! 🎆",
+    "greetBookDay": "Astăzi este Ziua Internațională a Cărții! 📚",
+    "bookMatchTitle": "Potriviri de cărți",
+    "bookMatchEntryTooltip": "Potriviri de cărți",
+    "bookMatchYesTooltip": "Îmi place",
+    "bookMatchNoTooltip": "Nu mă interesează",
+    "bookMatchSkip": "Sari peste",
+    "bookMatchHint": "Trage cardul la dreapta pentru da, la stânga pentru nu sau în sus ca să sari peste.",
+    "bookMatchStampYes": "DA",
+    "bookMatchStampNo": "NU",
+    "bookMatchStampSkip": "SKIP",
+    "bookMatchDiscoveryBadge": "Descoperire",
+    "bookMatchEmptyTitle": "Gata pentru moment",
+    "bookMatchEmptyBody": "Ai văzut tot ce aveam pentru tine acum, revino mai târziu.",
+    "bookMatchLoadError": "Nu am putut încărca recomandările.",
+    "bookMatchRecalibrateTooltip": "Recalibrare",
+    "bookMatchRecalibrateTitle": "Recalibrezi preferințele?",
+    "bookMatchRecalibrateWarning": "Preferințele tale vor fi semi-resetate: scorurile pe genuri se atenuează și o perioadă vei vedea din nou cărți variate. Acțiunea nu poate fi anulată.",
+    "bookMatchRecalibrateConfirm": "Recalibrează",
+    "bookMatchRecalibrateDone": "Preferințele au fost recalibrate.",
+    "bookMatchRecalibrateError": "Nu am putut recalibra acum.",
+    "bookMatchRecalibrateCooldownTitle": "Recalibrare indisponibilă",
+    "bookMatchRecalibrateCooldownBody": "Mai poți recalibra peste {days} zile.",
+    "@bookMatchRecalibrateCooldownBody": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingFlowStepLabel": "Pasul {step} din {total}",
+    "@onboardingFlowStepLabel": {
+        "placeholders": {
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingFlowSkip": "Sari peste",
+    "onboardingFlowBackTooltip": "Înapoi",
+    "onboardingFlowGenresTitle": "Ce-ți place să citești?",
+    "onboardingFlowGenresSubtitle": "Alege câteva genuri - le folosim ca să-ți pregătim primele potriviri de cărți.",
+    "onboardingFlowFrequencyTitle": "Cât de des citești?",
+    "onboardingFlowFrequencySubtitle": "Ne ajută să calibrăm cât de des îți arătăm cărți noi.",
+    "onboardingFlowFrequencyLowTitle": "Puțin",
+    "onboardingFlowFrequencyLowDesc": "1-2 cărți pe lună",
+    "onboardingFlowFrequencyMidTitle": "Mediu",
+    "onboardingFlowFrequencyMidDesc": "O carte pe săptămână",
+    "onboardingFlowFrequencyHighTitle": "Mult",
+    "onboardingFlowFrequencyHighDesc": "Câteva cărți pe săptămână",
+    "onboardingFlowLocationTitle": "Unde te găsim?",
+    "onboardingFlowLocationSubtitle": "Folosim locația ca să-ți arătăm schimburi realiste, în apropiere.",
+    "onboardingFlowLanguagesLabel": "Limbi în care citești",
+    "onboardingFlowPurposeTitle": "Ce cauți pe ShelfShare?",
+    "onboardingFlowPurposeSubtitle": "Ne ajută să-ți personalizăm pagina principală.",
+    "onboardingFlowPurposeSwapTitle": "Schimb cărți",
+    "onboardingFlowPurposeSwapDesc": "Dau și primesc cărți de la alți membri",
+    "onboardingFlowPurposeSellTitle": "Vând cărți",
+    "onboardingFlowPurposeSellDesc": "Vreau mai ales să-mi eliberez rafturile",
+    "onboardingFlowPurposeDiscoverTitle": "Doar descopăr",
+    "onboardingFlowPurposeDiscoverDesc": "Explorez recomandări, fără schimburi încă",
+    "onboardingFlowPurposeAllTitle": "Toate de mai sus",
+    "onboardingFlowPurposeAllDesc": "Sunt aici pentru tot",
+    "onboardingFlowBookMatchTitle": "Hai să vedem ce-ți place",
+    "onboardingFlowBookMatchSubtitle": "Dă swipe la câteva cărți - ne ajută să-ți pregătim recomandări mai bune chiar de la început.",
+    "onboardingFlowAddBooksTitle": "Pune primele cărți pe raft",
+    "onboardingFlowAddBooksSubtitle": "Adaugă 2-3 cărți pe care le ai acasă - apar direct în profilul tău.",
+    "onboardingFlowAddBooksCta": "Adaugă o carte",
+    "onboardingFlowAddBooksCtaSubtitle": "Caută titlu sau scanează",
+    "onboardingFlowAddBooksSkipNote": "Poți sări peste pasul ăsta și să adaugi cărți mai târziu, din Raftul meu.",
+    "onboardingFlowFinish": "Intră în ShelfShare"
 }

@@ -3289,4 +3289,187 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Today is World Book Day! 📚';
+
+  @override
+  String get bookMatchTitle => 'Book Match';
+
+  @override
+  String get bookMatchEntryTooltip => 'Book Match';
+
+  @override
+  String get bookMatchYesTooltip => 'I like it';
+
+  @override
+  String get bookMatchNoTooltip => 'Not for me';
+
+  @override
+  String get bookMatchSkip => 'Skip';
+
+  @override
+  String get bookMatchHint =>
+      'Swipe right for yes, left for no, or up to skip.';
+
+  @override
+  String get bookMatchStampYes => 'YES';
+
+  @override
+  String get bookMatchStampNo => 'NO';
+
+  @override
+  String get bookMatchStampSkip => 'SKIP';
+
+  @override
+  String get bookMatchDiscoveryBadge => 'Discovery';
+
+  @override
+  String get bookMatchEmptyTitle => 'That\'s all for now';
+
+  @override
+  String get bookMatchEmptyBody =>
+      'You\'ve seen everything we had for you right now, come back later.';
+
+  @override
+  String get bookMatchLoadError => 'Couldn\'t load the recommendations.';
+
+  @override
+  String get bookMatchRecalibrateTooltip => 'Recalibrate';
+
+  @override
+  String get bookMatchRecalibrateTitle => 'Recalibrate your preferences?';
+
+  @override
+  String get bookMatchRecalibrateWarning =>
+      'Your preferences will be semi-reset: genre scores are dampened and for a while you\'ll see a wider mix of books again. This can\'t be undone.';
+
+  @override
+  String get bookMatchRecalibrateConfirm => 'Recalibrate';
+
+  @override
+  String get bookMatchRecalibrateDone => 'Your preferences were recalibrated.';
+
+  @override
+  String get bookMatchRecalibrateError => 'Couldn\'t recalibrate right now.';
+
+  @override
+  String get bookMatchRecalibrateCooldownTitle => 'Recalibration unavailable';
+
+  @override
+  String bookMatchRecalibrateCooldownBody(int days) {
+    return 'You can recalibrate again in $days days.';
+  }
+
+  @override
+  String onboardingFlowStepLabel(int step, int total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get onboardingFlowSkip => 'Skip';
+
+  @override
+  String get onboardingFlowBackTooltip => 'Back';
+
+  @override
+  String get onboardingFlowGenresTitle => 'What do you like to read?';
+
+  @override
+  String get onboardingFlowGenresSubtitle =>
+      'Pick a few genres - we\'ll use them to line up your first book matches.';
+
+  @override
+  String get onboardingFlowFrequencyTitle => 'How often do you read?';
+
+  @override
+  String get onboardingFlowFrequencySubtitle =>
+      'Helps us tune how often we show you new books.';
+
+  @override
+  String get onboardingFlowFrequencyLowTitle => 'Occasionally';
+
+  @override
+  String get onboardingFlowFrequencyLowDesc => '1-2 books a month';
+
+  @override
+  String get onboardingFlowFrequencyMidTitle => 'Regularly';
+
+  @override
+  String get onboardingFlowFrequencyMidDesc => 'About one book a week';
+
+  @override
+  String get onboardingFlowFrequencyHighTitle => 'A lot';
+
+  @override
+  String get onboardingFlowFrequencyHighDesc => 'Several books a week';
+
+  @override
+  String get onboardingFlowLocationTitle => 'Where can we find you?';
+
+  @override
+  String get onboardingFlowLocationSubtitle =>
+      'We use your location to show you realistic, nearby exchanges.';
+
+  @override
+  String get onboardingFlowLanguagesLabel => 'Languages you read in';
+
+  @override
+  String get onboardingFlowPurposeTitle => 'What are you here for?';
+
+  @override
+  String get onboardingFlowPurposeSubtitle =>
+      'Helps us personalize your home page.';
+
+  @override
+  String get onboardingFlowPurposeSwapTitle => 'Swap books';
+
+  @override
+  String get onboardingFlowPurposeSwapDesc =>
+      'I give and receive books from other members';
+
+  @override
+  String get onboardingFlowPurposeSellTitle => 'Sell books';
+
+  @override
+  String get onboardingFlowPurposeSellDesc =>
+      'I mostly want to clear my shelves';
+
+  @override
+  String get onboardingFlowPurposeDiscoverTitle => 'Just browsing';
+
+  @override
+  String get onboardingFlowPurposeDiscoverDesc =>
+      'I\'m exploring recommendations, no swaps yet';
+
+  @override
+  String get onboardingFlowPurposeAllTitle => 'All of the above';
+
+  @override
+  String get onboardingFlowPurposeAllDesc => 'I\'m here for everything';
+
+  @override
+  String get onboardingFlowBookMatchTitle => 'Let\'s see what you like';
+
+  @override
+  String get onboardingFlowBookMatchSubtitle =>
+      'Swipe through a few books - it helps us prepare better recommendations from the start.';
+
+  @override
+  String get onboardingFlowAddBooksTitle => 'Put your first books on the shelf';
+
+  @override
+  String get onboardingFlowAddBooksSubtitle =>
+      'Add 2-3 books you have at home - they\'ll show up right on your profile.';
+
+  @override
+  String get onboardingFlowAddBooksCta => 'Add a book';
+
+  @override
+  String get onboardingFlowAddBooksCtaSubtitle =>
+      'Search a title or scan the barcode';
+
+  @override
+  String get onboardingFlowAddBooksSkipNote =>
+      'You can skip this step and add books later, from My Shelf.';
+
+  @override
+  String get onboardingFlowFinish => 'Enter ShelfShare';
 }

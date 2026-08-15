@@ -47,11 +47,13 @@ class ProfileController extends AsyncNotifier<AppUser> {
     List<String>? favoriteGenres,
     List<String>? favoriteAuthors,
     String? readingPace,
+    String? purpose,
   }) async {
     final updated = await ref.read(profileRepositoryProvider).saveReadingSurvey(
           favoriteGenres: favoriteGenres,
           favoriteAuthors: favoriteAuthors,
           readingPace: readingPace,
+          purpose: purpose,
         );
     state = AsyncData(updated);
     ref.read(authControllerProvider.notifier).setUser(updated);

@@ -63,12 +63,14 @@ class ProfileRepository {
     List<String>? favoriteGenres,
     List<String>? favoriteAuthors,
     String? readingPace,
+    String? purpose,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.put('/profile/me/reading-survey', data: {
       'favoriteGenres': ?favoriteGenres,
       'favoriteAuthors': ?favoriteAuthors,
       'readingPace': ?readingPace,
+      'purpose': ?purpose,
     });
     return getMyProfile();
   }

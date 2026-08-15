@@ -3292,4 +3292,186 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
+
+  @override
+  String get bookMatchTitle => 'Potriviri de cărți';
+
+  @override
+  String get bookMatchEntryTooltip => 'Potriviri de cărți';
+
+  @override
+  String get bookMatchYesTooltip => 'Îmi place';
+
+  @override
+  String get bookMatchNoTooltip => 'Nu mă interesează';
+
+  @override
+  String get bookMatchSkip => 'Sari peste';
+
+  @override
+  String get bookMatchHint =>
+      'Trage cardul la dreapta pentru da, la stânga pentru nu sau în sus ca să sari peste.';
+
+  @override
+  String get bookMatchStampYes => 'DA';
+
+  @override
+  String get bookMatchStampNo => 'NU';
+
+  @override
+  String get bookMatchStampSkip => 'SKIP';
+
+  @override
+  String get bookMatchDiscoveryBadge => 'Descoperire';
+
+  @override
+  String get bookMatchEmptyTitle => 'Gata pentru moment';
+
+  @override
+  String get bookMatchEmptyBody =>
+      'Ai văzut tot ce aveam pentru tine acum, revino mai târziu.';
+
+  @override
+  String get bookMatchLoadError => 'Nu am putut încărca recomandările.';
+
+  @override
+  String get bookMatchRecalibrateTooltip => 'Recalibrare';
+
+  @override
+  String get bookMatchRecalibrateTitle => 'Recalibrezi preferințele?';
+
+  @override
+  String get bookMatchRecalibrateWarning =>
+      'Preferințele tale vor fi semi-resetate: scorurile pe genuri se atenuează și o perioadă vei vedea din nou cărți variate. Acțiunea nu poate fi anulată.';
+
+  @override
+  String get bookMatchRecalibrateConfirm => 'Recalibrează';
+
+  @override
+  String get bookMatchRecalibrateDone => 'Preferințele au fost recalibrate.';
+
+  @override
+  String get bookMatchRecalibrateError => 'Nu am putut recalibra acum.';
+
+  @override
+  String get bookMatchRecalibrateCooldownTitle => 'Recalibrare indisponibilă';
+
+  @override
+  String bookMatchRecalibrateCooldownBody(int days) {
+    return 'Mai poți recalibra peste $days zile.';
+  }
+
+  @override
+  String onboardingFlowStepLabel(int step, int total) {
+    return 'Pasul $step din $total';
+  }
+
+  @override
+  String get onboardingFlowSkip => 'Sari peste';
+
+  @override
+  String get onboardingFlowBackTooltip => 'Înapoi';
+
+  @override
+  String get onboardingFlowGenresTitle => 'Ce-ți place să citești?';
+
+  @override
+  String get onboardingFlowGenresSubtitle =>
+      'Alege câteva genuri - le folosim ca să-ți pregătim primele potriviri de cărți.';
+
+  @override
+  String get onboardingFlowFrequencyTitle => 'Cât de des citești?';
+
+  @override
+  String get onboardingFlowFrequencySubtitle =>
+      'Ne ajută să calibrăm cât de des îți arătăm cărți noi.';
+
+  @override
+  String get onboardingFlowFrequencyLowTitle => 'Puțin';
+
+  @override
+  String get onboardingFlowFrequencyLowDesc => '1-2 cărți pe lună';
+
+  @override
+  String get onboardingFlowFrequencyMidTitle => 'Mediu';
+
+  @override
+  String get onboardingFlowFrequencyMidDesc => 'O carte pe săptămână';
+
+  @override
+  String get onboardingFlowFrequencyHighTitle => 'Mult';
+
+  @override
+  String get onboardingFlowFrequencyHighDesc => 'Câteva cărți pe săptămână';
+
+  @override
+  String get onboardingFlowLocationTitle => 'Unde te găsim?';
+
+  @override
+  String get onboardingFlowLocationSubtitle =>
+      'Folosim locația ca să-ți arătăm schimburi realiste, în apropiere.';
+
+  @override
+  String get onboardingFlowLanguagesLabel => 'Limbi în care citești';
+
+  @override
+  String get onboardingFlowPurposeTitle => 'Ce cauți pe ShelfShare?';
+
+  @override
+  String get onboardingFlowPurposeSubtitle =>
+      'Ne ajută să-ți personalizăm pagina principală.';
+
+  @override
+  String get onboardingFlowPurposeSwapTitle => 'Schimb cărți';
+
+  @override
+  String get onboardingFlowPurposeSwapDesc =>
+      'Dau și primesc cărți de la alți membri';
+
+  @override
+  String get onboardingFlowPurposeSellTitle => 'Vând cărți';
+
+  @override
+  String get onboardingFlowPurposeSellDesc =>
+      'Vreau mai ales să-mi eliberez rafturile';
+
+  @override
+  String get onboardingFlowPurposeDiscoverTitle => 'Doar descopăr';
+
+  @override
+  String get onboardingFlowPurposeDiscoverDesc =>
+      'Explorez recomandări, fără schimburi încă';
+
+  @override
+  String get onboardingFlowPurposeAllTitle => 'Toate de mai sus';
+
+  @override
+  String get onboardingFlowPurposeAllDesc => 'Sunt aici pentru tot';
+
+  @override
+  String get onboardingFlowBookMatchTitle => 'Hai să vedem ce-ți place';
+
+  @override
+  String get onboardingFlowBookMatchSubtitle =>
+      'Dă swipe la câteva cărți - ne ajută să-ți pregătim recomandări mai bune chiar de la început.';
+
+  @override
+  String get onboardingFlowAddBooksTitle => 'Pune primele cărți pe raft';
+
+  @override
+  String get onboardingFlowAddBooksSubtitle =>
+      'Adaugă 2-3 cărți pe care le ai acasă - apar direct în profilul tău.';
+
+  @override
+  String get onboardingFlowAddBooksCta => 'Adaugă o carte';
+
+  @override
+  String get onboardingFlowAddBooksCtaSubtitle => 'Caută titlu sau scanează';
+
+  @override
+  String get onboardingFlowAddBooksSkipNote =>
+      'Poți sări peste pasul ăsta și să adaugi cărți mai târziu, din Raftul meu.';
+
+  @override
+  String get onboardingFlowFinish => 'Intră în ShelfShare';
 }

@@ -73,6 +73,7 @@ export class ProfileService {
           ? [...new Set(dto.favoriteAuthors.map((a) => a.trim()).filter(Boolean))]
           : undefined,
         readingPace: dto.readingPace,
+        onboardingPurpose: dto.purpose,
         readingSurveyCompletedAt: new Date(),
       },
     });
@@ -81,6 +82,7 @@ export class ProfileService {
       favoriteGenres: user.favoriteGenres,
       favoriteAuthors: user.favoriteAuthors,
       readingPace: user.readingPace,
+      onboardingPurpose: user.onboardingPurpose,
       readingSurveyCompletedAt: user.readingSurveyCompletedAt,
     };
   }
@@ -143,6 +145,7 @@ export class ProfileService {
       favoriteGenres: user.favoriteGenres,
       favoriteAuthors: user.favoriteAuthors,
       readingPace: user.readingPace,
+      onboardingPurpose: user.onboardingPurpose,
       // Frontend-ul decide pe baza asta dacă mai arată chestionarul (vezi
       // redirect-ul din app_router.dart).
       readingSurveyCompletedAt: user.readingSurveyCompletedAt,

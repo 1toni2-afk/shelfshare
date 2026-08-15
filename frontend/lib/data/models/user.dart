@@ -59,6 +59,9 @@ class AppUser {
   final String? readingPace;
   final DateTime? readingSurveyCompletedAt;
 
+  /// Scopul declarat la onboarding (swap/sell/discover/all) - doar informativ.
+  final String? onboardingPurpose;
+
   const AppUser({
     required this.id,
     required this.email,
@@ -92,6 +95,7 @@ class AppUser {
     this.favoriteAuthors = const [],
     this.readingPace,
     this.readingSurveyCompletedAt,
+    this.onboardingPurpose,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -148,6 +152,7 @@ class AppUser {
       readingSurveyCompletedAt: json['readingSurveyCompletedAt'] != null
           ? DateTime.parse(json['readingSurveyCompletedAt'] as String)
           : null,
+      onboardingPurpose: json['onboardingPurpose'] as String?,
     );
   }
 }

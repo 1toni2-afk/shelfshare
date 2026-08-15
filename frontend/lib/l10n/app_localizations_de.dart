@@ -3335,4 +3335,191 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
+
+  @override
+  String get bookMatchTitle => 'Buch-Match';
+
+  @override
+  String get bookMatchEntryTooltip => 'Buch-Match';
+
+  @override
+  String get bookMatchYesTooltip => 'Gefällt mir';
+
+  @override
+  String get bookMatchNoTooltip => 'Nichts für mich';
+
+  @override
+  String get bookMatchSkip => 'Überspringen';
+
+  @override
+  String get bookMatchHint =>
+      'Nach rechts wischen für Ja, nach links für Nein, nach oben zum Überspringen.';
+
+  @override
+  String get bookMatchStampYes => 'JA';
+
+  @override
+  String get bookMatchStampNo => 'NEIN';
+
+  @override
+  String get bookMatchStampSkip => 'SKIP';
+
+  @override
+  String get bookMatchDiscoveryBadge => 'Entdeckung';
+
+  @override
+  String get bookMatchEmptyTitle => 'Das war\'s fürs Erste';
+
+  @override
+  String get bookMatchEmptyBody =>
+      'Du hast alles gesehen, was wir gerade für dich hatten. Schau später wieder vorbei.';
+
+  @override
+  String get bookMatchLoadError => 'Empfehlungen konnten nicht geladen werden.';
+
+  @override
+  String get bookMatchRecalibrateTooltip => 'Neu kalibrieren';
+
+  @override
+  String get bookMatchRecalibrateTitle => 'Vorlieben neu kalibrieren?';
+
+  @override
+  String get bookMatchRecalibrateWarning =>
+      'Deine Vorlieben werden teilweise zurückgesetzt: Genre-Werte werden abgeschwächt und du siehst eine Zeit lang wieder eine größere Auswahl. Das lässt sich nicht rückgängig machen.';
+
+  @override
+  String get bookMatchRecalibrateConfirm => 'Neu kalibrieren';
+
+  @override
+  String get bookMatchRecalibrateDone =>
+      'Deine Vorlieben wurden neu kalibriert.';
+
+  @override
+  String get bookMatchRecalibrateError =>
+      'Neukalibrierung ist gerade nicht möglich.';
+
+  @override
+  String get bookMatchRecalibrateCooldownTitle =>
+      'Neukalibrierung nicht verfügbar';
+
+  @override
+  String bookMatchRecalibrateCooldownBody(int days) {
+    return 'Du kannst in $days Tagen erneut kalibrieren.';
+  }
+
+  @override
+  String onboardingFlowStepLabel(int step, int total) {
+    return 'Schritt $step von $total';
+  }
+
+  @override
+  String get onboardingFlowSkip => 'Überspringen';
+
+  @override
+  String get onboardingFlowBackTooltip => 'Zurück';
+
+  @override
+  String get onboardingFlowGenresTitle => 'Was liest du gerne?';
+
+  @override
+  String get onboardingFlowGenresSubtitle =>
+      'Wähle ein paar Genres - damit bereiten wir deine ersten Buch-Vorschläge vor.';
+
+  @override
+  String get onboardingFlowFrequencyTitle => 'Wie oft liest du?';
+
+  @override
+  String get onboardingFlowFrequencySubtitle =>
+      'Hilft uns, wie oft wir dir neue Bücher zeigen, richtig einzustellen.';
+
+  @override
+  String get onboardingFlowFrequencyLowTitle => 'Wenig';
+
+  @override
+  String get onboardingFlowFrequencyLowDesc => '1-2 Bücher im Monat';
+
+  @override
+  String get onboardingFlowFrequencyMidTitle => 'Mittel';
+
+  @override
+  String get onboardingFlowFrequencyMidDesc => 'Etwa ein Buch pro Woche';
+
+  @override
+  String get onboardingFlowFrequencyHighTitle => 'Viel';
+
+  @override
+  String get onboardingFlowFrequencyHighDesc => 'Mehrere Bücher pro Woche';
+
+  @override
+  String get onboardingFlowLocationTitle => 'Wo finden wir dich?';
+
+  @override
+  String get onboardingFlowLocationSubtitle =>
+      'Wir nutzen deinen Standort, um dir realistische Tauschangebote in der Nähe zu zeigen.';
+
+  @override
+  String get onboardingFlowLanguagesLabel => 'Sprachen, in denen du liest';
+
+  @override
+  String get onboardingFlowPurposeTitle => 'Wofür bist du hier?';
+
+  @override
+  String get onboardingFlowPurposeSubtitle =>
+      'Hilft uns, deine Startseite zu personalisieren.';
+
+  @override
+  String get onboardingFlowPurposeSwapTitle => 'Bücher tauschen';
+
+  @override
+  String get onboardingFlowPurposeSwapDesc =>
+      'Ich gebe und bekomme Bücher von anderen Mitgliedern';
+
+  @override
+  String get onboardingFlowPurposeSellTitle => 'Bücher verkaufen';
+
+  @override
+  String get onboardingFlowPurposeSellDesc =>
+      'Ich will vor allem meine Regale leeren';
+
+  @override
+  String get onboardingFlowPurposeDiscoverTitle => 'Nur stöbern';
+
+  @override
+  String get onboardingFlowPurposeDiscoverDesc =>
+      'Ich schaue mir Empfehlungen an, noch ohne Tausch';
+
+  @override
+  String get onboardingFlowPurposeAllTitle => 'Alles davon';
+
+  @override
+  String get onboardingFlowPurposeAllDesc => 'Ich bin für alles hier';
+
+  @override
+  String get onboardingFlowBookMatchTitle => 'Schauen wir, was dir gefällt';
+
+  @override
+  String get onboardingFlowBookMatchSubtitle =>
+      'Wische durch ein paar Bücher - so können wir von Anfang an bessere Empfehlungen vorbereiten.';
+
+  @override
+  String get onboardingFlowAddBooksTitle =>
+      'Stell deine ersten Bücher ins Regal';
+
+  @override
+  String get onboardingFlowAddBooksSubtitle =>
+      'Füge 2-3 Bücher hinzu, die du zuhause hast - sie erscheinen direkt in deinem Profil.';
+
+  @override
+  String get onboardingFlowAddBooksCta => 'Buch hinzufügen';
+
+  @override
+  String get onboardingFlowAddBooksCtaSubtitle =>
+      'Titel suchen oder Barcode scannen';
+
+  @override
+  String get onboardingFlowAddBooksSkipNote =>
+      'Du kannst diesen Schritt überspringen und später aus Mein Regal Bücher hinzufügen.';
+
+  @override
+  String get onboardingFlowFinish => 'Zu ShelfShare';
 }

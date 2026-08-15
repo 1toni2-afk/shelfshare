@@ -34,4 +34,9 @@ export class ReadingSurveyDto {
   @IsOptional()
   @IsIn(READING_PACES, { message: 'Ritm de citire invalid' })
   readingPace?: string;
+
+  /** Scopul declarat la onboarding - doar informativ, nu are impact funcțional. */
+  @IsOptional()
+  @IsIn(['swap', 'sell', 'discover', 'all'], { message: 'Scop invalid' })
+  purpose?: string;
 }

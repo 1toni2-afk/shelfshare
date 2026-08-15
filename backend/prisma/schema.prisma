@@ -108,6 +108,10 @@ model User {
   // fiecare pornire pe cineva care a refuzat deja o dată.
   readingSurveyCompletedAt DateTime?
 
+  // Scopul declarat la onboarding (swap/sell/discover/all) - doar informativ,
+  // nu are impact funcțional încă.
+  onboardingPurpose String?
+
   isAdmin  Boolean @default(false)
   isBanned Boolean @default(false)
 
@@ -137,6 +141,18 @@ model User {
   languages String[] @default(["Română"])
 
   showAcquisitionHistory Boolean @default(false)
+
+  // Book Match (swipe) - starea profilului de swipe. Vezi BookMatchService.
+  // Cât timp onboardingSwipesCount < 50 suntem în „cold start": coada vine
+  // dintr-un pool curatoriat pe genuri, iar fiecare swipe contează mai mult
+  // (multiplicatorul de popularitate). Contorul se oprește la 50, nu e un
+  // total pe viață - numărul total de swipe-uri se poate afla oricând din
+  // book_swipes.
+  onboardingSwipesCount Int @default(0)
+  // Ultima recalibrare („resetează-mi gusturile") - cooldown 30 de zile.
+  lastRecalibrationAt DateTime?
+  // Câte swipe-uri mai primesc raport crescut de discovery după recalibrare.
+  discoveryBoostSwipesRemaining Int @default(0)
 
   referralCode String? @unique
   invitedById  String?
@@ -180,6 +196,11 @@ model User {
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
   securityEvents           SecurityEvent[]
+  bookSwipes               BookSwipe[]
+  genreScores              UserGenreScore[]
+  authorScores             UserAuthorScore[]
+  eraScores                UserEraScore[]
+  recalibrationLogs        RecalibrationLog[]
 
   @@map("users")
 }
@@ -324,10 +345,17 @@ model Book {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Book Match: cât de „cunoscută" e cartea, folosită doar ca multiplicator
+  /// la cold start (primele 50 de swipe-uri), unde încă nu avem semnal de la
+  /// user și vrem ca titlurile mari să tragă mai tare profilul într-o direcție.
+  /// NULL = necurat, se folosește BOOK_MATCH_DEFAULT_POPULARITY.
+  popularityScore Float?
+
   userBooks UserBook[]
   wishlistItems WishlistItem[]
   bookshelfEntries BookshelfEntry[]
   collectionItems CollectionItem[]
+  swipes BookSwipe[]
 
   @@map("books")
 }
@@ -876,6 +904,15 @@ model Message {
   @@map("messages")
 }
 
+/// De unde a ajuns titlul pe wishlist: adăugat manual (inima de pe anunț) sau
+/// dintr-un „Yes" în Book Match. Permite despărțirea listei în „Alegerile mele"
+/// / „Book Match" în UI. Un rând PERSONAL nu devine niciodată BOOK_MATCH -
+/// alegerea explicită a userului are prioritate.
+enum WishlistItemSource {
+  PERSONAL
+  BOOK_MATCH
+}
+
 model WishlistItem {
   id String @id @default(uuid())
 
@@ -885,10 +922,118 @@ model WishlistItem {
   bookId String
   book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
+  source WishlistItemSource @default(PERSONAL)
+
   createdAt DateTime @default(now())
 
   @@unique([userId, bookId])
   @@map("wishlist_items")
+}
+
+// ---------------------------------------------------------------------------
+// Book Match (swipe) - log de evenimente + scoruri derivate pe 3 dimensiuni.
+//
+// Modelul e același ca la ListingScoreEvent: nu ținem contoare cumulate (nu am
+// ști ce parte din ele s-a „stins" cu timpul), ci logăm fiecare swipe și
+// recalculăm scorurile din istoric, cu o pondere care scade exponențial
+// (jumătate la fiecare 180 de zile). Diferența față de listing score e că acolo
+// punctele expiră brusc la 14 zile, aici se sting continuu.
+// ---------------------------------------------------------------------------
+
+enum BookSwipeAction {
+  YES
+  NO
+  SKIP
+}
+
+model BookSwipe {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  action BookSwipeAction
+
+  /// Generat de client, grupează swipe-urile unei sesiuni. O carte nu poate
+  /// reapărea în aceeași sesiune, indiferent de acțiune.
+  sessionId String
+
+  /// Cartea a fost servită ca „discovery" (gen neutru), nu ca potrivire de
+  /// profil - păstrat pentru analytics, ca să vedem dacă wildcard-urile prind.
+  isDiscovery Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, bookId])
+  @@index([userId, createdAt])
+  @@index([userId, sessionId])
+  @@map("book_swipes")
+}
+
+model UserGenreScore {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  genre String
+  score Float  @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, genre])
+  @@map("user_genre_scores")
+}
+
+model UserAuthorScore {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  author String
+  score  Float  @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, author])
+  @@map("user_author_scores")
+}
+
+model UserEraScore {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Bucket derivat din books.publishedYear - vezi eraForYear().
+  era   String
+  score Float  @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, era])
+  @@map("user_era_scores")
+}
+
+/// Istoricul recalibrărilor („vreau alte recomandări"), doar pentru debug și
+/// analytics: snapshot cu scorurile înainte și după compresie.
+model RecalibrationLog {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scoresBefore Json
+  scoresAfter  Json
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("recalibration_logs")
 }
 
 enum NotificationType {
