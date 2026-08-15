@@ -1,13 +1,70 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ExternalBookResult } from './types/external-book-result';
+
+/**
+ * Gazde de pe care acceptăm să facem proxy la o copertă (vezi
+ * `fetchCoverImage`) - o listă albă explicită, nu orice URL, ca endpoint-ul
+ * să nu devină un SSRF/proxy general spre orice adresă internă.
+ */
+const PROXYABLE_COVER_HOSTS = [
+  'books.google.com',
+  'books.googleusercontent.com',
+  'covers.openlibrary.org',
+];
 
 @Injectable()
 export class BookLookupService {
   private readonly logger = new Logger(BookLookupService.name);
 
   constructor(private http: HttpService) {}
+
+  /**
+   * Coperțile de la Google Books nu trimit `Access-Control-Allow-Origin`
+   * (verificat manual - Open Library da, Google Books nu), iar pe Flutter Web
+   * randarea prin CanvasKit cere bytes-ii imaginii printr-un fetch supus CORS,
+   * nu un simplu `<img>` - fără header-ul de CORS, browserul blochează
+   * răspunsul și coperta pică pe placeholder-ul generat din titlu, deși URL-ul
+   * era corect și imaginea exista. Proxy-ul ăsta o servește de pe domeniul
+   * nostru (unde CORS-ul global al API-ului deja se aplică), ocolind
+   * problema fără să depindem de header-ele terților.
+   *
+   * Lista albă de gazde (PROXYABLE_COVER_HOSTS) previne folosirea
+   * endpoint-ului ca proxy general către orice URL (SSRF).
+   */
+  async fetchCoverImage(
+    url: string,
+  ): Promise<{ data: Buffer; contentType: string } | null> {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new BadRequestException('URL invalid');
+    }
+    if (
+      parsed.protocol !== 'https:' ||
+      !PROXYABLE_COVER_HOSTS.includes(parsed.hostname)
+    ) {
+      throw new BadRequestException('Gazdă nepermisă pentru proxy de copertă');
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get(parsed.toString(), {
+          responseType: 'arraybuffer',
+          timeout: 8000,
+          maxContentLength: 8 * 1024 * 1024,
+        }),
+      );
+      const contentType = String(response.headers['content-type'] ?? '');
+      if (!contentType.startsWith('image/')) return null;
+      return { data: Buffer.from(response.data as ArrayBuffer), contentType };
+    } catch (error) {
+      this.logger.warn(`fetchCoverImage eșuat pentru ${url}: ${error}`);
+      return null;
+    }
+  }
 
   /**
    * Open Library pune la un loc genuri reale ("Fiction", "Wizards") cu

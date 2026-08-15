@@ -63,6 +63,11 @@ export class BooksService {
     return this.lookup.searchByTitle(query, { skipCoverFallback: true });
   }
 
+  /** Vezi BookLookupService.fetchCoverImage - de ce există proxy-ul ăsta. */
+  fetchCoverImage(url: string) {
+    return this.lookup.fetchCoverImage(url);
+  }
+
   /**
    * Coperte sugerate (Batch 8) - folosit când user tastează titlu+autor
    * fără să aleagă din autocomplete. Reutilizează searchByTitle (deja

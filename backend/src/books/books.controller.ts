@@ -5,11 +5,13 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -17,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
@@ -39,6 +41,25 @@ export class BooksController {
   @Get('search')
   searchExternal(@Query() query: SearchBookDto) {
     return this.booksService.searchExternal(query.q);
+  }
+
+  /**
+   * Proxy pentru coperțile care nu trimit Access-Control-Allow-Origin (Google
+   * Books) - vezi BookLookupService.fetchCoverImage. Servite de pe domeniul
+   * nostru, ca randarea pe Flutter Web (CanvasKit) să nu mai depindă de CORS-ul
+   * terților. Throttle mai strict decât restul - un endpoint care face fetch
+   * către un URL arbitrar (chiar și cu listă albă de gazde) e o țintă bună
+   * pentru abuz.
+   */
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  @Get('cover-proxy')
+  async proxyCover(@Query('url') url: string, @Res() res: Response) {
+    if (!url) throw new BadRequestException('Parametrul url lipsește');
+    const image = await this.booksService.fetchCoverImage(url);
+    if (!image) throw new NotFoundException('Coperta nu a putut fi încărcată');
+    res.setHeader('Content-Type', image.contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(image.data);
   }
 
   /**

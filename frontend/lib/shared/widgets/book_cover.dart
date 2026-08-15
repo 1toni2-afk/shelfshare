@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../utils/cover_proxy.dart';
 
 /// Paletă (fundal, text) pentru coperțile generate din titlu - vezi
 /// [BookCover._placeholder]. Aceleași 9 perechi din mockup-urile Milestone 20.
@@ -66,7 +67,7 @@ class BookCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveUrl = _firstNonEmpty([url, fallbackUrl]);
+    final effectiveUrl = coverProxyUrl(_firstNonEmpty([url, fallbackUrl]));
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
@@ -82,7 +83,7 @@ class BookCover extends StatelessWidget {
                 // Dacă și coperta din catalog dă eroare (link extern mort),
                 // mai încercăm poza proprietarului înainte de chenarul gol.
                 errorWidget: (context, _, _) {
-                  final alternative = _firstNonEmpty([fallbackUrl]);
+                  final alternative = coverProxyUrl(_firstNonEmpty([fallbackUrl]));
                   if (alternative == null || alternative == effectiveUrl) {
                     return _placeholder();
                   }

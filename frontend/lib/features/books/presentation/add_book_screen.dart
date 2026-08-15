@@ -11,6 +11,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../../../data/models/user_book.dart';
+import '../../../shared/utils/cover_proxy.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../application/my_library_controller.dart';
@@ -1227,7 +1228,7 @@ class _CoverPicker extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    selectedUrl!,
+                    coverProxyUrl(selectedUrl)!,
                     width: 96,
                     height: 128,
                     fit: BoxFit.cover,
@@ -1272,7 +1273,7 @@ class _CoverPicker extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
-                        url,
+                        coverProxyUrl(url)!,
                         width: 90,
                         height: 128,
                         fit: BoxFit.cover,
