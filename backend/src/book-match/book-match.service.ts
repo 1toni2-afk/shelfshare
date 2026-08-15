@@ -160,18 +160,22 @@ export class BookMatchService {
     `;
     const approxTotal = Number(estimate) || 0;
 
+    // Fără copertă, cardul de swipe arată doar un placeholder - o experiență
+    // proastă la un ecran gândit tocmai să arate cărți atractiv. Excludem
+    // cărțile fără `coverUrl` din pool-ul candidat, nu doar din selecție.
     if (approxTotal <= CATALOG_SIZE_THRESHOLD_FOR_SAMPLING) {
       // Neschimbat față de implementarea dinainte de import (`notIn: []` e
       // un filtru Prisma valid, echivalent cu "fără restricție").
       return this.prisma.book.findMany({
-        where: { id: { notIn: excludedIds } },
+        where: { id: { notIn: excludedIds }, coverUrl: { not: null } },
         select: CARD_SELECT,
         take: CANDIDATE_POOL_LIMIT,
       });
     }
 
     // Marjă x3 față de target: TABLESAMPLE SYSTEM aproximează pe blocuri (nu
-    // exact pe rânduri), iar rândurile excluse mai reduc din câte rămân utile.
+    // exact pe rânduri), iar rândurile excluse (inclusiv cele fără copertă)
+    // mai reduc din câte rămân utile.
     const samplePercent = Math.min(100, ((CANDIDATE_POOL_LIMIT * 3) / approxTotal) * 100);
 
     return excludedIds.length > 0
@@ -179,12 +183,14 @@ export class BookMatchService {
           SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore"
           FROM books TABLESAMPLE SYSTEM (${samplePercent})
           WHERE id NOT IN (${Prisma.join(excludedIds)})
+            AND "coverUrl" IS NOT NULL
           ORDER BY RANDOM()
           LIMIT ${CANDIDATE_POOL_LIMIT}
         `
       : this.prisma.$queryRaw<CandidateBook[]>`
           SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore"
           FROM books TABLESAMPLE SYSTEM (${samplePercent})
+          WHERE "coverUrl" IS NOT NULL
           ORDER BY RANDOM()
           LIMIT ${CANDIDATE_POOL_LIMIT}
         `;

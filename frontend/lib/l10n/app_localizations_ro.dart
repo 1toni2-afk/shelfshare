@@ -3534,4 +3534,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get genreComics => 'Benzi desenate';
+
+  @override
+  String get onboardingFlowMoveForward => 'Mergi mai departe';
+
+  @override
+  String onboardingFlowBookAdded(String title) {
+    return 'Adăugată: $title';
+  }
 }

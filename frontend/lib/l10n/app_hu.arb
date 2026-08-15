@@ -1091,5 +1091,14 @@
     "genrePoetry": "Költészet",
     "genreChildren": "Gyerekeknek",
     "genreYoungAdult": "Young Adult",
-    "genreComics": "Képregény"
+    "genreComics": "Képregény",
+    "onboardingFlowMoveForward": "Tovább",
+    "onboardingFlowBookAdded": "Hozzáadva: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    }
 }

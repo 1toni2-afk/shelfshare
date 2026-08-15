@@ -3549,4 +3549,12 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get genreComics => 'Képregény';
+
+  @override
+  String get onboardingFlowMoveForward => 'Tovább';
+
+  @override
+  String onboardingFlowBookAdded(String title) {
+    return 'Hozzáadva: $title';
+  }
 }

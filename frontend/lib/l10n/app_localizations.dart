@@ -6425,6 +6425,18 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Benzi desenate'**
   String get genreComics;
+
+  /// No description provided for @onboardingFlowMoveForward.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mergi mai departe'**
+  String get onboardingFlowMoveForward;
+
+  /// No description provided for @onboardingFlowBookAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adăugată: {title}'**
+  String onboardingFlowBookAdded(String title);
 }
 
 class _AppLocalizationsDelegate

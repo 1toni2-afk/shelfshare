@@ -3582,4 +3582,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get genreComics => 'Comics';
+
+  @override
+  String get onboardingFlowMoveForward => 'Weiter';
+
+  @override
+  String onboardingFlowBookAdded(String title) {
+    return 'Hinzugefügt: $title';
+  }
 }

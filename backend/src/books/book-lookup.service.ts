@@ -80,7 +80,9 @@ export class BookLookupService {
       this.tryOpenLibrarySearch(query),
       this.tryGoogleBooksSearch(query),
     ]);
-    const results = fromOpenLibrary.length > 0 ? fromOpenLibrary : fromGoogle;
+    const results = this.preferNewestEditions(
+      fromOpenLibrary.length > 0 ? fromOpenLibrary : fromGoogle,
+    );
 
     const finalResults = skip
         ? results
@@ -98,6 +100,38 @@ export class BookLookupService {
       if (oldestKey !== undefined) this._searchCache.delete(oldestKey);
     }
     return finalResults;
+  }
+
+  /**
+   * Când căutarea pe titlu întoarce mai multe ediții ale aceleiași cărți
+   * (des cazul - o reeditare, o traducere nouă), păstrăm o singură intrare
+   * per (titlu, autor) normalizat: cea cu `publishedYear` cel mai mare (ediția
+   * cea mai recentă), cu preferință pentru cea cu copertă la egalitate de an.
+   * Nu resortăm întreaga listă după an - am strica ordinea de relevanță dată
+   * de API pentru cărți diferite care se potrivesc căutării; doar comprimăm
+   * duplicatele, păstrând poziția primei apariții a fiecărui grup.
+   */
+  private preferNewestEditions(
+    results: ExternalBookResult[],
+  ): ExternalBookResult[] {
+    const bestByKey = new Map<string, ExternalBookResult>();
+    const order: string[] = [];
+    for (const result of results) {
+      const key = `${result.title.trim().toLowerCase()}|${(result.author ?? '').trim().toLowerCase()}`;
+      const current = bestByKey.get(key);
+      if (!current) {
+        bestByKey.set(key, result);
+        order.push(key);
+        continue;
+      }
+      const currentYear = current.publishedYear ?? -Infinity;
+      const resultYear = result.publishedYear ?? -Infinity;
+      const better =
+        resultYear > currentYear ||
+        (resultYear === currentYear && !current.coverUrl && !!result.coverUrl);
+      if (better) bestByKey.set(key, result);
+    }
+    return order.map((key) => bestByKey.get(key)!);
   }
 
   /** Câte rezultate de căutare primesc completare de copertă. */

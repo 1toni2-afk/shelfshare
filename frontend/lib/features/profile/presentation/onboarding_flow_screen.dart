@@ -8,6 +8,8 @@ import '../../../shared/widgets/city_autocomplete.dart';
 import '../../book_match/presentation/book_match_screen.dart';
 import '../../books/presentation/add_book_screen.dart';
 import '../../../shared/utils/genre_localization.dart';
+import '../../../shared/widgets/book_cover.dart';
+import '../../../data/models/user_book.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
 
@@ -57,6 +59,10 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
 
   // Pasul 4 - scop
   String? _purpose;
+
+  // Pasul 6 - prima carte adăugată în wizard (dacă userul a folosit CTA-ul),
+  // afișată ca o confirmare pe ecran, nu doar un card gol de „adaugă o carte".
+  UserBook? _addedBook;
 
   bool _finishing = false;
 
@@ -228,6 +234,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
           content: const BookMatchScreen(embedded: true),
           scrollable: false,
           compact: true,
+          moveForward: true,
         );
       default:
         return _wizardScaffold(
@@ -250,6 +257,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // prea puțin loc, iar coperta cărții se micșora ca să încapă. Varianta
     // compactă renunță la subtitlu și reduce titlul/padding-ul de sus.
     bool compact = false,
+    bool moveForward = false,
   }) {
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,18 +294,19 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
             ),
           ),
         ),
-        _buildFooter(isLastStep: isLastStep),
+        _buildFooter(isLastStep: isLastStep, moveForward: moveForward),
       ],
     );
   }
 
-  Widget _buildFooter({required bool isLastStep}) {
+  Widget _buildFooter({required bool isLastStep, bool moveForward = false}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -328,7 +337,11 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
               ),
               TextButton(
                 onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
-                child: Text(context.l10n.onboardingFlowSkip),
+                // La BookMatch (pasul 5), acest buton face exact ce face și
+                // Continue (nu există un "răspuns" de sărit peste) - eticheta
+                // "Sari peste" era înșelătoare, sugera că se pierde progresul
+                // din swipe. La celelalte pași rămâne un skip real.
+                child: Text(moveForward ? context.l10n.onboardingFlowMoveForward : context.l10n.onboardingFlowSkip),
               ),
             ],
           ),
@@ -444,11 +457,60 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     );
   }
 
+  Future<void> _openAddBook() async {
+    // Navigator imperativ, nu context.push: un push prin GoRouter ar
+    // schimba state.matchedLocation, iar redirect-ul global (care
+    // forțează /onboarding cât timp readingSurveyCompletedAt e null)
+    // ne-ar trimite instant înapoi - un "loop" din care se ieșea doar
+    // cu Skip. Așa, AddBookScreen se deschide peste ecranul curent
+    // fără ca GoRouter să considere că am părăsit /onboarding.
+    final added = await Navigator.of(context, rootNavigator: true).push<UserBook>(
+      MaterialPageRoute(builder: (_) => const AddBookScreen()),
+    );
+    if (added != null && mounted) setState(() => _addedBook = added);
+  }
+
   Widget _buildAddBooksContent() {
     final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (_addedBook != null) ...[
+          Card(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(color: AppColors.primary),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 40,
+                    height: 58,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: BookCover.expand(
+                        url: _addedBook!.primaryImageUrl,
+                        title: _addedBook!.book.title,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      l10n.onboardingFlowBookAdded(_addedBook!.book.title),
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  Icon(Icons.check_circle, color: AppColors.success),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
         Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -456,15 +518,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            // Navigator imperativ, nu context.push: un push prin GoRouter ar
-            // schimba state.matchedLocation, iar redirect-ul global (care
-            // forțează /onboarding cât timp readingSurveyCompletedAt e null)
-            // ne-ar trimite instant înapoi - un "loop" din care se ieșea doar
-            // cu Skip. Așa, AddBookScreen se deschide peste ecranul curent
-            // fără ca GoRouter să considere că am părăsit /onboarding.
-            onTap: () => Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(builder: (_) => const AddBookScreen()),
-            ),
+            onTap: _openAddBook,
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(

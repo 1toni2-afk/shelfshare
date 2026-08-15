@@ -1894,5 +1894,14 @@
     "genrePoetry": "Poezie",
     "genreChildren": "Copii",
     "genreYoungAdult": "Young adult",
-    "genreComics": "Benzi desenate"
+    "genreComics": "Benzi desenate",
+    "onboardingFlowMoveForward": "Mergi mai departe",
+    "onboardingFlowBookAdded": "Adăugată: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    }
 }

@@ -1233,5 +1233,14 @@
     "genrePoetry": "Poetry",
     "genreChildren": "Children",
     "genreYoungAdult": "Young Adult",
-    "genreComics": "Comics"
+    "genreComics": "Comics",
+    "onboardingFlowMoveForward": "Move forward",
+    "onboardingFlowBookAdded": "Added: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    }
 }
