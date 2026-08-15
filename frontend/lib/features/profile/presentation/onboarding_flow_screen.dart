@@ -6,6 +6,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
 import '../../book_match/presentation/book_match_screen.dart';
+import '../../books/presentation/add_book_screen.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
 
@@ -225,6 +226,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
           subtitle: context.l10n.onboardingFlowBookMatchSubtitle,
           content: const BookMatchScreen(embedded: true),
           scrollable: false,
+          compact: true,
         );
       default:
         return _wizardScaffold(
@@ -242,18 +244,30 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     required Widget content,
     bool scrollable = true,
     bool isLastStep = false,
+    // BookMatch (pasul 5) are nevoie de tot spațiul vertical disponibil pentru
+    // cardul de swipe - titlul mare + subtitlu (ca la restul pașilor) lăsau
+    // prea puțin loc, iar coperta cărții se micșora ca să încapă. Varianta
+    // compactă renunță la subtitlu și reduce titlul/padding-ul de sus.
+    bool compact = false,
   }) {
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: scrollable ? MainAxisSize.min : MainAxisSize.max,
       children: [
-        Text(title, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
         Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
+          title,
+          style: compact
+              ? Theme.of(context).textTheme.titleLarge
+              : Theme.of(context).textTheme.headlineSmall,
         ),
-        const SizedBox(height: 24),
+        if (!compact) ...[
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.mutedForeground),
+          ),
+        ],
+        SizedBox(height: compact ? 8 : 24),
         scrollable ? content : Expanded(child: content),
       ],
     );
@@ -262,7 +276,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
       children: [
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            padding: EdgeInsets.fromLTRB(24, compact ? 12 : 20, 24, 0),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 520),
@@ -441,7 +455,15 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: () => context.push('/library/add'),
+            // Navigator imperativ, nu context.push: un push prin GoRouter ar
+            // schimba state.matchedLocation, iar redirect-ul global (care
+            // forțează /onboarding cât timp readingSurveyCompletedAt e null)
+            // ne-ar trimite instant înapoi - un "loop" din care se ieșea doar
+            // cu Skip. Așa, AddBookScreen se deschide peste ecranul curent
+            // fără ca GoRouter să considere că am părăsit /onboarding.
+            onTap: () => Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const AddBookScreen()),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(

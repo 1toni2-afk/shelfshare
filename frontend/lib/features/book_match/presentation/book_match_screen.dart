@@ -410,7 +410,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _RoundAction(
               icon: Icons.close,
@@ -418,6 +418,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
               tooltip: l10n.bookMatchNoTooltip,
               onPressed: busy ? null : () => _flyOut(_SwipeAction.no),
             ),
+            const SizedBox(width: 28),
             _RoundAction(
               icon: Icons.favorite,
               color: AppColors.success,
@@ -430,8 +431,14 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
           onPressed: busy ? null : () => _flyOut(_SwipeAction.skip),
           icon: const Icon(Icons.skip_next, size: 18),
           label: Text(l10n.bookMatchSkip),
-          style: TextButton.styleFrom(foregroundColor: AppColors.mutedForeground),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.mutedForeground,
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ),
+        const SizedBox(height: 2),
         Text(
           l10n.bookMatchHint,
           textAlign: TextAlign.center,
@@ -460,15 +467,15 @@ class _RoundAction extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: SizedBox(
-        width: 64,
-        height: 64,
+        width: 52,
+        height: 52,
         child: Material(
           shape: const CircleBorder(),
           color: color.withValues(alpha: 0.12),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onPressed,
-            child: Icon(icon, color: color, size: 30),
+            child: Icon(icon, color: color, size: 24),
           ),
         ),
       ),
