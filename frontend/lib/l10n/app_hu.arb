@@ -1100,5 +1100,12 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "greetMottoStandingTree": "Egy elcserélt könyv egy állva maradt fa. 🌳",
+    "greetMottoWhyBuyNew": "Miért vegyél új könyvet, ha egy cserére vár rád?",
+    "greetMottoMoreSustainable": "A könyvcsere fenntarthatóbb, mint egy új megvásárlása.",
+    "greetMottoEuropeanMovement": "Egy fenntarthatóbb fogyasztásért induló európai mozgalom része vagy. 🇪🇺",
+    "greetMottoCirculating": "Kevesebb újonnan nyomtatott könyv, több forgó történet.",
+    "aboutAppSustainabilityTitle": "Fenntarthatóság",
+    "aboutAppSustainabilityBody": "Minden könyvcsere egy kevesebb újonnan nyomtatandó, szállítandó és csomagolandó könyvet jelent. Egy új példány megvásárlása papírt, vizet és energiát emészt fel - egy már meglévő példány, amely új olvasót talál, mindezt megspórolja.\n\nA ShelfShare egy egyre erősödő európai körforgásos gazdaság-mozgalom része: az újrahasznosítás a folyamatos újgyártás helyett. Egy könyvcsere apró gesztus, de számít."
 }

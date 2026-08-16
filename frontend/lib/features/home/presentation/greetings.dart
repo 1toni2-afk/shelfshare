@@ -24,6 +24,7 @@ List<TypewriterPhrase> buildGreetings({
 
   const occasionHold = Duration(seconds: 8);
   const normalHold = Duration(seconds: 3);
+  const mottoHold = Duration(seconds: 5);
 
   final phrases = <TypewriterPhrase>[
     for (final text in _occasions(l10n, now, birthdayMonth, birthdayDay))
@@ -31,6 +32,7 @@ List<TypewriterPhrase> buildGreetings({
     for (final text in _forHour(l10n, now.hour, displayName))
       TypewriterPhrase(text, normalHold),
     for (final text in _forWeekday(l10n, now)) TypewriterPhrase(text, normalHold),
+    for (final text in _mottos(l10n)) TypewriterPhrase(text, mottoHold),
   ];
 
   // Prima frază stă mai mult: e cea pe care o vede oricine deschide aplicația
@@ -159,6 +161,20 @@ List<String> _forWeekday(AppLocalizations l10n, DateTime now) {
     default:
       return const [];
   }
+}
+
+/// Mottouri despre sustenabilitate, intercalate în bucla de saluturi -
+/// mesajul central al aplicației (schimbul de cărți în loc de cumpărarea
+/// unora noi, ca parte a mișcării europene pentru economie circulară),
+/// nu doar o explicație ascunsă într-un ecran de „Despre".
+List<String> _mottos(AppLocalizations l10n) {
+  return [
+    l10n.greetMottoStandingTree,
+    l10n.greetMottoWhyBuyNew,
+    l10n.greetMottoMoreSustainable,
+    l10n.greetMottoEuropeanMovement,
+    l10n.greetMottoCirculating,
+  ];
 }
 
 bool _sameDay(DateTime a, DateTime b) =>

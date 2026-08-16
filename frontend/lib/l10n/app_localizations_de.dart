@@ -3109,6 +3109,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.';
 
   @override
+  String get aboutAppSustainabilityTitle => 'Nachhaltigkeit';
+
+  @override
+  String get aboutAppSustainabilityBody =>
+      'Jeder Büchertausch bedeutet ein Buch weniger, das gedruckt, transportiert und verpackt werden muss. Der Kauf eines neuen Exemplars kostet Papier, Wasser und Energie - ein bereits vorhandenes Exemplar, das einen neuen Leser findet, spart all das.\n\nShelfShare ist Teil einer wachsenden europäischen Bewegung hin zu einer Kreislaufwirtschaft: Wiederverwendung statt ständiger Neuproduktion. Ein Büchertausch ist eine kleine Geste, die aber zählt.';
+
+  @override
   String get chatNewConversationTooltip => 'Conversație nouă';
 
   @override
@@ -3335,6 +3342,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
+
+  @override
+  String get greetMottoStandingTree =>
+      'Ein getauschtes Buch ist ein Baum, der stehen bleibt. 🌳';
+
+  @override
+  String get greetMottoWhyBuyNew =>
+      'Warum ein neues Buch kaufen, wenn eines zum Tausch bereitsteht?';
+
+  @override
+  String get greetMottoMoreSustainable =>
+      'Bücher zu tauschen ist nachhaltiger als neue zu kaufen.';
+
+  @override
+  String get greetMottoEuropeanMovement =>
+      'Du bist Teil einer europäischen Bewegung für nachhaltigeren Konsum. 🇪🇺';
+
+  @override
+  String get greetMottoCirculating =>
+      'Weniger neu gedruckte Bücher, mehr Geschichten im Umlauf.';
 
   @override
   String get bookMatchTitle => 'Buch-Match';

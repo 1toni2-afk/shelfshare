@@ -92,6 +92,12 @@ class AboutAppScreen extends ConsumerWidget {
                   title: l10n.aboutAppAccountDeletionTitle,
                   child: Text(l10n.aboutAppAccountDeletionBody, style: _bodyStyle(context)),
                 ),
+                _section(
+                  context,
+                  icon: Icons.eco_outlined,
+                  title: l10n.aboutAppSustainabilityTitle,
+                  child: Text(l10n.aboutAppSustainabilityBody, style: _bodyStyle(context)),
+                ),
               ],
             ),
           ),

@@ -1100,5 +1100,12 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "greetMottoStandingTree": "Ein getauschtes Buch ist ein Baum, der stehen bleibt. 🌳",
+    "greetMottoWhyBuyNew": "Warum ein neues Buch kaufen, wenn eines zum Tausch bereitsteht?",
+    "greetMottoMoreSustainable": "Bücher zu tauschen ist nachhaltiger als neue zu kaufen.",
+    "greetMottoEuropeanMovement": "Du bist Teil einer europäischen Bewegung für nachhaltigeren Konsum. 🇪🇺",
+    "greetMottoCirculating": "Weniger neu gedruckte Bücher, mehr Geschichten im Umlauf.",
+    "aboutAppSustainabilityTitle": "Nachhaltigkeit",
+    "aboutAppSustainabilityBody": "Jeder Büchertausch bedeutet ein Buch weniger, das gedruckt, transportiert und verpackt werden muss. Der Kauf eines neuen Exemplars kostet Papier, Wasser und Energie - ein bereits vorhandenes Exemplar, das einen neuen Leser findet, spart all das.\n\nShelfShare ist Teil einer wachsenden europäischen Bewegung hin zu einer Kreislaufwirtschaft: Wiederverwendung statt ständiger Neuproduktion. Ein Büchertausch ist eine kleine Geste, die aber zählt."
 }
