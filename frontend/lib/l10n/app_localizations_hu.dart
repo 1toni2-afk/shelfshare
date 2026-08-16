@@ -614,10 +614,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileGlobalStats => 'Globális statisztikák';
 
   @override
-  String get profileMyBookshelf => 'A polcom';
+  String get profileMyBookshelf => 'A könyvespolcom';
 
   @override
-  String get bookshelfTitle => 'A polcom';
+  String get bookshelfTitle => 'A könyvespolcom';
 
   @override
   String get bookshelfTabReading => 'Olvasom';
@@ -1332,6 +1332,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookDetailUnavailableForExchange => 'Nem elérhető cserére';
 
   @override
+  String get bookDetailRequestDonation => 'Adomány kérése';
+
+  @override
   String get bookDetailMakeOffer => 'Ajánlat tétele';
 
   @override
@@ -1583,10 +1586,20 @@ class AppLocalizationsHu extends AppLocalizations {
   String get readyMeetingProposedByMe => 'A másik fél megerősítésére vársz';
 
   @override
-  String get readyMeetingAccept => 'Időpont elfogadása';
+  String get readyMeetingAccept => 'Elfogadás';
 
   @override
-  String get readyMeetingDecline => 'Időpont elutasítása';
+  String get readyMeetingDecline => 'Elutasítás';
+
+  @override
+  String get readyMeetingSubtitle => 'Egyeztessétek, mikor és hol találkoztok';
+
+  @override
+  String get readySafetySubtitle => 'Tippek egy biztonságos cseréhez';
+
+  @override
+  String get readyContactSubtitle =>
+      'Add tudtára a partnerednek, hogyan érhet el';
 
   @override
   String get readyContactTitle => 'Elérhetőségek';
@@ -1595,10 +1608,30 @@ class AppLocalizationsHu extends AppLocalizations {
   String get readyContactPhoneLabel => 'Telefonszám (opcionális)';
 
   @override
-  String get readyContactShare => 'Adataim megosztása';
+  String get readyContactShare => 'Telefonszám megosztása';
+
+  @override
+  String get readyContactSkip => 'Inkább nem';
+
+  @override
+  String get readyContactEdit => 'Szerkesztés';
 
   @override
   String get readyContactShared => 'Megosztottad az elérhetőségeidet';
+
+  @override
+  String get dealFinalisedBanner => 'DEAL FINALISED';
+
+  @override
+  String get dealCancelledBanner => 'DEAL CANCELLED';
+
+  @override
+  String get dealCancelledByYouBanner => 'TE LEMONDTAD';
+
+  @override
+  String dealCancelledByOtherBanner(String name) {
+    return 'LEMONDTA: $name';
+  }
 
   @override
   String readyContactOtherPhone(String phone) {
@@ -1899,6 +1932,28 @@ class AppLocalizationsHu extends AppLocalizations {
       'Nem sikerült frissíteni az ajánlatot. Próbáld újra.';
 
   @override
+  String get chatOfferCardTitle => 'Ártajánlat';
+
+  @override
+  String chatOfferCardFrom(String bookTitle) {
+    return 'ehhez: $bookTitle';
+  }
+
+  @override
+  String get chatExchangeCardTitle => 'Csereigény';
+
+  @override
+  String get readyYouGive => 'Te adod';
+
+  @override
+  String get readyYouReceive => 'Te kapod';
+
+  @override
+  String readyFromCity(String city) {
+    return 'innen: $city';
+  }
+
+  @override
   String chatOfferCardLabel(String amount, String bookTitle) {
     return '$amount lej · $bookTitle';
   }
@@ -1944,6 +1999,16 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get wishlistLoadError => 'Nem sikerült betölteni a kívánságlistát.';
+
+  @override
+  String wishlistSectionPersonal(int count) {
+    return 'Saját választásaim ($count)';
+  }
+
+  @override
+  String wishlistSectionBookMatch(int count) {
+    return 'Book Match ($count)';
+  }
 
   @override
   String get notificationsTitle => 'Értesítések';
@@ -2018,145 +2083,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String timeDaysAgo(int days) {
     return '$days napja';
   }
-
-  @override
-  String get safetyCenterTitle => 'Biztonsági központ';
-
-  @override
-  String get safetyCenterIntro =>
-      'Néhány egyszerű szabály, hogy a ShelfShare-en zajló cserék kellemesek és biztonságosak legyenek.';
-
-  @override
-  String get safetyTip1Title => 'Találkozzatok nappal';
-
-  @override
-  String get safetyTip1Desc =>
-      'Ütemezd a cserét egy természetes fényben zajló időpontra, lehetőleg délelőtt vagy délután.';
-
-  @override
-  String get safetyTip2Title => 'Válassz nyilvános helyet';
-
-  @override
-  String get safetyTip2Desc =>
-      'Egy kávézó, könyvesbolt vagy bevásárlóközpont biztonságosabb, mint valakinek a magánlakása.';
-
-  @override
-  String get safetyTip3Title =>
-      'Részesítsd előnyben a kamerával megfigyelt helyeket';
-
-  @override
-  String get safetyTip3Desc =>
-      'A biztonsági kamerákkal felszerelt területek elrettentik a kellemetlen viselkedést.';
-
-  @override
-  String get safetyTip4Title => 'Ne oszd meg személyes adataidat';
-
-  @override
-  String get safetyTip4Desc =>
-      'Nincs szükség a lakcímedre, személyi számodra vagy más érzékeny adatra a cseréhez.';
-
-  @override
-  String get safetyTip5Title =>
-      'Ellenőrizd az értékelést és a megbízhatósági pontszámot';
-
-  @override
-  String get safetyTip5Desc =>
-      'A befejezett cserék jó előzménye jó jel, mielőtt találkoznál valakivel.';
-
-  @override
-  String get safetyTip6Title => 'Egy valódi profilkép növeli a bizalmat';
-
-  @override
-  String get safetyTip6Desc =>
-      'A fényképpel és teljes bemutatkozással rendelkező profilok nagyobb biztonságérzetet keltenek.';
-
-  @override
-  String get safetyTip7Title => 'Ellenőrizd a könyv állapotát a csere előtt';
-
-  @override
-  String get safetyTip7Desc =>
-      'Hasonlítsd össze a könyvet a hirdetés leírásával, mielőtt befejezettként megerősítenéd a cserét.';
-
-  @override
-  String get safetyTip8Title => 'Jelents be minden gyanús viselkedést';
-
-  @override
-  String get safetyTip8Desc =>
-      'Bejelentheted vagy letilthatod a felhasználót közvetlenül a profiljából vagy a beszélgetésből.';
-
-  @override
-  String get helpCenterTitle => 'Gyakori kérdések';
-
-  @override
-  String get helpGroupSwapping => 'Csere';
-
-  @override
-  String get helpGroupPricing => 'Árak';
-
-  @override
-  String get helpGroupSafety => 'Bizalom és biztonság';
-
-  @override
-  String get helpStillStuck => 'Nem találtad meg a választ?';
-
-  @override
-  String get helpContactModerator => 'Moderátor elérése';
-
-  @override
-  String get helpFaq1Question => 'Hogyan működik a könyvcsere?';
-
-  @override
-  String get helpFaq1Answer =>
-      'Kérsz egy könyvet valaki más hirdetéséből (te is felajánlhatsz cserébe egy könyvet), a tulajdonos elfogadja vagy elutasítja, majd chat-en keresztül megbeszélitek a találkozót. Miután a valóságban is lezajlott a csere, bármelyiktek megjelölheti befejezettként.';
-
-  @override
-  String get helpFaq2Question => 'Mi az a Megbízhatósági pontszám?';
-
-  @override
-  String get helpFaq2Answer =>
-      'Egy 0-100 közötti, automatikusan számított mutató az alkalmazásban végzett tevékenység alapján: a fiók életkora, megerősített email, hány cserét fejeztél be, kapott értékelésed, milyen gyakran válaszolsz, és milyen ritkán mondasz le kéréseket. Nem személyazonosság-ellenőrzés, csak viselkedési jelzés.';
-
-  @override
-  String get helpFaq3Question => 'Hogyan számítjuk a „könyvesbolt” árat?';
-
-  @override
-  String get helpFaq3Answer =>
-      'Amikor ISBN-nel adsz hozzá egy könyvet, megpróbáljuk megtalálni a listaárat a Google Booksön. A lefedettség részleges - nem minden könyvnek van ott elérhető ára, különösen a régebbi vagy román kiadásoknak.';
-
-  @override
-  String get helpFaq4Question => 'Mit jelent a „Fix ár, nem alkudható”?';
-
-  @override
-  String get helpFaq4Answer =>
-      'Ha az eladó ezt bejelöli, a vevők többé nem küldhetnek árajánlatot - a könyv csak a feltüntetett áron vásárolható meg.';
-
-  @override
-  String get helpFaq5Question =>
-      'Hogyan jelenthetek be vagy tilthatok le egy felhasználót?';
-
-  @override
-  String get helpFaq5Answer =>
-      'A beszélgetés jobb felső sarkában lévő menüből, vagy egy hirdetés részletei oldaláról (zászló ikon). A letiltás mindkét irányban leállítja az üzeneteket.';
-
-  @override
-  String get helpFaq6Question =>
-      'Mi történik a könyvvel, miután eladtam vagy elcseréltem?';
-
-  @override
-  String get helpFaq6Answer =>
-      'A hirdetés véglegesen elérhetetlenné válik. Ha a könyvet átvevő személy tovább szeretné listázni, ezt megteheti a Cserék/Ajánlatok képernyőről (\"Add hozzá a könyvtáradhoz\") - a könyv előzménye nyomon követhető marad a részletek oldalán, minden tulajdonos fotóival.';
-
-  @override
-  String get helpFaq7Question =>
-      'Miért nem jelenik meg egy könyv a Kategóriákban vagy a Hasonló könyvek között?';
-
-  @override
-  String get helpFaq7Answer =>
-      'Egy könyv műfaja az Open Libraryből vagy a Google Booksből származik hozzáadáskor - néhány könyvnek nincs kitöltve a műfaja ezeken a külső forrásokon, különösen a kevésbé népszerű kiadásoknak.';
-
-  @override
-  String get helpCenterFooter =>
-      'Nem találtad meg a választ? Bejelenthetsz egy problémát közvetlenül az érintett felhasználóval folytatott beszélgetésből.';
 
   @override
   String get adminLoadError => 'Nem sikerült betölteni az admin adatokat.';
@@ -2622,6 +2548,46 @@ class AppLocalizationsHu extends AppLocalizations {
   String get discoverNearYou => 'A városodban';
 
   @override
+  String get discoverFilterButton => 'Szűrés';
+
+  @override
+  String get discoverSortButton => 'Rendezés';
+
+  @override
+  String get discoverSortTitle => 'Rendezés';
+
+  @override
+  String get discoverFilterCategory => 'Kategória';
+
+  @override
+  String get discoverFilterListingType => 'Hirdetés típusa';
+
+  @override
+  String get discoverFilterAll => 'Összes';
+
+  @override
+  String get discoverSortGenre => 'Előnyben részesített műfaj';
+
+  @override
+  String get discoverSortDate => 'Dátum szerint';
+
+  @override
+  String get discoverSortNewest => 'Legújabbak elöl';
+
+  @override
+  String get discoverSortOldest => 'Legrégebbiek elöl';
+
+  @override
+  String get discoverSortNearest => 'Legközelebbiek elöl';
+
+  @override
+  String get discoverSortApply => 'Rendezés';
+
+  @override
+  String get discoverScoreBadgeTooltip =>
+      '14 napos érdeklődési pontszám (csak adminoknak)';
+
+  @override
   String get inventorySelectAll => 'Összes kijelölése';
 
   @override
@@ -2729,16 +2695,25 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String get shareListingModeSwap => 'Normál csere';
+  String get shareListingModeSwap => 'Csere';
 
   @override
-  String get shareListingModeSale => 'Eladó';
+  String get shareListingModeSale => 'Eladás';
 
   @override
   String get shareListingModeDonation => 'Adomány';
 
   @override
   String get shareTitleAutocomplete => 'Kezdj el gépelni a javaslatokért';
+
+  @override
+  String get shareTitleSearching => 'Cím keresése...';
+
+  @override
+  String get shareSwapAlsoSell => 'Vagy eladás ennyiért';
+
+  @override
+  String get shareSwapAlsoSellPrice => 'Eladási ár';
 
   @override
   String get shareGenreHint => 'Műfaj';
@@ -2835,31 +2810,6 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get aboutDevTitle => 'About dev';
-
-  @override
-  String get aboutDevHeadline => 'Omul din spatele ShelfShare';
-
-  @override
-  String get aboutDevBodyWho =>
-      'Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.';
-
-  @override
-  String get aboutDevBodyWhy =>
-      'Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.';
-
-  @override
-  String get aboutDevBodyHosting =>
-      'Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️';
-
-  @override
-  String get aboutDevSupportTitle => 'Keep the app alive';
-
-  @override
-  String get aboutDevSupportSubtitle =>
-      'Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.';
-
-  @override
-  String get aboutDevCoffeeButton => 'Buy me a coffee';
 
   @override
   String get aboutDevOpenError =>
@@ -2992,6 +2942,12 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get shareCoverRecommended => 'Ajánlott borítók';
+
+  @override
+  String get shareCoverChooseOne => 'Válassz borítót';
+
+  @override
+  String get shareCoverRemove => 'Eltávolítás';
 
   @override
   String get shareMainPhotoHint =>
@@ -3333,6 +3289,36 @@ class AppLocalizationsHu extends AppLocalizations {
       'Kevesebb újonnan nyomtatott könyv, több forgó történet.';
 
   @override
+  String get adminFeatureAccessTitle => 'Funkciók hozzáférése';
+
+  @override
+  String get adminFeatureAccessDesc =>
+      'Adj korai hozzáférést a még bevezetés alatt álló funkciókhoz kiválasztott felhasználóknak.';
+
+  @override
+  String get adminFeatureAccessSearchHint => 'Keresés név vagy e-mail alapján';
+
+  @override
+  String get adminFeatureAccessSearchEmpty =>
+      'Keress egy felhasználót a hozzáférés megtekintéséhez.';
+
+  @override
+  String get adminFeatureAccessNoResults => 'Nincs találat.';
+
+  @override
+  String get adminFeatureAccessApply => 'Alkalmaz';
+
+  @override
+  String get adminFeatureAccessSaved => 'A hozzáférés frissült.';
+
+  @override
+  String get adminFeatureAccessSaveError =>
+      'Nem sikerült menteni a hozzáférést.';
+
+  @override
+  String get featureFlagAdvancedStatistics => 'Speciális statisztikák';
+
+  @override
   String get bookMatchTitle => 'Könyvpárosítás';
 
   @override
@@ -3412,6 +3398,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get onboardingFlowSkip => 'Kihagyom';
+
+  @override
+  String get onboardingFlowMoveForward => 'Tovább';
 
   @override
   String get onboardingFlowBackTooltip => 'Vissza';
@@ -3522,6 +3511,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get onboardingFlowFinish => 'Belépés a ShelfShare-be';
 
   @override
+  String onboardingFlowBookAdded(String title) {
+    return 'Hozzáadva: $title';
+  }
+
+  @override
   String get genreFiction => 'Szépirodalom';
 
   @override
@@ -3580,14 +3574,6 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get genreComics => 'Képregény';
-
-  @override
-  String get onboardingFlowMoveForward => 'Tovább';
-
-  @override
-  String onboardingFlowBookAdded(String title) {
-    return 'Hozzáadva: $title';
-  }
 
   @override
   String get onboardingWelcomeTitle =>

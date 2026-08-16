@@ -138,7 +138,11 @@ export class FollowService {
    * Notifică followerii unui user când acesta adaugă o carte nouă -
    * best-effort, nu trebuie să blocheze adăugarea cărții dacă eșuează.
    */
-  async notifyFollowersOfNewBook(userId: string, bookTitle: string) {
+  async notifyFollowersOfNewBook(
+    userId: string,
+    bookTitle: string,
+    userBookId: string,
+  ) {
     try {
       const follows = await this.prisma.follow.findMany({
         where: { followingId: userId },
@@ -153,7 +157,9 @@ export class FollowService {
             f.followerId,
             'FOLLOWED_USER_NEW_BOOK',
             `${author?.name ?? 'Un utilizator pe care îl urmărești'} a adăugat o carte nouă: "${bookTitle}"`,
-            { userId },
+            // userBookId - ca la tap să ducem direct la anunț, nu la profilul
+            // proprietarului (vezi notification_routing.dart pe frontend).
+            { userId, userBookId },
           ),
         ),
       );

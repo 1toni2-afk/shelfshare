@@ -295,3 +295,54 @@ class InactiveListing {
     );
   }
 }
+
+/// Cheile de acces la funcții încă în rulare, acordat per user din panoul de
+/// admin. Trebuie să rămână identice cu FEATURE_FLAG_KEYS din backend
+/// (common/constants/feature-flags.ts) - o funcție nouă înseamnă o intrare
+/// aici, plus o etichetă în [featureFlagLabel].
+const kFeatureFlagKeys = <String>['advanced_statistics'];
+
+class FeatureFlagValue {
+  final String key;
+  final bool enabled;
+
+  const FeatureFlagValue({required this.key, required this.enabled});
+
+  FeatureFlagValue copyWith({bool? enabled}) =>
+      FeatureFlagValue(key: key, enabled: enabled ?? this.enabled);
+
+  factory FeatureFlagValue.fromJson(Map<String, dynamic> json) {
+    return FeatureFlagValue(
+      key: json['key'] as String,
+      enabled: json['enabled'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'key': key, 'enabled': enabled};
+}
+
+class UserFeatureFlags {
+  final String userId;
+  final String email;
+  final String? name;
+  final List<FeatureFlagValue> flags;
+
+  const UserFeatureFlags({
+    required this.userId,
+    required this.email,
+    this.name,
+    required this.flags,
+  });
+
+  factory UserFeatureFlags.fromJson(Map<String, dynamic> json) {
+    final user = json['user'] as Map<String, dynamic>;
+    return UserFeatureFlags(
+      userId: user['id'] as String,
+      email: user['email'] as String,
+      name: user['name'] as String?,
+      flags: (json['flags'] as List)
+          .map((e) => FeatureFlagValue.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}

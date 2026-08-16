@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/models/user_book.dart';
+import '../../data/models/wishlist_item.dart';
 import '../../features/wishlist/application/wishlist_controller.dart';
 import 'book_cover.dart';
+import 'wishlist_source_icon.dart';
 
 /// Card compact pentru o carte, cu copertă, buton inimă (adăugare rapidă la
 /// wishlist), indicator preț/schimb și titlu + autor + locație dedesubt.
@@ -56,7 +58,11 @@ class BookCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   BookCover.expand(
-                    url: userBook.book.coverUrl,
+                    // primaryImageUrl respectă steluța userului (mainPhotoUrl)
+                    // înainte de coperta oficială - fără asta, alegerea
+                    // explicită de pe o poză proprie nu se vedea niciodată
+                    // pe carduri (aici se folosea direct book.coverUrl).
+                    url: userBook.primaryImageUrl,
                     fallbackUrl:
                         userBook.photos.isNotEmpty ? userBook.photos.first : null,
                     title: userBook.book.title,
@@ -145,7 +151,10 @@ class _PriceBadge extends StatelessWidget {
     if (userBook.isForSale && userBook.salePrice != null) {
       return _badge(
         context,
-        label: context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
+        icon: userBook.salePrice == 0 ? Icons.volunteer_activism_outlined : null,
+        label: userBook.salePrice == 0
+            ? context.l10n.shareListingModeDonation
+            : context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
         color: AppColors.accent,
       );
     }
@@ -248,11 +257,18 @@ class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
 
   @override
   Widget build(BuildContext context) {
-    final wishlisted = ref.watch(
-      wishlistControllerProvider.select(
-        (s) => s.value?.any((item) => item.book.id == widget.bookId) ?? false,
-      ),
+    // Un singur select pe listă: întoarce sursa rândului de wishlist (sau null
+    // dacă nu e pe listă). Așa cardul știe și DACĂ e la favorite, și CUM a
+    // ajuns acolo, fără un al doilea apel per card.
+    final source = ref.watch(
+      wishlistControllerProvider.select((s) {
+        for (final item in s.value ?? const <WishlistItem>[]) {
+          if (item.book.id == widget.bookId) return item.source;
+        }
+        return null;
+      }),
     );
+    final wishlisted = source != null;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: _toggle,
@@ -270,9 +286,13 @@ class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
           ],
         ),
         child: Icon(
-          wishlisted ? Icons.favorite : Icons.favorite_border,
+          wishlistIconFor(source, wishlisted: wishlisted),
           size: 17,
-          color: wishlisted ? AppColors.destructive : AppColors.mutedForeground,
+          color: wishlistIconColorFor(
+            source,
+            wishlisted: wishlisted,
+            inactive: AppColors.mutedForeground,
+          ),
         ),
       ),
     );

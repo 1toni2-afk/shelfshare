@@ -15,6 +15,7 @@ import '../../auth/application/auth_state.dart';
 import '../../profile/application/profile_controller.dart';
 import '../data/books_repository.dart';
 import 'browse_screen.dart';
+import 'discover_filter_sheets.dart';
 
 /// Ecranul „Descoperă" - înlocuiește tab-ul vechi de căutare cu un feed de
 /// secțiuni curate: genuri (chip-uri), trending, recente, top căutări, cele
@@ -30,6 +31,13 @@ class DiscoverScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.navSearch),
         actions: [
+          // Intrarea în „Book Match" (ecranul de swipe). Stă lângă lupă ca să
+          // nu concureze cu bara Filtrează/Sortează din corpul ecranului.
+          IconButton(
+            icon: const Icon(Icons.style_outlined),
+            tooltip: l10n.bookMatchEntryTooltip,
+            onPressed: () => context.push('/book-match'),
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: l10n.discoverSearchTooltip,
@@ -42,9 +50,8 @@ class DiscoverScreen extends ConsumerWidget {
           onRefresh: () async {
             // Invalidăm toate providerii de secțiuni ca RefreshIndicator să
             // reîmprospăteze întregul ecran, nu doar o secțiune.
-            ref.invalidate(_genresProvider);
+            ref.invalidate(discoverGenresProvider);
             ref.invalidate(_trendingProvider);
-            ref.invalidate(_recentsProvider);
             ref.invalidate(_popularSearchesProvider);
             ref.invalidate(_mostWishedProvider);
             ref.invalidate(_upcomingProvider);
@@ -60,17 +67,17 @@ class DiscoverScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 8, bottom: 24),
                 children: const [
-                  // Filtrele rapide și categoriile fac aceeași treabă (rafinează
-                  // feed-ul) - o singură bară, nu două secțiuni separate.
-                  _UnifiedFiltersSection(),
+                  // Două butoane, nu o bară de chip-uri: filtrele rapide vechi
+                  // („doar schimb" / „licitații" / hartă) acopereau arbitrar
+                  // câteva combinații; „Filtrează" + „Sortează" le acoperă pe
+                  // toate, cu aceleași taxonomii (gen, tip de anunț).
+                  _FilterSortBar(),
                   SizedBox(height: 8),
                   _RecommendedSection(),
                   SizedBox(height: 8),
                   _TrendingSection(),
                   SizedBox(height: 8),
                   _NearYouSection(),
-                  SizedBox(height: 8),
-                  _RecentsSection(),
                   SizedBox(height: 8),
                   _MostWishedSection(),
                   SizedBox(height: 8),
@@ -93,14 +100,8 @@ class DiscoverScreen extends ConsumerWidget {
 
 // Provideri per secțiune - fiecare face un singur GET și e invalidabil
 // individual de RefreshIndicator.
-final _genresProvider = FutureProvider(
-  (ref) => ref.watch(booksRepositoryProvider).getGenres(),
-);
 final _trendingProvider = FutureProvider(
   (ref) => ref.watch(booksRepositoryProvider).getTrendingListings(),
-);
-final _recentsProvider = FutureProvider(
-  (ref) => ref.watch(booksRepositoryProvider).browse(sort: 'newest', limit: 15, offset: 0),
 );
 final _popularSearchesProvider = FutureProvider(
   (ref) => ref.watch(booksRepositoryProvider).getPopularSearches(),
@@ -165,8 +166,12 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _HorizontalCarousel extends StatelessWidget {
-  const _HorizontalCarousel({required this.books});
+  const _HorizontalCarousel({required this.books, this.showScoreBadge = false});
   final List<UserBook> books;
+
+  /// Doar „Cele mai căutate" cere badge-ul, și doar dacă serverul a trimis un
+  /// scor (ceea ce face exclusiv pentru admini).
+  final bool showScoreBadge;
 
   @override
   Widget build(BuildContext context) {
@@ -188,10 +193,18 @@ class _HorizontalCarousel extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
           final ub = books[index];
-          return BookCard(
+          final card = BookCard(
             userBook: ub,
             width: 150,
             onTap: () => context.push('/books/${ub.id}', extra: ub.owner),
+          );
+          final score = ub.searchScore;
+          if (!showScoreBadge || score == null) return card;
+          return Stack(
+            children: [
+              card,
+              Positioned(top: 6, left: 6, child: _ScoreBadge(score: score)),
+            ],
           );
         },
       ),
@@ -199,6 +212,10 @@ class _HorizontalCarousel extends StatelessWidget {
   }
 }
 
+/// „Cele mai căutate" - ordonată de backend după scorul de interes pe 14 zile
+/// (view unic 3p, refresh 0.1p, favorite 1p, cu expirare individuală a
+/// punctelor). Scorul e invizibil pentru userii normali: backendul îl trimite
+/// doar adminilor, iar badge-ul de mai jos apare doar când există.
 class _TrendingSection extends ConsumerWidget {
   const _TrendingSection();
 
@@ -220,7 +237,7 @@ class _TrendingSection extends ConsumerWidget {
               title: context.l10n.discoverMostLookedFor,
               icon: Icons.local_fire_department,
             ),
-            _HorizontalCarousel(books: books),
+            _HorizontalCarousel(books: books, showScoreBadge: true),
           ],
         );
       },
@@ -228,32 +245,31 @@ class _TrendingSection extends ConsumerWidget {
   }
 }
 
-class _RecentsSection extends ConsumerWidget {
-  const _RecentsSection();
+/// Badge de debug cu scorul de interes - vizibil doar adminilor, fiindcă doar
+/// lor le trimite backendul `searchScore` (vezi BooksService.getTrendingListings).
+class _ScoreBadge extends StatelessWidget {
+  const _ScoreBadge({required this.score});
+  final double score;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(_recentsProvider);
-    return async.when(
-      loading: () => _SkeletonSection(
-        title: context.l10n.homeRecentlyAdded,
-        icon: Icons.new_releases_outlined,
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: context.l10n.discoverScoreBadgeTooltip,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          score.toStringAsFixed(1),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
-      error: (_, _) => const SizedBox.shrink(),
-      data: (page) {
-        if (page.items.isEmpty) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(
-              title: context.l10n.homeRecentlyAdded,
-              icon: Icons.new_releases_outlined,
-              onSeeAll: () => context.push('/browse'),
-            ),
-            _HorizontalCarousel(books: page.items),
-          ],
-        );
-      },
     );
   }
 }
@@ -396,70 +412,48 @@ class _UpcomingTile extends StatelessWidget {
   }
 }
 
-/// Filtrele rapide (swap/licitații/hartă) și categoriile (genuri) rezolvau
-/// aceeași nevoie - rafinarea feed-ului - din două locuri diferite. O singură
-/// bară de pill-uri, cu genurile după shortcut-uri, „+N more" peste primele
-/// 6 (Milestone 20).
-class _UnifiedFiltersSection extends ConsumerWidget {
-  const _UnifiedFiltersSection();
-
-  static const _visibleGenres = 6;
+/// Bara de sus a Discover-ului: „Filtrează" + „Sortează" (Milestone 20).
+/// Înlocuiește vechea bară de chip-uri (doar schimb / licitații active /
+/// hartă / primele 6 genuri): acele shortcut-uri erau o selecție arbitrară
+/// dintr-un spațiu de filtre mult mai mare. Ambele butoane deschid un bottom
+/// sheet și, la aplicare, duc rezultatul pe ecranul de căutare - singurul cu
+/// paginare și filtre reale.
+class _FilterSortBar extends ConsumerWidget {
+  const _FilterSortBar();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final genresAsync = ref.watch(_genresProvider);
-    final genres = genresAsync.value ?? const [];
-    final visible = genres.take(_visibleGenres).toList();
-    final overflow = genres.length - visible.length;
-
-    final chips = [
-      ActionChip(
-        avatar: const Icon(Icons.swap_horiz, size: 18),
-        label: Text(l10n.discoverSwapOnly),
-        onPressed: () => context.push(
-          '/browse',
-          extra: const SearchScreenArgs(listingType: 'swap'),
-        ),
-      ),
-      ActionChip(
-        avatar: const Icon(Icons.gavel_outlined, size: 18),
-        label: Text(l10n.discoverAuctions),
-        onPressed: () => context.push(
-          '/browse',
-          extra: const SearchScreenArgs(listingType: 'auction'),
-        ),
-      ),
-      ActionChip(
-        avatar: const Icon(Icons.map_outlined, size: 18),
-        label: Text(l10n.mapTitle),
-        onPressed: () => context.push('/map'),
-      ),
-      for (final g in visible)
-        ActionChip(
-          label: Text('${g.genre} ${g.count}'),
-          onPressed: () => context.push('/browse', extra: SearchScreenArgs(genre: g.genre)),
-        ),
-      if (overflow > 0)
-        ActionChip(
-          label: Text(l10n.discoverMoreGenres(overflow)),
-          labelStyle: const TextStyle(color: AppColors.accent),
-          backgroundColor: Colors.transparent,
-          side: BorderSide.none,
-          onPressed: () => context.push('/browse'),
-        ),
-    ];
-    // Scroll orizontal, nu `Wrap` - cu filtrele rapide + 6 genuri + overflow,
-    // un Wrap cădea pe 3-4 rânduri și ocupa jumătate de ecran pe telefon
-    // înainte să apară vreun rezultat.
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-        itemCount: chips.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) => chips[index],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.filter_alt_outlined, size: 20),
+              label: Text(l10n.discoverFilterButton),
+              onPressed: () async {
+                final args = await showDiscoverFilterSheet(context);
+                if (args != null && context.mounted) {
+                  context.push('/browse', extra: args);
+                }
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.swap_vert, size: 20),
+              label: Text(l10n.discoverSortButton),
+              onPressed: () async {
+                final args = await showDiscoverSortSheet(context);
+                if (args != null && context.mounted) {
+                  context.push('/browse', extra: args);
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

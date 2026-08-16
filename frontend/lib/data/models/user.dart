@@ -472,12 +472,14 @@ class SmartMatch {
 }
 
 class AcquisitionHistoryEntry {
+  final String? userBookId;
   final String bookTitle;
   final String? bookCoverUrl;
   final DateTime date;
   final String type;
 
   const AcquisitionHistoryEntry({
+    this.userBookId,
     required this.bookTitle,
     this.bookCoverUrl,
     required this.date,
@@ -486,6 +488,7 @@ class AcquisitionHistoryEntry {
 
   factory AcquisitionHistoryEntry.fromJson(Map<String, dynamic> json) {
     return AcquisitionHistoryEntry(
+      userBookId: json['userBookId'] as String?,
       bookTitle: json['bookTitle'] as String,
       bookCoverUrl: json['bookCoverUrl'] as String?,
       date: DateTime.parse(json['date'] as String),

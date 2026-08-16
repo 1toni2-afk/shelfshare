@@ -49,6 +49,17 @@ export class UpdateUserBookDto {
   @IsBoolean()
   isNegotiable?: boolean;
 
+  /**
+   * „Sau vinde cu X lei" pentru anunțurile de tip Schimb: setat explicit la
+   * listare, permite oferte în bani fără ca anunțul să devină „Vânzare"
+   * (isForSale rămâne false). `null` dezactivează opțiunea.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(99999)
+  swapSalePrice?: number | null;
+
   @IsOptional()
   @IsString()
   @MaxLength(256, { message: 'Descrierea nu poate depăși 256 de caractere' })

@@ -18,13 +18,24 @@ final _popularSearchesProvider = FutureProvider((ref) {
 /// Argumente opționale trimise ecranului de căutare din alte ecrane (ex.
 /// wishlist trimite un titlu, Home trimite un gen din secțiunea Categorii).
 class SearchScreenArgs {
-  const SearchScreenArgs({this.title, this.author, this.genre, this.listingType, this.city});
+  const SearchScreenArgs({
+    this.title,
+    this.author,
+    this.genre,
+    this.listingType,
+    this.city,
+    this.sort,
+  });
   final String? title;
   final String? author;
   final String? genre;
-  /// „swap" / „sale" / „auction" - folosit de filtrele rapide din Discover.
+  /// „swap" / „sale" / „auction" / „donation" - folosit de sheet-ul
+  /// „Filtrează" din Discover.
   final String? listingType;
   final String? city;
+  /// „recent" / „oldest" / „distance" - sheet-ul „Sortează" din Discover.
+  /// „distance" are efect doar dacă userul are oraș setat în profil.
+  final String? sort;
 }
 
 class BrowseScreen extends ConsumerStatefulWidget {
@@ -35,12 +46,14 @@ class BrowseScreen extends ConsumerStatefulWidget {
     this.initialGenre,
     this.initialListingType,
     this.initialCity,
+    this.initialSort,
   });
   final String? initialTitle;
   final String? initialAuthor;
   final String? initialGenre;
   final String? initialListingType;
   final String? initialCity;
+  final String? initialSort;
 
   @override
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
@@ -68,7 +81,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     final hasPreset = (widget.initialAuthor?.isNotEmpty ?? false) ||
         (widget.initialGenre?.isNotEmpty ?? false) ||
         (widget.initialListingType?.isNotEmpty ?? false) ||
-        (widget.initialCity?.isNotEmpty ?? false);
+        (widget.initialCity?.isNotEmpty ?? false) ||
+        (widget.initialSort?.isNotEmpty ?? false);
     if (hasPreset) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(browseControllerProvider.notifier).applyFilters(BrowseFilters(
@@ -76,6 +90,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
               genre: widget.initialGenre,
               listingType: widget.initialListingType,
               city: widget.initialCity,
+              sort: widget.initialSort,
             ));
       });
     } else if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {

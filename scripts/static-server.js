@@ -17,7 +17,20 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/global-stats', priority: '0.5' },
   { path: '/safety-center', priority: '0.4' },
   { path: '/help-center', priority: '0.4' },
+  { path: '/about-dev', priority: '0.3' },
 ];
+
+// Pagini plain-HTML, randate direct de acest server, fără Flutter - conținut
+// pur static (safety tips, FAQ, about dev), care înainte trecea prin
+// ShellRoute-ul autentificat din app_router.dart și era invizibil oricui nu
+// era logat (inclusiv Googlebot, deși erau în sitemap - vezi
+// STATIC_SITEMAP_ROUTES de mai sus). Servite ca fișiere reale, nu ca shell-ul
+// Flutter cu conținut injectat, ca să nu mai aștepte bootul motorului Flutter.
+const STATIC_HTML_PAGES = {
+  '/safety-center': path.join(__dirname, 'static-pages', 'safety-center.html'),
+  '/about-dev': path.join(__dirname, 'static-pages', 'about-dev.html'),
+  '/help-center': path.join(__dirname, 'static-pages', 'help-center.html'),
+};
 
 function fetchJson(url) {
   return new Promise((resolve) => {
@@ -99,22 +112,118 @@ function renderPageHtml(template, meta) {
   if (meta.jsonLd) {
     html = html.replace('</head>', `  <script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>\n</head>`);
   }
+
+  // Conținut real, vizibil, randat pe server pentru crawlere - Flutter randează
+  // totul în canvas, deci fără asta pagina n-are niciun text indexabil în afara
+  // <title>/<meta>. #seo-content e afișat efectiv (nu display:none - Google
+  // dă mai puțină greutate textului ascuns) și eliminat la 'flutter-first-frame'
+  // exact ca #splash, ca să nu rămână sub/peste UI-ul real după hidratare.
+  if (meta.bodyHtml) {
+    html = html.replace(
+      '<div id="splash">',
+      `<div id="seo-content">${meta.bodyHtml}</div>\n  <div id="splash">`,
+    );
+  }
   return html;
+}
+
+// /leaderboard și /global-stats sunt rute publice pe backend (fără
+// @UseGuards pe profile/leaderboard/* și books/most-shared|trending|
+// popular-authors), dar în Flutter stau în ShellRoute-ul autentificat - orice
+// vizitator neautentificat (inclusiv Googlebot) e redirecționat la /login
+// înainte să vadă conținutul, deși sunt și în sitemap.xml. Nu le scoatem din
+// spatele autentificării (ar însemna să deschidem tot shell-ul MainScaffold
+// userilor anonimi, risc mai mare decât beneficiul), doar le pre-randăm
+// conținut real pentru crawlere, exact ca la /books/:id și /users/:id -
+// userii reali tot ajung la /login, comportamentul lor nu se schimbă.
+async function fetchLeaderboardMeta() {
+  const data = await fetchJson(`${apiUrl}/profile/leaderboard/national`);
+  if (!Array.isArray(data) || data.length === 0) return null;
+  const top = data.slice(0, 10);
+  const description = `Clasamentul cititorilor cu cele mai multe schimburi de cărți pe ShelfShare: ${top
+    .slice(0, 3)
+    .map((u) => u.name)
+    .join(', ')} și alții.`;
+  const bodyHtml = `
+    <h1>Clasament cititori</h1>
+    <p>${escapeHtml(description)}</p>
+    <ol>
+      ${top
+        .map(
+          (u) =>
+            `<li>${escapeHtml(u.name)}${u.city ? ` (${escapeHtml(u.city)})` : ''} - ${escapeHtml(u.booksExchangedCount)} schimburi</li>`,
+        )
+        .join('\n      ')}
+    </ol>
+  `;
+  return {
+    title: 'Clasament cititori | ShelfShare',
+    description,
+    url: `${siteUrl}/leaderboard`,
+    bodyHtml,
+  };
+}
+
+async function fetchGlobalStatsMeta() {
+  const [mostShared, trending, popularAuthors] = await Promise.all([
+    fetchJson(`${apiUrl}/books/most-shared`),
+    fetchJson(`${apiUrl}/books/trending`),
+    fetchJson(`${apiUrl}/books/popular-authors`),
+  ]);
+  const shared = Array.isArray(mostShared) ? mostShared.slice(0, 5) : [];
+  const trend = Array.isArray(trending) ? trending.slice(0, 5) : [];
+  const authors = Array.isArray(popularAuthors) ? popularAuthors.slice(0, 5) : [];
+  if (!shared.length && !trend.length && !authors.length) return null;
+
+  const bookItem = (entry) =>
+    `<li>${escapeHtml(entry.book?.title)}${entry.book?.author ? ` de ${escapeHtml(entry.book.author)}` : ''} - ${escapeHtml(entry.count)}</li>`;
+  const authorItem = (entry) => `<li>${escapeHtml(entry.author)} - ${escapeHtml(entry.count)}</li>`;
+  const description =
+    'Statistici globale ShelfShare: cele mai schimbate cărți, cărți în tendințe și autori populari printre cititorii din România.';
+  const bodyHtml = `
+    <h1>Statistici globale</h1>
+    <p>${description}</p>
+    ${shared.length ? `<h2>Cele mai schimbate cărți</h2><ul>${shared.map(bookItem).join('')}</ul>` : ''}
+    ${trend.length ? `<h2>În tendințe</h2><ul>${trend.map(bookItem).join('')}</ul>` : ''}
+    ${authors.length ? `<h2>Autori populari</h2><ul>${authors.map(authorItem).join('')}</ul>` : ''}
+  `;
+  return {
+    title: 'Statistici globale | ShelfShare',
+    description,
+    url: `${siteUrl}/global-stats`,
+    bodyHtml,
+  };
 }
 
 async function fetchBookMeta(id) {
   const data = await fetchJson(`${apiUrl}/books/${id}/preview`);
   if (!data) return null;
   const byline = data.author ? `${data.title} de ${data.author}` : data.title;
-  const priceClause = data.salePrice != null ? ` - ${data.salePrice} lei` : '';
+  // salePrice poate fi 0/setat chiar și pentru anunțuri doar-de-schimb (câmpul
+  // nu e golit când userul dezactivează vânzarea) - isForSale e sursa de
+  // adevăr pentru ce arătăm (preț vs. "disponibilă pentru schimb").
+  const isForSale = data.isForSale && data.salePrice != null && Number(data.salePrice) > 0;
+  const priceClause = isForSale ? ` - ${data.salePrice} lei` : ' - disponibilă pentru schimb';
   const description = data.description
     ? data.description.slice(0, 200)
     : `${byline}, disponibilă pe ShelfShare${data.city ? ` în ${data.city}` : ''}${priceClause}.`;
+  const bodyHtml = `
+    <h1>${escapeHtml(data.title)}</h1>
+    ${data.author ? `<p>de ${escapeHtml(data.author)}</p>` : ''}
+    ${data.coverUrl ? `<img src="${escapeHtml(data.coverUrl)}" alt="${escapeHtml(data.title)}">` : ''}
+    <p>${escapeHtml(description)}</p>
+    <ul>
+      ${data.city ? `<li>Oraș: ${escapeHtml(data.city)}</li>` : ''}
+      <li>${isForSale ? `Preț: ${escapeHtml(data.salePrice)} lei` : 'Disponibilă pentru schimb'}</li>
+      ${data.condition ? `<li>Stare: ${escapeHtml(data.condition)}</li>` : ''}
+    </ul>
+  `;
   return {
     title: `${byline} | ShelfShare`,
     description,
     image: data.coverUrl,
     url: `${siteUrl}/books/${id}`,
+    bodyHtml,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Book',
@@ -129,11 +238,22 @@ async function fetchBookMeta(id) {
 async function fetchProfileMeta(id) {
   const data = await fetchJson(`${apiUrl}/profile/${id}`);
   if (!data) return null;
+  const description = data.bio || `Profilul lui ${data.name} pe ShelfShare${data.city ? ` (${data.city})` : ''} - ${data.listingsCount ?? 0} cărți listate.`;
+  const bodyHtml = `
+    <h1>${escapeHtml(data.name)}</h1>
+    ${data.profileImage ? `<img src="${escapeHtml(data.profileImage)}" alt="${escapeHtml(data.name)}">` : ''}
+    <p>${escapeHtml(description)}</p>
+    <ul>
+      ${data.city ? `<li>Oraș: ${escapeHtml(data.city)}</li>` : ''}
+      ${data.listingsCount != null ? `<li>Cărți listate: ${escapeHtml(data.listingsCount)}</li>` : ''}
+    </ul>
+  `;
   return {
     title: `${data.name} | ShelfShare`,
-    description: data.bio || `Profilul lui ${data.name} pe ShelfShare${data.city ? ` (${data.city})` : ''} - ${data.listingsCount ?? 0} cărți listate.`,
+    description,
     image: data.profileImage,
     url: `${siteUrl}/users/${id}`,
+    bodyHtml,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Person',
@@ -193,18 +313,38 @@ http.createServer((req, res) => {
     return;
   }
 
+  if (STATIC_HTML_PAGES[reqPath]) {
+    fs.readFile(STATIC_HTML_PAGES[reqPath], (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end('Not found');
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'public, max-age=300' });
+      res.end(data);
+    });
+    return;
+  }
+
   const bookMatch = reqPath.match(/^\/books\/([^/]+)$/);
   const userMatch = reqPath.match(/^\/users\/([^/]+)$/);
-  if (bookMatch || userMatch) {
+  const fetchMeta = bookMatch
+    ? () => fetchBookMeta(bookMatch[1])
+    : userMatch
+      ? () => fetchProfileMeta(userMatch[1])
+      : reqPath === '/leaderboard'
+        ? fetchLeaderboardMeta
+        : reqPath === '/global-stats'
+          ? fetchGlobalStatsMeta
+          : null;
+  if (fetchMeta) {
     fs.readFile(path.join(root, 'index.html'), 'utf8', (err, template) => {
       if (err) {
         res.writeHead(404);
         res.end('Not found');
         return;
       }
-      const id = (bookMatch || userMatch)[1];
-      const fetchMeta = bookMatch ? fetchBookMeta : fetchProfileMeta;
-      fetchMeta(id)
+      fetchMeta()
         .then((meta) => (meta ? renderPageHtml(template, meta) : template))
         .catch(() => template)
         .then((html) => {

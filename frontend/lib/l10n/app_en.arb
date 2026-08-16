@@ -1,4 +1,4 @@
-{
+﻿{
     "@@locale": "en",
     "navHome": "Home",
     "navSearch": "Discover",
@@ -455,6 +455,7 @@
     "bookDetailPhotosTitle": "Photos",
     "bookDetailRequestExchange": "Request exchange",
     "bookDetailUnavailableForExchange": "Unavailable for exchange",
+    "bookDetailRequestDonation": "Request Donation",
     "bookDetailMakeOffer": "Make an offer",
     "bookDetailMessageOwner": "Message",
     "bookDetailAvailabilityTitle": "Availability",
@@ -529,12 +530,28 @@
     "readyTitle": "Prepare exchange",
     "readyMeetingAwaitingYou": "The other party proposed a meeting",
     "readyMeetingProposedByMe": "Waiting for the other party to confirm",
-    "readyMeetingAccept": "Confirm time",
-    "readyMeetingDecline": "Decline time",
+    "readyMeetingAccept": "Confirm",
+    "readyMeetingDecline": "Decline",
+    "readyMeetingSubtitle": "Agree on when and where to exchange",
+    "readySafetySubtitle": "Tips for a safe and smooth exchange",
+    "readyContactSubtitle": "Let your exchange partner know how to reach you",
     "readyContactTitle": "Contact details",
     "readyContactPhoneLabel": "Phone (optional)",
-    "readyContactShare": "Share my details",
+    "readyContactShare": "Share phone number",
+    "readyContactSkip": "I'd rather not",
+    "readyContactEdit": "Edit",
     "readyContactShared": "You shared your contact details",
+    "dealFinalisedBanner": "DEAL FINALISED",
+    "dealCancelledBanner": "DEAL CANCELLED",
+    "dealCancelledByYouBanner": "CANCELLED BY YOU",
+    "dealCancelledByOtherBanner": "CANCELLED BY {name}",
+    "@dealCancelledByOtherBanner": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
     "readyContactOtherPhone": "Phone: {phone}",
     "@readyContactOtherPhone": {
         "placeholders": {
@@ -661,6 +678,26 @@
     "chatSafetyAdvisorLabel": "Safety advisor",
     "chatSafetyAdvisorBody": "Make sure you follow the safety guidelines for this meeting.",
     "chatOfferActionError": "Couldn't update the offer. Try again.",
+    "chatOfferCardTitle": "Price offer",
+    "chatOfferCardFrom": "for {bookTitle}",
+    "@chatOfferCardFrom": {
+        "placeholders": {
+            "bookTitle": {
+                "type": "String"
+            }
+        }
+    },
+    "chatExchangeCardTitle": "Exchange request",
+    "readyYouGive": "You give",
+    "readyYouReceive": "You receive",
+    "readyFromCity": "from {city}",
+    "@readyFromCity": {
+        "placeholders": {
+            "city": {
+                "type": "String"
+            }
+        }
+    },
     "chatOfferCardLabel": "{amount} lei · {bookTitle}",
     "@chatOfferCardLabel": {
         "placeholders": {
@@ -707,6 +744,22 @@
     },
     "wishlistEmpty": "You haven't added any books to your wishlist yet.",
     "wishlistLoadError": "We couldn't load your wishlist.",
+    "wishlistSectionPersonal": "Personal Choices ({count})",
+    "@wishlistSectionPersonal": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "wishlistSectionBookMatch": "Book Matches ({count})",
+    "@wishlistSectionBookMatch": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "notificationsTitle": "Notifications",
     "notificationsMarkAllRead": "Mark all as read",
     "notificationsEmpty": "You don't have any notifications.",
@@ -742,45 +795,6 @@
     "timeMinutesAgo": "{minutes} min ago",
     "timeHoursAgo": "{hours}h ago",
     "timeDaysAgo": "{days}d ago",
-    "safetyCenterTitle": "Safety center",
-    "safetyCenterIntro": "A few simple rules to keep exchanges on ShelfShare pleasant and safe.",
-    "safetyTip1Title": "Meet during the day",
-    "safetyTip1Desc": "Schedule the exchange for a time with natural daylight, ideally morning or afternoon.",
-    "safetyTip2Title": "Choose a public place",
-    "safetyTip2Desc": "A café, bookstore, or mall is safer than someone's personal address.",
-    "safetyTip3Title": "Prefer locations with video surveillance",
-    "safetyTip3Desc": "Areas with security cameras discourage unpleasant behavior.",
-    "safetyTip4Title": "Don't share personal data",
-    "safetyTip4Desc": "You don't need to give your home address, ID number, or other sensitive data to make an exchange.",
-    "safetyTip5Title": "Check the rating and trust score",
-    "safetyTip5Desc": "A good history of completed exchanges is a good sign before meeting someone.",
-    "safetyTip6Title": "A real profile photo builds trust",
-    "safetyTip6Desc": "Profiles with a photo and a complete bio inspire more confidence in other users.",
-    "safetyTip7Title": "Check the book's condition before the exchange",
-    "safetyTip7Desc": "Compare the book to the listing's description before confirming the exchange as completed.",
-    "safetyTip8Title": "Report any suspicious behavior",
-    "safetyTip8Desc": "You can report or block a user directly from their profile or from the conversation.",
-    "helpCenterTitle": "FAQ",
-    "helpGroupSwapping": "Swapping",
-    "helpGroupPricing": "Pricing",
-    "helpGroupSafety": "Trust and safety",
-    "helpStillStuck": "Still stuck?",
-    "helpContactModerator": "Contact a moderator",
-    "helpFaq1Question": "How does a book exchange work?",
-    "helpFaq1Answer": "You request a book from someone else's listing (you can also offer a book in exchange), the owner accepts or declines, then you arrange a meeting via chat. After you complete the exchange in person, either of you marks the exchange as completed.",
-    "helpFaq2Question": "What is the Trust Score?",
-    "helpFaq2Answer": "A 0-100 indicator calculated automatically from in-app activity: account age, verified email, how many exchanges you've completed, your rating, how often you respond, and how rarely you cancel requests. It's not an identity check, just a behavior signal.",
-    "helpFaq3Question": "How is the \"bookstore\" price calculated?",
-    "helpFaq3Answer": "When you add a book with an ISBN, we try to find the list price on Google Books. Coverage is partial - not all books have a price available there, especially older or Romanian editions.",
-    "helpFaq4Question": "What does \"Fixed price, non-negotiable\" mean?",
-    "helpFaq4Answer": "If the seller checks this, buyers can no longer send price offers - the book can only be bought at the listed price.",
-    "helpFaq5Question": "How do I report or block a user?",
-    "helpFaq5Answer": "From the menu in the top-right corner of a conversation, or from a listing's detail page (the flag icon). Blocking stops messages in both directions.",
-    "helpFaq6Question": "What happens to the book after I sell it or give it in exchange?",
-    "helpFaq6Answer": "The listing becomes permanently unavailable. If the person who received it wants to list it again, they can do so from the Exchanges/Offers screen (\"Add to your library\") - the book's history stays traceable on its detail page, with photos from each owner.",
-    "helpFaq7Question": "Why doesn't a book show up in Categories or Similar Books?",
-    "helpFaq7Answer": "A book's genre comes from Open Library or Google Books when it's added - some books don't have a genre filled in on those external sources, especially less popular editions.",
-    "helpCenterFooter": "Didn't find your answer? You can report an issue directly from the conversation with the user involved.",
     "adminLoadError": "We couldn't load the admin data.",
     "adminStatsTitle": "Statistics",
     "adminMarketplaceStatsTitle": "Marketplace statistics",
@@ -930,6 +944,19 @@
     "discoverPopularAuthors": "Popular authors",
     "discoverQuickFilters": "Quick filters",
     "discoverNearYou": "In your city",
+    "discoverFilterButton": "Filter",
+    "discoverSortButton": "Sort",
+    "discoverSortTitle": "Sorting",
+    "discoverFilterCategory": "Category",
+    "discoverFilterListingType": "Listing type",
+    "discoverFilterAll": "All",
+    "discoverSortGenre": "Preferred genre",
+    "discoverSortDate": "By date",
+    "discoverSortNewest": "Newest first",
+    "discoverSortOldest": "Oldest first",
+    "discoverSortNearest": "Nearest first",
+    "discoverSortApply": "Sort",
+    "discoverScoreBadgeTooltip": "14-day interest score (admins only)",
     "inventorySelectAll": "Select all",
     "myShelfShare": "Share",
     "inventoryMarkAvailable": "Mark available",
@@ -964,10 +991,13 @@
     "shareSectionListing": "The listing",
     "shareListingMode": "Listing mode",
     "shareDescriptionCharsLeft": "{n} characters left",
-    "shareListingModeSwap": "Normal swap",
-    "shareListingModeSale": "For sale",
+    "shareListingModeSwap": "Swap",
+    "shareListingModeSale": "Sale",
     "shareListingModeDonation": "Donation",
     "shareTitleAutocomplete": "Start typing to see suggestions",
+    "shareTitleSearching": "Searching for the title...",
+    "shareSwapAlsoSell": "Or sell for",
+    "shareSwapAlsoSellPrice": "Sale price",
     "shareGenreHint": "Genre",
     "shareAddPhotos": "Add photos",
     "preRegisterAlreadyLoggedIn": "We'll use your account email if you leave this blank",
@@ -998,13 +1028,6 @@
     "profileKeepAlive": "Keep the app alive",
     "profileKeepAliveSubtitle": "ShelfShare runs on a home server. A coffee helps.",
     "aboutDevTitle": "About dev",
-    "aboutDevHeadline": "The person behind ShelfShare",
-    "aboutDevBodyWho": "I'm a small developer working at an IT company in Transylvania.",
-    "aboutDevBodyWhy": "I made this app because I used to use an app just like this before, but it disappeared because… reasons? So I made one myself.",
-    "aboutDevBodyHosting": "Please don't get upset about the possible hickups of the app, because everything is hosted by myself on my small home server ☹️",
-    "aboutDevSupportTitle": "Keep the app alive",
-    "aboutDevSupportSubtitle": "The server, the domain and the backups come out of my own pocket. Anything you chip in keeps the app running.",
-    "aboutDevCoffeeButton": "Buy me a coffee",
     "aboutDevOpenError": "Couldn't open the link. Please try again.",
     "loginMadeWithLove": "Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺",
     "homeRecommendedTitle": "Recommended for you",
@@ -1046,6 +1069,8 @@
     "shortcutTrash": "Trash",
     "shareCoverSelected": "Book cover",
     "shareCoverRecommended": "Recommended covers",
+    "shareCoverChooseOne": "Choose a cover",
+    "shareCoverRemove": "Remove",
     "shareMainPhotoHint": "Tap the star to mark the main photo (shown in the feed).",
     "chatOfferCounterAction": "Counter-offer",
     "chatOfferCounterTitle": "Send a counter-offer",
@@ -1149,6 +1174,15 @@
     "greetMottoMoreSustainable": "Swapping books is more sustainable than buying new ones.",
     "greetMottoEuropeanMovement": "You're part of a European movement for more sustainable consumption. 🇪🇺",
     "greetMottoCirculating": "Fewer new books printed, more stories circulating.",
+    "adminFeatureAccessTitle": "Feature access",
+    "adminFeatureAccessDesc": "Give hand-picked users early access to features that are still rolling out.",
+    "adminFeatureAccessSearchHint": "Search by name or email",
+    "adminFeatureAccessSearchEmpty": "Search for a user to see their access.",
+    "adminFeatureAccessNoResults": "No users found.",
+    "adminFeatureAccessApply": "Apply",
+    "adminFeatureAccessSaved": "Access updated.",
+    "adminFeatureAccessSaveError": "Couldn't save the access.",
+    "featureFlagAdvancedStatistics": "Advanced statistics",
     "bookMatchTitle": "Book Match",
     "bookMatchEntryTooltip": "Book Match",
     "bookMatchYesTooltip": "I like it",
@@ -1178,21 +1212,21 @@
             }
         }
     },
+
     "onboardingFlowStepLabel": "Step {step} of {total}",
     "@onboardingFlowStepLabel": {
         "placeholders": {
-            "step": {
-                "type": "int"
-            },
-            "total": {
-                "type": "int"
-            }
+            "step": { "type": "int" },
+            "total": { "type": "int" }
         }
     },
     "onboardingFlowSkip": "Skip",
+    "onboardingFlowMoveForward": "Move forward",
     "onboardingFlowBackTooltip": "Back",
+
     "onboardingFlowGenresTitle": "What do you like to read?",
     "onboardingFlowGenresSubtitle": "Pick a few genres - we'll use them to line up your first book matches.",
+
     "onboardingFlowFrequencyTitle": "How often do you read?",
     "onboardingFlowFrequencySubtitle": "Helps us tune how often we show you new books.",
     "onboardingFlowFrequencyLowTitle": "Occasionally",
@@ -1201,9 +1235,11 @@
     "onboardingFlowFrequencyMidDesc": "About one book a week",
     "onboardingFlowFrequencyHighTitle": "A lot",
     "onboardingFlowFrequencyHighDesc": "Several books a week",
+
     "onboardingFlowLocationTitle": "Where can we find you?",
     "onboardingFlowLocationSubtitle": "We use your location to show you realistic, nearby exchanges.",
     "onboardingFlowLanguagesLabel": "Languages you read in",
+
     "onboardingFlowPurposeTitle": "What are you here for?",
     "onboardingFlowPurposeSubtitle": "Helps us personalize your home page.",
     "onboardingFlowPurposeSwapTitle": "Swap books",
@@ -1214,14 +1250,24 @@
     "onboardingFlowPurposeDiscoverDesc": "I'm exploring recommendations, no swaps yet",
     "onboardingFlowPurposeAllTitle": "All of the above",
     "onboardingFlowPurposeAllDesc": "I'm here for everything",
+
     "onboardingFlowBookMatchTitle": "Let's see what you like",
     "onboardingFlowBookMatchSubtitle": "Swipe through a few books - it helps us prepare better recommendations from the start.",
+
     "onboardingFlowAddBooksTitle": "Put your first books on the shelf",
     "onboardingFlowAddBooksSubtitle": "Add 2-3 books you have at home - they'll show up right on your profile.",
     "onboardingFlowAddBooksCta": "Add a book",
     "onboardingFlowAddBooksCtaSubtitle": "Search a title or scan the barcode",
     "onboardingFlowAddBooksSkipNote": "You can skip this step and add books later, from My Shelf.",
+
     "onboardingFlowFinish": "Enter ShelfShare",
+    "onboardingFlowBookAdded": "Added: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": { "type": "String" }
+        }
+    },
+
     "genreFiction": "Fiction",
     "genreNonFiction": "Non-fiction",
     "genreClassic": "Classic",

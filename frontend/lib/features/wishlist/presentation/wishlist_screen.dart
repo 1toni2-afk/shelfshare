@@ -50,18 +50,7 @@ class WishlistScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
                       ),
                       const SizedBox(height: 16),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: kBookCardMaxWidth,
-                          mainAxisSpacing: kBookGridMainAxisSpacing,
-                          crossAxisSpacing: kBookGridCrossAxisSpacing,
-                          childAspectRatio: kBookCardAspectRatio,
-                        ),
-                        itemCount: items.length,
-                        itemBuilder: (context, index) => _WishlistCard(item: items[index]),
-                      ),
+                      ..._sections(context, items),
                     ],
                   ),
                 ),
@@ -93,6 +82,66 @@ class WishlistScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Wishlist-ul e împărțit în două secțiuni cu antet vizibil - „Alegerile
+  /// mele" (inima apăsată manual) și „Book Match" (venite din swipe) - ca
+  /// userul să nu confunde sugestiile acceptate cu propriile alegeri.
+  /// Ordinea e fixă, iar o secțiune goală dispare complet (antet inclus),
+  /// exact ca gruparea pe categorii din bibliotecă.
+  List<Widget> _sections(BuildContext context, List<WishlistItem> items) {
+    final l10n = context.l10n;
+    final bySource = <WishlistSource, List<WishlistItem>>{};
+    for (final item in items) {
+      (bySource[item.source] ??= []).add(item);
+    }
+    final nonEmpty = [
+      for (final source in WishlistSource.values)
+        if (bySource[source]?.isNotEmpty ?? false) source,
+    ];
+
+    String label(WishlistSource source, int count) => switch (source) {
+          WishlistSource.personal => l10n.wishlistSectionPersonal(count),
+          WishlistSource.bookMatch => l10n.wishlistSectionBookMatch(count),
+        };
+
+    return [
+      for (final source in nonEmpty) ...[
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(
+            label(source, bySource[source]!.length),
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(color: AppColors.mutedForeground),
+          ),
+        ),
+        _WishlistGrid(items: bySource[source]!),
+        if (source != nonEmpty.last) const SizedBox(height: 20),
+      ],
+    ];
+  }
+}
+
+class _WishlistGrid extends StatelessWidget {
+  const _WishlistGrid({required this.items});
+  final List<WishlistItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: kBookCardMaxWidth,
+        mainAxisSpacing: kBookGridMainAxisSpacing,
+        crossAxisSpacing: kBookGridCrossAxisSpacing,
+        childAspectRatio: kBookCardAspectRatio,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) => _WishlistCard(item: items[index]),
     );
   }
 }

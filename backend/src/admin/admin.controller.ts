@@ -1,9 +1,11 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -12,6 +14,8 @@ import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminAuditInterceptor } from './admin-audit.interceptor';
+import { SetFeatureFlagsDto } from './dto/set-feature-flags.dto';
+import { FEATURE_FLAG_KEYS } from '../common/constants/feature-flags';
 
 @UseGuards(JwtAuthGuard, AdminGuard)
 @UseInterceptors(AdminAuditInterceptor)
@@ -45,6 +49,29 @@ export class AdminController {
       limit ? parseInt(limit, 10) : undefined,
       offset ? parseInt(offset, 10) : undefined,
     );
+  }
+
+  @Get('users/search')
+  searchUsers(@Query('q') q?: string) {
+    return this.adminService.searchUsers(q ?? '');
+  }
+
+  @Get('feature-flags')
+  getFeatureFlagKeys() {
+    return { keys: FEATURE_FLAG_KEYS };
+  }
+
+  @Get('users/:id/feature-flags')
+  getUserFeatureFlags(@Param('id') id: string) {
+    return this.adminService.getUserFeatureFlags(id);
+  }
+
+  @Put('users/:id/feature-flags')
+  setUserFeatureFlags(
+    @Param('id') id: string,
+    @Body() dto: SetFeatureFlagsDto,
+  ) {
+    return this.adminService.setUserFeatureFlags(id, dto.flags);
   }
 
   @Post('users/:id/ban')

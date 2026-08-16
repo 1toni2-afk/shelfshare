@@ -37,8 +37,6 @@ class _RelistBookSheet extends ConsumerStatefulWidget {
 
 class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   final _priceController = TextEditingController();
-  final _reservePriceController = TextEditingController();
-  final _buyNowPriceController = TextEditingController();
   BookCondition _condition = BookCondition.buna;
   bool _isForSale = false;
   bool _isNegotiable = true;
@@ -52,8 +50,6 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   @override
   void dispose() {
     _priceController.dispose();
-    _reservePriceController.dispose();
-    _buyNowPriceController.dispose();
     super.dispose();
   }
 
@@ -79,13 +75,6 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
       );
       return;
     }
-    final reservePrice = _reservePriceController.text.trim().isEmpty
-        ? null
-        : double.tryParse(_reservePriceController.text.trim().replaceAll(',', '.'));
-    final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
-        ? null
-        : double.tryParse(_buyNowPriceController.text.trim().replaceAll(',', '.'));
-
     setState(() => _isSubmitting = true);
     try {
       final userBook = await ref.read(booksRepositoryProvider).relistBook(
@@ -109,8 +98,6 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
         await ref.read(auctionsRepositoryProvider).createAuction(
               userBook.id,
               startingPrice: salePrice!,
-              reservePrice: reservePrice,
-              buyNowPrice: buyNowPrice,
               durationHours: _auctionDurationHours,
             );
       }
@@ -201,26 +188,6 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(labelText: l10n.addBookAuctionStartingPrice, suffixText: 'lei'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _reservePriceController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: l10n.addBookAuctionReservePrice,
-                  helperText: l10n.addBookAuctionReservePriceHint,
-                  suffixText: 'lei',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _buyNowPriceController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: l10n.addBookAuctionBuyNowPrice,
-                  helperText: l10n.addBookAuctionBuyNowPriceHint,
-                  suffixText: 'lei',
-                ),
               ),
               const SizedBox(height: 12),
               Text(l10n.addBookAuctionDuration, style: Theme.of(context).textTheme.bodyMedium),

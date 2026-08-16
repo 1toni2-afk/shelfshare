@@ -1,18 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ExternalBookResult } from './types/external-book-result';
-
-/**
- * Gazde de pe care acceptăm să facem proxy la o copertă (vezi
- * `fetchCoverImage`) - o listă albă explicită, nu orice URL, ca endpoint-ul
- * să nu devină un SSRF/proxy general spre orice adresă internă.
- */
-const PROXYABLE_COVER_HOSTS = [
-  'books.google.com',
-  'books.googleusercontent.com',
-  'covers.openlibrary.org',
-];
 
 @Injectable()
 export class BookLookupService {
@@ -20,50 +9,10 @@ export class BookLookupService {
 
   constructor(private http: HttpService) {}
 
-  /**
-   * Coperțile de la Google Books nu trimit `Access-Control-Allow-Origin`
-   * (verificat manual - Open Library da, Google Books nu), iar pe Flutter Web
-   * randarea prin CanvasKit cere bytes-ii imaginii printr-un fetch supus CORS,
-   * nu un simplu `<img>` - fără header-ul de CORS, browserul blochează
-   * răspunsul și coperta pică pe placeholder-ul generat din titlu, deși URL-ul
-   * era corect și imaginea exista. Proxy-ul ăsta o servește de pe domeniul
-   * nostru (unde CORS-ul global al API-ului deja se aplică), ocolind
-   * problema fără să depindem de header-ele terților.
-   *
-   * Lista albă de gazde (PROXYABLE_COVER_HOSTS) previne folosirea
-   * endpoint-ului ca proxy general către orice URL (SSRF).
-   */
-  async fetchCoverImage(
-    url: string,
-  ): Promise<{ data: Buffer; contentType: string } | null> {
-    let parsed: URL;
-    try {
-      parsed = new URL(url);
-    } catch {
-      throw new BadRequestException('URL invalid');
-    }
-    if (
-      parsed.protocol !== 'https:' ||
-      !PROXYABLE_COVER_HOSTS.includes(parsed.hostname)
-    ) {
-      throw new BadRequestException('Gazdă nepermisă pentru proxy de copertă');
-    }
-
-    try {
-      const response = await firstValueFrom(
-        this.http.get(parsed.toString(), {
-          responseType: 'arraybuffer',
-          timeout: 8000,
-          maxContentLength: 8 * 1024 * 1024,
-        }),
-      );
-      const contentType = String(response.headers['content-type'] ?? '');
-      if (!contentType.startsWith('image/')) return null;
-      return { data: Buffer.from(response.data as ArrayBuffer), contentType };
-    } catch (error) {
-      this.logger.warn(`fetchCoverImage eșuat pentru ${url}: ${error}`);
-      return null;
-    }
+  /** Adaugă cheia Google Books API la un URL, dacă e setată în mediu (GOOGLE_BOOKS_API_KEY). */
+  private withGoogleBooksKey(url: string): string {
+    const key = process.env.GOOGLE_BOOKS_API_KEY;
+    return key ? `${url}&key=${encodeURIComponent(key)}` : url;
   }
 
   /**
@@ -72,40 +21,120 @@ export class BookLookupService {
    * "nyt:series_books=2011-12-18" - luând orbește primul element din
    * `subjects`/`subject` ajungeai des cu eticheta tehnică, nu cu un gen.
    * Acestea folosesc mereu convenția "prefix:valoare", deci le filtrăm.
+   *
+   * Păstrăm toată lista curățată, nu doar primul element (acela rămâne
+   * `genre`): restul sunt sugestii de taguri în ecranul „Adaugă carte".
+   * Tăiem și duplicatele (Open Library repetă des același subiect cu altă
+   * capitalizare) și etichetele absurd de lungi (unele intrări au fraze
+   * întregi acolo), apoi limităm la 20 - cărțile populare au sute de subiecte.
    */
-  private pickGenre(subjects: string[] | undefined): string | null {
-    return subjects?.find((s) => !s.includes(':')) ?? null;
+  private cleanSubjects(subjects: string[] | undefined | null): string[] {
+    if (!subjects) return [];
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const raw of subjects) {
+      const subject = typeof raw === 'string' ? raw.trim() : '';
+      if (!subject || subject.includes(':')) continue;
+      if (subject.length > 60) continue;
+      const key = subject.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(subject);
+      if (out.length >= BookLookupService._maxSubjects) break;
+    }
+    return out;
   }
 
+  private static readonly _maxSubjects = 20;
+
   /**
-   * Caută o carte după ISBN. Încearcă Open Library întâi; dacă nu găsește
-   * nimic sau eșuează, încearcă Google Books.
+   * Caută o carte după ISBN. Încearcă Google Books întâi (principal); dacă nu
+   * găsește nimic sau eșuează, cade pe Open Library (fallback).
    *
    * Chiar dacă primul provider răspunde, completăm coperta din celălalt când
-   * lipsește: înainte, un rezultat Open Library fără copertă era acceptat ca
-   * final și Google Books nu mai era întrebat niciodată, deși de multe ori are
+   * lipsește: înainte, un rezultat fără copertă era acceptat ca final și
+   * celălalt provider nu mai era întrebat niciodată, deși de multe ori are
    * imaginea. De aici veneau anunțurile fără copertă.
    */
   async lookupByIsbn(isbn: string): Promise<ExternalBookResult | null> {
     const cleanIsbn = isbn.replace(/[-\s]/g, '');
 
-    const fromOpenLibrary = await this.tryOpenLibraryByIsbn(cleanIsbn);
-    if (fromOpenLibrary) {
-      return this.withCoverFallback(fromOpenLibrary, cleanIsbn);
+    const fromGoogle = await this.tryGoogleBooksByIsbn(cleanIsbn);
+    if (fromGoogle) {
+      return this.withCoverFallback(fromGoogle, cleanIsbn);
     }
 
-    const fromGoogle = await this.tryGoogleBooksByIsbn(cleanIsbn);
-    return fromGoogle ? this.withCoverFallback(fromGoogle, cleanIsbn) : null;
+    const fromOpenLibrary = await this.tryOpenLibraryByIsbn(cleanIsbn);
+    return fromOpenLibrary
+      ? this.withCoverFallback(fromOpenLibrary, cleanIsbn)
+      : null;
+  }
+
+  /**
+   * Detaliile complete pentru O SINGURĂ carte, aleasă explicit de user din
+   * autocomplete. Aici plătim conștient latența pe care `searchByTitle` o
+   * evită (descriere + subiecte + completare din celălalt provider), fiindcă
+   * se întâmplă o singură dată, la selecție - NU pe fiecare tastă.
+   *
+   * Ordinea: ISBN dacă rezultatul ales are unul (cel mai precis), altfel
+   * căutare pe titlu + autor și luăm prima potrivire. La final completăm
+   * descrierea/subiectele lipsă din Google Books - Open Library are des
+   * subiecte bogate dar `notes` gol, Google exact invers.
+   */
+  async lookupFullDetails(params: {
+    isbn?: string | null;
+    title?: string | null;
+    author?: string | null;
+  }): Promise<ExternalBookResult | null> {
+    const isbn = params.isbn?.replace(/[-\s]/g, '').trim() || null;
+    const title = params.title?.trim() || null;
+    const author = params.author?.trim() || null;
+    if (!isbn && !title) return null;
+
+    const titleQuery = author && title ? `${title} ${author}` : title;
+
+    let base = isbn ? await this.lookupByIsbn(isbn) : null;
+    if (!base && titleQuery) {
+      // `searchByTitle` e deja cache-uit 5 min, deci de obicei rezultatul
+      // e deja în memorie de la dropdown-ul de autocomplete.
+      const results = await this.searchByTitle(titleQuery);
+      base = results[0] ?? null;
+    }
+    if (!base) return null;
+
+    if (base.description && base.subjects.length > 0) return base;
+
+    const extra = await this.lookupComplementary(base.isbn ?? isbn, titleQuery);
+    if (!extra) return base;
+
+    return {
+      ...base,
+      description: base.description ?? extra.description,
+      subjects: base.subjects.length > 0 ? base.subjects : extra.subjects,
+      genre: base.genre ?? extra.genre,
+      coverUrl: base.coverUrl ?? extra.coverUrl,
+    };
+  }
+
+  /** O singură cerere Google Books pentru completarea unui rezultat parțial. */
+  private async lookupComplementary(
+    isbn: string | null,
+    titleQuery: string | null,
+  ): Promise<ExternalBookResult | null> {
+    if (isbn) return this.tryGoogleBooksByIsbn(isbn);
+    if (!titleQuery) return null;
+    const results = await this.tryGoogleBooksSearch(titleQuery);
+    return results[0] ?? null;
   }
 
   /**
    * Căutare după titlu/text liber - întoarce mai multe rezultate,
    * ca utilizatorul să aleagă ediția corectă.
    *
-   * Apelăm Open Library și Google Books în paralel: dacă Open Library
-   * răspunde cu rezultate, o folosim (are cover_i inclus, mai bogată pe
-   * clasici). Altfel folosim Google Books. Astfel, când Open Library e
-   * lentă/goală, nu mai plătim latența ei în serie.
+   * Apelăm Google Books și Open Library în paralel: Google Books e
+   * principalul - dacă răspunde cu rezultate, îl folosim. Altfel cădem pe
+   * Open Library (fallback). Astfel, când Google Books e lent/gol, nu mai
+   * plătim latența lui în serie.
    *
    * Rezultat cache-uit 5 min per query (LRU simplu) - autocomplete cu
    * aceleași litere nu re-apelează API-urile externe.
@@ -133,12 +162,12 @@ export class BookLookupService {
       return cached.results;
     }
 
-    const [fromOpenLibrary, fromGoogle] = await Promise.all([
-      this.tryOpenLibrarySearch(query),
+    const [fromGoogle, fromOpenLibrary] = await Promise.all([
       this.tryGoogleBooksSearch(query),
+      this.tryOpenLibrarySearch(query),
     ]);
     const results = this.preferNewestEditions(
-      fromOpenLibrary.length > 0 ? fromOpenLibrary : fromGoogle,
+      fromGoogle.length > 0 ? fromGoogle : fromOpenLibrary,
     );
 
     const finalResults = skip
@@ -284,7 +313,9 @@ export class BookLookupService {
         volumeInfo?: { imageLinks?: { thumbnail?: string } };
       };
 
-      const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+      const url = this.withGoogleBooksKey(
+        `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`,
+      );
       const { data } = await firstValueFrom(
         // Timeout scurt: e doar completare de copertă, nu vrem să blocheze
         // până la timeout-ul global de 8s dacă Google e lent.
@@ -321,7 +352,6 @@ export class BookLookupService {
       type OpenLibraryBook = {
         title?: string;
         authors?: { name: string }[];
-        notes?: string | { value?: string };
         cover?: { large?: string; medium?: string };
         publishers?: { name: string }[];
         publish_date?: string;
@@ -338,20 +368,26 @@ export class BookLookupService {
 
       if (!book) return null;
 
+      const subjects = this.cleanSubjects(book.subjects?.map((s) => s.name));
+
       return {
         isbn,
         title: book.title ?? 'Titlu necunoscut',
         author: book.authors?.map((a) => a.name).join(', ') ?? null,
-        description:
-          typeof book.notes === 'string'
-            ? book.notes
-            : (book.notes?.value ?? null),
+        // `notes` (metadate de catalogare gen "Source title: X", "Includes
+        // bibliographical references and index.") NU e o descriere a cărții -
+        // era mapat greșit aici înainte, apărând ca descriere reală în
+        // aplicație. jscmd=data nu întoarce descrierea propriu-zisă a lucrării
+        // (aia stă pe /works/{key}.json) - lăsăm null, iar `lookupFullDetails`
+        // completează automat din Google Books (vezi merge-ul de mai jos).
+        description: null,
         coverUrl: book.cover?.large ?? book.cover?.medium ?? null,
         publisher: book.publishers?.[0]?.name ?? null,
         publishedYear: this.extractYear(book.publish_date),
         pageCount: book.number_of_pages ?? null,
         language: book.languages?.[0]?.key?.replace('/languages/', '') ?? null,
-        genre: this.pickGenre(book.subjects?.map((s) => s.name)),
+        genre: subjects[0] ?? null,
+        subjects,
         source: 'open_library',
       };
     } catch (error) {
@@ -387,21 +423,28 @@ export class BookLookupService {
         }),
       );
 
-      return (data.docs ?? []).map((doc): ExternalBookResult => ({
-        isbn: doc.isbn?.[0] ?? null,
-        title: doc.title ?? 'Titlu necunoscut',
-        author: doc.author_name?.join(', ') ?? null,
-        description: null, // nu vine în search.json, doar la lookup individual
-        coverUrl: doc.cover_i
-          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-          : null,
-        publisher: doc.publisher?.[0] ?? null,
-        publishedYear: doc.first_publish_year ?? null,
-        pageCount: doc.number_of_pages_median ?? null,
-        language: doc.language?.[0] ?? null,
-        genre: this.pickGenre(doc.subject),
-        source: 'open_library',
-      }));
+      return (data.docs ?? []).map((doc): ExternalBookResult => {
+        // `subject` vine deja în search.json (îl cerem în `fields`), deci
+        // sugestiile de taguri nu costă nicio cerere în plus pe calea de
+        // autocomplete.
+        const subjects = this.cleanSubjects(doc.subject);
+        return {
+          isbn: doc.isbn?.[0] ?? null,
+          title: doc.title ?? 'Titlu necunoscut',
+          author: doc.author_name?.join(', ') ?? null,
+          description: null, // nu vine în search.json, doar la lookup individual
+          coverUrl: doc.cover_i
+            ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+            : null,
+          publisher: doc.publisher?.[0] ?? null,
+          publishedYear: doc.first_publish_year ?? null,
+          pageCount: doc.number_of_pages_median ?? null,
+          language: doc.language?.[0] ?? null,
+          genre: subjects[0] ?? null,
+          subjects,
+          source: 'open_library',
+        };
+      });
     } catch (error) {
       this.logger.warn(`Open Library search eșuat pentru "${query}": ${error}`);
       return [];
@@ -436,7 +479,9 @@ export class BookLookupService {
         };
       };
 
-      const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`;
+      const url = this.withGoogleBooksKey(
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`,
+      );
       const { data } = await firstValueFrom(
         this.http.get<{ items?: GoogleVolume[] }>(url, { timeout: 4000 }),
       );
@@ -449,6 +494,11 @@ export class BookLookupService {
         const isbn10 = info.industryIdentifiers?.find(
           (id) => id.type === 'ISBN_10',
         )?.identifier;
+        // `categories` vine deja în răspunsul de listă, deci e gratis și pe
+        // calea de autocomplete. Sunt etichete BISAC largi („Fiction /
+        // Fantasy / General"), mai slabe ca taguri decât subiectele Open
+        // Library - le trimitem oricum, clientul decide ce afișează.
+        const subjects = this.cleanSubjects(info.categories);
 
         return {
           isbn: isbn13 ?? isbn10 ?? null,
@@ -461,7 +511,8 @@ export class BookLookupService {
           publishedYear: this.extractYear(info.publishedDate),
           pageCount: info.pageCount ?? null,
           language: info.language ?? null,
-          genre: this.pickGenre(info.categories),
+          genre: subjects[0] ?? null,
+          subjects,
           source: 'google_books',
         };
       });
@@ -486,7 +537,9 @@ export class BookLookupService {
         };
       };
 
-      const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+      const url = this.withGoogleBooksKey(
+        `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`,
+      );
       const { data } = await firstValueFrom(
         this.http.get<{ items?: GoogleVolume[] }>(url),
       );

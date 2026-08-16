@@ -41,14 +41,19 @@ export class SearchLibraryDto {
   @IsBooleanString()
   availableOnly?: string;
 
-  /** Tip de anunț - implicit arată swap+vânzare (comportamentul de dinainte); "auction" e singurul filtru nou. */
+  /**
+   * Tip de anunț - implicit arată swap+vânzare (comportamentul de dinainte).
+   * „donation" e o vânzare la preț 0 (vezi add_book_screen.dart: nu există
+   * coloană separată în DB), iar „sale" exclude explicit donațiile, altfel
+   * cele două filtre s-ar suprapune.
+   */
   @IsOptional()
-  @IsIn(['swap', 'sale', 'auction'])
-  listingType?: 'swap' | 'sale' | 'auction';
+  @IsIn(['swap', 'sale', 'auction', 'donation'])
+  listingType?: 'swap' | 'sale' | 'auction' | 'donation';
 
   @IsOptional()
-  @IsIn(['recent', 'mostViewed', 'distance'])
-  sort?: 'recent' | 'mostViewed' | 'distance';
+  @IsIn(['recent', 'oldest', 'mostViewed', 'distance'])
+  sort?: 'recent' | 'oldest' | 'mostViewed' | 'distance';
 
   /** Orașul utilizatorului care caută - folosit pentru calculul de distanță. */
   @IsOptional()

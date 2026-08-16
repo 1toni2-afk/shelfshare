@@ -7,12 +7,14 @@ import { StorageModule } from '../storage/storage.module';
 import { WishlistModule } from '../wishlist/wishlist.module';
 import { FollowModule } from '../follow/follow.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ListingScoreModule } from './listing-score.module';
 
 @Module({
   imports: [
     HttpModule.register({ timeout: 8000 }),
     StorageModule,
     WishlistModule,
+    ListingScoreModule,
     FollowModule,
     NotificationsModule,
   ],

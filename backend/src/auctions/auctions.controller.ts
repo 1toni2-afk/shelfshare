@@ -68,14 +68,6 @@ export class AuctionsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('auctions/:id/buy-now')
-  @HttpCode(HttpStatus.OK)
-  buyNow(@Req() req: Request, @Param('id') id: string) {
-    const { userId } = req.user as AuthenticatedUser;
-    return this.auctionsService.buyNow(userId!, id);
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Post('auctions/:id/watch')
   @HttpCode(HttpStatus.OK)
   watch(@Req() req: Request, @Param('id') id: string) {

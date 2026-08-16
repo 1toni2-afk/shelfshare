@@ -97,24 +97,6 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     }
   }
 
-  Future<void> _buyNow() async {
-    setState(() => _isActing = true);
-    try {
-      final updated = await ref.read(auctionsRepositoryProvider).buyNow(widget.auctionId);
-      if (mounted) {
-        setState(() => _auction = updated);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(context.l10n.auctionBoughtNow)));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_errorMessage(e))));
-      }
-    } finally {
-      if (mounted) setState(() => _isActing = false);
-    }
-  }
-
   Future<void> _toggleWatch() async {
     final auction = _auction;
     if (auction == null) return;
@@ -261,15 +243,6 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
                     ),
                   ],
                 ),
-                if (auction.reservePrice != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    auction.reserveMet ? l10n.auctionReserveMet : l10n.auctionReserveNotMet,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: auction.reserveMet ? AppColors.success : AppColors.mutedForeground,
-                        ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -281,7 +254,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                auction.highestBidder != null && auction.reserveMet
+                auction.highestBidder != null
                     ? l10n.auctionEndedWithWinner
                     : l10n.auctionEndedNoWinner,
               ),
@@ -309,13 +282,6 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
               ),
             ],
           ),
-          if (auction.canBuyNow && auction.buyNowPrice != null) ...[
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: _isActing ? null : _buyNow,
-              child: Text(l10n.auctionBuyNowFor(auction.buyNowPrice!.toStringAsFixed(0))),
-            ),
-          ],
         ],
         const SizedBox(height: 24),
         Text(l10n.auctionBidHistory, style: Theme.of(context).textTheme.titleMedium),

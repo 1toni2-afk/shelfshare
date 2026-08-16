@@ -1179,13 +1179,13 @@ abstract class AppLocalizations {
   /// No description provided for @profileMyBookshelf.
   ///
   /// In ro, this message translates to:
-  /// **'Raftul meu'**
+  /// **'Raftul meu de cărți'**
   String get profileMyBookshelf;
 
   /// No description provided for @bookshelfTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Raftul meu'**
+  /// **'Raftul meu de cărți'**
   String get bookshelfTitle;
 
   /// No description provided for @bookshelfTabReading.
@@ -2436,6 +2436,12 @@ abstract class AppLocalizations {
   /// **'Indisponibilă la schimb'**
   String get bookDetailUnavailableForExchange;
 
+  /// No description provided for @bookDetailRequestDonation.
+  ///
+  /// In ro, this message translates to:
+  /// **'Solicită donația'**
+  String get bookDetailRequestDonation;
+
   /// No description provided for @bookDetailMakeOffer.
   ///
   /// In ro, this message translates to:
@@ -2889,14 +2895,32 @@ abstract class AppLocalizations {
   /// No description provided for @readyMeetingAccept.
   ///
   /// In ro, this message translates to:
-  /// **'Confirmă ora'**
+  /// **'Confirmă'**
   String get readyMeetingAccept;
 
   /// No description provided for @readyMeetingDecline.
   ///
   /// In ro, this message translates to:
-  /// **'Refuză ora'**
+  /// **'Refuză'**
   String get readyMeetingDecline;
+
+  /// No description provided for @readyMeetingSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Stabiliți când și unde faceți schimbul'**
+  String get readyMeetingSubtitle;
+
+  /// No description provided for @readySafetySubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sfaturi pentru un schimb sigur'**
+  String get readySafetySubtitle;
+
+  /// No description provided for @readyContactSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Spune-i partenerului de schimb cum să te contacteze'**
+  String get readyContactSubtitle;
 
   /// No description provided for @readyContactTitle.
   ///
@@ -2913,14 +2937,50 @@ abstract class AppLocalizations {
   /// No description provided for @readyContactShare.
   ///
   /// In ro, this message translates to:
-  /// **'Trimite detaliile mele'**
+  /// **'Trimite numărul de telefon'**
   String get readyContactShare;
+
+  /// No description provided for @readyContactSkip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai bine nu'**
+  String get readyContactSkip;
+
+  /// No description provided for @readyContactEdit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează'**
+  String get readyContactEdit;
 
   /// No description provided for @readyContactShared.
   ///
   /// In ro, this message translates to:
   /// **'Ți-ai trimis detaliile de contact'**
   String get readyContactShared;
+
+  /// No description provided for @dealFinalisedBanner.
+  ///
+  /// In ro, this message translates to:
+  /// **'DEAL FINALISED'**
+  String get dealFinalisedBanner;
+
+  /// No description provided for @dealCancelledBanner.
+  ///
+  /// In ro, this message translates to:
+  /// **'DEAL CANCELLED'**
+  String get dealCancelledBanner;
+
+  /// No description provided for @dealCancelledByYouBanner.
+  ///
+  /// In ro, this message translates to:
+  /// **'ANULAT DE TINE'**
+  String get dealCancelledByYouBanner;
+
+  /// No description provided for @dealCancelledByOtherBanner.
+  ///
+  /// In ro, this message translates to:
+  /// **'ANULAT DE {name}'**
+  String dealCancelledByOtherBanner(String name);
 
   /// No description provided for @readyContactOtherPhone.
   ///
@@ -3462,6 +3522,42 @@ abstract class AppLocalizations {
   /// **'Nu am putut actualiza oferta. Încearcă din nou.'**
   String get chatOfferActionError;
 
+  /// No description provided for @chatOfferCardTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oferta de preț'**
+  String get chatOfferCardTitle;
+
+  /// No description provided for @chatOfferCardFrom.
+  ///
+  /// In ro, this message translates to:
+  /// **'de la {bookTitle}'**
+  String chatOfferCardFrom(String bookTitle);
+
+  /// No description provided for @chatExchangeCardTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cerere de schimb'**
+  String get chatExchangeCardTitle;
+
+  /// No description provided for @readyYouGive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Dai'**
+  String get readyYouGive;
+
+  /// No description provided for @readyYouReceive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Primești'**
+  String get readyYouReceive;
+
+  /// No description provided for @readyFromCity.
+  ///
+  /// In ro, this message translates to:
+  /// **'din {city}'**
+  String readyFromCity(String city);
+
   /// No description provided for @chatOfferCardLabel.
   ///
   /// In ro, this message translates to:
@@ -3533,6 +3629,18 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nu am putut încărca lista de dorințe.'**
   String get wishlistLoadError;
+
+  /// No description provided for @wishlistSectionPersonal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alegerile mele ({count})'**
+  String wishlistSectionPersonal(int count);
+
+  /// No description provided for @wishlistSectionBookMatch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Book Match ({count})'**
+  String wishlistSectionBookMatch(int count);
 
   /// No description provided for @notificationsTitle.
   ///
@@ -3659,240 +3767,6 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'acum {days} zile'**
   String timeDaysAgo(int days);
-
-  /// No description provided for @safetyCenterTitle.
-  ///
-  /// In ro, this message translates to:
-  /// **'Centru de siguranță'**
-  String get safetyCenterTitle;
-
-  /// No description provided for @safetyCenterIntro.
-  ///
-  /// In ro, this message translates to:
-  /// **'Câteva reguli simple ca schimburile prin ShelfShare să fie plăcute și sigure.'**
-  String get safetyCenterIntro;
-
-  /// No description provided for @safetyTip1Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Întâlnește-te ziua'**
-  String get safetyTip1Title;
-
-  /// No description provided for @safetyTip1Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Programează schimbul într-un interval orar cu lumină naturală, ideal dimineața sau după-amiaza.'**
-  String get safetyTip1Desc;
-
-  /// No description provided for @safetyTip2Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Alege un loc public'**
-  String get safetyTip2Title;
-
-  /// No description provided for @safetyTip2Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'O cafenea, o librărie sau un mall sunt variante mai sigure decât adresa personală a cuiva.'**
-  String get safetyTip2Desc;
-
-  /// No description provided for @safetyTip3Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Preferă locații cu supraveghere video'**
-  String get safetyTip3Title;
-
-  /// No description provided for @safetyTip3Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Zonele cu camere de securitate descurajează comportamentul neplăcut.'**
-  String get safetyTip3Desc;
-
-  /// No description provided for @safetyTip4Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Nu distribui date personale'**
-  String get safetyTip4Title;
-
-  /// No description provided for @safetyTip4Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Nu ai nevoie să dai adresa de acasă, CNP sau alte date sensibile ca să faci un schimb.'**
-  String get safetyTip4Desc;
-
-  /// No description provided for @safetyTip5Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Verifică rating-ul și scorul de încredere'**
-  String get safetyTip5Title;
-
-  /// No description provided for @safetyTip5Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Un istoric bun de schimburi finalizate e un semn bun înainte să te întâlnești cu cineva.'**
-  String get safetyTip5Desc;
-
-  /// No description provided for @safetyTip6Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'O poză de profil reală crește încrederea'**
-  String get safetyTip6Title;
-
-  /// No description provided for @safetyTip6Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Profilurile cu poză și bio completă inspiră mai multă siguranță celorlalți utilizatori.'**
-  String get safetyTip6Desc;
-
-  /// No description provided for @safetyTip7Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Verifică starea cărții înainte de schimb'**
-  String get safetyTip7Title;
-
-  /// No description provided for @safetyTip7Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Compară cartea cu descrierea din anunț înainte să confirmi schimbul ca finalizat.'**
-  String get safetyTip7Desc;
-
-  /// No description provided for @safetyTip8Title.
-  ///
-  /// In ro, this message translates to:
-  /// **'Raportează orice comportament suspect'**
-  String get safetyTip8Title;
-
-  /// No description provided for @safetyTip8Desc.
-  ///
-  /// In ro, this message translates to:
-  /// **'Poți raporta sau bloca un utilizator direct din profilul lui sau din conversație.'**
-  String get safetyTip8Desc;
-
-  /// No description provided for @helpCenterTitle.
-  ///
-  /// In ro, this message translates to:
-  /// **'Întrebări frecvente'**
-  String get helpCenterTitle;
-
-  /// No description provided for @helpGroupSwapping.
-  ///
-  /// In ro, this message translates to:
-  /// **'Schimburi'**
-  String get helpGroupSwapping;
-
-  /// No description provided for @helpGroupPricing.
-  ///
-  /// In ro, this message translates to:
-  /// **'Prețuri'**
-  String get helpGroupPricing;
-
-  /// No description provided for @helpGroupSafety.
-  ///
-  /// In ro, this message translates to:
-  /// **'Încredere și siguranță'**
-  String get helpGroupSafety;
-
-  /// No description provided for @helpStillStuck.
-  ///
-  /// In ro, this message translates to:
-  /// **'Nu ai găsit răspunsul?'**
-  String get helpStillStuck;
-
-  /// No description provided for @helpContactModerator.
-  ///
-  /// In ro, this message translates to:
-  /// **'Contactează un moderator'**
-  String get helpContactModerator;
-
-  /// No description provided for @helpFaq1Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'Cum funcționează un schimb de cărți?'**
-  String get helpFaq1Question;
-
-  /// No description provided for @helpFaq1Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat.'**
-  String get helpFaq1Answer;
-
-  /// No description provided for @helpFaq2Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'Ce e Scorul de încredere?'**
-  String get helpFaq2Question;
-
-  /// No description provided for @helpFaq2Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Un indicator 0-100 calculat automat din activitatea din aplicație: vechimea contului, email verificat, câte schimburi ai finalizat, rating-ul primit, cât de des răspunzi și cât de rar anulezi cereri. Nu e o verificare de identitate, doar un semnal de comportament.'**
-  String get helpFaq2Answer;
-
-  /// No description provided for @helpFaq3Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'Cum se calculează prețul „din librării”?'**
-  String get helpFaq3Question;
-
-  /// No description provided for @helpFaq3Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Când adaugi o carte cu ISBN, încercăm să găsim prețul de listă pe Google Books. Acoperirea e parțială - nu toate cărțile au preț disponibil acolo, mai ales edițiile mai vechi sau românești.'**
-  String get helpFaq3Answer;
-
-  /// No description provided for @helpFaq4Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'Ce înseamnă „Preț fix, nenegociabil”?'**
-  String get helpFaq4Question;
-
-  /// No description provided for @helpFaq4Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Dacă cel care vinde o carte bifează asta, cumpărătorii nu mai pot trimite oferte de preț - cartea se cumpără doar la prețul afișat.'**
-  String get helpFaq4Answer;
-
-  /// No description provided for @helpFaq5Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'Cum raportez sau blochez un utilizator?'**
-  String get helpFaq5Question;
-
-  /// No description provided for @helpFaq5Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Din meniul din colțul din dreapta sus al unei conversații, sau din pagina de detalii a unui anunț (iconița de steag). Blocarea oprește mesajele în ambele direcții.'**
-  String get helpFaq5Answer;
-
-  /// No description provided for @helpFaq6Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'Ce se întâmplă cu cartea după ce o vând sau o dau la schimb?'**
-  String get helpFaq6Question;
-
-  /// No description provided for @helpFaq6Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Anunțul devine indisponibil definitiv. Dacă persoana care a primit-o vrea să o listeze mai departe, poate face asta din ecranul de Schimburi/Oferte (\"Adaugă în biblioteca ta\") - istoricul cărții rămâne urmăribil pe pagina ei de detalii, cu poze puse de fiecare proprietar.'**
-  String get helpFaq6Answer;
-
-  /// No description provided for @helpFaq7Question.
-  ///
-  /// In ro, this message translates to:
-  /// **'De ce nu-mi apare o carte în Categorii sau la Cărți similare?'**
-  String get helpFaq7Question;
-
-  /// No description provided for @helpFaq7Answer.
-  ///
-  /// In ro, this message translates to:
-  /// **'Genul unei cărți vine din Open Library sau Google Books la adăugare - unele cărți nu au gen completat în sursele externe, mai ales edițiile mai puțin populare.'**
-  String get helpFaq7Answer;
-
-  /// No description provided for @helpCenterFooter.
-  ///
-  /// In ro, this message translates to:
-  /// **'Nu ai găsit răspunsul? Poți raporta o problemă direct din conversația cu utilizatorul implicat.'**
-  String get helpCenterFooter;
 
   /// No description provided for @adminLoadError.
   ///
@@ -4704,6 +4578,84 @@ abstract class AppLocalizations {
   /// **'În orașul tău'**
   String get discoverNearYou;
 
+  /// No description provided for @discoverFilterButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Filtrează'**
+  String get discoverFilterButton;
+
+  /// No description provided for @discoverSortButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sortează'**
+  String get discoverSortButton;
+
+  /// No description provided for @discoverSortTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sortare'**
+  String get discoverSortTitle;
+
+  /// No description provided for @discoverFilterCategory.
+  ///
+  /// In ro, this message translates to:
+  /// **'Categorie'**
+  String get discoverFilterCategory;
+
+  /// No description provided for @discoverFilterListingType.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tip de anunț'**
+  String get discoverFilterListingType;
+
+  /// No description provided for @discoverFilterAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate'**
+  String get discoverFilterAll;
+
+  /// No description provided for @discoverSortGenre.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gen prioritar'**
+  String get discoverSortGenre;
+
+  /// No description provided for @discoverSortDate.
+  ///
+  /// In ro, this message translates to:
+  /// **'După dată'**
+  String get discoverSortDate;
+
+  /// No description provided for @discoverSortNewest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai noi întâi'**
+  String get discoverSortNewest;
+
+  /// No description provided for @discoverSortOldest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai vechi întâi'**
+  String get discoverSortOldest;
+
+  /// No description provided for @discoverSortNearest.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai apropiate întâi'**
+  String get discoverSortNearest;
+
+  /// No description provided for @discoverSortApply.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sortează'**
+  String get discoverSortApply;
+
+  /// No description provided for @discoverScoreBadgeTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scor de interes pe 14 zile (vizibil doar adminilor)'**
+  String get discoverScoreBadgeTooltip;
+
   /// No description provided for @inventorySelectAll.
   ///
   /// In ro, this message translates to:
@@ -4911,7 +4863,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareListingModeSwap.
   ///
   /// In ro, this message translates to:
-  /// **'Schimb normal'**
+  /// **'Schimb'**
   String get shareListingModeSwap;
 
   /// No description provided for @shareListingModeSale.
@@ -4931,6 +4883,24 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Începe să scrii ca să vezi sugestii'**
   String get shareTitleAutocomplete;
+
+  /// No description provided for @shareTitleSearching.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se caută titlul...'**
+  String get shareTitleSearching;
+
+  /// No description provided for @shareSwapAlsoSell.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sau vinde cu'**
+  String get shareSwapAlsoSell;
+
+  /// No description provided for @shareSwapAlsoSellPrice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț de vânzare'**
+  String get shareSwapAlsoSellPrice;
 
   /// No description provided for @shareGenreHint.
   ///
@@ -5111,48 +5081,6 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'About dev'**
   String get aboutDevTitle;
-
-  /// No description provided for @aboutDevHeadline.
-  ///
-  /// In ro, this message translates to:
-  /// **'Omul din spatele ShelfShare'**
-  String get aboutDevHeadline;
-
-  /// No description provided for @aboutDevBodyWho.
-  ///
-  /// In ro, this message translates to:
-  /// **'Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.'**
-  String get aboutDevBodyWho;
-
-  /// No description provided for @aboutDevBodyWhy.
-  ///
-  /// In ro, this message translates to:
-  /// **'Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.'**
-  String get aboutDevBodyWhy;
-
-  /// No description provided for @aboutDevBodyHosting.
-  ///
-  /// In ro, this message translates to:
-  /// **'Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️'**
-  String get aboutDevBodyHosting;
-
-  /// No description provided for @aboutDevSupportTitle.
-  ///
-  /// In ro, this message translates to:
-  /// **'Keep the app alive'**
-  String get aboutDevSupportTitle;
-
-  /// No description provided for @aboutDevSupportSubtitle.
-  ///
-  /// In ro, this message translates to:
-  /// **'Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.'**
-  String get aboutDevSupportSubtitle;
-
-  /// No description provided for @aboutDevCoffeeButton.
-  ///
-  /// In ro, this message translates to:
-  /// **'Buy me a coffee'**
-  String get aboutDevCoffeeButton;
 
   /// No description provided for @aboutDevOpenError.
   ///
@@ -5399,6 +5327,18 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Coperte recomandate'**
   String get shareCoverRecommended;
+
+  /// No description provided for @shareCoverChooseOne.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege coperta'**
+  String get shareCoverChooseOne;
+
+  /// No description provided for @shareCoverRemove.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină'**
+  String get shareCoverRemove;
 
   /// No description provided for @shareMainPhotoHint.
   ///
@@ -6018,6 +5958,60 @@ abstract class AppLocalizations {
   /// **'Mai puține cărți noi tipărite, mai multe povești care circulă.'**
   String get greetMottoCirculating;
 
+  /// No description provided for @adminFeatureAccessTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acces la funcții'**
+  String get adminFeatureAccessTitle;
+
+  /// No description provided for @adminFeatureAccessDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acordă acces în avans la funcții aflate încă în lucru, pentru utilizatori aleși manual.'**
+  String get adminFeatureAccessDesc;
+
+  /// No description provided for @adminFeatureAccessSearchHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută după nume sau email'**
+  String get adminFeatureAccessSearchHint;
+
+  /// No description provided for @adminFeatureAccessSearchEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută un utilizator ca să îi vezi accesul.'**
+  String get adminFeatureAccessSearchEmpty;
+
+  /// No description provided for @adminFeatureAccessNoResults.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun utilizator găsit.'**
+  String get adminFeatureAccessNoResults;
+
+  /// No description provided for @adminFeatureAccessApply.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aplică'**
+  String get adminFeatureAccessApply;
+
+  /// No description provided for @adminFeatureAccessSaved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Accesul a fost actualizat.'**
+  String get adminFeatureAccessSaved;
+
+  /// No description provided for @adminFeatureAccessSaveError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva accesul.'**
+  String get adminFeatureAccessSaveError;
+
+  /// No description provided for @featureFlagAdvancedStatistics.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici avansate'**
+  String get featureFlagAdvancedStatistics;
+
   /// No description provided for @bookMatchTitle.
   ///
   /// In ro, this message translates to:
@@ -6161,6 +6155,12 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Sari peste'**
   String get onboardingFlowSkip;
+
+  /// No description provided for @onboardingFlowMoveForward.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mergi mai departe'**
+  String get onboardingFlowMoveForward;
 
   /// No description provided for @onboardingFlowBackTooltip.
   ///
@@ -6354,6 +6354,12 @@ abstract class AppLocalizations {
   /// **'Intră în ShelfShare'**
   String get onboardingFlowFinish;
 
+  /// No description provided for @onboardingFlowBookAdded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adăugată: {title}'**
+  String onboardingFlowBookAdded(String title);
+
   /// No description provided for @genreFiction.
   ///
   /// In ro, this message translates to:
@@ -6474,34 +6480,22 @@ abstract class AppLocalizations {
   /// **'Benzi desenate'**
   String get genreComics;
 
-  /// No description provided for @onboardingFlowMoveForward.
-  ///
-  /// In ro, this message translates to:
-  /// **'Mergi mai departe'**
-  String get onboardingFlowMoveForward;
-
-  /// No description provided for @onboardingFlowBookAdded.
-  ///
-  /// In ro, this message translates to:
-  /// **'Adăugată: {title}'**
-  String onboardingFlowBookAdded(String title);
-
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Thank You for using ShelfShare.ro 🇷🇴🇪🇺'**
+  /// **'Mulțumim că folosești ShelfShare.ro 🇷🇴🇪🇺'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeBullet1.
   ///
   /// In ro, this message translates to:
-  /// **'🌍 European product, self-hosted'**
+  /// **'🌍 Produs european, găzduit local (self-hosted)'**
   String get onboardingWelcomeBullet1;
 
   /// No description provided for @onboardingWelcomeBullet2.
   ///
   /// In ro, this message translates to:
-  /// **'🌳 Made to help the environment'**
+  /// **'🌳 Creat ca să ajute mediul'**
   String get onboardingWelcomeBullet2;
 
   /// No description provided for @onboardingWelcomeBullet3.
@@ -6513,7 +6507,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeBullet4.
   ///
   /// In ro, this message translates to:
-  /// **'🤝 It\'s not all about the reading, it\'s about sharing'**
+  /// **'🤝 Nu e doar despre citit, e despre împărtășit'**
   String get onboardingWelcomeBullet4;
 
   /// No description provided for @onboardingWelcomeSource.

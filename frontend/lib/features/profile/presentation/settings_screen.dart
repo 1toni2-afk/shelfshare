@@ -6,6 +6,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/locale/locale_controller.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../core/utils/support_pages.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/profile_qr_dialog.dart';
@@ -174,7 +175,7 @@ class _SettingsList extends ConsumerWidget {
 
                   // Donația mutată jos (Milestone 23) - simpatică, dar nu
                   // trebuie să fie primul lucru pe care-l vezi în Setări.
-                  _KeepAliveCard(onTap: () => context.push('/about-dev')),
+                  _KeepAliveCard(onTap: () => openSupportPage(context, '/about-dev')),
                   const SizedBox(height: 20),
 
                   _SettingsGroupLabel(l10n.profileGroupSupport),
@@ -183,15 +184,15 @@ class _SettingsList extends ConsumerWidget {
                       _SettingsTile(
                           icon: Icons.shield_outlined,
                           label: l10n.profileSafetyCenter,
-                          onTap: () => context.push('/safety-center')),
+                          onTap: () => openSupportPage(context, '/safety-center')),
                       _SettingsTile(
                           icon: Icons.help_outline,
                           label: l10n.profileHelpCenter,
-                          onTap: () => context.push('/help-center')),
+                          onTap: () => openSupportPage(context, '/help-center')),
                       _SettingsTile(
                           icon: Icons.person_outline,
                           label: l10n.aboutDevTitle,
-                          onTap: () => context.push('/about-dev')),
+                          onTap: () => openSupportPage(context, '/about-dev')),
                       _SettingsTile(
                           icon: Icons.feedback_outlined,
                           label: l10n.profileSendFeedback,

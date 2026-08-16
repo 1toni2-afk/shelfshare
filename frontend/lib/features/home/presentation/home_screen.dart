@@ -20,7 +20,9 @@ import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
 import '../../notifications/presentation/notification_routing.dart';
 import '../../exchanges/application/exchanges_controller.dart';
+import '../../offers/application/offers_controller.dart';
 import '../../../data/models/exchange_request.dart';
+import '../../../data/models/price_offer.dart';
 import '../application/home_controller.dart';
 
 /// Metricile grilei sunt aceleași ca ale delegate-ului (vezi [_BookSliverGrid]).
@@ -437,13 +439,21 @@ class _PendingSwapBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final exchanges = ref.watch(exchangesControllerProvider).value;
+    final offers = ref.watch(offersControllerProvider).value;
     final pending = exchanges?.received.where((e) => e.status == ExchangeStatus.pending).length ?? 0;
-    final ongoing = [
+    final ongoingExchanges = [
       ...?exchanges?.received.where((e) => e.status == ExchangeStatus.accepted),
       ...?exchanges?.sent.where((e) => e.status == ExchangeStatus.accepted),
     ];
+    // Vânzările cu bani acceptate trec prin același flow "în desfășurare" ca
+    // schimburile - vezi ready_to_sell_screen.dart.
+    final ongoingOffers = [
+      ...?offers?.received.where((o) => o.status == OfferStatus.accepted),
+      ...?offers?.sent.where((o) => o.status == OfferStatus.accepted),
+    ];
+    final ongoingCount = ongoingExchanges.length + ongoingOffers.length;
 
-    if (pending == 0 && ongoing.isEmpty) return const SizedBox.shrink();
+    if (pending == 0 && ongoingCount == 0) return const SizedBox.shrink();
 
     final screenWidth = MediaQuery.of(context).size.width;
     final side = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
@@ -459,7 +469,11 @@ class _PendingSwapBanner extends ConsumerWidget {
         : (
             Icons.handshake_outlined,
             l10n.homeOngoingExchangeBanner,
-            ongoing.length == 1 ? '/exchanges/${ongoing.first.id}/ready' : '/exchanges',
+            ongoingCount == 1
+                ? (ongoingExchanges.isNotEmpty
+                    ? '/exchanges/${ongoingExchanges.first.id}/ready'
+                    : '/offers/${ongoingOffers.first.id}/ready')
+                : '/exchanges',
           );
 
     return Padding(

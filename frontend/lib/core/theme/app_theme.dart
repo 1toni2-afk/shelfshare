@@ -130,10 +130,16 @@ class AppTheme {
         ),
         titleMedium: bodyFont.titleMedium?.copyWith(color: AppColors.foreground),
         titleSmall: bodyFont.titleSmall?.copyWith(color: AppColors.foreground),
-        bodyLarge: bodyFont.bodyLarge?.copyWith(color: AppColors.foreground),
+        // height: 1.2, nu valoarea GoogleFonts (~1.5, gândită pt paragrafe) -
+        // bodyLarge e stilul implicit al textului tastat în TextField, iar
+        // cu height 1.5 kutia de linie e mult mai înaltă decât glifele DM
+        // Sans, care oricum au ascent/descent asimetric - vizual textul părea
+        // împins spre baza pastilei, nu centrat. Kutie de linie mai strânsă =
+        // decalajul devine imperceptibil.
+        bodyLarge: bodyFont.bodyLarge?.copyWith(color: AppColors.foreground, height: 1.2),
         bodyMedium: bodyFont.bodyMedium?.copyWith(color: AppColors.foreground),
         bodySmall: bodyFont.bodySmall?.copyWith(color: AppColors.mutedForeground),
-        labelLarge: bodyFont.labelLarge?.copyWith(color: AppColors.foreground),
+        labelLarge: bodyFont.labelLarge?.copyWith(color: AppColors.foreground, height: 1.2),
         labelMedium: bodyFont.labelMedium?.copyWith(color: AppColors.mutedForeground),
         labelSmall: bodyFont.labelSmall?.copyWith(color: AppColors.mutedForeground),
       ),
@@ -185,6 +191,12 @@ class AppTheme {
         // interiorul câmpului și se ascunde imediat ce userul scrie, deci
         // câmpul are o singură geometrie, indiferent de stare.
         floatingLabelBehavior: FloatingLabelBehavior.never,
+        // Fără isDense, InputDecorator tot rezervă intern înălțime minimă
+        // pentru zona etichetei (ca și cum ar putea flota), chiar dacă
+        // eticheta e ascunsă în modul never - textul introdus apărea împins
+        // spre baza pastilei, cu gol vizibil deasupra. isDense elimină acea
+        // alocare, deci padding-ul simetric de mai jos chiar centrează textul.
+        isDense: true,
         // UnderlineInputBorder, nu OutlineInputBorder: chenarul e invizibil în
         // ambele cazuri, dar borderRadius păstrează forma rotunjită a
         // dreptunghiului colorat.

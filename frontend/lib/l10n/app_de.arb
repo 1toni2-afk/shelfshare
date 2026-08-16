@@ -1,4 +1,4 @@
-{
+﻿{
     "@@locale": "de",
     "navHome": "Start",
     "navSearch": "Entdecken",
@@ -451,6 +451,7 @@
     "bookDetailOwnerTitle": "Besitzer",
     "bookDetailPhotosTitle": "Fotos",
     "bookDetailRequestExchange": "Zum Tausch anfragen",
+    "bookDetailRequestDonation": "Spende anfragen",
     "bookDetailUnavailableForExchange": "Nicht verfügbar zum Tausch",
     "bookDetailMakeOffer": "Angebot machen",
     "bookDetailHistoryTitle": "Verlauf dieses Buches",
@@ -520,12 +521,28 @@
     "readyTitle": "Tausch vorbereiten",
     "readyMeetingAwaitingYou": "Die andere Partei hat ein Treffen vorgeschlagen",
     "readyMeetingProposedByMe": "Warte auf Bestätigung der anderen Partei",
-    "readyMeetingAccept": "Uhrzeit bestätigen",
-    "readyMeetingDecline": "Uhrzeit ablehnen",
+    "readyMeetingAccept": "Bestätigen",
+    "readyMeetingDecline": "Ablehnen",
+    "readyMeetingSubtitle": "Vereinbart, wann und wo ihr euch trefft",
+    "readySafetySubtitle": "Tipps für einen sicheren Austausch",
+    "readyContactSubtitle": "Lass deinen Tauschpartner wissen, wie er dich erreicht",
     "readyContactTitle": "Kontaktdaten",
     "readyContactPhoneLabel": "Telefon (optional)",
-    "readyContactShare": "Meine Daten senden",
+    "readyContactShare": "Telefonnummer senden",
+    "readyContactSkip": "Lieber nicht",
+    "readyContactEdit": "Bearbeiten",
     "readyContactShared": "Du hast deine Kontaktdaten gesendet",
+    "dealFinalisedBanner": "DEAL FINALISED",
+    "dealCancelledBanner": "DEAL CANCELLED",
+    "dealCancelledByYouBanner": "VON DIR STORNIERT",
+    "dealCancelledByOtherBanner": "STORNIERT VON {name}",
+    "@dealCancelledByOtherBanner": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
     "readyContactOtherPhone": "Telefon: {phone}",
     "@readyContactOtherPhone": {
         "placeholders": {
@@ -652,6 +669,26 @@
     "chatSafetyAdvisorLabel": "Sicherheitsberater",
     "chatSafetyAdvisorBody": "Achte darauf, die Sicherheitshinweise für dieses Treffen zu befolgen.",
     "chatOfferActionError": "Angebot konnte nicht aktualisiert werden. Versuche es erneut.",
+    "chatOfferCardTitle": "Preisangebot",
+    "chatOfferCardFrom": "für {bookTitle}",
+    "@chatOfferCardFrom": {
+        "placeholders": {
+            "bookTitle": {
+                "type": "String"
+            }
+        }
+    },
+    "chatExchangeCardTitle": "Tauschanfrage",
+    "readyYouGive": "Du gibst",
+    "readyYouReceive": "Du erhältst",
+    "readyFromCity": "aus {city}",
+    "@readyFromCity": {
+        "placeholders": {
+            "city": {
+                "type": "String"
+            }
+        }
+    },
     "chatOfferCardLabel": "{amount} Lei · {bookTitle}",
     "@chatOfferCardLabel": {
         "placeholders": {
@@ -698,6 +735,22 @@
     },
     "wishlistEmpty": "Du hast noch keine Bücher zu deiner Wunschliste hinzugefügt.",
     "wishlistLoadError": "Deine Wunschliste konnte nicht geladen werden.",
+    "wishlistSectionPersonal": "Meine Auswahl ({count})",
+    "@wishlistSectionPersonal": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "wishlistSectionBookMatch": "Book Matches ({count})",
+    "@wishlistSectionBookMatch": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "notificationsTitle": "Benachrichtigungen",
     "notificationsMarkAllRead": "Alle als gelesen markieren",
     "notificationsEmpty": "Du hast keine Benachrichtigungen.",
@@ -733,45 +786,6 @@
     "timeMinutesAgo": "vor {minutes} Min",
     "timeHoursAgo": "vor {hours} Std",
     "timeDaysAgo": "vor {days} Tagen",
-    "safetyCenterTitle": "Sicherheitscenter",
-    "safetyCenterIntro": "Ein paar einfache Regeln, damit Tausche auf ShelfShare angenehm und sicher bleiben.",
-    "safetyTip1Title": "Trefft euch tagsüber",
-    "safetyTip1Desc": "Plane den Tausch für eine Zeit mit natürlichem Tageslicht, idealerweise morgens oder nachmittags.",
-    "safetyTip2Title": "Wähle einen öffentlichen Ort",
-    "safetyTip2Desc": "Ein Café, eine Buchhandlung oder ein Einkaufszentrum sind sicherer als eine private Adresse.",
-    "safetyTip3Title": "Bevorzuge videoüberwachte Orte",
-    "safetyTip3Desc": "Bereiche mit Sicherheitskameras schrecken unangenehmes Verhalten ab.",
-    "safetyTip4Title": "Teile keine persönlichen Daten",
-    "safetyTip4Desc": "Du musst deine Heimatadresse, Ausweisnummer oder andere sensible Daten für einen Tausch nicht angeben.",
-    "safetyTip5Title": "Prüfe Bewertung und Vertrauens-Score",
-    "safetyTip5Desc": "Eine gute Historie abgeschlossener Tausche ist ein gutes Zeichen, bevor du dich mit jemandem triffst.",
-    "safetyTip6Title": "Ein echtes Profilfoto schafft Vertrauen",
-    "safetyTip6Desc": "Profile mit Foto und vollständiger Bio wirken auf andere Nutzer vertrauenswürdiger.",
-    "safetyTip7Title": "Prüfe den Zustand des Buches vor dem Tausch",
-    "safetyTip7Desc": "Vergleiche das Buch mit der Beschreibung der Anzeige, bevor du den Tausch als abgeschlossen bestätigst.",
-    "safetyTip8Title": "Melde jedes verdächtige Verhalten",
-    "safetyTip8Desc": "Du kannst einen Nutzer direkt über sein Profil oder aus der Unterhaltung heraus melden oder blockieren.",
-    "helpCenterTitle": "Häufige Fragen",
-    "helpGroupSwapping": "Tausch",
-    "helpGroupPricing": "Preise",
-    "helpGroupSafety": "Vertrauen und Sicherheit",
-    "helpStillStuck": "Immer noch nicht gefunden?",
-    "helpContactModerator": "Moderator kontaktieren",
-    "helpFaq1Question": "Wie funktioniert ein Büchertausch?",
-    "helpFaq1Answer": "Du fragst ein Buch aus der Anzeige einer anderen Person an (du kannst auch ein Buch im Tausch anbieten), der Besitzer nimmt an oder lehnt ab, dann vereinbart ihr ein Treffen per Chat. Nachdem ihr den Tausch persönlich abgeschlossen habt, markiert einer von euch den Tausch als abgeschlossen.",
-    "helpFaq2Question": "Was ist der Vertrauens-Score?",
-    "helpFaq2Answer": "Ein automatisch berechneter Indikator von 0-100 aus der App-Aktivität: Kontoalter, bestätigte E-Mail, Anzahl abgeschlossener Tausche, erhaltene Bewertung, wie oft du antwortest und wie selten du Anfragen stornierst. Es ist keine Identitätsprüfung, nur ein Verhaltenssignal.",
-    "helpFaq3Question": "Wie wird der „Buchhandelspreis” berechnet?",
-    "helpFaq3Answer": "Wenn du ein Buch mit ISBN hinzufügst, versuchen wir, den Listenpreis bei Google Books zu finden. Die Abdeckung ist teilweise - nicht alle Bücher haben dort einen verfügbaren Preis, besonders ältere oder rumänische Ausgaben.",
-    "helpFaq4Question": "Was bedeutet „Festpreis, nicht verhandelbar”?",
-    "helpFaq4Answer": "Wenn der Verkäufer dies markiert, können Käufer keine Preisangebote mehr senden - das Buch kann nur zum angegebenen Preis gekauft werden.",
-    "helpFaq5Question": "Wie melde oder blockiere ich einen Nutzer?",
-    "helpFaq5Answer": "Über das Menü oben rechts in einer Unterhaltung oder über die Detailseite einer Anzeige (Flaggen-Symbol). Blockieren stoppt Nachrichten in beide Richtungen.",
-    "helpFaq6Question": "Was passiert mit dem Buch, nachdem ich es verkauft oder getauscht habe?",
-    "helpFaq6Answer": "Die Anzeige wird dauerhaft nicht mehr verfügbar. Wenn die Person, die es erhalten hat, es erneut listen möchte, kann sie das über den Bereich Tausche/Angebote tun (\"Zu deiner Bibliothek hinzufügen\") - die Historie des Buches bleibt auf seiner Detailseite nachvollziehbar, mit Fotos von jedem Besitzer.",
-    "helpFaq7Question": "Warum erscheint ein Buch nicht in Kategorien oder bei Ähnlichen Büchern?",
-    "helpFaq7Answer": "Das Genre eines Buches stammt beim Hinzufügen von Open Library oder Google Books - manche Bücher haben dort kein Genre hinterlegt, besonders weniger populäre Ausgaben.",
-    "helpCenterFooter": "Keine Antwort gefunden? Du kannst ein Problem direkt aus der Unterhaltung mit der betroffenen Person melden.",
     "adminLoadError": "Die Admin-Daten konnten nicht geladen werden.",
     "adminStatsTitle": "Statistiken",
     "adminMarketplaceStatsTitle": "Marktplatz-Statistiken",
@@ -921,6 +935,19 @@
     "discoverPopularAuthors": "Beliebte Autoren",
     "discoverQuickFilters": "Schnellfilter",
     "discoverNearYou": "In deiner Stadt",
+    "discoverFilterButton": "Filtern",
+    "discoverSortButton": "Sortieren",
+    "discoverSortTitle": "Sortierung",
+    "discoverFilterCategory": "Kategorie",
+    "discoverFilterListingType": "Anzeigentyp",
+    "discoverFilterAll": "Alle",
+    "discoverSortGenre": "Bevorzugtes Genre",
+    "discoverSortDate": "Nach Datum",
+    "discoverSortNewest": "Neueste zuerst",
+    "discoverSortOldest": "Älteste zuerst",
+    "discoverSortNearest": "Nächstgelegene zuerst",
+    "discoverSortApply": "Sortieren",
+    "discoverScoreBadgeTooltip": "14-Tage-Interessenwert (nur für Admins)",
     "inventorySelectAll": "Alle auswählen",
     "myShelfShare": "Teilen",
     "inventoryMarkAvailable": "Verfügbar markieren",
@@ -955,10 +982,13 @@
     "shareSectionListing": "Das Angebot",
     "shareListingMode": "Angebotsart",
     "shareDescriptionCharsLeft": "{n} Zeichen übrig",
-    "shareListingModeSwap": "Normaler Tausch",
-    "shareListingModeSale": "Zum Verkauf",
+    "shareListingModeSwap": "Tausch",
+    "shareListingModeSale": "Verkauf",
     "shareListingModeDonation": "Spende",
     "shareTitleAutocomplete": "Beginne zu tippen, um Vorschläge zu sehen",
+    "shareTitleSearching": "Titel wird gesucht...",
+    "shareSwapAlsoSell": "Oder verkaufen für",
+    "shareSwapAlsoSellPrice": "Verkaufspreis",
     "shareGenreHint": "Genre",
     "shareAddPhotos": "Fotos hinzufügen",
     "preRegisterAlreadyLoggedIn": "Wir nutzen deine Konto-E-Mail, wenn du das Feld leer lässt",
@@ -997,9 +1027,20 @@
     "shortcutTrash": "Papierkorb",
     "shareCoverSelected": "Buchcover",
     "shareCoverRecommended": "Empfohlene Cover",
+    "shareCoverChooseOne": "Cover auswählen",
+    "shareCoverRemove": "Entfernen",
     "shareMainPhotoHint": "Tippe auf den Stern, um das Hauptfoto festzulegen (erscheint im Feed).",
     "chatOfferCounterAction": "Gegenangebot",
     "chatOfferCounterTitle": "Gegenangebot senden",
+    "adminFeatureAccessTitle": "Funktionszugriff",
+    "adminFeatureAccessDesc": "Ausgewählten Nutzern frühen Zugriff auf Funktionen geben, die noch ausgerollt werden.",
+    "adminFeatureAccessSearchHint": "Nach Name oder E-Mail suchen",
+    "adminFeatureAccessSearchEmpty": "Suche einen Nutzer, um seinen Zugriff zu sehen.",
+    "adminFeatureAccessNoResults": "Keine Nutzer gefunden.",
+    "adminFeatureAccessApply": "Übernehmen",
+    "adminFeatureAccessSaved": "Zugriff aktualisiert.",
+    "adminFeatureAccessSaveError": "Zugriff konnte nicht gespeichert werden.",
+    "featureFlagAdvancedStatistics": "Erweiterte Statistiken",
     "bookMatchTitle": "Buch-Match",
     "bookMatchEntryTooltip": "Buch-Match",
     "bookMatchYesTooltip": "Gefällt mir",
@@ -1029,21 +1070,21 @@
             }
         }
     },
+
     "onboardingFlowStepLabel": "Schritt {step} von {total}",
     "@onboardingFlowStepLabel": {
         "placeholders": {
-            "step": {
-                "type": "int"
-            },
-            "total": {
-                "type": "int"
-            }
+            "step": { "type": "int" },
+            "total": { "type": "int" }
         }
     },
     "onboardingFlowSkip": "Überspringen",
+    "onboardingFlowMoveForward": "Weiter",
     "onboardingFlowBackTooltip": "Zurück",
+
     "onboardingFlowGenresTitle": "Was liest du gerne?",
     "onboardingFlowGenresSubtitle": "Wähle ein paar Genres - damit bereiten wir deine ersten Buch-Vorschläge vor.",
+
     "onboardingFlowFrequencyTitle": "Wie oft liest du?",
     "onboardingFlowFrequencySubtitle": "Hilft uns, wie oft wir dir neue Bücher zeigen, richtig einzustellen.",
     "onboardingFlowFrequencyLowTitle": "Wenig",
@@ -1052,9 +1093,11 @@
     "onboardingFlowFrequencyMidDesc": "Etwa ein Buch pro Woche",
     "onboardingFlowFrequencyHighTitle": "Viel",
     "onboardingFlowFrequencyHighDesc": "Mehrere Bücher pro Woche",
+
     "onboardingFlowLocationTitle": "Wo finden wir dich?",
     "onboardingFlowLocationSubtitle": "Wir nutzen deinen Standort, um dir realistische Tauschangebote in der Nähe zu zeigen.",
     "onboardingFlowLanguagesLabel": "Sprachen, in denen du liest",
+
     "onboardingFlowPurposeTitle": "Wofür bist du hier?",
     "onboardingFlowPurposeSubtitle": "Hilft uns, deine Startseite zu personalisieren.",
     "onboardingFlowPurposeSwapTitle": "Bücher tauschen",
@@ -1065,14 +1108,24 @@
     "onboardingFlowPurposeDiscoverDesc": "Ich schaue mir Empfehlungen an, noch ohne Tausch",
     "onboardingFlowPurposeAllTitle": "Alles davon",
     "onboardingFlowPurposeAllDesc": "Ich bin für alles hier",
+
     "onboardingFlowBookMatchTitle": "Schauen wir, was dir gefällt",
     "onboardingFlowBookMatchSubtitle": "Wische durch ein paar Bücher - so können wir von Anfang an bessere Empfehlungen vorbereiten.",
+
     "onboardingFlowAddBooksTitle": "Stell deine ersten Bücher ins Regal",
     "onboardingFlowAddBooksSubtitle": "Füge 2-3 Bücher hinzu, die du zuhause hast - sie erscheinen direkt in deinem Profil.",
     "onboardingFlowAddBooksCta": "Buch hinzufügen",
     "onboardingFlowAddBooksCtaSubtitle": "Titel suchen oder Barcode scannen",
     "onboardingFlowAddBooksSkipNote": "Du kannst diesen Schritt überspringen und später aus Mein Regal Bücher hinzufügen.",
+
     "onboardingFlowFinish": "Zu ShelfShare",
+    "onboardingFlowBookAdded": "Hinzugefügt: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": { "type": "String" }
+        }
+    },
+
     "genreFiction": "Belletristik",
     "genreNonFiction": "Sachbuch",
     "genreClassic": "Klassiker",
@@ -1093,15 +1146,6 @@
     "genreChildren": "Kinder",
     "genreYoungAdult": "Young Adult",
     "genreComics": "Comics",
-    "onboardingFlowMoveForward": "Weiter",
-    "onboardingFlowBookAdded": "Hinzugefügt: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "greetMottoStandingTree": "Ein getauschtes Buch ist ein Baum, der stehen bleibt. 🌳",
     "greetMottoWhyBuyNew": "Warum ein neues Buch kaufen, wenn eines zum Tausch bereitsteht?",
     "greetMottoMoreSustainable": "Bücher zu tauschen ist nachhaltiger als neue zu kaufen.",

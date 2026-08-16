@@ -187,6 +187,7 @@ model User {
   followers                Follow[]          @relation("FollowFollowing")
   feedback                 Feedback[]
   bookViews                BookView[]
+  listingScoreEvents       ListingScoreEvent[]
   bookshelfEntries         BookshelfEntry[]
   auctionBids              Bid[]             @relation("AuctionBidder")
   auctionsWon              Auction[]         @relation("AuctionHighestBidder")
@@ -196,6 +197,7 @@ model User {
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
   securityEvents           SecurityEvent[]
+  featureFlags             UserFeatureFlag[]
   bookSwipes               BookSwipe[]
   genreScores              UserGenreScore[]
   authorScores             UserAuthorScore[]
@@ -497,6 +499,12 @@ model UserBook {
   salePrice    Decimal? @db.Decimal(10, 2)
   isNegotiable Boolean  @default(true)
 
+  /// „Sau vinde cu X lei" pe un anunț de tip Schimb: proprietarul acceptă
+  /// explicit, încă de la listare, și o ofertă în bani, fără ca anunțul să
+  /// devină unul de vânzare (isForSale rămâne false, deci categoria din
+  /// bibliotecă/browse rămâne „Schimb"). Null = doar schimb.
+  swapSalePrice Decimal? @db.Decimal(10, 2)
+
   // Licitație (Milestone 3) - un al 4-lea tip de anunț, distinct de
   // isForSale/availableForSwap. Detaliile (preț curent, ofertant cel mai
   // mare, termen) stau pe modelul Auction, legat 1:1 - isAuction rămâne
@@ -546,6 +554,7 @@ model UserBook {
   priceOffers              PriceOffer[]
   reports                  Report[]
   bookViews                BookView[]
+  scoreEvents              ListingScoreEvent[]
 
   // Lanțul de proveniență - dacă userul care a primit cartea (schimb/vânzare)
   // decide să o re-listeze, noul anunț ține minte anunțul din care provine,
@@ -658,6 +667,43 @@ model BookView {
   @@map("book_views")
 }
 
+enum ListingScoreEventKind {
+  /// Prima deschidere a anunțului de către un viewer, în ultimele 24h - 3p.
+  UNIQUE_VIEW
+  /// Re-deschidere/refresh în aceeași zi - 0.1p (contează, dar aproape deloc).
+  REVIEW
+  /// Titlul a fost pus la favorite (wishlist) - 1p.
+  WISHLIST_ADD
+}
+
+/// „Cele mai căutate" (Milestone 20) - scorul de interes al unui anunț.
+/// Fiecare punct EXPIRĂ individual la 14 zile după ce a fost câștigat, deci
+/// nu putem ține un singur contor cumulat pe UserBook: logăm fiecare eveniment
+/// cu timestamp și calculăm scorul ca SUM(points) WHERE createdAt > now()-14d.
+/// `userId` e null pentru vizitatorii ne-autentificați (tratați ca o singură
+/// entitate la deduplicare, ca la BookView) și e folosit DOAR ca să distingem
+/// un view unic de un refresh - nu expunem niciodată cine a văzut ce.
+/// Scorul e invizibil pentru userii normali; apare doar pentru admini.
+model ListingScoreEvent {
+  id String @id @default(uuid())
+
+  userBookId String
+  userBook   UserBook @relation(fields: [userBookId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind   ListingScoreEventKind
+  points Float
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userBookId, createdAt])
+  @@index([userBookId, userId, kind, createdAt])
+  @@map("listing_score_events")
+}
+
 enum BookshelfStatus {
   READING
   WANT_TO_READ
@@ -696,6 +742,7 @@ enum OfferStatus {
   REJECTED
   CANCELLED
   EXPIRED
+  COMPLETED
 }
 
 model PriceOffer {
@@ -720,6 +767,32 @@ model PriceOffer {
   // termenul, înainte de a răspunde. Simplu, fără dependință nouă
   // (@nestjs/schedule), suficient la scara aplicației.
   expiresAt DateTime?
+
+  // Restul câmpurilor de mai jos oglindesc exact flow-ul de schimb (vezi
+  // ExchangeRequest) - o vânzare cu bani tot presupune o întâlnire fizică, deci
+  // are nevoie de aceeași programare/partajare de contact/safety-ack/confirmare
+  // mutuală înainte ca acceptarea ofertei să transfere efectiv cartea.
+  acceptedAt DateTime?
+
+  meetingTime        DateTime?
+  meetingLocation     String?
+  meetingProposedBy   String?
+  meetingAcceptedAt   DateTime?
+
+  buyerContactPhone    String?
+  ownerContactPhone    String?
+  buyerContactSharedAt DateTime?
+  ownerContactSharedAt DateTime?
+
+  buyerSafetyAckAt DateTime?
+  ownerSafetyAckAt DateTime?
+
+  buyerDoneAt DateTime?
+  ownerDoneAt DateTime?
+
+  cancelReason  String?
+  cancelDetails String?
+  cancelledBy   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1140,4 +1213,31 @@ model SecurityEvent {
   @@index([userId])
   @@index([type, createdAt])
   @@map("security_events")
+}
+
+/**
+ * Acces per-user la funcții încă în rulare (beta / acces preferențial),
+ * acordat manual din panoul de admin - vezi FEATURE_FLAG_KEYS din
+ * common/constants/feature-flags.ts pentru cheile cunoscute.
+ *
+ * Un tabel separat, nu o coloană `String[]` pe User, ca să putem revoca
+ * fără să rescriem lista întreagă și ca să știm cine/când a acordat accesul
+ * (createdAt/updatedAt). Rândul se păstrează și cu enabled=false: „revocat
+ * explicit" e informație utilă, iar cheile necunoscute sunt ignorate la
+ * citire, deci lista se poate extinde fără migrare.
+ */
+model UserFeatureFlag {
+  id      String  @id @default(uuid())
+  userId  String
+  flagKey String
+  enabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, flagKey])
+  @@index([flagKey])
+  @@map("user_feature_flags")
 }

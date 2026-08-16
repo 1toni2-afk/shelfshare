@@ -610,10 +610,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileGlobalStats => 'Statistici globale';
 
   @override
-  String get profileMyBookshelf => 'Raftul meu';
+  String get profileMyBookshelf => 'Raftul meu de cărți';
 
   @override
-  String get bookshelfTitle => 'Raftul meu';
+  String get bookshelfTitle => 'Raftul meu de cărți';
 
   @override
   String get bookshelfTabReading => 'Citesc';
@@ -1326,6 +1326,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookDetailUnavailableForExchange => 'Indisponibilă la schimb';
 
   @override
+  String get bookDetailRequestDonation => 'Solicită donația';
+
+  @override
   String get bookDetailMakeOffer => 'Fă o ofertă';
 
   @override
@@ -1577,10 +1580,20 @@ class AppLocalizationsRo extends AppLocalizations {
   String get readyMeetingProposedByMe => 'Aștepți confirmarea celeilalte părți';
 
   @override
-  String get readyMeetingAccept => 'Confirmă ora';
+  String get readyMeetingAccept => 'Confirmă';
 
   @override
-  String get readyMeetingDecline => 'Refuză ora';
+  String get readyMeetingDecline => 'Refuză';
+
+  @override
+  String get readyMeetingSubtitle => 'Stabiliți când și unde faceți schimbul';
+
+  @override
+  String get readySafetySubtitle => 'Sfaturi pentru un schimb sigur';
+
+  @override
+  String get readyContactSubtitle =>
+      'Spune-i partenerului de schimb cum să te contacteze';
 
   @override
   String get readyContactTitle => 'Detalii de contact';
@@ -1589,10 +1602,30 @@ class AppLocalizationsRo extends AppLocalizations {
   String get readyContactPhoneLabel => 'Telefon (opțional)';
 
   @override
-  String get readyContactShare => 'Trimite detaliile mele';
+  String get readyContactShare => 'Trimite numărul de telefon';
+
+  @override
+  String get readyContactSkip => 'Mai bine nu';
+
+  @override
+  String get readyContactEdit => 'Editează';
 
   @override
   String get readyContactShared => 'Ți-ai trimis detaliile de contact';
+
+  @override
+  String get dealFinalisedBanner => 'DEAL FINALISED';
+
+  @override
+  String get dealCancelledBanner => 'DEAL CANCELLED';
+
+  @override
+  String get dealCancelledByYouBanner => 'ANULAT DE TINE';
+
+  @override
+  String dealCancelledByOtherBanner(String name) {
+    return 'ANULAT DE $name';
+  }
 
   @override
   String readyContactOtherPhone(String phone) {
@@ -1892,6 +1925,28 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu am putut actualiza oferta. Încearcă din nou.';
 
   @override
+  String get chatOfferCardTitle => 'Oferta de preț';
+
+  @override
+  String chatOfferCardFrom(String bookTitle) {
+    return 'de la $bookTitle';
+  }
+
+  @override
+  String get chatExchangeCardTitle => 'Cerere de schimb';
+
+  @override
+  String get readyYouGive => 'Dai';
+
+  @override
+  String get readyYouReceive => 'Primești';
+
+  @override
+  String readyFromCity(String city) {
+    return 'din $city';
+  }
+
+  @override
   String chatOfferCardLabel(String amount, String bookTitle) {
     return '$amount lei · $bookTitle';
   }
@@ -1936,6 +1991,16 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get wishlistLoadError => 'Nu am putut încărca lista de dorințe.';
+
+  @override
+  String wishlistSectionPersonal(int count) {
+    return 'Alegerile mele ($count)';
+  }
+
+  @override
+  String wishlistSectionBookMatch(int count) {
+    return 'Book Match ($count)';
+  }
 
   @override
   String get notificationsTitle => 'Notificări';
@@ -2009,142 +2074,6 @@ class AppLocalizationsRo extends AppLocalizations {
   String timeDaysAgo(int days) {
     return 'acum $days zile';
   }
-
-  @override
-  String get safetyCenterTitle => 'Centru de siguranță';
-
-  @override
-  String get safetyCenterIntro =>
-      'Câteva reguli simple ca schimburile prin ShelfShare să fie plăcute și sigure.';
-
-  @override
-  String get safetyTip1Title => 'Întâlnește-te ziua';
-
-  @override
-  String get safetyTip1Desc =>
-      'Programează schimbul într-un interval orar cu lumină naturală, ideal dimineața sau după-amiaza.';
-
-  @override
-  String get safetyTip2Title => 'Alege un loc public';
-
-  @override
-  String get safetyTip2Desc =>
-      'O cafenea, o librărie sau un mall sunt variante mai sigure decât adresa personală a cuiva.';
-
-  @override
-  String get safetyTip3Title => 'Preferă locații cu supraveghere video';
-
-  @override
-  String get safetyTip3Desc =>
-      'Zonele cu camere de securitate descurajează comportamentul neplăcut.';
-
-  @override
-  String get safetyTip4Title => 'Nu distribui date personale';
-
-  @override
-  String get safetyTip4Desc =>
-      'Nu ai nevoie să dai adresa de acasă, CNP sau alte date sensibile ca să faci un schimb.';
-
-  @override
-  String get safetyTip5Title => 'Verifică rating-ul și scorul de încredere';
-
-  @override
-  String get safetyTip5Desc =>
-      'Un istoric bun de schimburi finalizate e un semn bun înainte să te întâlnești cu cineva.';
-
-  @override
-  String get safetyTip6Title => 'O poză de profil reală crește încrederea';
-
-  @override
-  String get safetyTip6Desc =>
-      'Profilurile cu poză și bio completă inspiră mai multă siguranță celorlalți utilizatori.';
-
-  @override
-  String get safetyTip7Title => 'Verifică starea cărții înainte de schimb';
-
-  @override
-  String get safetyTip7Desc =>
-      'Compară cartea cu descrierea din anunț înainte să confirmi schimbul ca finalizat.';
-
-  @override
-  String get safetyTip8Title => 'Raportează orice comportament suspect';
-
-  @override
-  String get safetyTip8Desc =>
-      'Poți raporta sau bloca un utilizator direct din profilul lui sau din conversație.';
-
-  @override
-  String get helpCenterTitle => 'Întrebări frecvente';
-
-  @override
-  String get helpGroupSwapping => 'Schimburi';
-
-  @override
-  String get helpGroupPricing => 'Prețuri';
-
-  @override
-  String get helpGroupSafety => 'Încredere și siguranță';
-
-  @override
-  String get helpStillStuck => 'Nu ai găsit răspunsul?';
-
-  @override
-  String get helpContactModerator => 'Contactează un moderator';
-
-  @override
-  String get helpFaq1Question => 'Cum funcționează un schimb de cărți?';
-
-  @override
-  String get helpFaq1Answer =>
-      'Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat.';
-
-  @override
-  String get helpFaq2Question => 'Ce e Scorul de încredere?';
-
-  @override
-  String get helpFaq2Answer =>
-      'Un indicator 0-100 calculat automat din activitatea din aplicație: vechimea contului, email verificat, câte schimburi ai finalizat, rating-ul primit, cât de des răspunzi și cât de rar anulezi cereri. Nu e o verificare de identitate, doar un semnal de comportament.';
-
-  @override
-  String get helpFaq3Question => 'Cum se calculează prețul „din librării”?';
-
-  @override
-  String get helpFaq3Answer =>
-      'Când adaugi o carte cu ISBN, încercăm să găsim prețul de listă pe Google Books. Acoperirea e parțială - nu toate cărțile au preț disponibil acolo, mai ales edițiile mai vechi sau românești.';
-
-  @override
-  String get helpFaq4Question => 'Ce înseamnă „Preț fix, nenegociabil”?';
-
-  @override
-  String get helpFaq4Answer =>
-      'Dacă cel care vinde o carte bifează asta, cumpărătorii nu mai pot trimite oferte de preț - cartea se cumpără doar la prețul afișat.';
-
-  @override
-  String get helpFaq5Question => 'Cum raportez sau blochez un utilizator?';
-
-  @override
-  String get helpFaq5Answer =>
-      'Din meniul din colțul din dreapta sus al unei conversații, sau din pagina de detalii a unui anunț (iconița de steag). Blocarea oprește mesajele în ambele direcții.';
-
-  @override
-  String get helpFaq6Question =>
-      'Ce se întâmplă cu cartea după ce o vând sau o dau la schimb?';
-
-  @override
-  String get helpFaq6Answer =>
-      'Anunțul devine indisponibil definitiv. Dacă persoana care a primit-o vrea să o listeze mai departe, poate face asta din ecranul de Schimburi/Oferte (\"Adaugă în biblioteca ta\") - istoricul cărții rămâne urmăribil pe pagina ei de detalii, cu poze puse de fiecare proprietar.';
-
-  @override
-  String get helpFaq7Question =>
-      'De ce nu-mi apare o carte în Categorii sau la Cărți similare?';
-
-  @override
-  String get helpFaq7Answer =>
-      'Genul unei cărți vine din Open Library sau Google Books la adăugare - unele cărți nu au gen completat în sursele externe, mai ales edițiile mai puțin populare.';
-
-  @override
-  String get helpCenterFooter =>
-      'Nu ai găsit răspunsul? Poți raporta o problemă direct din conversația cu utilizatorul implicat.';
 
   @override
   String get adminLoadError => 'Nu am putut încărca datele de admin.';
@@ -2609,6 +2538,46 @@ class AppLocalizationsRo extends AppLocalizations {
   String get discoverNearYou => 'În orașul tău';
 
   @override
+  String get discoverFilterButton => 'Filtrează';
+
+  @override
+  String get discoverSortButton => 'Sortează';
+
+  @override
+  String get discoverSortTitle => 'Sortare';
+
+  @override
+  String get discoverFilterCategory => 'Categorie';
+
+  @override
+  String get discoverFilterListingType => 'Tip de anunț';
+
+  @override
+  String get discoverFilterAll => 'Toate';
+
+  @override
+  String get discoverSortGenre => 'Gen prioritar';
+
+  @override
+  String get discoverSortDate => 'După dată';
+
+  @override
+  String get discoverSortNewest => 'Cele mai noi întâi';
+
+  @override
+  String get discoverSortOldest => 'Cele mai vechi întâi';
+
+  @override
+  String get discoverSortNearest => 'Cele mai apropiate întâi';
+
+  @override
+  String get discoverSortApply => 'Sortează';
+
+  @override
+  String get discoverScoreBadgeTooltip =>
+      'Scor de interes pe 14 zile (vizibil doar adminilor)';
+
+  @override
   String get inventorySelectAll => 'Selectează toate';
 
   @override
@@ -2716,7 +2685,7 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get shareListingModeSwap => 'Schimb normal';
+  String get shareListingModeSwap => 'Schimb';
 
   @override
   String get shareListingModeSale => 'Vânzare';
@@ -2726,6 +2695,15 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get shareTitleAutocomplete => 'Începe să scrii ca să vezi sugestii';
+
+  @override
+  String get shareTitleSearching => 'Se caută titlul...';
+
+  @override
+  String get shareSwapAlsoSell => 'Sau vinde cu';
+
+  @override
+  String get shareSwapAlsoSellPrice => 'Preț de vânzare';
 
   @override
   String get shareGenreHint => 'Gen';
@@ -2824,31 +2802,6 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get aboutDevTitle => 'About dev';
-
-  @override
-  String get aboutDevHeadline => 'Omul din spatele ShelfShare';
-
-  @override
-  String get aboutDevBodyWho =>
-      'Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.';
-
-  @override
-  String get aboutDevBodyWhy =>
-      'Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.';
-
-  @override
-  String get aboutDevBodyHosting =>
-      'Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️';
-
-  @override
-  String get aboutDevSupportTitle => 'Keep the app alive';
-
-  @override
-  String get aboutDevSupportSubtitle =>
-      'Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.';
-
-  @override
-  String get aboutDevCoffeeButton => 'Buy me a coffee';
 
   @override
   String get aboutDevOpenError =>
@@ -2981,6 +2934,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get shareCoverRecommended => 'Coperte recomandate';
+
+  @override
+  String get shareCoverChooseOne => 'Alege coperta';
+
+  @override
+  String get shareCoverRemove => 'Elimină';
 
   @override
   String get shareMainPhotoHint =>
@@ -3322,6 +3281,35 @@ class AppLocalizationsRo extends AppLocalizations {
       'Mai puține cărți noi tipărite, mai multe povești care circulă.';
 
   @override
+  String get adminFeatureAccessTitle => 'Acces la funcții';
+
+  @override
+  String get adminFeatureAccessDesc =>
+      'Acordă acces în avans la funcții aflate încă în lucru, pentru utilizatori aleși manual.';
+
+  @override
+  String get adminFeatureAccessSearchHint => 'Caută după nume sau email';
+
+  @override
+  String get adminFeatureAccessSearchEmpty =>
+      'Caută un utilizator ca să îi vezi accesul.';
+
+  @override
+  String get adminFeatureAccessNoResults => 'Niciun utilizator găsit.';
+
+  @override
+  String get adminFeatureAccessApply => 'Aplică';
+
+  @override
+  String get adminFeatureAccessSaved => 'Accesul a fost actualizat.';
+
+  @override
+  String get adminFeatureAccessSaveError => 'Nu am putut salva accesul.';
+
+  @override
+  String get featureFlagAdvancedStatistics => 'Statistici avansate';
+
+  @override
   String get bookMatchTitle => 'Potriviri de cărți';
 
   @override
@@ -3399,6 +3387,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get onboardingFlowSkip => 'Sari peste';
+
+  @override
+  String get onboardingFlowMoveForward => 'Mergi mai departe';
 
   @override
   String get onboardingFlowBackTooltip => 'Înapoi';
@@ -3507,6 +3498,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get onboardingFlowFinish => 'Intră în ShelfShare';
 
   @override
+  String onboardingFlowBookAdded(String title) {
+    return 'Adăugată: $title';
+  }
+
+  @override
   String get genreFiction => 'Ficțiune';
 
   @override
@@ -3565,14 +3561,6 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get genreComics => 'Benzi desenate';
-
-  @override
-  String get onboardingFlowMoveForward => 'Mergi mai departe';
-
-  @override
-  String onboardingFlowBookAdded(String title) {
-    return 'Adăugată: $title';
-  }
 
   @override
   String get onboardingWelcomeTitle =>

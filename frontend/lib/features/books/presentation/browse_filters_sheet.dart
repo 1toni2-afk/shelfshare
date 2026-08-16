@@ -144,6 +144,9 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
         condition: _condition,
         maxDistanceKm: _maxDistanceKm,
         listingType: _listingType,
+        // Sortarea nu se editează din acest sheet - o păstrăm pe cea aleasă
+        // în „Sortează" din Discover, altfel s-ar pierde la primul filtru.
+        sort: widget.initial.sort,
       ),
     );
   }

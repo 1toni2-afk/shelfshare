@@ -6,18 +6,17 @@ class AuctionsRepository {
   AuctionsRepository(this._ref);
   final Ref _ref;
 
+  /// Licitațiile merg exclusiv pe licitare: fără preț de rezervă și fără
+  /// „Cumpără acum" (eliminate din flow - coloanele rămân în DB doar pentru
+  /// licitațiile vechi).
   Future<Auction> createAuction(
     String userBookId, {
     required double startingPrice,
-    double? reservePrice,
-    double? buyNowPrice,
     required int durationHours,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books/$userBookId/auctions', data: {
       'startingPrice': startingPrice,
-      'reservePrice': ?reservePrice,
-      'buyNowPrice': ?buyNowPrice,
       'durationHours': durationHours,
     });
     return Auction.fromJson(response.data as Map<String, dynamic>);
@@ -32,12 +31,6 @@ class AuctionsRepository {
   Future<Auction> placeBid(String auctionId, double amount) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/auctions/$auctionId/bids', data: {'amount': amount});
-    return Auction.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<Auction> buyNow(String auctionId) async {
-    final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.post('/auctions/$auctionId/buy-now');
     return Auction.fromJson(response.data as Map<String, dynamic>);
   }
 

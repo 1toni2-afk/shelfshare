@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/support_pages.dart';
 import '../../../data/models/conversation.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../l10n/app_localizations.dart';
@@ -870,7 +871,7 @@ class _ChatSafetyPage extends StatelessWidget {
               OutlinedButton.icon(
                 icon: const Icon(Icons.shield_outlined),
                 label: Text(l10n.chatSafetyOpenCenter),
-                onPressed: () => context.push('/safety-center'),
+                onPressed: () => openSupportPage(context, '/safety-center'),
               ),
               const SizedBox(height: 12),
               Center(

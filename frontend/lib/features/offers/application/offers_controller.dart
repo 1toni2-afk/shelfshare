@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/price_offer.dart';
+import '../../chat/data/chat_socket_service.dart';
 import '../data/offers_repository.dart';
 
 class OffersData {
@@ -10,7 +11,19 @@ class OffersData {
 
 class OffersController extends AsyncNotifier<OffersData> {
   @override
-  Future<OffersData> build() => _load();
+  Future<OffersData> build() async {
+    // O ofertă nouă/actualizată vine ca o notificare live pe același socket
+    // ca cel din clopoțel - la fel ca ExchangesController. Fără acest
+    // listener, o ofertă primită apărea doar în notificare (clopoțel), nu și
+    // în lista de oferte, până la un refresh manual (pull-to-refresh sau
+    // remontarea ecranului).
+    final socketService = ref.read(chatSocketServiceProvider);
+    await socketService.connect();
+    socketService.onNotification(_silentReload);
+    ref.onDispose(() => socketService.offNotification(_silentReload));
+
+    return _load();
+  }
 
   Future<OffersData> _load() async {
     final repository = ref.read(offersRepositoryProvider);
@@ -19,6 +32,11 @@ class OffersController extends AsyncNotifier<OffersData> {
       repository.getReceived(),
     ]);
     return OffersData(sent: results[0], received: results[1]);
+  }
+
+  Future<void> _silentReload() async {
+    final result = await AsyncValue.guard(_load);
+    state = result;
   }
 
   Future<void> refresh() async {
@@ -47,8 +65,36 @@ class OffersController extends AsyncNotifier<OffersData> {
     _patchLocally(updated);
   }
 
-  Future<void> cancel(String id) async {
-    final updated = await ref.read(offersRepositoryProvider).cancel(id);
+  Future<void> cancel(String id, {String? reason, String? details}) =>
+      _apply((r) => r.cancel(id, reason: reason, details: details));
+
+  Future<void> postpone(String id) => _apply((r) => r.postpone(id));
+
+  Future<void> markDone(String id, {String? comment}) =>
+      _apply((r) => r.markDone(id, comment: comment));
+
+  Future<void> disputeDone(String id) => _apply((r) => r.disputeDone(id));
+
+  Future<void> shareContact(String id, {String? phone}) =>
+      _apply((r) => r.shareContact(id, phone: phone));
+
+  Future<void> acknowledgeSafety(String id) => _apply((r) => r.acknowledgeSafety(id));
+
+  Future<void> proposeMeeting(
+    String id, {
+    required DateTime meetingTime,
+    required String meetingLocation,
+  }) =>
+      _apply((r) => r.proposeMeeting(id, meetingTime: meetingTime, meetingLocation: meetingLocation));
+
+  Future<void> acceptMeeting(String id) => _apply((r) => r.acceptMeeting(id));
+
+  Future<void> declineMeeting(String id) => _apply((r) => r.declineMeeting(id));
+
+  Future<String> calendarUrl(String id) => ref.read(offersRepositoryProvider).calendarUrl(id);
+
+  Future<void> _apply(Future<PriceOffer> Function(OffersRepository) action) async {
+    final updated = await action(ref.read(offersRepositoryProvider));
     _patchLocally(updated);
   }
 }

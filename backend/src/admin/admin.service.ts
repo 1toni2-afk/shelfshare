@@ -4,6 +4,11 @@ import { FeedbackService } from '../feedback/feedback.service';
 import { SupportService } from '../support/support.service';
 import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 import { RomanianCity } from '../common/constants/romanian-cities';
+import {
+  FEATURE_FLAG_KEYS,
+  isFeatureFlagKey,
+} from '../common/constants/feature-flags';
+import { FeatureFlagValueDto } from './dto/set-feature-flags.dto';
 
 @Injectable()
 export class AdminService {
@@ -66,6 +71,92 @@ export class AdminService {
     });
 
     return { items, limit, offset };
+  }
+
+  /**
+   * Căutare de useri pentru panoul de acces la funcții - după email, nume sau
+   * username. Aceleași câmpuri ca getUsers(), ca frontend-ul să refolosească
+   * modelul AdminUser.
+   */
+  async searchUsers(query: string, limit = 20) {
+    const q = query.trim();
+    if (q.length < 2) return [];
+
+    return this.prisma.user.findMany({
+      where: {
+        OR: [
+          { email: { contains: q, mode: 'insensitive' } },
+          { name: { contains: q, mode: 'insensitive' } },
+          { username: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        city: true,
+        isEmailVerified: true,
+        isBanned: true,
+        isAdmin: true,
+        isPremium: true,
+        rating: true,
+        booksExchangedCount: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(limit, 50),
+    });
+  }
+
+  /**
+   * Starea checkbox-urilor pentru un user: toate cheile cunoscute, cu
+   * enabled=false pentru cele fără rând în DB. Rândurile cu chei scoase din
+   * FEATURE_FLAG_KEYS sunt ignorate (vezi comentariul de pe constantă).
+   */
+  async getUserFeatureFlags(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, name: true },
+    });
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+
+    const rows = await this.prisma.userFeatureFlag.findMany({
+      where: { userId },
+      select: { flagKey: true, enabled: true },
+    });
+    const enabledByKey = new Map(rows.map((r) => [r.flagKey, r.enabled]));
+
+    return {
+      user,
+      flags: FEATURE_FLAG_KEYS.map((key) => ({
+        key,
+        enabled: enabledByKey.get(key) ?? false,
+      })),
+    };
+  }
+
+  /** „Aplică" din ecranul de admin - upsert pe fiecare checkbox trimis. */
+  async setUserFeatureFlags(userId: string, flags: FeatureFlagValueDto[]) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+
+    await this.prisma.$transaction(
+      flags
+        .filter((f) => isFeatureFlagKey(f.key))
+        .map((f) =>
+          this.prisma.userFeatureFlag.upsert({
+            where: { userId_flagKey: { userId, flagKey: f.key } },
+            create: { userId, flagKey: f.key, enabled: f.enabled },
+            update: { enabled: f.enabled },
+          }),
+        ),
+    );
+
+    return this.getUserFeatureFlags(userId);
   }
 
   async banUser(userId: string) {

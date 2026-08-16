@@ -13,6 +13,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_PER_LEVEL, XP_REWARDS } from '../common/utils/xp';
+import { ADVANCED_STATISTICS_FLAG } from '../common/constants/feature-flags';
 
 @Injectable()
 export class ProfileService {
@@ -431,10 +432,27 @@ export class ProfileService {
    * "Advanced Analytics" (Premium, Milestone 5) - statistici de vânzător
    * calculate din date deja existente (UserBook.viewCount, PriceOffer),
    * fără infrastructură nouă de tracking.
+   *
+   * Accesul e deschis pentru Premium, pentru administratori și pentru userii
+   * cărora li s-a acordat manual flag-ul „advanced_statistics" din panoul de
+   * admin (acces beta / preferențial) - vezi UserFeatureFlag.
    */
   async getSellerAnalytics(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { isPremium: true } });
-    if (!user?.isPremium) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        isPremium: true,
+        isAdmin: true,
+        featureFlags: {
+          where: { flagKey: ADVANCED_STATISTICS_FLAG, enabled: true },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+    const hasAccess =
+      user?.isPremium || user?.isAdmin || (user?.featureFlags.length ?? 0) > 0;
+    if (!hasAccess) {
       throw new ForbiddenException('Statisticile avansate sunt o funcție Premium');
     }
 
@@ -857,12 +875,14 @@ export class ProfileService {
     ]);
 
     const fromOffers = acceptedOffers.map((offer) => ({
+      userBookId: offer.userBookId,
       bookTitle: offer.userBook.book.title,
       bookCoverUrl: offer.userBook.book.coverUrl,
       date: offer.updatedAt,
       type: 'sale' as const,
     }));
     const fromExchanges = completedExchanges.map((exchange) => ({
+      userBookId: exchange.requestedBookId,
       bookTitle: exchange.requestedBook.book.title,
       bookCoverUrl: exchange.requestedBook.book.coverUrl,
       date: exchange.updatedAt,

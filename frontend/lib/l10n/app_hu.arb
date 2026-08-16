@@ -1,4 +1,4 @@
-{
+﻿{
     "@@locale": "hu",
     "navHome": "Kezdőlap",
     "navSearch": "Felfedezés",
@@ -197,8 +197,8 @@
     "leaderboardTabTopReaders": "Olvasók",
     "leaderboardPagesCount": "{count} oldal",
     "profileGlobalStats": "Globális statisztikák",
-    "profileMyBookshelf": "A polcom",
-    "bookshelfTitle": "A polcom",
+    "profileMyBookshelf": "A könyvespolcom",
+    "bookshelfTitle": "A könyvespolcom",
     "bookshelfTabReading": "Olvasom",
     "bookshelfTabWantToRead": "Szeretném olvasni",
     "bookshelfTabFinished": "Elolvasva",
@@ -451,6 +451,7 @@
     "bookDetailOwnerTitle": "Tulajdonos",
     "bookDetailPhotosTitle": "Fotók",
     "bookDetailRequestExchange": "Csere kérése",
+    "bookDetailRequestDonation": "Adomány kérése",
     "bookDetailUnavailableForExchange": "Nem elérhető cserére",
     "bookDetailMakeOffer": "Ajánlat tétele",
     "bookDetailHistoryTitle": "A könyv előzményei",
@@ -520,12 +521,28 @@
     "readyTitle": "Csere előkészítése",
     "readyMeetingAwaitingYou": "A másik fél találkozót javasolt",
     "readyMeetingProposedByMe": "A másik fél megerősítésére vársz",
-    "readyMeetingAccept": "Időpont elfogadása",
-    "readyMeetingDecline": "Időpont elutasítása",
+    "readyMeetingAccept": "Elfogadás",
+    "readyMeetingDecline": "Elutasítás",
+    "readyMeetingSubtitle": "Egyeztessétek, mikor és hol találkoztok",
+    "readySafetySubtitle": "Tippek egy biztonságos cseréhez",
+    "readyContactSubtitle": "Add tudtára a partnerednek, hogyan érhet el",
     "readyContactTitle": "Elérhetőségek",
     "readyContactPhoneLabel": "Telefonszám (opcionális)",
-    "readyContactShare": "Adataim megosztása",
+    "readyContactShare": "Telefonszám megosztása",
+    "readyContactSkip": "Inkább nem",
+    "readyContactEdit": "Szerkesztés",
     "readyContactShared": "Megosztottad az elérhetőségeidet",
+    "dealFinalisedBanner": "DEAL FINALISED",
+    "dealCancelledBanner": "DEAL CANCELLED",
+    "dealCancelledByYouBanner": "TE LEMONDTAD",
+    "dealCancelledByOtherBanner": "LEMONDTA: {name}",
+    "@dealCancelledByOtherBanner": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
     "readyContactOtherPhone": "Telefon: {phone}",
     "@readyContactOtherPhone": {
         "placeholders": {
@@ -652,6 +669,26 @@
     "chatSafetyAdvisorLabel": "Biztonsági tanácsadó",
     "chatSafetyAdvisorBody": "Ügyelj a biztonsági irányelvek betartására a találkozón.",
     "chatOfferActionError": "Nem sikerült frissíteni az ajánlatot. Próbáld újra.",
+    "chatOfferCardTitle": "Ártajánlat",
+    "chatOfferCardFrom": "ehhez: {bookTitle}",
+    "@chatOfferCardFrom": {
+        "placeholders": {
+            "bookTitle": {
+                "type": "String"
+            }
+        }
+    },
+    "chatExchangeCardTitle": "Csereigény",
+    "readyYouGive": "Te adod",
+    "readyYouReceive": "Te kapod",
+    "readyFromCity": "innen: {city}",
+    "@readyFromCity": {
+        "placeholders": {
+            "city": {
+                "type": "String"
+            }
+        }
+    },
     "chatOfferCardLabel": "{amount} lej · {bookTitle}",
     "@chatOfferCardLabel": {
         "placeholders": {
@@ -698,6 +735,22 @@
     },
     "wishlistEmpty": "Még nem adtál hozzá könyvet a kívánságlistádhoz.",
     "wishlistLoadError": "Nem sikerült betölteni a kívánságlistát.",
+    "wishlistSectionPersonal": "Saját választásaim ({count})",
+    "@wishlistSectionPersonal": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "wishlistSectionBookMatch": "Book Match ({count})",
+    "@wishlistSectionBookMatch": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "notificationsTitle": "Értesítések",
     "notificationsMarkAllRead": "Összes megjelölése olvasottként",
     "notificationsEmpty": "Nincs egyetlen értesítésed sem.",
@@ -733,45 +786,6 @@
     "timeMinutesAgo": "{minutes} perce",
     "timeHoursAgo": "{hours} órája",
     "timeDaysAgo": "{days} napja",
-    "safetyCenterTitle": "Biztonsági központ",
-    "safetyCenterIntro": "Néhány egyszerű szabály, hogy a ShelfShare-en zajló cserék kellemesek és biztonságosak legyenek.",
-    "safetyTip1Title": "Találkozzatok nappal",
-    "safetyTip1Desc": "Ütemezd a cserét egy természetes fényben zajló időpontra, lehetőleg délelőtt vagy délután.",
-    "safetyTip2Title": "Válassz nyilvános helyet",
-    "safetyTip2Desc": "Egy kávézó, könyvesbolt vagy bevásárlóközpont biztonságosabb, mint valakinek a magánlakása.",
-    "safetyTip3Title": "Részesítsd előnyben a kamerával megfigyelt helyeket",
-    "safetyTip3Desc": "A biztonsági kamerákkal felszerelt területek elrettentik a kellemetlen viselkedést.",
-    "safetyTip4Title": "Ne oszd meg személyes adataidat",
-    "safetyTip4Desc": "Nincs szükség a lakcímedre, személyi számodra vagy más érzékeny adatra a cseréhez.",
-    "safetyTip5Title": "Ellenőrizd az értékelést és a megbízhatósági pontszámot",
-    "safetyTip5Desc": "A befejezett cserék jó előzménye jó jel, mielőtt találkoznál valakivel.",
-    "safetyTip6Title": "Egy valódi profilkép növeli a bizalmat",
-    "safetyTip6Desc": "A fényképpel és teljes bemutatkozással rendelkező profilok nagyobb biztonságérzetet keltenek.",
-    "safetyTip7Title": "Ellenőrizd a könyv állapotát a csere előtt",
-    "safetyTip7Desc": "Hasonlítsd össze a könyvet a hirdetés leírásával, mielőtt befejezettként megerősítenéd a cserét.",
-    "safetyTip8Title": "Jelents be minden gyanús viselkedést",
-    "safetyTip8Desc": "Bejelentheted vagy letilthatod a felhasználót közvetlenül a profiljából vagy a beszélgetésből.",
-    "helpCenterTitle": "Gyakori kérdések",
-    "helpGroupSwapping": "Csere",
-    "helpGroupPricing": "Árak",
-    "helpGroupSafety": "Bizalom és biztonság",
-    "helpStillStuck": "Nem találtad meg a választ?",
-    "helpContactModerator": "Moderátor elérése",
-    "helpFaq1Question": "Hogyan működik a könyvcsere?",
-    "helpFaq1Answer": "Kérsz egy könyvet valaki más hirdetéséből (te is felajánlhatsz cserébe egy könyvet), a tulajdonos elfogadja vagy elutasítja, majd chat-en keresztül megbeszélitek a találkozót. Miután a valóságban is lezajlott a csere, bármelyiktek megjelölheti befejezettként.",
-    "helpFaq2Question": "Mi az a Megbízhatósági pontszám?",
-    "helpFaq2Answer": "Egy 0-100 közötti, automatikusan számított mutató az alkalmazásban végzett tevékenység alapján: a fiók életkora, megerősített email, hány cserét fejeztél be, kapott értékelésed, milyen gyakran válaszolsz, és milyen ritkán mondasz le kéréseket. Nem személyazonosság-ellenőrzés, csak viselkedési jelzés.",
-    "helpFaq3Question": "Hogyan számítjuk a „könyvesbolt” árat?",
-    "helpFaq3Answer": "Amikor ISBN-nel adsz hozzá egy könyvet, megpróbáljuk megtalálni a listaárat a Google Booksön. A lefedettség részleges - nem minden könyvnek van ott elérhető ára, különösen a régebbi vagy román kiadásoknak.",
-    "helpFaq4Question": "Mit jelent a „Fix ár, nem alkudható”?",
-    "helpFaq4Answer": "Ha az eladó ezt bejelöli, a vevők többé nem küldhetnek árajánlatot - a könyv csak a feltüntetett áron vásárolható meg.",
-    "helpFaq5Question": "Hogyan jelenthetek be vagy tilthatok le egy felhasználót?",
-    "helpFaq5Answer": "A beszélgetés jobb felső sarkában lévő menüből, vagy egy hirdetés részletei oldaláról (zászló ikon). A letiltás mindkét irányban leállítja az üzeneteket.",
-    "helpFaq6Question": "Mi történik a könyvvel, miután eladtam vagy elcseréltem?",
-    "helpFaq6Answer": "A hirdetés véglegesen elérhetetlenné válik. Ha a könyvet átvevő személy tovább szeretné listázni, ezt megteheti a Cserék/Ajánlatok képernyőről (\"Add hozzá a könyvtáradhoz\") - a könyv előzménye nyomon követhető marad a részletek oldalán, minden tulajdonos fotóival.",
-    "helpFaq7Question": "Miért nem jelenik meg egy könyv a Kategóriákban vagy a Hasonló könyvek között?",
-    "helpFaq7Answer": "Egy könyv műfaja az Open Libraryből vagy a Google Booksből származik hozzáadáskor - néhány könyvnek nincs kitöltve a műfaja ezeken a külső forrásokon, különösen a kevésbé népszerű kiadásoknak.",
-    "helpCenterFooter": "Nem találtad meg a választ? Bejelenthetsz egy problémát közvetlenül az érintett felhasználóval folytatott beszélgetésből.",
     "adminLoadError": "Nem sikerült betölteni az admin adatokat.",
     "adminStatsTitle": "Statisztikák",
     "adminMarketplaceStatsTitle": "Piactér statisztikák",
@@ -921,6 +935,19 @@
     "discoverPopularAuthors": "Népszerű szerzők",
     "discoverQuickFilters": "Gyors szűrők",
     "discoverNearYou": "A városodban",
+    "discoverFilterButton": "Szűrés",
+    "discoverSortButton": "Rendezés",
+    "discoverSortTitle": "Rendezés",
+    "discoverFilterCategory": "Kategória",
+    "discoverFilterListingType": "Hirdetés típusa",
+    "discoverFilterAll": "Összes",
+    "discoverSortGenre": "Előnyben részesített műfaj",
+    "discoverSortDate": "Dátum szerint",
+    "discoverSortNewest": "Legújabbak elöl",
+    "discoverSortOldest": "Legrégebbiek elöl",
+    "discoverSortNearest": "Legközelebbiek elöl",
+    "discoverSortApply": "Rendezés",
+    "discoverScoreBadgeTooltip": "14 napos érdeklődési pontszám (csak adminoknak)",
     "inventorySelectAll": "Összes kijelölése",
     "myShelfShare": "Megosztás",
     "inventoryMarkAvailable": "Elérhetőnek jelöl",
@@ -955,10 +982,13 @@
     "shareSectionListing": "A hirdetés",
     "shareListingMode": "Hirdetés típusa",
     "shareDescriptionCharsLeft": "{n} karakter maradt",
-    "shareListingModeSwap": "Normál csere",
-    "shareListingModeSale": "Eladó",
+    "shareListingModeSwap": "Csere",
+    "shareListingModeSale": "Eladás",
     "shareListingModeDonation": "Adomány",
     "shareTitleAutocomplete": "Kezdj el gépelni a javaslatokért",
+    "shareTitleSearching": "Cím keresése...",
+    "shareSwapAlsoSell": "Vagy eladás ennyiért",
+    "shareSwapAlsoSellPrice": "Eladási ár",
     "shareGenreHint": "Műfaj",
     "shareAddPhotos": "Fotók hozzáadása",
     "preRegisterAlreadyLoggedIn": "A fiókod címét használjuk, ha üresen hagyod",
@@ -997,9 +1027,20 @@
     "shortcutTrash": "Kuka",
     "shareCoverSelected": "Könyv borító",
     "shareCoverRecommended": "Ajánlott borítók",
+    "shareCoverChooseOne": "Válassz borítót",
+    "shareCoverRemove": "Eltávolítás",
     "shareMainPhotoHint": "Érintsd meg a csillagot a főkép beállításához (a feed-ben jelenik meg).",
     "chatOfferCounterAction": "Ellenajánlat",
     "chatOfferCounterTitle": "Ellenajánlat küldése",
+    "adminFeatureAccessTitle": "Funkciók hozzáférése",
+    "adminFeatureAccessDesc": "Adj korai hozzáférést a még bevezetés alatt álló funkciókhoz kiválasztott felhasználóknak.",
+    "adminFeatureAccessSearchHint": "Keresés név vagy e-mail alapján",
+    "adminFeatureAccessSearchEmpty": "Keress egy felhasználót a hozzáférés megtekintéséhez.",
+    "adminFeatureAccessNoResults": "Nincs találat.",
+    "adminFeatureAccessApply": "Alkalmaz",
+    "adminFeatureAccessSaved": "A hozzáférés frissült.",
+    "adminFeatureAccessSaveError": "Nem sikerült menteni a hozzáférést.",
+    "featureFlagAdvancedStatistics": "Speciális statisztikák",
     "bookMatchTitle": "Könyvpárosítás",
     "bookMatchEntryTooltip": "Könyvpárosítás",
     "bookMatchYesTooltip": "Tetszik",
@@ -1029,21 +1070,21 @@
             }
         }
     },
+
     "onboardingFlowStepLabel": "{step}. lépés / {total}",
     "@onboardingFlowStepLabel": {
         "placeholders": {
-            "step": {
-                "type": "int"
-            },
-            "total": {
-                "type": "int"
-            }
+            "step": { "type": "int" },
+            "total": { "type": "int" }
         }
     },
     "onboardingFlowSkip": "Kihagyom",
+    "onboardingFlowMoveForward": "Tovább",
     "onboardingFlowBackTooltip": "Vissza",
+
     "onboardingFlowGenresTitle": "Mit szeretsz olvasni?",
     "onboardingFlowGenresSubtitle": "Válassz néhány műfajt - ezekből állítjuk össze az első könyvajánlásaidat.",
+
     "onboardingFlowFrequencyTitle": "Milyen gyakran olvasol?",
     "onboardingFlowFrequencySubtitle": "Segít beállítani, milyen gyakran mutassunk új könyveket.",
     "onboardingFlowFrequencyLowTitle": "Keveset",
@@ -1052,9 +1093,11 @@
     "onboardingFlowFrequencyMidDesc": "Kb. egy könyv hetente",
     "onboardingFlowFrequencyHighTitle": "Sokat",
     "onboardingFlowFrequencyHighDesc": "Több könyv hetente",
+
     "onboardingFlowLocationTitle": "Hol találunk meg?",
     "onboardingFlowLocationSubtitle": "A helyszínedet arra használjuk, hogy valós, közeli cseréket mutassunk.",
     "onboardingFlowLanguagesLabel": "Nyelvek, amiken olvasol",
+
     "onboardingFlowPurposeTitle": "Mit keresel a ShelfShare-en?",
     "onboardingFlowPurposeSubtitle": "Segít személyre szabni a kezdőlapodat.",
     "onboardingFlowPurposeSwapTitle": "Könyvcsere",
@@ -1065,14 +1108,24 @@
     "onboardingFlowPurposeDiscoverDesc": "Ajánlásokat böngészek, cserék nélkül egyelőre",
     "onboardingFlowPurposeAllTitle": "Mindegyik a fentiek közül",
     "onboardingFlowPurposeAllDesc": "Mindenért itt vagyok",
+
     "onboardingFlowBookMatchTitle": "Nézzük, mi tetszik neked",
     "onboardingFlowBookMatchSubtitle": "Pörgess át néhány könyvet - ez segít jobb ajánlásokat készíteni már az elejétől.",
+
     "onboardingFlowAddBooksTitle": "Tedd fel az első könyveidet a polcra",
     "onboardingFlowAddBooksSubtitle": "Adj hozzá 2-3 könyvet, amelyek otthon vannak nálad - rögtön megjelennek a profilodban.",
     "onboardingFlowAddBooksCta": "Könyv hozzáadása",
     "onboardingFlowAddBooksCtaSubtitle": "Keress egy címet vagy szkenneld be a vonalkódot",
     "onboardingFlowAddBooksSkipNote": "Ezt a lépést kihagyhatod, és később a Polcomból is hozzáadhatsz könyveket.",
+
     "onboardingFlowFinish": "Belépés a ShelfShare-be",
+    "onboardingFlowBookAdded": "Hozzáadva: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": { "type": "String" }
+        }
+    },
+
     "genreFiction": "Szépirodalom",
     "genreNonFiction": "Ismeretterjesztő",
     "genreClassic": "Klasszikus",
@@ -1093,15 +1146,6 @@
     "genreChildren": "Gyerekeknek",
     "genreYoungAdult": "Young Adult",
     "genreComics": "Képregény",
-    "onboardingFlowMoveForward": "Tovább",
-    "onboardingFlowBookAdded": "Hozzáadva: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "greetMottoStandingTree": "Egy elcserélt könyv egy állva maradt fa. 🌳",
     "greetMottoWhyBuyNew": "Miért vegyél új könyvet, ha egy cserére vár rád?",
     "greetMottoMoreSustainable": "A könyvcsere fenntarthatóbb, mint egy új megvásárlása.",

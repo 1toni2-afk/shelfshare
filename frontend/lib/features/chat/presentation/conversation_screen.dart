@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
+import '../../../core/utils/support_pages.dart';
 import '../../../data/models/exchange_request.dart';
 import '../../../data/models/message.dart';
 import '../../../data/models/price_offer.dart';
@@ -18,6 +19,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../exchanges/application/exchanges_controller.dart';
+import '../../offers/application/offers_controller.dart';
 import '../../offers/data/offers_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
 import '../../safety/data/safety_repository.dart';
@@ -55,7 +57,6 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   // Enter de pe tastatură, care oricum nu mișcă focusul).
   final _sendButtonFocusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
   final _scrollController = ScrollController();
-  bool _safetyBannerDismissed = false;
   BlockStatus? _blockStatus;
 
   /// ID-ul mesajului evidențiat scurt după ce se sare la el dintr-un rezultat
@@ -358,9 +359,17 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     ref.read(chatControllerProvider(widget.conversationId).notifier).sendMessage(text);
     _messageController.clear();
     // Butonul de send nu poate prelua focus (canRequestFocus: false pe
-    // _sendButtonFocusNode), deci focusul rămâne pe câmp și tastatura nu se
-    // închide - userul poate scrie imediat următorul mesaj.
-    if (!_messageFocusNode.hasFocus) _messageFocusNode.requestFocus();
+    // _sendButtonFocusNode), deci click-ul pe el nu mișcă focusul. Enter e
+    // altă poveste: `onSubmitted` rulează ÎNAINTE ca TextField să-și proceseze
+    // propriul comportament implicit de submit, care oricum scoate focusul
+    // imediat după - un `requestFocus()` sincron aici era deja depășit de asta
+    // (de-asta rămânea nevoie de un nou click). Cerem focus într-un
+    // post-frame callback, după ce comportamentul implicit s-a terminat, ca
+    // să câștige mereu indiferent dacă trimiterea a fost prin Enter sau prin
+    // buton.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _messageFocusNode.requestFocus();
+    });
   }
 
   Future<void> _shareLocation() async {
@@ -461,6 +470,25 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     );
   }
 
+  /// Salt instant la ultimul mesaj, folosit pentru poziționarea inițială.
+  /// `ListView.builder` e lazy - la primul cadru randat are măsurate doar
+  /// elementele care încap în viewport, deci `maxScrollExtent` e doar o
+  /// ESTIMARE extrapolată din înălțimea medie a lor. Bulele au înălțimi
+  /// foarte diferite (text scurt vs poză vs card de ofertă/schimb), deci
+  /// estimarea de la primul cadru poate ateriza vizibil deasupra ultimului
+  /// mesaj în loc de pe el. După acel jumpTo, viewport-ul se mută spre coadă
+  /// și mai multe elemente se construiesc, corectând estimarea - de-aia mai
+  /// facem un al doilea salt pe cadrul următor, către noua valoare (de obicei
+  /// mai mare / mai exactă).
+  void _jumpToBottomInitial() {
+    if (!mounted || !_scrollController.hasClients) return;
+    _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(chatControllerProvider(widget.conversationId));
@@ -489,10 +517,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       if (nextLastId == null || nextLastId == previousLastId) return;
       if (!_didInitialScroll) {
         _didInitialScroll = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || !_scrollController.hasClients) return;
-          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-        });
+        WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToBottomInitial());
       } else {
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
       }
@@ -507,10 +532,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     // direct, o singură dată per instanță de ecran.
     if (!_didInitialScroll && state.messages.isNotEmpty) {
       _didInitialScroll = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !_scrollController.hasClients) return;
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToBottomInitial());
     }
 
     final isBlocked = (_blockStatus?.blockedByMe ?? false) || (_blockStatus?.blockedByThem ?? false);
@@ -576,7 +598,6 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         bottom: false,
         child: Column(
           children: [
-            if (!_safetyBannerDismissed) _SafetyBanner(onDismiss: () => setState(() => _safetyBannerDismissed = true)),
             Expanded(
               child: state.isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -680,59 +701,6 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SafetyBanner extends StatelessWidget {
-  const _SafetyBanner({required this.onDismiss});
-  final VoidCallback onDismiss;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.shield_outlined, color: AppColors.accent, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.chatSafetyBannerBody,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                GestureDetector(
-                  onTap: () => context.push('/safety-center'),
-                  child: Text(
-                    l10n.chatSafetyBannerLearnMore,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 16),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: onDismiss,
-          ),
-        ],
       ),
     );
   }
@@ -1127,7 +1095,8 @@ class _OngoingExchangeStrip extends ConsumerWidget implements PreferredSizeWidge
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final exchanges = ref.watch(exchangesControllerProvider).value;
-    final ongoing = [
+    final offers = ref.watch(offersControllerProvider).value;
+    final ongoingExchanges = [
       ...?exchanges?.received.where(
         (e) => e.status == ExchangeStatus.accepted && e.requesterId == otherUserId,
       ),
@@ -1135,11 +1104,23 @@ class _OngoingExchangeStrip extends ConsumerWidget implements PreferredSizeWidge
         (e) => e.status == ExchangeStatus.accepted && e.ownerId == otherUserId,
       ),
     ];
-    if (ongoing.isEmpty) return const SizedBox.shrink();
+    final ongoingOffers = [
+      ...?offers?.received.where(
+        (o) => o.status == OfferStatus.accepted && o.buyerId == otherUserId,
+      ),
+      ...?offers?.sent.where(
+        (o) => o.status == OfferStatus.accepted && o.ownerId == otherUserId,
+      ),
+    ];
+    if (ongoingExchanges.isEmpty && ongoingOffers.isEmpty) return const SizedBox.shrink();
 
     final l10n = context.l10n;
+    final destination = ongoingExchanges.isNotEmpty
+        ? '/exchanges/${ongoingExchanges.first.id}/ready'
+        : '/offers/${ongoingOffers.first.id}/ready';
+    final extra = ongoingExchanges.isNotEmpty ? ongoingExchanges.first : ongoingOffers.first;
     return InkWell(
-      onTap: () => context.push('/exchanges/${ongoing.first.id}/ready', extra: ongoing.first),
+      onTap: () => context.push(destination, extra: extra),
       child: Container(
         height: 32,
         color: AppColors.accent.withValues(alpha: 0.1),
@@ -1387,7 +1368,7 @@ class _SafetyAdvisoryCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             OutlinedButton(
-              onPressed: () => context.push('/safety-center'),
+              onPressed: () => openSupportPage(context, '/safety-center'),
               child: Text(l10n.chatSafetyBannerLearnMore),
             ),
           ],
@@ -1465,38 +1446,70 @@ class _MessageContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.sell_outlined, size: 16, color: textColor),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  l10n.chatOfferCardLabel(offer.amount.toStringAsFixed(0), offer.bookTitle),
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              DecoratedBox(
+                decoration: BoxDecoration(color: textColor.withValues(alpha: 0.15), shape: BoxShape.circle),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.sell_outlined, size: 18, color: textColor),
                 ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.chatOfferCardTitle, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                    Text(
+                      l10n.chatOfferCardFrom(offer.bookTitle),
+                      style: TextStyle(color: textColor.withValues(alpha: 0.75), fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              _StatusPill(label: status.label, color: textColor),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(status.label, style: TextStyle(color: textColor, fontSize: 13)),
+          const SizedBox(height: 12),
+          Text(
+            l10n.priceLei(offer.amount.toStringAsFixed(0)),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 22),
+          ),
+          if (offer.message != null && offer.message!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              '„${offer.message}"',
+              style: TextStyle(color: textColor, fontSize: 13, fontStyle: FontStyle.italic),
+            ),
+          ],
           if (!isMine && status == OfferStatus.pending) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
+            const SizedBox(height: 10),
+            Row(
               children: [
-                OutlinedButton(
-                  onPressed: () => onOfferAction(message, accept: false),
-                  child: Text(l10n.exchangeReject),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.close, size: 16),
+                    label: Text(l10n.exchangeReject),
+                    onPressed: () => onOfferAction(message, accept: false),
+                  ),
                 ),
+                const SizedBox(width: 6),
                 // Contra-ofertă (Batch 11) - deschide dialog cu preț nou.
-                TextButton(
-                  onPressed: () => onCounterOffer(message),
-                  child: Text(l10n.chatOfferCounterAction),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.swap_horiz, size: 16),
+                    label: Text(l10n.chatOfferCounterAction),
+                    onPressed: () => onCounterOffer(message),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () => onOfferAction(message, accept: true),
-                  child: Text(l10n.exchangeAccept),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.check, size: 16),
+                    label: Text(l10n.exchangeAccept),
+                    onPressed: () => onOfferAction(message, accept: true),
+                  ),
                 ),
               ],
             ),
@@ -1515,33 +1528,49 @@ class _MessageContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.swap_horiz, size: 16, color: textColor),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+              DecoratedBox(
+                decoration: BoxDecoration(color: textColor.withValues(alpha: 0.15), shape: BoxShape.circle),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.swap_horiz, size: 18, color: textColor),
                 ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.chatExchangeCardTitle, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                    Text(
+                      label,
+                      style: TextStyle(color: textColor.withValues(alpha: 0.75), fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              _StatusPill(label: status.label, color: textColor),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(status.label, style: TextStyle(color: textColor, fontSize: 13)),
           if (!isMine && status == OfferStatus.pending) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
+            const SizedBox(height: 10),
+            Row(
               children: [
-                OutlinedButton(
-                  onPressed: () => onExchangeRequestAction(message, accept: false),
-                  child: Text(l10n.exchangeReject),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.close, size: 16),
+                    label: Text(l10n.exchangeReject),
+                    onPressed: () => onExchangeRequestAction(message, accept: false),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () => onExchangeRequestAction(message, accept: true),
-                  child: Text(l10n.exchangeAccept),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.check, size: 16),
+                    label: Text(l10n.exchangeAccept),
+                    onPressed: () => onExchangeRequestAction(message, accept: true),
+                  ),
                 ),
               ],
             ),
@@ -1757,6 +1786,27 @@ class _ChatImageViewerState extends State<_ChatImageViewer> with SingleTickerPro
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Bulina de status (În așteptare/Acceptată/...) din colțul cardurilor de
+/// ofertă/schimb din chat - folosește culoarea textului bulei ca să rămână
+/// lizibilă indiferent dacă mesajul e al meu sau al celuilalt.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.color});
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
     );
   }
 }

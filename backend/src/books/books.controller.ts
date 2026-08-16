@@ -5,13 +5,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
   Req,
-  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -19,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
@@ -44,25 +42,6 @@ export class BooksController {
   }
 
   /**
-   * Proxy pentru coperțile care nu trimit Access-Control-Allow-Origin (Google
-   * Books) - vezi BookLookupService.fetchCoverImage. Servite de pe domeniul
-   * nostru, ca randarea pe Flutter Web (CanvasKit) să nu mai depindă de CORS-ul
-   * terților. Throttle mai strict decât restul - un endpoint care face fetch
-   * către un URL arbitrar (chiar și cu listă albă de gazde) e o țintă bună
-   * pentru abuz.
-   */
-  @Throttle({ default: { limit: 60, ttl: 60_000 } })
-  @Get('cover-proxy')
-  async proxyCover(@Query('url') url: string, @Res() res: Response) {
-    if (!url) throw new BadRequestException('Parametrul url lipsește');
-    const image = await this.booksService.fetchCoverImage(url);
-    if (!image) throw new NotFoundException('Coperta nu a putut fi încărcată');
-    res.setHeader('Content-Type', image.contentType);
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.send(image.data);
-  }
-
-  /**
    * Coperte candidate pentru un titlu + autor (Batch 8). Folosite în ecranul
    * „Adaugă carte" când user tastează manual (fără să aleagă din autocomplete);
    * întoarcem un array plat de URL-uri unice de copertă, până la 4.
@@ -73,6 +52,20 @@ export class BooksController {
     @Query('author') author?: string,
   ) {
     return this.booksService.suggestCovers(title, author);
+  }
+
+  /**
+   * Detaliile complete ale UNEI cărți alese din autocomplete (descriere +
+   * subiecte). Apelat o singură dată, la selecție - `GET /books/search`
+   * rămâne rapid și fără descriere. Plasat înainte de :userBookId.
+   */
+  @Get('details')
+  lookupFullDetails(
+    @Query('isbn') isbn?: string,
+    @Query('title') title?: string,
+    @Query('author') author?: string,
+  ) {
+    return this.booksService.lookupFullDetails({ isbn, title, author });
   }
 
   // Căutare printre cărțile deja oferite de utilizatori, cu filtre.
@@ -111,9 +104,16 @@ export class BooksController {
     return this.booksService.getTrendingBooks();
   }
 
+  /**
+   * „Cele mai căutate" - ordonat după scorul de interes pe 14 zile. Scorul
+   * NU se întoarce userilor normali (rămâne un detaliu intern de ranking);
+   * doar adminii primesc `searchScore` pe fiecare item, ca badge de debug.
+   */
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('trending-listings')
-  getTrendingListings() {
-    return this.booksService.getTrendingListings();
+  getTrendingListings(@Req() req: Request) {
+    const user = req.user as AuthenticatedUser | undefined;
+    return this.booksService.getTrendingListings(user?.userId);
   }
 
   @Get('most-wished')

@@ -15,6 +15,7 @@ class BrowseFilters {
     this.condition,
     this.maxDistanceKm,
     this.listingType,
+    this.sort,
   });
 
   final String? title;
@@ -26,6 +27,11 @@ class BrowseFilters {
   final int? maxDistanceKm;
   final String? listingType;
 
+  /// „recent" (implicit) / „oldest" / „distance" - vine din sheet-ul
+  /// „Sortează" din Discover. „distance" cade înapoi pe ordinea implicită
+  /// dacă userul nu are oraș setat (fără el nu putem calcula distanța).
+  final String? sort;
+
   bool get hasActiveFilters =>
       author != null ||
       genre != null ||
@@ -33,7 +39,8 @@ class BrowseFilters {
       city != null ||
       condition != null ||
       maxDistanceKm != null ||
-      listingType != null;
+      listingType != null ||
+      (sort != null && sort != 'recent');
 
   BrowseFilters withTitle(String? title) {
     return BrowseFilters(
@@ -45,6 +52,7 @@ class BrowseFilters {
       condition: condition,
       maxDistanceKm: maxDistanceKm,
       listingType: listingType,
+      sort: sort,
     );
   }
 }
@@ -110,7 +118,11 @@ class BrowseController extends Notifier<BrowseState> {
     final repository = ref.read(booksRepositoryProvider);
     final authState = ref.read(authControllerProvider);
     final myCity = authState is AuthAuthenticated ? authState.user.city : null;
-    final sortingByDistance = f.maxDistanceKm != null && myCity != null && myCity.isNotEmpty;
+    // Distanța se poate calcula doar dacă știm din ce oraș pleacă userul -
+    // fără el, „cele mai apropiate întâi" cade pe sortarea implicită în loc
+    // să întoarcă zero rezultate.
+    final wantsDistance = f.maxDistanceKm != null || f.sort == 'distance';
+    final sortingByDistance = wantsDistance && myCity != null && myCity.isNotEmpty;
 
     return repository.browse(
       title: f.title,
@@ -119,7 +131,9 @@ class BrowseController extends Notifier<BrowseState> {
       language: f.language,
       city: f.city,
       condition: f.condition?.toJson(),
-      sort: sortingByDistance ? 'distance' : null,
+      sort: sortingByDistance
+          ? 'distance'
+          : (f.sort == 'distance' ? null : f.sort),
       fromCity: sortingByDistance ? myCity : null,
       maxDistanceKm: sortingByDistance ? f.maxDistanceKm : null,
       listingType: f.listingType,

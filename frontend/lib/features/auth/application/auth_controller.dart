@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/providers.dart';
 import '../../../data/models/user.dart';
 import '../../support/data/support_repository.dart' show CaptchaChallenge;
 import '../data/auth_repository.dart';
@@ -11,6 +12,13 @@ class AuthController extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.watch(authRepositoryProvider);
+    // Sesiunea a devenit invalidă la nivel de rețea (ex. cont șters, token
+    // revocat) - vezi sessionExpiredProvider.
+    ref.listen(sessionExpiredProvider, (previous, next) {
+      if (previous != null && next != previous) {
+        state = const AuthUnauthenticated();
+      }
+    });
     // Amânăm restaurarea sesiunii într-un microtask - nu modificăm `state`
     // sincron în timpul build(), altfel valoarea e suprascrisă de return.
     Future.microtask(_restoreSession);

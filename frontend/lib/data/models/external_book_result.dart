@@ -11,6 +11,12 @@ class ExternalBookResult {
   final int? pageCount;
   final String? language;
   final String? genre;
+
+  /// Subiectele/categoriile din sursa externă (Open Library `subjects`,
+  /// Google Books `categories`), deja curățate de backend de etichetele
+  /// tehnice. `genre` e primul element; restul devin sugestii de taguri în
+  /// ecranul „Adaugă carte". Gol când sursa nu are nimic util.
+  final List<String> subjects;
   final String source;
 
   const ExternalBookResult({
@@ -24,6 +30,7 @@ class ExternalBookResult {
     this.pageCount,
     this.language,
     this.genre,
+    this.subjects = const [],
     required this.source,
   });
 
@@ -39,6 +46,9 @@ class ExternalBookResult {
       pageCount: json['pageCount'] as int?,
       language: json['language'] as String?,
       genre: json['genre'] as String?,
+      subjects: (json['subjects'] as List<dynamic>? ?? const [])
+          .map((e) => e as String)
+          .toList(),
       source: json['source'] as String,
     );
   }

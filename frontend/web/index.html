@@ -106,21 +106,91 @@
       background: #F8F4EC;
       z-index: 9999;
     }
-    #splash .spinner {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 3px solid #EDE8DE;
-      border-top-color: #C8783A;
-      animation: splash-spin 0.8s linear infinite;
+    #splash .splash-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
     }
-    @keyframes splash-spin {
-      to { transform: rotate(360deg); }
+    #splash .splash-ring-wrap {
+      position: relative;
+      width: 72px;
+      height: 72px;
+    }
+    /* Rotit -90deg ca arcul să pornească de la ora 12, nu de la ora 3
+       (poziția implicită SVG pentru un <circle>). */
+    #splash .splash-ring {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    #splash .splash-ring-bg {
+      fill: none;
+      stroke: #EDE8DE;
+      stroke-width: 5;
+    }
+    #splash .splash-ring-fg {
+      fill: none;
+      stroke: #C8783A;
+      stroke-width: 5;
+      stroke-linecap: round;
+      /* stroke-dasharray/dashoffset setate din JS, în funcție de procent -
+         circumferința cercului (r=32) e 2*pi*32 ≈ 201.06. */
+      stroke-dasharray: 201.06;
+      stroke-dashoffset: 201.06;
+      transition: stroke-dashoffset 0.15s linear;
+    }
+    #splash .splash-percent {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #3A2A1E;
+    }
+    #splash .splash-stage {
+      font-family: sans-serif;
+      font-size: 13px;
+      color: #8A7A68;
+      min-height: 16px;
+    }
+    /* Conținut randat server-side (vezi scripts/static-server.js) pentru
+       cartea/profilul cerut, ca paginile /books/:id și /users/:id să aibă
+       text real indexabil - fără el, Googlebot nu vede decât <title>/<meta>,
+       body-ul fiind gol până randează Flutter în canvas. Rămâne acoperit de
+       #splash (fixed, opac, z-index mai mare) cât timp aplicația se
+       încarcă, deci userii reali nu-l văd niciodată - eliminat la
+       "flutter-first-frame" ca și #splash. Stilat minimal doar ca plasă de
+       siguranță pentru cazul (rar) în care JS-ul Flutter nu pornește deloc. */
+    #seo-content {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px;
+      font-family: sans-serif;
+      color: #1a1a1a;
+    }
+    #seo-content img {
+      max-width: 100%;
+      height: auto;
     }
   </style>
 </head>
 <body>
-  <div id="splash"><div class="spinner"></div></div>
+  <div id="splash">
+    <div class="splash-inner">
+      <div class="splash-ring-wrap">
+        <svg class="splash-ring" viewBox="0 0 72 72">
+          <circle class="splash-ring-bg" cx="36" cy="36" r="32"></circle>
+          <circle class="splash-ring-fg" id="splash-ring-fg" cx="36" cy="36" r="32"></circle>
+        </svg>
+        <div class="splash-percent" id="splash-percent">0%</div>
+      </div>
+      <div class="splash-stage" id="splash-stage">Se încarcă aplicația…</div>
+    </div>
+  </div>
   <script>
     // Flutter trimite acest eveniment pe window imediat după primul frame
     // randat - fără eliminarea explicită, splash-ul (z-index mare, fixed)
@@ -140,11 +210,64 @@
     // Engine-ul nu expune niciun API public pentru asta. Pe Android/iOS
     // autofill-ul funcționează normal (AutofillGroup + autofillHints +
     // TextInput.finishAutofillContext, vezi login_screen.dart).
+    // Procentul 0-100% de pe splash e o SIMULARE (nu progres real de bytes
+    // descărcați) - Flutter web nu expune un semnal fin-grained de progres
+    // pentru încărcarea bundle-ului fără să rescriem manual loader-ul
+    // (flutter_bootstrap.js e auto-generat la fiecare `flutter build web`,
+    // orice modificare acolo s-ar pierde la următorul build). Se apropie
+    // asimptotic de 92% cât timp așteaptă, ca userul să nu vadă niciodată
+    // 100% înainte ca aplicația chiar să fie gata - finalizarea reală tot
+    // vine din "flutter-first-frame" / timeout, ca înainte, neschimbat.
+    (function () {
+      var percentEl = document.getElementById('splash-percent');
+      var stageEl = document.getElementById('splash-stage');
+      var ringFg = document.getElementById('splash-ring-fg');
+      var circumference = 201.06;
+      var current = 0;
+      var done = false;
+
+      function setPercent(p) {
+        current = p;
+        if (percentEl) percentEl.textContent = Math.round(p) + '%';
+        if (ringFg) ringFg.style.strokeDashoffset = String(circumference * (1 - p / 100));
+        if (stageEl) {
+          stageEl.textContent = p < 30
+            ? 'Se încarcă aplicația…'
+            : p < 70
+              ? 'Se pregătesc resursele…'
+              : 'Aproape gata…';
+        }
+      }
+
+      var tickInterval = setInterval(function () {
+        if (done) return;
+        // Pas care scade pe măsură ce ne apropiem de plafonul de 92% -
+        // rapid la început, tot mai lent spre final (curbă ease-out).
+        var step = Math.max(0.15, (92 - current) * 0.06);
+        setPercent(Math.min(92, current + step));
+      }, 60);
+
+      window._splashFinish = function () {
+        if (done) return;
+        done = true;
+        clearInterval(tickInterval);
+        setPercent(100);
+      };
+    })();
+
     window.addEventListener('flutter-first-frame', function () {
-      document.getElementById('splash')?.remove();
+      window._splashFinish && window._splashFinish();
+      // Scurtă pauză ca userul să apuce să vadă 100% înainte ca splash-ul
+      // să dispară - altfel sare direct de la ~92% la nimic.
+      setTimeout(function () {
+        document.getElementById('splash')?.remove();
+        document.getElementById('seo-content')?.remove();
+      }, 150);
     });
     setTimeout(function () {
+      window._splashFinish && window._splashFinish();
       document.getElementById('splash')?.remove();
+      document.getElementById('seo-content')?.remove();
     }, 15000);
 
     // Dezînregistrăm orice service worker Flutter deja instalat și golim

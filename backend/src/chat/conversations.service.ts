@@ -35,6 +35,7 @@ const PRICE_OFFER_SELECT = {
     id: true,
     amount: true,
     status: true,
+    message: true,
     userBook: {
       select: { book: { select: { title: true, author: true, coverUrl: true } } },
     },

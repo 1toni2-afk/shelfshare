@@ -514,7 +514,8 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 for (final b in books) if (b.availableForSwap) _ShelfItem(b, _StatusFilter.available),
               ];
               final unavailable = [
-                for (final b in books) if (!b.availableForSwap) _ShelfItem(b, _StatusFilter.unavailable),
+                for (final b in books)
+                  if (!b.availableForSwap && !b.permanentlyTransferred) _ShelfItem(b, _StatusFilter.unavailable),
               ];
               final transferredItems = [
                 for (final b in transferred) _ShelfItem(b, _StatusFilter.transferred),
