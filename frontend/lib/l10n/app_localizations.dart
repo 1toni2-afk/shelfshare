@@ -6036,6 +6036,12 @@ abstract class AppLocalizations {
   /// **'Nu mă interesează'**
   String get bookMatchNoTooltip;
 
+  /// No description provided for @bookMatchInfoTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii carte'**
+  String get bookMatchInfoTooltip;
+
   /// No description provided for @bookMatchSkip.
   ///
   /// In ro, this message translates to:
@@ -6477,19 +6483,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In ro, this message translates to:
-  /// **'Thank You for using ShelfShare.ro 🇷🇴🇪🇺'**
+  /// **'Mulțumim că folosești ShelfShare.ro 🇷🇴🇪🇺'**
   String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeBullet1.
   ///
   /// In ro, this message translates to:
-  /// **'🌍 European product, self-hosted'**
+  /// **'🌍 Produs european, găzduit local (self-hosted)'**
   String get onboardingWelcomeBullet1;
 
   /// No description provided for @onboardingWelcomeBullet2.
   ///
   /// In ro, this message translates to:
-  /// **'🌳 Made to help the environment'**
+  /// **'🌳 Creat ca să ajute mediul'**
   String get onboardingWelcomeBullet2;
 
   /// No description provided for @onboardingWelcomeBullet3.
@@ -6501,7 +6507,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingWelcomeBullet4.
   ///
   /// In ro, this message translates to:
-  /// **'🤝 It\'s not all about the reading, it\'s about sharing'**
+  /// **'🤝 Nu e doar despre citit, e despre împărtășit'**
   String get onboardingWelcomeBullet4;
 
   /// No description provided for @onboardingWelcomeSource.

@@ -3331,6 +3331,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookMatchNoTooltip => 'Nem érdekel';
 
   @override
+  String get bookMatchInfoTooltip => 'Könyv részletei';
+
+  @override
   String get bookMatchSkip => 'Kihagyom';
 
   @override
@@ -3574,22 +3577,24 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get onboardingWelcomeTitle =>
-      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+      'Köszönjük, hogy a ShelfShare.ro-t használod 🇷🇴🇪🇺';
 
   @override
-  String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
+  String get onboardingWelcomeBullet1 =>
+      '🌍 Európai termék, saját szerveren üzemeltetve';
 
   @override
-  String get onboardingWelcomeBullet2 => '🌳 Made to help the environment';
+  String get onboardingWelcomeBullet2 =>
+      '🌳 Azért készült, hogy segítsen a környezetnek';
 
   @override
   String get onboardingWelcomeBullet3 =>
-      '📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează';
+      '📖 Egy fa átlagosan kb. 20 000 lap papírt ad, ezért minden csere számít';
 
   @override
   String get onboardingWelcomeBullet4 =>
-      '🤝 It\'s not all about the reading, it\'s about sharing';
+      '🤝 Nem csak az olvasásról szól, hanem a megosztásról is';
 
   @override
-  String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
+  String get onboardingWelcomeSource => 'Forrás: ribble-pack.co.uk';
 }

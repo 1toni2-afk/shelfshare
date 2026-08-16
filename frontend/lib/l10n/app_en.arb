@@ -1187,6 +1187,7 @@
     "bookMatchEntryTooltip": "Book Match",
     "bookMatchYesTooltip": "I like it",
     "bookMatchNoTooltip": "Not for me",
+    "bookMatchInfoTooltip": "Book details",
     "bookMatchSkip": "Skip",
     "bookMatchHint": "Swipe right for yes, left for no, or up to skip.",
     "bookMatchStampYes": "YES",
@@ -1287,10 +1288,19 @@
     "genreChildren": "Children",
     "genreYoungAdult": "Young Adult",
     "genreComics": "Comics",
-    "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
+    "onboardingFlowMoveForward": "Move forward",
+    "onboardingFlowBookAdded": "Added: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingWelcomeTitle": "Thank you for using ShelfShare.ro 🇷🇴🇪🇺",
     "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
     "onboardingWelcomeBullet2": "🌳 Made to help the environment",
-    "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
+    "onboardingWelcomeBullet3": "📖 A tree yields about 20,000 sheets of paper on average, so every swap counts",
     "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
-    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
+    "onboardingWelcomeSource": "Source: ribble-pack.co.uk"
 }

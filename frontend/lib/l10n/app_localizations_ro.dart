@@ -3322,6 +3322,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookMatchNoTooltip => 'Nu mă interesează';
 
   @override
+  String get bookMatchInfoTooltip => 'Detalii carte';
+
+  @override
   String get bookMatchSkip => 'Sari peste';
 
   @override
@@ -3561,13 +3564,14 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get onboardingWelcomeTitle =>
-      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+      'Mulțumim că folosești ShelfShare.ro 🇷🇴🇪🇺';
 
   @override
-  String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
+  String get onboardingWelcomeBullet1 =>
+      '🌍 Produs european, găzduit local (self-hosted)';
 
   @override
-  String get onboardingWelcomeBullet2 => '🌳 Made to help the environment';
+  String get onboardingWelcomeBullet2 => '🌳 Creat ca să ajute mediul';
 
   @override
   String get onboardingWelcomeBullet3 =>
@@ -3575,7 +3579,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get onboardingWelcomeBullet4 =>
-      '🤝 It\'s not all about the reading, it\'s about sharing';
+      '🤝 Nu e doar despre citit, e despre împărtășit';
 
   @override
   String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';

@@ -1848,6 +1848,7 @@
     "bookMatchEntryTooltip": "Potriviri de cărți",
     "bookMatchYesTooltip": "Îmi place",
     "bookMatchNoTooltip": "Nu mă interesează",
+    "bookMatchInfoTooltip": "Detalii carte",
     "bookMatchSkip": "Sari peste",
     "bookMatchHint": "Trage cardul la dreapta pentru da, la stânga pentru nu sau în sus ca să sari peste.",
     "bookMatchStampYes": "DA",
@@ -1948,10 +1949,19 @@
     "genreChildren": "Copii",
     "genreYoungAdult": "Young adult",
     "genreComics": "Benzi desenate",
-    "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
-    "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
-    "onboardingWelcomeBullet2": "🌳 Made to help the environment",
+    "onboardingFlowMoveForward": "Mergi mai departe",
+    "onboardingFlowBookAdded": "Adăugată: {title}",
+    "@onboardingFlowBookAdded": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "onboardingWelcomeTitle": "Mulțumim că folosești ShelfShare.ro 🇷🇴🇪🇺",
+    "onboardingWelcomeBullet1": "🌍 Produs european, găzduit local (self-hosted)",
+    "onboardingWelcomeBullet2": "🌳 Creat ca să ajute mediul",
     "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
-    "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
+    "onboardingWelcomeBullet4": "🤝 Nu e doar despre citit, e despre împărtășit",
     "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
 }

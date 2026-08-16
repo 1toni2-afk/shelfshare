@@ -1045,6 +1045,7 @@
     "bookMatchEntryTooltip": "Buch-Match",
     "bookMatchYesTooltip": "Gefällt mir",
     "bookMatchNoTooltip": "Nichts für mich",
+    "bookMatchInfoTooltip": "Buchdetails",
     "bookMatchSkip": "Überspringen",
     "bookMatchHint": "Nach rechts wischen für Ja, nach links für Nein, nach oben zum Überspringen.",
     "bookMatchStampYes": "JA",
@@ -1152,10 +1153,10 @@
     "greetMottoCirculating": "Weniger neu gedruckte Bücher, mehr Geschichten im Umlauf.",
     "aboutAppSustainabilityTitle": "Nachhaltigkeit",
     "aboutAppSustainabilityBody": "Jeder Büchertausch bedeutet ein Buch weniger, das gedruckt, transportiert und verpackt werden muss. Der Kauf eines neuen Exemplars kostet Papier, Wasser und Energie - ein bereits vorhandenes Exemplar, das einen neuen Leser findet, spart all das.\n\nShelfShare ist Teil einer wachsenden europäischen Bewegung hin zu einer Kreislaufwirtschaft: Wiederverwendung statt ständiger Neuproduktion. Ein Büchertausch ist eine kleine Geste, die aber zählt.",
-    "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
-    "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
-    "onboardingWelcomeBullet2": "🌳 Made to help the environment",
-    "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
-    "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
-    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
+    "onboardingWelcomeTitle": "Danke, dass du ShelfShare.ro nutzt 🇷🇴🇪🇺",
+    "onboardingWelcomeBullet1": "🌍 Europäisches Produkt, selbst gehostet",
+    "onboardingWelcomeBullet2": "🌳 Gemacht, um der Umwelt zu helfen",
+    "onboardingWelcomeBullet3": "📖 Ein Baum liefert im Schnitt rund 20.000 Blatt Papier – jeder Tausch zählt",
+    "onboardingWelcomeBullet4": "🤝 Es geht nicht nur ums Lesen, sondern ums Teilen",
+    "onboardingWelcomeSource": "Quelle: ribble-pack.co.uk"
 }
