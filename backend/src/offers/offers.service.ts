@@ -15,7 +15,6 @@ import { CounterOfferDto } from './dto/counter-offer.dto';
 import { SetMeetingDto } from '../exchanges/dto/set-meeting.dto';
 import { CancelExchangeDto } from '../exchanges/dto/cancel-exchange.dto';
 import { ShareContactDto } from '../exchanges/dto/share-contact.dto';
-import { DoneExchangeDto } from '../exchanges/dto/done-exchange.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_SALE_COMPLETED } from '../common/utils/xp';
 
@@ -245,7 +244,7 @@ export class OffersService {
     await this.notifySafe(
       offer.buyerId,
       'PRICE_OFFER_ACCEPTED',
-      `${publicName(updated.owner)} a acceptat oferta ta de ${updated.amount} lei pentru "${updated.userBook.book.title}" - programați o întâlnire`,
+      `${publicName(updated.owner)} a acceptat oferta ta de ${updated.amount.toString()} lei pentru "${updated.userBook.book.title}" - programați o întâlnire`,
       {
         offerId: id,
         ...(acceptConversationId
@@ -449,7 +448,7 @@ export class OffersService {
    * ambele au apăsat Done cartea chiar se transferă (XP, contoare). Mirror
    * exact al exchanges.service.ts#markDone.
    */
-  async markDone(id: string, userId: string, dto: DoneExchangeDto) {
+  async markDone(id: string, userId: string) {
     const offer = await this.findOwnedOffer(id, userId);
     this.assertStatus(offer, 'ACCEPTED');
     const isBuyer = userId === offer.buyerId;
@@ -720,7 +719,7 @@ export class OffersService {
     const bookTitle = offer.userBook.book.title;
 
     const summary = 'Întâlnire vânzare carte';
-    const description = `${buyerName} se întâlnește cu ${ownerName} pentru a cumpăra cartea „${bookTitle}" (${offer.amount} lei)`;
+    const description = `${buyerName} se întâlnește cu ${ownerName} pentru a cumpăra cartea „${bookTitle}" (${offer.amount.toString()} lei)`;
 
     return [
       'BEGIN:VCALENDAR',

@@ -14,11 +14,6 @@ import { PrismaService } from '../prisma/prisma.service';
 /// (o zi-două) și limita practică peste care userii uită complet de cont.
 export const DELETION_GRACE_PERIOD_DAYS = 15;
 
-// TESTARE: 30 de secunde în loc de zilele de mai sus, ca fluxul să poată fi
-// verificat manual fără să aștepți 15 zile. Revino la
-// DELETION_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000 înainte de producție.
-const DELETION_GRACE_PERIOD_MS = 30 * 1000;
-
 @Injectable()
 export class AccountDeletionService {
   private readonly logger = new Logger(AccountDeletionService.name);
@@ -36,7 +31,9 @@ export class AccountDeletionService {
       );
     }
 
-    const scheduledFor = new Date(Date.now() + DELETION_GRACE_PERIOD_MS);
+    const scheduledFor = new Date(
+      Date.now() + DELETION_GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000,
+    );
     await this.prisma.user.update({
       where: { id: userId },
       data: { deletionScheduledAt: scheduledFor },
@@ -132,10 +129,7 @@ export class AccountDeletionService {
   /// fereastră a expirat. Cascade din schema.prisma se ocupă de datele
   /// relaționate (user_books, exchange_requests, messages, etc.). Rulează
   /// individual per user ca o eroare pe unul singur să nu blocheze restul.
-  // TESTARE: la fiecare 10 secunde în loc de zilnic, ca să poți vedea
-  // ștergerea efectivă la scurt timp după cele 30s de mai sus. Revino la
-  // CronExpression.EVERY_DAY_AT_3AM înainte de producție.
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async purgeExpiredAccounts(): Promise<void> {
     const now = new Date();
     const expired = await this.prisma.user.findMany({
