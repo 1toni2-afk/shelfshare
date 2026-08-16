@@ -95,11 +95,18 @@ class ProfileRepository {
   }
 
   /// Programează ștergerea contului cu 15 zile grace period. Backend întoarce
-  /// `scheduledFor` (ISO date). Vezi AccountDeletionService pe backend.
-  Future<DateTime> requestAccountDeletion() async {
+  /// `scheduledFor` (ISO date) și `immediate` - `true` doar când backend-ul
+  /// rulează cu `INSTANT_ACCOUNT_DELETION=true` (testare locală), caz în care
+  /// contul e deja șters definitiv la acest răspuns, nu doar programat. Vezi
+  /// AccountDeletionService pe backend.
+  Future<({DateTime scheduledFor, bool immediate})> requestAccountDeletion() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/account/delete-request');
-    return DateTime.parse((response.data as Map<String, dynamic>)['scheduledFor'] as String);
+    final data = response.data as Map<String, dynamic>;
+    return (
+      scheduledFor: DateTime.parse(data['scheduledFor'] as String),
+      immediate: data['immediate'] == true,
+    );
   }
 
   Future<void> cancelAccountDeletion() async {

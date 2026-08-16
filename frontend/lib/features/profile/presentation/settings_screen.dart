@@ -560,7 +560,15 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
 
     setState(() => _busy = true);
     try {
-      await ref.read(profileRepositoryProvider).requestAccountDeletion();
+      final result = await ref.read(profileRepositoryProvider).requestAccountDeletion();
+      if (result.immediate) {
+        // Backend rulează cu INSTANT_ACCOUNT_DELETION=true (testare locală) -
+        // contul nu mai există la acest punct, deci un refresh de profil ar
+        // da 401. logout() ignoră deja eroarea serverului și curăță local -
+        // vezi AuthRepository.logout().
+        await ref.read(authControllerProvider.notifier).logout();
+        return;
+      }
       await ref.read(profileControllerProvider.notifier).refresh();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
