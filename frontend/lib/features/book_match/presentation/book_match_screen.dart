@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/cover_proxy.dart';
 import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../wishlist/application/wishlist_controller.dart';
@@ -29,6 +31,15 @@ class BookMatchScreen extends ConsumerStatefulWidget {
 const _batchSize = 12;
 const _prefetchThreshold = 3;
 
+/// Câte coperte ținem "calde" înainte de cardul curent - doar cardul de sus
+/// și următorul erau construite în widget tree (vezi _buildStack), deci
+/// coperta cărții #3 nu începea să se descarce decât în momentul în care
+/// devenea cardul următor, ceea ce dădea o întârziere vizibilă (~2s) la
+/// swipe rapid. precacheImage pornește descărcarea din timp, în afara
+/// widget tree-ului, ca prin momentul afișării imaginea să fie deja în
+/// cache-ul lui CachedNetworkImage (memorie sau disc).
+const _coverPreloadBuffer = 10;
+
 /// Distanța (px) de la care swipe-ul e considerat decis; sub ea, cardul revine.
 const _swipeThreshold = 110.0;
 
@@ -52,6 +63,10 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   /// Ce am văzut deja în sesiunea asta - catalogul e mic (~92 cărți), iar
   /// loturile succesive pot repeta titluri; fără dedup, userul le-ar revedea.
   final Set<String> _seenIds = {};
+
+  /// URL-uri de copertă deja trimise la precache - evită re-precache-uirea
+  /// aceleiași imagini de fiecare dată când fereastra de buffer avansează.
+  final Set<String> _precachedCoverUrls = {};
 
   bool _initialLoading = true;
   bool _fetching = false;
@@ -114,6 +129,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
         if (fresh.isEmpty) _exhausted = true;
         _loadError = null;
       });
+      _precacheUpcomingCovers();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -127,6 +143,19 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   void _maybePrefetch() {
     if (_cards.length <= _prefetchThreshold && !_exhausted && !_fetching) {
       _fetchBatch();
+    }
+  }
+
+  /// Pornește descărcarea coperților pentru primele [_coverPreloadBuffer]
+  /// carduri din coadă, ca să fie deja în cache până ajung să fie afișate.
+  void _precacheUpcomingCovers() {
+    if (!mounted) return;
+    for (final card in _cards.take(_coverPreloadBuffer)) {
+      final url = coverProxyUrl(card.coverUrl);
+      if (url == null || url.isEmpty || !_precachedCoverUrls.add(url)) continue;
+      // Eșecul de precache (URL mort, rețea) nu trebuie să crape ecranul -
+      // CachedNetworkImage din card mai încearcă oricum la afișare.
+      precacheImage(CachedNetworkImageProvider(url), context).catchError((_) {});
     }
   }
 
@@ -233,6 +262,9 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
     });
     if (card != null) _recordSwipe(card, action);
     _maybePrefetch();
+    // Fereastra de 10 avansează cu fiecare swipe - cardul care tocmai a
+    // intrat în buffer (fostul #11) nu era precache-uit până acum.
+    _precacheUpcomingCovers();
   }
 
   Offset get _cardOffset => _flight?.value ?? _drag;
