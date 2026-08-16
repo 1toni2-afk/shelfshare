@@ -8,6 +8,7 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/motto_text.dart';
 import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
 
@@ -128,7 +129,16 @@ class _ShelfList extends ConsumerWidget {
           _ShelfSection.finished => shelf.finished,
         };
         if (books.isEmpty) {
-          return CenteredScrollable(child: Text(l10n.bookshelfEmpty));
+          return CenteredScrollable(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.bookshelfEmpty),
+                const SizedBox(height: 12),
+                const MottoText(),
+              ],
+            ),
+          );
         }
         return ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -160,7 +170,16 @@ class _ShelfList extends ConsumerWidget {
           },
         );
       },
-      loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+      loading: () => const CenteredScrollable(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            MottoText(),
+          ],
+        ),
+      ),
       error: (error, _) => CenteredScrollable(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -189,7 +208,16 @@ class _SharedList extends ConsumerWidget {
     return async.when(
       data: (books) {
         if (books.isEmpty) {
-          return CenteredScrollable(child: Text(l10n.bookshelfEmpty));
+          return CenteredScrollable(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(l10n.bookshelfEmpty),
+                const SizedBox(height: 12),
+                const MottoText(),
+              ],
+            ),
+          );
         }
         // Grid responsiv (aceleași metrici ca Home/Browse/Wishlist), nu
         // `Wrap` cu lățime fixă - colapsa pe o coloană pe telefoane înguste.
@@ -211,7 +239,16 @@ class _SharedList extends ConsumerWidget {
           },
         );
       },
-      loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+      loading: () => const CenteredScrollable(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            MottoText(),
+          ],
+        ),
+      ),
       error: (error, _) => CenteredScrollable(
         child: Column(
           mainAxisSize: MainAxisSize.min,

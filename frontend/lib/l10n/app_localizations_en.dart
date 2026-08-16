@@ -2852,7 +2852,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutDevOpenError => 'Couldn\'t open the link. Please try again.';
 
   @override
-  String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
+  String get loginMadeWithLove =>
+      'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
   String get homeRecommendedTitle => 'Recommended for you';
@@ -3061,6 +3062,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aboutAppAccountDeletionBody =>
       'If you want to delete your account, you can do it from Settings → „Delete account\". After confirmation you have a 15-day grace period during which you can change your mind (log back in and hit „Cancel deletion\"). After 15 days, the account and all data tied to it are permanently deleted.';
+
+  @override
+  String get aboutAppSustainabilityTitle => 'Sustainability';
+
+  @override
+  String get aboutAppSustainabilityBody =>
+      'Every book swap is one less new book that has to be printed, shipped, and packaged. Buying a new copy costs paper, water, and energy - a copy that already exists, finding a new reader, skips all of that.\n\nShelfShare is part of a growing European movement toward a circular economy: reusing instead of constantly producing new things. A book swap is a small act, but it counts.';
 
   @override
   String get chatNewConversationTooltip => 'New conversation';
@@ -3289,6 +3297,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Today is World Book Day! 📚';
+
+  @override
+  String get greetMottoStandingTree =>
+      'A swapped book is a tree left standing. 🌳';
+
+  @override
+  String get greetMottoWhyBuyNew =>
+      'Why buy a new book when one is waiting for a swap?';
+
+  @override
+  String get greetMottoMoreSustainable =>
+      'Swapping books is more sustainable than buying new ones.';
+
+  @override
+  String get greetMottoEuropeanMovement =>
+      'You\'re part of a European movement for more sustainable consumption. 🇪🇺';
+
+  @override
+  String get greetMottoCirculating =>
+      'Fewer new books printed, more stories circulating.';
 
   @override
   String get bookMatchTitle => 'Book Match';
@@ -3540,4 +3568,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String onboardingFlowBookAdded(String title) {
     return 'Added: $title';
   }
+
+  @override
+  String get onboardingWelcomeTitle =>
+      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+
+  @override
+  String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
+
+  @override
+  String get onboardingWelcomeBullet2 => '🌳 Made to help the environment';
+
+  @override
+  String get onboardingWelcomeBullet3 =>
+      '📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează';
+
+  @override
+  String get onboardingWelcomeBullet4 =>
+      '🤝 It\'s not all about the reading, it\'s about sharing';
+
+  @override
+  String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
 }

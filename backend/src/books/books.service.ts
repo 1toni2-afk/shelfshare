@@ -251,7 +251,7 @@ export class BooksService {
     this.follow.notifyFollowersOfNewBook(userId, book.title).catch(() => {});
     this.notifyNearbyUsers(userId, book.title).catch(() => {});
     this.notifyInterestedUsers(userId, book.title, book.genre).catch(() => {});
-    awardXp(this.prisma, userId, XP_BOOK_LISTED);
+    await awardXp(this.prisma, userId, XP_BOOK_LISTED);
 
     return userBook;
   }

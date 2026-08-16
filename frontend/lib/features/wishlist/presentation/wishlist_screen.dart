@@ -7,6 +7,7 @@ import '../../../data/models/wishlist_item.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/motto_text.dart';
 import '../../books/presentation/browse_screen.dart';
 import '../application/wishlist_controller.dart';
 
@@ -27,7 +28,14 @@ class WishlistScreen extends ConsumerWidget {
             data: (items) {
               if (items.isEmpty) {
                 return CenteredScrollable(
-                  child: Text(l10n.wishlistEmpty),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.wishlistEmpty),
+                      const SizedBox(height: 12),
+                      const MottoText(),
+                    ],
+                  ),
                 );
               }
               return Center(
@@ -59,7 +67,16 @@ class WishlistScreen extends ConsumerWidget {
                 ),
               );
             },
-            loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+            loading: () => const CenteredScrollable(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  MottoText(),
+                ],
+              ),
+            ),
             error: (error, _) => CenteredScrollable(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

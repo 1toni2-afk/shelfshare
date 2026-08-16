@@ -12,6 +12,7 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/main_scaffold.dart' show kSidebarBreakpoint;
+import '../../../shared/widgets/motto_text.dart';
 import '../../../shared/widgets/typewriter_text.dart';
 import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
@@ -143,7 +144,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   data: data,
                   scrollController: _scrollController,
                 ),
-                loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+                loading: () => const CenteredScrollable(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      MottoText(),
+                    ],
+                  ),
+                ),
                 error: (error, _) => CenteredScrollable(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -310,7 +320,14 @@ class _HomeFeed extends StatelessWidget {
 
     if (data.recent.isEmpty) {
       return CenteredScrollable(
-        child: Text(l10n.homeEmpty, style: Theme.of(context).textTheme.bodyMedium),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.homeEmpty, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 12),
+            const MottoText(),
+          ],
+        ),
       );
     }
 

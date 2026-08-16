@@ -5163,7 +5163,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginMadeWithLove.
   ///
   /// In ro, this message translates to:
-  /// **'Made with ❤️ in Transilvanya'**
+  /// **'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺'**
   String get loginMadeWithLove;
 
   /// No description provided for @homeRecommendedTitle.
@@ -5549,6 +5549,18 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.'**
   String get aboutAppAccountDeletionBody;
+
+  /// No description provided for @aboutAppSustainabilityTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sustenabilitate'**
+  String get aboutAppSustainabilityTitle;
+
+  /// No description provided for @aboutAppSustainabilityBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fiecare schimb de carte înseamnă o carte nouă care nu mai trebuie tipărită, transportată și ambalată. Cumpărarea uneia noi consumă hârtie, apă și energie - un exemplar deja existent, ajuns la un nou cititor, evită tot acest cost.\n\nShelfShare se alătură unei mișcări europene tot mai puternice pentru economia circulară: reutilizarea, în loc de producția continuă de lucruri noi. Un schimb de cărți e un gest mic, dar care contează.'**
+  String get aboutAppSustainabilityBody;
 
   /// No description provided for @chatNewConversationTooltip.
   ///
@@ -5975,6 +5987,36 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Astăzi este Ziua Internațională a Cărții! 📚'**
   String get greetBookDay;
+
+  /// No description provided for @greetMottoStandingTree.
+  ///
+  /// In ro, this message translates to:
+  /// **'O carte schimbată e un copac care rămâne în picioare. 🌳'**
+  String get greetMottoStandingTree;
+
+  /// No description provided for @greetMottoWhyBuyNew.
+  ///
+  /// In ro, this message translates to:
+  /// **'De ce cumperi o carte nouă când una te așteaptă la schimb?'**
+  String get greetMottoWhyBuyNew;
+
+  /// No description provided for @greetMottoMoreSustainable.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbul de cărți e mai sustenabil decât cumpărarea uneia noi.'**
+  String get greetMottoMoreSustainable;
+
+  /// No description provided for @greetMottoEuropeanMovement.
+  ///
+  /// In ro, this message translates to:
+  /// **'Faci parte dintr-o mișcare europeană pentru un consum mai sustenabil. 🇪🇺'**
+  String get greetMottoEuropeanMovement;
+
+  /// No description provided for @greetMottoCirculating.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai puține cărți noi tipărite, mai multe povești care circulă.'**
+  String get greetMottoCirculating;
 
   /// No description provided for @bookMatchTitle.
   ///
@@ -6437,6 +6479,42 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Adăugată: {title}'**
   String onboardingFlowBookAdded(String title);
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Thank You for using ShelfShare.ro 🇷🇴🇪🇺'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeBullet1.
+  ///
+  /// In ro, this message translates to:
+  /// **'🌍 European product, self-hosted'**
+  String get onboardingWelcomeBullet1;
+
+  /// No description provided for @onboardingWelcomeBullet2.
+  ///
+  /// In ro, this message translates to:
+  /// **'🌳 Made to help the environment'**
+  String get onboardingWelcomeBullet2;
+
+  /// No description provided for @onboardingWelcomeBullet3.
+  ///
+  /// In ro, this message translates to:
+  /// **'📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează'**
+  String get onboardingWelcomeBullet3;
+
+  /// No description provided for @onboardingWelcomeBullet4.
+  ///
+  /// In ro, this message translates to:
+  /// **'🤝 It\'s not all about the reading, it\'s about sharing'**
+  String get onboardingWelcomeBullet4;
+
+  /// No description provided for @onboardingWelcomeSource.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sursă: ribble-pack.co.uk'**
+  String get onboardingWelcomeSource;
 }
 
 class _AppLocalizationsDelegate

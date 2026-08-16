@@ -7,6 +7,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { SafetyService } from '../safety/safety.service';
 import { MailService } from '../mail/mail.service';
 import { PresenceService } from './presence.service';
+import { RealtimeService } from '../common/realtime/realtime.service';
 
 describe('ConversationsService', () => {
   let service: ConversationsService;
@@ -21,6 +22,7 @@ describe('ConversationsService', () => {
   let storage: { uploadTextFile: jest.Mock; getPublicUrl: jest.Mock };
   let mail: { sendChatReportNotification: jest.Mock };
   let presence: { isOnline: jest.Mock };
+  let realtime: { emitToConversation: jest.Mock; emitToUser: jest.Mock };
 
   const userA = {
     id: 'user-a',
@@ -62,6 +64,7 @@ describe('ConversationsService', () => {
     };
     mail = { sendChatReportNotification: jest.fn() };
     presence = { isOnline: jest.fn().mockReturnValue(false) };
+    realtime = { emitToConversation: jest.fn(), emitToUser: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -70,7 +73,11 @@ describe('ConversationsService', () => {
         { provide: StorageService, useValue: storage },
         {
           provide: NotificationsService,
-          useValue: { create: jest.fn(), upsertUnread: jest.fn(), markAsReadByDataField: jest.fn() },
+          useValue: {
+            create: jest.fn(),
+            upsertUnread: jest.fn(),
+            markAsReadByDataField: jest.fn(),
+          },
         },
         {
           provide: SafetyService,
@@ -78,6 +85,7 @@ describe('ConversationsService', () => {
         },
         { provide: MailService, useValue: mail },
         { provide: PresenceService, useValue: presence },
+        { provide: RealtimeService, useValue: realtime },
       ],
     }).compile();
 
@@ -253,7 +261,9 @@ describe('ConversationsService', () => {
 
       const result = await service.getMyConversations('user-a');
 
-      expect(result[0].lastMessage?.photo).toBe('https://cdn.test/chat/abc.webp');
+      expect(result[0].lastMessage?.photo).toBe(
+        'https://cdn.test/chat/abc.webp',
+      );
     });
   });
 
@@ -399,7 +409,7 @@ describe('ConversationsService', () => {
 
     it('exportă transcriptul în folderul chat-reports și îl leagă de raport', async () => {
       await service.reportConversation('conv-1', 'user-a', {
-        reason: 'HARASSMENT' as never,
+        reason: 'HARASSMENT',
       });
 
       expect(storage.uploadTextFile).toHaveBeenCalledWith(
@@ -419,10 +429,12 @@ describe('ConversationsService', () => {
     });
 
     it('nu pierde raportul dacă emailul de moderare eșuează', async () => {
-      mail.sendChatReportNotification.mockRejectedValue(new Error('resend down'));
+      mail.sendChatReportNotification.mockRejectedValue(
+        new Error('resend down'),
+      );
 
       const result = await service.reportConversation('conv-1', 'user-a', {
-        reason: 'SPAM' as never,
+        reason: 'SPAM',
       });
 
       expect(result.reportId).toBe('report-1');

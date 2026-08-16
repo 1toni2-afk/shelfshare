@@ -2855,7 +2855,8 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu am putut deschide linkul. Încearcă din nou.';
 
   @override
-  String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
+  String get loginMadeWithLove =>
+      'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
   String get homeRecommendedTitle => 'Recomandate pentru tine';
@@ -3064,6 +3065,13 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get aboutAppAccountDeletionBody =>
       'Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.';
+
+  @override
+  String get aboutAppSustainabilityTitle => 'Sustenabilitate';
+
+  @override
+  String get aboutAppSustainabilityBody =>
+      'Fiecare schimb de carte înseamnă o carte nouă care nu mai trebuie tipărită, transportată și ambalată. Cumpărarea uneia noi consumă hârtie, apă și energie - un exemplar deja existent, ajuns la un nou cititor, evită tot acest cost.\n\nShelfShare se alătură unei mișcări europene tot mai puternice pentru economia circulară: reutilizarea, în loc de producția continuă de lucruri noi. Un schimb de cărți e un gest mic, dar care contează.';
 
   @override
   String get chatNewConversationTooltip => 'Conversație nouă';
@@ -3292,6 +3300,26 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
+
+  @override
+  String get greetMottoStandingTree =>
+      'O carte schimbată e un copac care rămâne în picioare. 🌳';
+
+  @override
+  String get greetMottoWhyBuyNew =>
+      'De ce cumperi o carte nouă când una te așteaptă la schimb?';
+
+  @override
+  String get greetMottoMoreSustainable =>
+      'Schimbul de cărți e mai sustenabil decât cumpărarea uneia noi.';
+
+  @override
+  String get greetMottoEuropeanMovement =>
+      'Faci parte dintr-o mișcare europeană pentru un consum mai sustenabil. 🇪🇺';
+
+  @override
+  String get greetMottoCirculating =>
+      'Mai puține cărți noi tipărite, mai multe povești care circulă.';
 
   @override
   String get bookMatchTitle => 'Potriviri de cărți';
@@ -3542,4 +3570,25 @@ class AppLocalizationsRo extends AppLocalizations {
   String onboardingFlowBookAdded(String title) {
     return 'Adăugată: $title';
   }
+
+  @override
+  String get onboardingWelcomeTitle =>
+      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+
+  @override
+  String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
+
+  @override
+  String get onboardingWelcomeBullet2 => '🌳 Made to help the environment';
+
+  @override
+  String get onboardingWelcomeBullet3 =>
+      '📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează';
+
+  @override
+  String get onboardingWelcomeBullet4 =>
+      '🤝 It\'s not all about the reading, it\'s about sharing';
+
+  @override
+  String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
 }

@@ -43,8 +43,8 @@ class AuthRepository {
       data: {
         'email': email,
         'password': password,
-        if (captchaToken != null) 'captchaToken': captchaToken,
-        if (captchaAnswer != null) 'captchaAnswer': captchaAnswer,
+        'captchaToken': ?captchaToken,
+        'captchaAnswer': ?captchaAnswer,
       },
     );
     await _tokenStorage.saveTokens(

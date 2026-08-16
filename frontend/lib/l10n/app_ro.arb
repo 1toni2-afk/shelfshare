@@ -1625,7 +1625,7 @@
     "aboutDevSupportSubtitle": "Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.",
     "aboutDevCoffeeButton": "Buy me a coffee",
     "aboutDevOpenError": "Nu am putut deschide linkul. Încearcă din nou.",
-    "loginMadeWithLove": "Made with ❤️ in Transilvanya",
+    "loginMadeWithLove": "Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺",
     "homeRecommendedTitle": "Recomandate pentru tine",
     "homeNearbyTitle": "Aproape de tine ({km} km)",
     "@homeNearbyTitle": {
@@ -1711,6 +1711,8 @@
     "aboutAppChatBody": "Poți începe o conversație direct din pagina unei cărți sau din profilul altui user. Toate mesajele sunt criptate în timpul transmiterii.\n\nRegulă simplă de siguranță: nu da niciodată date personale (CNP, număr de card, adresa completă) în chat. Pentru schimburi, folosește adresa poștală doar când ești sigur de partener.",
     "aboutAppAccountDeletionTitle": "Ștergerea contului",
     "aboutAppAccountDeletionBody": "Dacă vrei să-ți ștergi contul, o poți face din Setări → „Șterge contul\". După confirmare ai o perioadă de grație de 15 zile în care te poți răzgândi (reintri și dai „Anulează ștergerea\"). După 15 zile, contul și toate datele legate de el sunt șterse definitiv.",
+    "aboutAppSustainabilityTitle": "Sustenabilitate",
+    "aboutAppSustainabilityBody": "Fiecare schimb de carte înseamnă o carte nouă care nu mai trebuie tipărită, transportată și ambalată. Cumpărarea uneia noi consumă hârtie, apă și energie - un exemplar deja existent, ajuns la un nou cititor, evită tot acest cost.\n\nShelfShare se alătură unei mișcări europene tot mai puternice pentru economia circulară: reutilizarea, în loc de producția continuă de lucruri noi. Un schimb de cărți e un gest mic, dar care contează.",
     "chatNewConversationTooltip": "Conversație nouă",
     "chatSearchHint": "Caută în conversații…",
     "chatFilterAll": "Toate",
@@ -1803,6 +1805,11 @@
     "greetEaster": "Paște fericit! 🐰",
     "greetNewYear": "An nou, cărți noi! 🎆",
     "greetBookDay": "Astăzi este Ziua Internațională a Cărții! 📚",
+    "greetMottoStandingTree": "O carte schimbată e un copac care rămâne în picioare. 🌳",
+    "greetMottoWhyBuyNew": "De ce cumperi o carte nouă când una te așteaptă la schimb?",
+    "greetMottoMoreSustainable": "Schimbul de cărți e mai sustenabil decât cumpărarea uneia noi.",
+    "greetMottoEuropeanMovement": "Faci parte dintr-o mișcare europeană pentru un consum mai sustenabil. 🇪🇺",
+    "greetMottoCirculating": "Mai puține cărți noi tipărite, mai multe povești care circulă.",
     "bookMatchTitle": "Potriviri de cărți",
     "bookMatchEntryTooltip": "Potriviri de cărți",
     "bookMatchYesTooltip": "Îmi place",
@@ -1903,5 +1910,11 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
+    "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
+    "onboardingWelcomeBullet2": "🌳 Made to help the environment",
+    "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
+    "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
+    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
 }

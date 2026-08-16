@@ -18,7 +18,7 @@ import { IsEmail } from 'class-validator';
  */
 export function IsNormalizedEmail() {
   return applyDecorators(
-    Transform(({ value }) =>
+    Transform(({ value }: { value: unknown }) =>
       typeof value === 'string' ? value.trim().toLowerCase() : value,
     ),
     IsEmail({}, { message: 'Adresa de email nu este validă' }),
