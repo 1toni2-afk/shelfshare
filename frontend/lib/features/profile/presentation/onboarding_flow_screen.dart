@@ -307,11 +307,24 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   }
 
   // Lățimea standard a unui IconButton Material (48) - folosită și pentru
-  // spacer-ul de sub săgeata Back, ca textul Skip/Move forward să fie
-  // centrat sub Continue, nu sub tot rândul (Back + Continue).
+  // spacer-ul de sub săgeata Back, ca textul Skip să fie centrat sub
+  // Continue, nu sub tot rândul (Back + Continue).
   static const _backButtonWidth = 48.0;
 
   Widget _buildFooter({required bool isLastStep, bool moveForward = false}) {
+    final continueButton = FilledButton(
+      onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
+      child: _finishing
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primaryForeground,
+              ),
+            )
+          : Text(isLastStep ? context.l10n.onboardingFlowFinish : context.l10n.commonContinue),
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
       child: Center(
@@ -327,43 +340,35 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
                     onPressed: _finishing ? null : _back,
                     icon: const Icon(Icons.arrow_back),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _finishing
-                          ? null
-                          : () => isLastStep ? _finish() : _next(),
-                      child: _finishing
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primaryForeground,
-                              ),
-                            )
-                          : Text(isLastStep ? context.l10n.onboardingFlowFinish : context.l10n.commonContinue),
-                    ),
-                  ),
+                  // La BookMatch (pasul 5, moveForward), Continue coboară pe
+                  // rândul de mai jos, centrat, în locul fostului link „Move
+                  // forward" - acesta era redundant (făcea exact ce face
+                  // Continue), deci a fost eliminat, nu doar redenumit.
+                  if (!moveForward) ...[
+                    const SizedBox(width: 8),
+                    Expanded(child: continueButton),
+                  ],
                 ],
               ),
-              Row(
-                children: [
-                  const SizedBox(width: _backButtonWidth + 8),
-                  Expanded(
-                    child: Center(
-                      child: TextButton(
-                        onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
-                        // La BookMatch (pasul 5), acest buton face exact ce face și
-                        // Continue (nu există un "răspuns" de sărit peste) - eticheta
-                        // "Sari peste" era înșelătoare, sugera că se pierde progresul
-                        // din swipe. La celelalte pași rămâne un skip real.
-                        child: Text(moveForward ? context.l10n.onboardingFlowMoveForward : context.l10n.onboardingFlowSkip),
+              if (moveForward)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: SizedBox(width: 240, child: continueButton),
+                )
+              else
+                Row(
+                  children: [
+                    const SizedBox(width: _backButtonWidth + 8),
+                    Expanded(
+                      child: Center(
+                        child: TextButton(
+                          onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
+                          child: Text(context.l10n.onboardingFlowSkip),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -520,8 +525,17 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     );
   }
 
+  // Aceeași structură ca [_buildAddBookCta] (poza/iconița din stânga, titlu +
+  // subtitlu în dreapta) dar populată cu cartea abia adăugată: coperta
+  // (după ISBN, prin BookCover) ia locul iconiței de căutare, titlul cărții
+  // ia locul „Add a book", iar autor+an iau locul textului de ajutor.
   Widget _buildAddedBookCard() {
     final l10n = context.l10n;
+    final book = _addedBook!.book;
+    final subtitle = [
+      if (book.author != null && book.author!.isNotEmpty) book.author!,
+      if (book.publishedYear != null) '${book.publishedYear}',
+    ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -536,23 +550,43 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
             child: Row(
               children: [
                 SizedBox(
-                  width: 40,
-                  height: 58,
+                  width: 44,
+                  height: 62,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(8),
                     child: BookCover.expand(
                       url: _addedBook!.primaryImageUrl,
-                      title: _addedBook!.book.title,
+                      title: book.title,
                     ),
                   ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    l10n.onboardingFlowBookAdded(_addedBook!.book.title),
-                    style: Theme.of(context).textTheme.titleSmall,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        book.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.mutedForeground),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Icon(Icons.check_circle, color: AppColors.success),
               ],
             ),

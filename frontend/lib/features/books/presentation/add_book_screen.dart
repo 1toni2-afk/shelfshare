@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../../../data/models/user_book.dart';
+import '../../../shared/utils/cover_proxy.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../application/my_library_controller.dart';
@@ -1546,12 +1548,20 @@ class _CoverPicker extends StatelessWidget {
                     padding: const EdgeInsets.all(2),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(7),
-                      child: Image.network(
-                        url,
+                      // coverProxyUrl: coperțile Google Books nu trimit CORS,
+                      // vezi cover_proxy.dart - fără el, fetch-ul de imagine
+                      // eșua silențios pe Flutter Web și cădea pe broken_image.
+                      child: CachedNetworkImage(
+                        imageUrl: coverProxyUrl(url)!,
                         width: 88,
                         height: 122,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
+                        placeholder: (_, _) => Container(
+                          width: 88,
+                          height: 122,
+                          color: AppColors.muted,
+                        ),
+                        errorWidget: (_, _, _) => Container(
                           width: 88,
                           height: 122,
                           color: AppColors.muted,
