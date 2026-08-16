@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/cover_proxy.dart';
 import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../wishlist/application/wishlist_controller.dart';
@@ -29,6 +31,15 @@ class BookMatchScreen extends ConsumerStatefulWidget {
 const _batchSize = 12;
 const _prefetchThreshold = 3;
 
+/// Câte coperte ținem "calde" înainte de cardul curent - doar cardul de sus
+/// și următorul erau construite în widget tree (vezi _buildStack), deci
+/// coperta cărții #3 nu începea să se descarce decât în momentul în care
+/// devenea cardul următor, ceea ce dădea o întârziere vizibilă (~2s) la
+/// swipe rapid. precacheImage pornește descărcarea din timp, în afara
+/// widget tree-ului, ca prin momentul afișării imaginea să fie deja în
+/// cache-ul lui CachedNetworkImage (memorie sau disc).
+const _coverPreloadBuffer = 10;
+
 /// Distanța (px) de la care swipe-ul e considerat decis; sub ea, cardul revine.
 const _swipeThreshold = 110.0;
 
@@ -52,6 +63,10 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   /// Ce am văzut deja în sesiunea asta - catalogul e mic (~92 cărți), iar
   /// loturile succesive pot repeta titluri; fără dedup, userul le-ar revedea.
   final Set<String> _seenIds = {};
+
+  /// URL-uri de copertă deja trimise la precache - evită re-precache-uirea
+  /// aceleiași imagini de fiecare dată când fereastra de buffer avansează.
+  final Set<String> _precachedCoverUrls = {};
 
   bool _initialLoading = true;
   bool _fetching = false;
@@ -114,6 +129,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
         if (fresh.isEmpty) _exhausted = true;
         _loadError = null;
       });
+      _precacheUpcomingCovers();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -127,6 +143,19 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   void _maybePrefetch() {
     if (_cards.length <= _prefetchThreshold && !_exhausted && !_fetching) {
       _fetchBatch();
+    }
+  }
+
+  /// Pornește descărcarea coperților pentru primele [_coverPreloadBuffer]
+  /// carduri din coadă, ca să fie deja în cache până ajung să fie afișate.
+  void _precacheUpcomingCovers() {
+    if (!mounted) return;
+    for (final card in _cards.take(_coverPreloadBuffer)) {
+      final url = coverProxyUrl(card.coverUrl);
+      if (url == null || url.isEmpty || !_precachedCoverUrls.add(url)) continue;
+      // Eșecul de precache (URL mort, rețea) nu trebuie să crape ecranul -
+      // CachedNetworkImage din card mai încearcă oricum la afișare.
+      precacheImage(CachedNetworkImageProvider(url), context).catchError((_) {});
     }
   }
 
@@ -233,6 +262,9 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
     });
     if (card != null) _recordSwipe(card, action);
     _maybePrefetch();
+    // Fereastra de 10 avansează cu fiecare swipe - cardul care tocmai a
+    // intrat în buffer (fostul #11) nu era precache-uit până acum.
+    _precacheUpcomingCovers();
   }
 
   Offset get _cardOffset => _flight?.value ?? _drag;
@@ -411,8 +443,11 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Spacer stânga gol - păstrează close+heart centrate, în timp ce
+            // Expanded-ul din dreapta împinge butonul de info spre marginea
+            // ecranului (nu lipit de inimă, ca să nu fie atins accidental).
+            const Expanded(child: SizedBox.shrink()),
             _RoundAction(
               icon: Icons.close,
               color: AppColors.destructive,
@@ -425,6 +460,20 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
               color: AppColors.success,
               tooltip: l10n.bookMatchYesTooltip,
               onPressed: busy ? null : () => _flyOut(_SwipeAction.yes),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                // Descrierea nu mai încape pe card (vezi _BookMatchCardView) -
+                // butonul de info deschide detaliile complete ale cărții
+                // curente, fără să aglomereze cardul de swipe.
+                child: _RoundAction(
+                  icon: Icons.info_outline,
+                  color: AppColors.mutedForeground,
+                  tooltip: l10n.bookMatchInfoTooltip,
+                  onPressed: _cards.isEmpty ? null : () => _showBookInfo(_cards.first),
+                ),
+              ),
             ),
           ],
         ),
@@ -446,6 +495,51 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
+    );
+  }
+
+  /// Detaliile complete ale cărții curente (inclusiv descrierea, scoasă de
+  /// pe cardul de swipe - vezi _BookMatchCardView) - deschise din butonul
+  /// de info, nu impuse tuturor userilor pe fiecare card.
+  Future<void> _showBookInfo(BookMatchCard card) {
+    final meta = [
+      if (card.genre != null && card.genre!.isNotEmpty) localizedGenre(context, card.genre!),
+      if (card.publishedYear != null) '${card.publishedYear}',
+    ].join(' · ');
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(card.title, style: Theme.of(sheetContext).textTheme.titleLarge),
+              if (card.author != null && card.author!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  card.author!,
+                  style: Theme.of(sheetContext)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: AppColors.mutedForeground),
+                ),
+              ],
+              if (meta.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(meta, style: Theme.of(sheetContext).textTheme.bodySmall),
+              ],
+              if (card.description != null && card.description!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(card.description!, style: Theme.of(sheetContext).textTheme.bodyMedium),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -484,7 +578,9 @@ class _RoundAction extends StatelessWidget {
   }
 }
 
-/// Cardul propriu-zis: copertă mare + titlu, autor, gen/an, descriere scurtă.
+/// Cardul propriu-zis: copertă mare + titlu, autor, gen/an - fără descriere,
+/// ca userul să decidă rapid din copertă (descrierea completă e disponibilă
+/// din butonul de info, vezi [_BookMatchScreenState._showBookInfo]).
 /// Ștampilele DA/NU/SKIP apar peste el pe măsură ce userul trage de card.
 class _BookMatchCardView extends StatelessWidget {
   const _BookMatchCardView({
@@ -559,15 +655,6 @@ class _BookMatchCardView extends StatelessWidget {
                       if (meta.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(meta, style: theme.textTheme.bodySmall),
-                      ],
-                      if (card.description != null && card.description!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          card.description!,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall,
-                        ),
                       ],
                     ],
                   ),

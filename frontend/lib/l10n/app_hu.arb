@@ -1004,6 +1004,7 @@
     "bookMatchEntryTooltip": "Könyvpárosítás",
     "bookMatchYesTooltip": "Tetszik",
     "bookMatchNoTooltip": "Nem érdekel",
+    "bookMatchInfoTooltip": "Könyv részletei",
     "bookMatchSkip": "Kihagyom",
     "bookMatchHint": "Húzd jobbra az igenhez, balra a nemhez, felfelé a kihagyáshoz.",
     "bookMatchStampYes": "IGEN",
@@ -1108,10 +1109,10 @@
     "greetMottoCirculating": "Kevesebb újonnan nyomtatott könyv, több forgó történet.",
     "aboutAppSustainabilityTitle": "Fenntarthatóság",
     "aboutAppSustainabilityBody": "Minden könyvcsere egy kevesebb újonnan nyomtatandó, szállítandó és csomagolandó könyvet jelent. Egy új példány megvásárlása papírt, vizet és energiát emészt fel - egy már meglévő példány, amely új olvasót talál, mindezt megspórolja.\n\nA ShelfShare egy egyre erősödő európai körforgásos gazdaság-mozgalom része: az újrahasznosítás a folyamatos újgyártás helyett. Egy könyvcsere apró gesztus, de számít.",
-    "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
-    "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
-    "onboardingWelcomeBullet2": "🌳 Made to help the environment",
-    "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
-    "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
-    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
+    "onboardingWelcomeTitle": "Köszönjük, hogy a ShelfShare.ro-t használod 🇷🇴🇪🇺",
+    "onboardingWelcomeBullet1": "🌍 Európai termék, saját szerveren üzemeltetve",
+    "onboardingWelcomeBullet2": "🌳 Azért készült, hogy segítsen a környezetnek",
+    "onboardingWelcomeBullet3": "📖 Egy fa átlagosan kb. 20 000 lap papírt ad, ezért minden csere számít",
+    "onboardingWelcomeBullet4": "🤝 Nem csak az olvasásról szól, hanem a megosztásról is",
+    "onboardingWelcomeSource": "Forrás: ribble-pack.co.uk"
 }

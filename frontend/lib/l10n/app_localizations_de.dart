@@ -3377,6 +3377,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookMatchNoTooltip => 'Nichts für mich';
 
   @override
+  String get bookMatchInfoTooltip => 'Buchdetails';
+
+  @override
   String get bookMatchSkip => 'Überspringen';
 
   @override
@@ -3621,22 +3624,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingWelcomeTitle =>
-      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+      'Danke, dass du ShelfShare.ro nutzt 🇷🇴🇪🇺';
 
   @override
-  String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
+  String get onboardingWelcomeBullet1 =>
+      '🌍 Europäisches Produkt, selbst gehostet';
 
   @override
-  String get onboardingWelcomeBullet2 => '🌳 Made to help the environment';
+  String get onboardingWelcomeBullet2 => '🌳 Gemacht, um der Umwelt zu helfen';
 
   @override
   String get onboardingWelcomeBullet3 =>
-      '📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează';
+      '📖 Ein Baum liefert im Schnitt rund 20.000 Blatt Papier – jeder Tausch zählt';
 
   @override
   String get onboardingWelcomeBullet4 =>
-      '🤝 It\'s not all about the reading, it\'s about sharing';
+      '🤝 Es geht nicht nur ums Lesen, sondern ums Teilen';
 
   @override
-  String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
+  String get onboardingWelcomeSource => 'Quelle: ribble-pack.co.uk';
 }

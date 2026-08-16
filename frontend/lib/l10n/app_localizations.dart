@@ -6042,6 +6042,12 @@ abstract class AppLocalizations {
   /// **'Nu mă interesează'**
   String get bookMatchNoTooltip;
 
+  /// No description provided for @bookMatchInfoTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii carte'**
+  String get bookMatchInfoTooltip;
+
   /// No description provided for @bookMatchSkip.
   ///
   /// In ro, this message translates to:
