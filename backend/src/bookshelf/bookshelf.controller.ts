@@ -15,7 +15,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { BookshelfService } from './bookshelf.service';
-import type { BookshelfImportSource } from './bookshelf.service';
 import { SetBookshelfStatusDto } from './dto/set-bookshelf-status.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
@@ -56,11 +55,7 @@ export class BookshelfController {
     }
 
     const { userId } = req.user as AuthenticatedUser;
-    return this.bookshelfService.importCsv(
-      userId!,
-      source as BookshelfImportSource,
-      file.buffer,
-    );
+    return this.bookshelfService.importCsv(userId!, source, file.buffer);
   }
 
   @Get('me/:bookId')

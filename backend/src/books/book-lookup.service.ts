@@ -142,18 +142,19 @@ export class BookLookupService {
     );
 
     const finalResults = skip
-        ? results
-        : await Promise.all(
-            results.map((result, index) =>
-              index < BookLookupService._coverFallbackLimit
-                ? this.withCoverFallback(result, result.isbn)
-                : Promise.resolve(result),
-            ),
-          );
+      ? results
+      : await Promise.all(
+          results.map((result, index) =>
+            index < BookLookupService._coverFallbackLimit
+              ? this.withCoverFallback(result, result.isbn)
+              : Promise.resolve(result),
+          ),
+        );
 
     this._searchCache.set(cacheKey, { at: now, results: finalResults });
     if (this._searchCache.size > BookLookupService._cacheMaxEntries) {
-      const oldestKey = this._searchCache.keys().next().value;
+      const oldestKey = this._searchCache.keys().next().value as
+        string | undefined;
       if (oldestKey !== undefined) this._searchCache.delete(oldestKey);
     }
     return finalResults;
@@ -240,7 +241,10 @@ export class BookLookupService {
     title: string,
     author: string | null,
   ): Promise<string | null> {
-    const fromOpenLibrary = await this.tryOpenLibraryCoverByTitle(title, author);
+    const fromOpenLibrary = await this.tryOpenLibraryCoverByTitle(
+      title,
+      author,
+    );
     if (fromOpenLibrary) return fromOpenLibrary;
 
     const results = await this.tryGoogleBooksSearch(
@@ -289,7 +293,9 @@ export class BookLookupService {
       const thumbnail = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
       return thumbnail?.replace('http://', 'https://') ?? null;
     } catch (error) {
-      this.logger.warn(`Google Books copertă eșuată pentru ISBN ${isbn}: ${error}`);
+      this.logger.warn(
+        `Google Books copertă eșuată pentru ISBN ${isbn}: ${error}`,
+      );
       return null;
     }
   }
@@ -376,7 +382,9 @@ export class BookLookupService {
       // Fără timeout, un upstream lent ținea autocomplete-ul blocat 10-15s -
       // Promise.all cu Google Books aștepta oricum după cel mai lent.
       const { data } = await firstValueFrom(
-        this.http.get<{ docs?: OpenLibrarySearchDoc[] }>(url, { timeout: 4000 }),
+        this.http.get<{ docs?: OpenLibrarySearchDoc[] }>(url, {
+          timeout: 4000,
+        }),
       );
 
       return (data.docs ?? []).map((doc): ExternalBookResult => ({

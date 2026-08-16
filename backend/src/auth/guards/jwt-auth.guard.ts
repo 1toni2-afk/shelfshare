@@ -15,7 +15,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  handleRequest(err: unknown, user: unknown, info: unknown, context: ExecutionContext) {
+  handleRequest(
+    err: unknown,
+    user: unknown,
+    info: unknown,
+    context: ExecutionContext,
+  ): unknown {
     const userId = (user as { userId?: string } | null)?.userId;
     if (userId) {
       this.touchActivity(userId);
@@ -39,13 +44,21 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   private async updateActivityAndStreak(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { lastStreakDate: true, currentStreakDays: true, longestStreakDays: true },
+      select: {
+        lastStreakDate: true,
+        currentStreakDays: true,
+        longestStreakDays: true,
+      },
     });
     if (!user) return;
 
     const today = startOfDay(new Date());
-    const lastDay = user.lastStreakDate ? startOfDay(user.lastStreakDate) : null;
-    const dayDiff = lastDay ? Math.round((today.getTime() - lastDay.getTime()) / 86_400_000) : null;
+    const lastDay = user.lastStreakDate
+      ? startOfDay(user.lastStreakDate)
+      : null;
+    const dayDiff = lastDay
+      ? Math.round((today.getTime() - lastDay.getTime()) / 86_400_000)
+      : null;
 
     let currentStreakDays = user.currentStreakDays;
     if (dayDiff === null || dayDiff > 1) {
@@ -54,18 +67,25 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       currentStreakDays = user.currentStreakDays + 1;
     } // dayDiff === 0: deja activ azi, streak-ul nu se schimbă
 
-    const longestStreakDays = Math.max(user.longestStreakDays, currentStreakDays);
+    const longestStreakDays = Math.max(
+      user.longestStreakDays,
+      currentStreakDays,
+    );
 
     await this.prisma.user.update({
       where: { id: userId },
       data: {
         lastActiveAt: new Date(),
-        ...(dayDiff !== 0 ? { currentStreakDays, longestStreakDays, lastStreakDate: today } : {}),
+        ...(dayDiff !== 0
+          ? { currentStreakDays, longestStreakDays, lastStreakDate: today }
+          : {}),
       },
     });
   }
 }
 
 function startOfDay(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
 }

@@ -1718,8 +1718,8 @@ class _ChatImageViewerState extends State<_ChatImageViewer> with SingleTickerPro
       end = Matrix4.identity();
     } else {
       end = Matrix4.identity()
-        ..translate(-position.dx * 2, -position.dy * 2)
-        ..scale(3.0);
+        ..translateByDouble(-position.dx * 2, -position.dy * 2, 0.0, 1.0)
+        ..scaleByDouble(3.0, 3.0, 3.0, 1.0);
     }
     _zoomAnimation = Matrix4Tween(begin: _transformationController.value, end: end)
         .animate(CurveTween(curve: Curves.easeOut).animate(_animationController));

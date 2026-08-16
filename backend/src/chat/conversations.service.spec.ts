@@ -70,7 +70,11 @@ describe('ConversationsService', () => {
         { provide: StorageService, useValue: storage },
         {
           provide: NotificationsService,
-          useValue: { create: jest.fn(), upsertUnread: jest.fn(), markAsReadByDataField: jest.fn() },
+          useValue: {
+            create: jest.fn(),
+            upsertUnread: jest.fn(),
+            markAsReadByDataField: jest.fn(),
+          },
         },
         {
           provide: SafetyService,
@@ -253,7 +257,9 @@ describe('ConversationsService', () => {
 
       const result = await service.getMyConversations('user-a');
 
-      expect(result[0].lastMessage?.photo).toBe('https://cdn.test/chat/abc.webp');
+      expect(result[0].lastMessage?.photo).toBe(
+        'https://cdn.test/chat/abc.webp',
+      );
     });
   });
 
@@ -399,7 +405,7 @@ describe('ConversationsService', () => {
 
     it('exportă transcriptul în folderul chat-reports și îl leagă de raport', async () => {
       await service.reportConversation('conv-1', 'user-a', {
-        reason: 'HARASSMENT' as never,
+        reason: 'HARASSMENT',
       });
 
       expect(storage.uploadTextFile).toHaveBeenCalledWith(
@@ -419,10 +425,12 @@ describe('ConversationsService', () => {
     });
 
     it('nu pierde raportul dacă emailul de moderare eșuează', async () => {
-      mail.sendChatReportNotification.mockRejectedValue(new Error('resend down'));
+      mail.sendChatReportNotification.mockRejectedValue(
+        new Error('resend down'),
+      );
 
       const result = await service.reportConversation('conv-1', 'user-a', {
-        reason: 'SPAM' as never,
+        reason: 'SPAM',
       });
 
       expect(result.reportId).toBe('report-1');

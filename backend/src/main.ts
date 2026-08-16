@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 import { corsOrigin } from './common/utils/cors-origin';
 
@@ -29,7 +30,7 @@ async function bootstrap() {
   assertProductionSecrets();
   const app = await NestFactory.create(AppModule);
 
-  app.use((req, res, next) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     // API JSON pură consumată de Flutter web - fără asta, browserul
     // cache-uiește GET-uri autentificate (ex. /profile/me) fără să țină
     // cont de header-ul Authorization, deci un login nou poate primi

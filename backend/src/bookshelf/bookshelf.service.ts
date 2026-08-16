@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Book, BookshelfStatus } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
@@ -34,7 +38,11 @@ export class BookshelfService {
    * externă (Open Library/Google Books), ca importul unui fișier cu sute
    * de rânduri să nu rişte un timeout făcând sute de cereri HTTP secvențiale.
    */
-  async importCsv(userId: string, source: BookshelfImportSource, buffer: Buffer) {
+  async importCsv(
+    userId: string,
+    source: BookshelfImportSource,
+    buffer: Buffer,
+  ) {
     let rows: Record<string, string>[];
     try {
       rows = parse(buffer.toString('utf-8'), {
@@ -53,15 +61,18 @@ export class BookshelfService {
       throw new BadRequestException('Fișierul CSV este gol');
     }
     if (rows.length > MAX_IMPORT_ROWS) {
-      throw new BadRequestException(`Fișierul are prea multe rânduri (maxim ${MAX_IMPORT_ROWS})`);
+      throw new BadRequestException(
+        `Fișierul are prea multe rânduri (maxim ${MAX_IMPORT_ROWS})`,
+      );
     }
-
-    const parseRow = source === 'goodreads' ? this.parseGoodreadsRow : this.parseStoryGraphRow;
 
     let imported = 0;
     let skipped = 0;
     for (const raw of rows) {
-      const parsed = parseRow.call(this, raw);
+      const parsed =
+        source === 'goodreads'
+          ? this.parseGoodreadsRow(raw)
+          : this.parseStoryGraphRow(raw);
       if (!parsed || !parsed.status) {
         skipped++;
         continue;
@@ -78,13 +89,18 @@ export class BookshelfService {
     return { imported, skipped, total: rows.length };
   }
 
-  private async resolveOrCreateBook(parsed: ParsedImportRow, source: BookshelfImportSource) {
+  private async resolveOrCreateBook(
+    parsed: ParsedImportRow,
+    source: BookshelfImportSource,
+  ) {
     const existing = parsed.isbn
       ? await this.prisma.book.findUnique({ where: { isbn: parsed.isbn } })
       : await this.prisma.book.findFirst({
           where: {
             title: { equals: parsed.title, mode: 'insensitive' },
-            author: parsed.author ? { equals: parsed.author, mode: 'insensitive' } : undefined,
+            author: parsed.author
+              ? { equals: parsed.author, mode: 'insensitive' }
+              : undefined,
           },
         });
     if (existing) return existing;
@@ -102,7 +118,9 @@ export class BookshelfService {
     });
   }
 
-  private parseGoodreadsRow(row: Record<string, string>): ParsedImportRow | null {
+  private parseGoodreadsRow(
+    row: Record<string, string>,
+  ): ParsedImportRow | null {
     const title = row['Title']?.trim();
     if (!title) return null;
     return {
@@ -110,13 +128,17 @@ export class BookshelfService {
       author: row['Author']?.trim() || undefined,
       isbn: this.cleanIsbn(row['ISBN13']) ?? this.cleanIsbn(row['ISBN']),
       publisher: row['Publisher']?.trim() || undefined,
-      publishedYear: this.parseYear(row['Year Published'] ?? row['Original Publication Year']),
+      publishedYear: this.parseYear(
+        row['Year Published'] ?? row['Original Publication Year'],
+      ),
       pageCount: this.parsePositiveInt(row['Number of Pages']),
       status: this.normalizeStatus(row['Exclusive Shelf']),
     };
   }
 
-  private parseStoryGraphRow(row: Record<string, string>): ParsedImportRow | null {
+  private parseStoryGraphRow(
+    row: Record<string, string>,
+  ): ParsedImportRow | null {
     const title = row['Title']?.trim();
     if (!title) return null;
     return {
@@ -134,7 +156,9 @@ export class BookshelfService {
       .replace(/^="?/, '')
       .replace(/"$/, '')
       .replace(/[-\s]/g, '');
-    return /^[0-9Xx]{9,13}$/.test(stripped) ? stripped.toUpperCase() : undefined;
+    return /^[0-9Xx]{9,13}$/.test(stripped)
+      ? stripped.toUpperCase()
+      : undefined;
   }
 
   private normalizeStatus(raw: string | undefined): BookshelfStatus | null {
@@ -207,8 +231,12 @@ export class BookshelfService {
   private groupByStatus(entries: { status: BookshelfStatus; book: Book }[]) {
     return {
       reading: entries.filter((e) => e.status === 'READING').map((e) => e.book),
-      wantToRead: entries.filter((e) => e.status === 'WANT_TO_READ').map((e) => e.book),
-      finished: entries.filter((e) => e.status === 'FINISHED').map((e) => e.book),
+      wantToRead: entries
+        .filter((e) => e.status === 'WANT_TO_READ')
+        .map((e) => e.book),
+      finished: entries
+        .filter((e) => e.status === 'FINISHED')
+        .map((e) => e.book),
     };
   }
 }

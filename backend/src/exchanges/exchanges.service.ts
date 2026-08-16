@@ -192,7 +192,10 @@ export class ExchangesService {
       content,
     );
 
-    return { ...this.sanitizeParties(created), conversationId: conversation.id };
+    return {
+      ...this.sanitizeParties(created),
+      conversationId: conversation.id,
+    };
   }
 
   async getSentRequests(userId: string) {
@@ -370,7 +373,9 @@ export class ExchangesService {
         throw new ForbiddenException('Nu ești parte în acest schimb');
       }
       if (!dto.reason) {
-        throw new BadRequestException('Trebuie să alegi un motiv pentru anulare');
+        throw new BadRequestException(
+          'Trebuie să alegi un motiv pentru anulare',
+        );
       }
       return this.performCancel(id, request, dto.reason, dto.details, userId);
     }
@@ -404,7 +409,9 @@ export class ExchangesService {
         },
       });
       if (claim.count === 0) {
-        throw new BadRequestException('Acest schimb nu mai este în desfășurare');
+        throw new BadRequestException(
+          'Acest schimb nu mai este în desfășurare',
+        );
       }
 
       await tx.userBook.updateMany({
@@ -426,18 +433,31 @@ export class ExchangesService {
 
     await this.broadcastStatusToConversation(id, 'CANCELLED');
 
-    const reasonMessage = CANCEL_REASON_MESSAGES[reason] ?? details ?? 'motiv nespecificat';
+    const reasonMessage =
+      CANCEL_REASON_MESSAGES[reason] ?? details ?? 'motiv nespecificat';
     if (cancelledBy === 'system') {
       const timeoutMessage = `Schimbul pentru "${updated.requestedBook.book.title}" a expirat automat (${reasonMessage})`;
-      await this.notifySafe(request.requesterId, 'EXCHANGE_CANCELLED', timeoutMessage, {
-        exchangeRequestId: id,
-      });
-      await this.notifySafe(request.ownerId, 'EXCHANGE_CANCELLED', timeoutMessage, {
-        exchangeRequestId: id,
-      });
+      await this.notifySafe(
+        request.requesterId,
+        'EXCHANGE_CANCELLED',
+        timeoutMessage,
+        {
+          exchangeRequestId: id,
+        },
+      );
+      await this.notifySafe(
+        request.ownerId,
+        'EXCHANGE_CANCELLED',
+        timeoutMessage,
+        {
+          exchangeRequestId: id,
+        },
+      );
     } else {
       const otherUserId =
-        cancelledBy === request.requesterId ? request.ownerId : request.requesterId;
+        cancelledBy === request.requesterId
+          ? request.ownerId
+          : request.requesterId;
       await this.notifySafe(
         otherUserId,
         'EXCHANGE_CANCELLED',
@@ -464,7 +484,11 @@ export class ExchangesService {
     message: string,
   ) {
     const siblings = await this.prisma.exchangeRequest.findMany({
-      where: { requestedBookId: bookId, status: 'PENDING', id: { not: excludeId } },
+      where: {
+        requestedBookId: bookId,
+        status: 'PENDING',
+        id: { not: excludeId },
+      },
       select: { id: true, requesterId: true },
     });
     for (const sibling of siblings) {
@@ -481,18 +505,31 @@ export class ExchangesService {
     message: string,
   ) {
     const siblings = await this.prisma.exchangeRequest.findMany({
-      where: { requestedBookId: bookId, status: 'PENDING', id: { not: excludeId } },
+      where: {
+        requestedBookId: bookId,
+        status: 'PENDING',
+        id: { not: excludeId },
+      },
       select: { id: true, requesterId: true },
     });
     if (siblings.length === 0) return;
     await this.prisma.exchangeRequest.updateMany({
       where: { id: { in: siblings.map((s) => s.id) } },
-      data: { status: 'REJECTED', cancelReason: 'book_mismatch', cancelDetails: message },
+      data: {
+        status: 'REJECTED',
+        cancelReason: 'book_mismatch',
+        cancelDetails: message,
+      },
     });
     for (const sibling of siblings) {
-      await this.notifySafe(sibling.requesterId, 'EXCHANGE_REQUEST_REJECTED', message, {
-        exchangeRequestId: sibling.id,
-      });
+      await this.notifySafe(
+        sibling.requesterId,
+        'EXCHANGE_REQUEST_REJECTED',
+        message,
+        {
+          exchangeRequestId: sibling.id,
+        },
+      );
     }
   }
 
@@ -554,12 +591,22 @@ export class ExchangesService {
 
       await this.broadcastStatusToConversation(id, 'COMPLETED');
       const doneMessage = `Schimbul pentru "${updated.requestedBook.book.title}" a fost finalizat`;
-      await this.notifySafe(updated.requesterId, 'EXCHANGE_COMPLETED', doneMessage, {
-        exchangeRequestId: id,
-      });
-      await this.notifySafe(updated.ownerId, 'EXCHANGE_COMPLETED', doneMessage, {
-        exchangeRequestId: id,
-      });
+      await this.notifySafe(
+        updated.requesterId,
+        'EXCHANGE_COMPLETED',
+        doneMessage,
+        {
+          exchangeRequestId: id,
+        },
+      );
+      await this.notifySafe(
+        updated.ownerId,
+        'EXCHANGE_COMPLETED',
+        doneMessage,
+        {
+          exchangeRequestId: id,
+        },
+      );
       await this.rejectSiblingRequests(
         updated.requestedBookId,
         id,
@@ -567,7 +614,9 @@ export class ExchangesService {
       );
     } else {
       const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
-      const actorName = publicName(isRequester ? updated.requester : updated.owner);
+      const actorName = publicName(
+        isRequester ? updated.requester : updated.owner,
+      );
       await this.notifySafe(
         otherUserId,
         'EXCHANGE_DONE_PENDING_CONFIRMATION',
@@ -584,9 +633,13 @@ export class ExchangesService {
     const request = await this.findOwnedRequest(id, userId);
     this.assertStatus(request, 'ACCEPTED');
     const isRequester = userId === request.requesterId;
-    const otherAlreadyDone = isRequester ? request.ownerDoneAt : request.requesterDoneAt;
+    const otherAlreadyDone = isRequester
+      ? request.ownerDoneAt
+      : request.requesterDoneAt;
     if (!otherAlreadyDone) {
-      throw new BadRequestException('Cealaltă parte nu a marcat schimbul ca finalizat');
+      throw new BadRequestException(
+        'Cealaltă parte nu a marcat schimbul ca finalizat',
+      );
     }
 
     const updated = await this.prisma.exchangeRequest.update({
@@ -596,7 +649,9 @@ export class ExchangesService {
     });
 
     const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
-    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    const actorName = publicName(
+      isRequester ? updated.requester : updated.owner,
+    );
     await this.notifySafe(
       otherUserId,
       'EXCHANGE_DONE_DISPUTED',
@@ -676,7 +731,9 @@ export class ExchangesService {
 
     const isRequester = userId === updated.requesterId;
     const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
-    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    const actorName = publicName(
+      isRequester ? updated.requester : updated.owner,
+    );
     await this.notifySafe(
       otherUserId,
       'EXCHANGE_MEETING_PROPOSED',
@@ -720,7 +777,8 @@ export class ExchangesService {
       id,
       userId,
       'EXCHANGE_MEETING_DECLINED',
-      (name, title) => `${name ?? 'Cineva'} a refuzat ora propusă pentru "${title}" - propune o oră nouă`,
+      (name, title) =>
+        `${name ?? 'Cineva'} a refuzat ora propusă pentru "${title}" - propune o oră nouă`,
     );
   }
 
@@ -730,7 +788,8 @@ export class ExchangesService {
       id,
       userId,
       'EXCHANGE_POSTPONED',
-      (name, title) => `${name ?? 'Cineva'} a amânat schimbul pentru "${title}" - propuneți o nouă întâlnire`,
+      (name, title) =>
+        `${name ?? 'Cineva'} a amânat schimbul pentru "${title}" - propuneți o nouă întâlnire`,
     );
   }
 
@@ -759,7 +818,9 @@ export class ExchangesService {
 
     const isRequester = userId === updated.requesterId;
     const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
-    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    const actorName = publicName(
+      isRequester ? updated.requester : updated.owner,
+    );
     await this.notifySafe(
       otherUserId,
       type,
@@ -779,13 +840,21 @@ export class ExchangesService {
     const updated = await this.prisma.exchangeRequest.update({
       where: { id },
       data: isRequester
-        ? { requesterContactPhone: dto.phone ?? null, requesterContactSharedAt: new Date() }
-        : { ownerContactPhone: dto.phone ?? null, ownerContactSharedAt: new Date() },
+        ? {
+            requesterContactPhone: dto.phone ?? null,
+            requesterContactSharedAt: new Date(),
+          }
+        : {
+            ownerContactPhone: dto.phone ?? null,
+            ownerContactSharedAt: new Date(),
+          },
       include: INCLUDE_FULL,
     });
 
     const otherUserId = isRequester ? updated.ownerId : updated.requesterId;
-    const actorName = publicName(isRequester ? updated.requester : updated.owner);
+    const actorName = publicName(
+      isRequester ? updated.requester : updated.owner,
+    );
     await this.notifySafe(
       otherUserId,
       'EXCHANGE_CONTACT_SHARED',
@@ -851,7 +920,7 @@ export class ExchangesService {
     const verb = request.offeredAmount != null ? 'cumpăra' : 'schimba';
     const priceClause =
       request.offeredAmount != null
-        ? ` (la prețul de ${request.offeredAmount} lei)`
+        ? ` (la prețul de ${request.offeredAmount.toString()} lei)`
         : '';
 
     const summary = 'Schimb de carte';
@@ -951,10 +1020,14 @@ export class ExchangesService {
       return;
     }
 
-    this.logger.log(`Expir ${stale.length} schimburi ACCEPTED peste ${EXCHANGE_TIMEOUT_DAYS} zile`);
+    this.logger.log(
+      `Expir ${stale.length} schimburi ACCEPTED peste ${EXCHANGE_TIMEOUT_DAYS} zile`,
+    );
     for (const { id } of stale) {
       try {
-        const request = await this.prisma.exchangeRequest.findUnique({ where: { id } });
+        const request = await this.prisma.exchangeRequest.findUnique({
+          where: { id },
+        });
         if (!request || request.status !== 'ACCEPTED') continue;
         await this.performCancel(id, request, 'expired', undefined, 'system');
       } catch (error) {

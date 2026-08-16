@@ -387,13 +387,13 @@ export class AuctionsService {
     await this.notifySafe(
       winnerId,
       'AUCTION_WON',
-      `Ai câștigat licitația pentru "${auction.userBook.book.title}" cu ${auction.currentPrice} lei`,
+      `Ai câștigat licitația pentru "${auction.userBook.book.title}" cu ${auction.currentPrice.toString()} lei`,
       { auctionId },
     );
     await this.notifySafe(
       auction.userBook.userId,
       'AUCTION_ENDED',
-      `Licitația pentru "${auction.userBook.book.title}" s-a încheiat - a câștigat cineva cu ${auction.currentPrice} lei`,
+      `Licitația pentru "${auction.userBook.book.title}" s-a încheiat - a câștigat cineva cu ${auction.currentPrice.toString()} lei`,
       { auctionId },
     );
   }

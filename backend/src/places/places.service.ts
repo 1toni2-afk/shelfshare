@@ -90,7 +90,7 @@ export class PlacesService {
     // Curățare grosolană când umple: ștergem prima (cea mai veche) intrare.
     // Map păstrează ordinea de inserare, deci e suficient pentru un cap simplu.
     if (this.searchCache.size >= PlacesService.CACHE_MAX) {
-      const oldest = this.searchCache.keys().next().value;
+      const oldest = this.searchCache.keys().next().value as string | undefined;
       if (oldest !== undefined) this.searchCache.delete(oldest);
     }
     this.searchCache.set(key, { at: Date.now(), results });
@@ -136,22 +136,33 @@ export class PlacesService {
         }))
         .sort(
           (a, b) =>
-            this.distance(lat, lng, a.lat, a.lng) - this.distance(lat, lng, b.lat, b.lng),
+            this.distance(lat, lng, a.lat, a.lng) -
+            this.distance(lat, lng, b.lat, b.lng),
         )
         .slice(0, 15);
     } catch (error) {
-      this.logger.warn(`Căutare puncte de întâlnire eșuată pentru (${lat}, ${lng}): ${error}`);
+      this.logger.warn(
+        `Căutare puncte de întâlnire eșuată pentru (${lat}, ${lng}): ${error}`,
+      );
       return [];
     }
   }
 
-  private categoryOf(tags: { amenity?: string; shop?: string }): MeetingPointCategory {
+  private categoryOf(tags: {
+    amenity?: string;
+    shop?: string;
+  }): MeetingPointCategory {
     if (tags.amenity === 'library') return 'library';
     if (tags.amenity === 'cafe') return 'cafe';
     return 'mall';
   }
 
-  private distance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  private distance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
     const dLat = lat2 - lat1;
     const dLng = lng2 - lng1;
     return dLat * dLat + dLng * dLng;
