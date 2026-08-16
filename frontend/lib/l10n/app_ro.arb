@@ -1830,13 +1830,11 @@
     "greetEaster": "Paște fericit! 🐰",
     "greetNewYear": "An nou, cărți noi! 🎆",
     "greetBookDay": "Astăzi este Ziua Internațională a Cărții! 📚",
-<<<<<<< Updated upstream
     "greetMottoStandingTree": "O carte schimbată e un copac care rămâne în picioare. 🌳",
     "greetMottoWhyBuyNew": "De ce cumperi o carte nouă când una te așteaptă la schimb?",
     "greetMottoMoreSustainable": "Schimbul de cărți e mai sustenabil decât cumpărarea uneia noi.",
     "greetMottoEuropeanMovement": "Faci parte dintr-o mișcare europeană pentru un consum mai sustenabil. 🇪🇺",
     "greetMottoCirculating": "Mai puține cărți noi tipărite, mai multe povești care circulă.",
-=======
     "adminFeatureAccessTitle": "Acces la funcții",
     "adminFeatureAccessDesc": "Acordă acces în avans la funcții aflate încă în lucru, pentru utilizatori aleși manual.",
     "adminFeatureAccessSearchHint": "Caută după nume sau email",
@@ -1846,7 +1844,6 @@
     "adminFeatureAccessSaved": "Accesul a fost actualizat.",
     "adminFeatureAccessSaveError": "Nu am putut salva accesul.",
     "featureFlagAdvancedStatistics": "Statistici avansate",
->>>>>>> Stashed changes
     "bookMatchTitle": "Potriviri de cărți",
     "bookMatchEntryTooltip": "Potriviri de cărți",
     "bookMatchYesTooltip": "Îmi place",
@@ -1950,24 +1947,11 @@
     "genrePoetry": "Poezie",
     "genreChildren": "Copii",
     "genreYoungAdult": "Young adult",
-<<<<<<< Updated upstream
     "genreComics": "Benzi desenate",
-    "onboardingFlowMoveForward": "Mergi mai departe",
-    "onboardingFlowBookAdded": "Adăugată: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
     "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
     "onboardingWelcomeBullet2": "🌳 Made to help the environment",
     "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
     "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
     "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
-=======
-    "genreComics": "Benzi desenate"
->>>>>>> Stashed changes
 }

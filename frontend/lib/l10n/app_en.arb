@@ -1169,13 +1169,11 @@
     "greetEaster": "Happy Easter! 🐰",
     "greetNewYear": "New year, new books! 🎆",
     "greetBookDay": "Today is World Book Day! 📚",
-<<<<<<< Updated upstream
     "greetMottoStandingTree": "A swapped book is a tree left standing. 🌳",
     "greetMottoWhyBuyNew": "Why buy a new book when one is waiting for a swap?",
     "greetMottoMoreSustainable": "Swapping books is more sustainable than buying new ones.",
     "greetMottoEuropeanMovement": "You're part of a European movement for more sustainable consumption. 🇪🇺",
     "greetMottoCirculating": "Fewer new books printed, more stories circulating.",
-=======
     "adminFeatureAccessTitle": "Feature access",
     "adminFeatureAccessDesc": "Give hand-picked users early access to features that are still rolling out.",
     "adminFeatureAccessSearchHint": "Search by name or email",
@@ -1185,7 +1183,6 @@
     "adminFeatureAccessSaved": "Access updated.",
     "adminFeatureAccessSaveError": "Couldn't save the access.",
     "featureFlagAdvancedStatistics": "Advanced statistics",
->>>>>>> Stashed changes
     "bookMatchTitle": "Book Match",
     "bookMatchEntryTooltip": "Book Match",
     "bookMatchYesTooltip": "I like it",
@@ -1289,24 +1286,11 @@
     "genrePoetry": "Poetry",
     "genreChildren": "Children",
     "genreYoungAdult": "Young Adult",
-<<<<<<< Updated upstream
     "genreComics": "Comics",
-    "onboardingFlowMoveForward": "Move forward",
-    "onboardingFlowBookAdded": "Added: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
     "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
     "onboardingWelcomeBullet2": "🌳 Made to help the environment",
     "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
     "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
     "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
-=======
-    "genreComics": "Comics"
->>>>>>> Stashed changes
 }

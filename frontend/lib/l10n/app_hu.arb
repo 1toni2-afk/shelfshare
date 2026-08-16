@@ -1144,17 +1144,7 @@
     "genrePoetry": "Költészet",
     "genreChildren": "Gyerekeknek",
     "genreYoungAdult": "Young Adult",
-<<<<<<< Updated upstream
     "genreComics": "Képregény",
-    "onboardingFlowMoveForward": "Tovább",
-    "onboardingFlowBookAdded": "Hozzáadva: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "greetMottoStandingTree": "Egy elcserélt könyv egy állva maradt fa. 🌳",
     "greetMottoWhyBuyNew": "Miért vegyél új könyvet, ha egy cserére vár rád?",
     "greetMottoMoreSustainable": "A könyvcsere fenntarthatóbb, mint egy új megvásárlása.",
@@ -1168,7 +1158,4 @@
     "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
     "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
     "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
-=======
-    "genreComics": "Képregény"
->>>>>>> Stashed changes
 }

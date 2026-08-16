@@ -85,11 +85,7 @@ describe('ConversationsService', () => {
         },
         { provide: MailService, useValue: mail },
         { provide: PresenceService, useValue: presence },
-<<<<<<< Updated upstream
         { provide: RealtimeService, useValue: realtime },
-=======
-        { provide: RealtimeService, useValue: { emitToUser: jest.fn() } },
->>>>>>> Stashed changes
       ],
     }).compile();
 

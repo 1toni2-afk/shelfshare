@@ -1144,17 +1144,7 @@
     "genrePoetry": "Lyrik",
     "genreChildren": "Kinder",
     "genreYoungAdult": "Young Adult",
-<<<<<<< Updated upstream
     "genreComics": "Comics",
-    "onboardingFlowMoveForward": "Weiter",
-    "onboardingFlowBookAdded": "Hinzugefügt: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "greetMottoStandingTree": "Ein getauschtes Buch ist ein Baum, der stehen bleibt. 🌳",
     "greetMottoWhyBuyNew": "Warum ein neues Buch kaufen, wenn eines zum Tausch bereitsteht?",
     "greetMottoMoreSustainable": "Bücher zu tauschen ist nachhaltiger als neue zu kaufen.",
@@ -1168,7 +1158,4 @@
     "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
     "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
     "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
-=======
-    "genreComics": "Comics"
->>>>>>> Stashed changes
 }

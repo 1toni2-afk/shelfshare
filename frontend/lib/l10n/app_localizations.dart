@@ -5928,7 +5928,6 @@ abstract class AppLocalizations {
   /// **'Astăzi este Ziua Internațională a Cărții! 📚'**
   String get greetBookDay;
 
-<<<<<<< Updated upstream
   /// No description provided for @greetMottoStandingTree.
   ///
   /// In ro, this message translates to:
@@ -5958,7 +5957,7 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Mai puține cărți noi tipărite, mai multe povești care circulă.'**
   String get greetMottoCirculating;
-=======
+
   /// No description provided for @adminFeatureAccessTitle.
   ///
   /// In ro, this message translates to:
@@ -6012,7 +6011,6 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Statistici avansate'**
   String get featureFlagAdvancedStatistics;
->>>>>>> Stashed changes
 
   /// No description provided for @bookMatchTitle.
   ///
@@ -6475,19 +6473,6 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Benzi desenate'**
   String get genreComics;
-<<<<<<< Updated upstream
-
-  /// No description provided for @onboardingFlowMoveForward.
-  ///
-  /// In ro, this message translates to:
-  /// **'Mergi mai departe'**
-  String get onboardingFlowMoveForward;
-
-  /// No description provided for @onboardingFlowBookAdded.
-  ///
-  /// In ro, this message translates to:
-  /// **'Adăugată: {title}'**
-  String onboardingFlowBookAdded(String title);
 
   /// No description provided for @onboardingWelcomeTitle.
   ///
@@ -6524,8 +6509,6 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Sursă: ribble-pack.co.uk'**
   String get onboardingWelcomeSource;
-=======
->>>>>>> Stashed changes
 }
 
 class _AppLocalizationsDelegate

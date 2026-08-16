@@ -3269,7 +3269,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
 
   @override
-<<<<<<< Updated upstream
   String get greetMottoStandingTree =>
       'Egy elcserélt könyv egy állva maradt fa. 🌳';
 
@@ -3288,7 +3287,8 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get greetMottoCirculating =>
       'Kevesebb újonnan nyomtatott könyv, több forgó történet.';
-=======
+
+  @override
   String get adminFeatureAccessTitle => 'Funkciók hozzáférése';
 
   @override
@@ -3317,7 +3317,6 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get featureFlagAdvancedStatistics => 'Speciális statisztikák';
->>>>>>> Stashed changes
 
   @override
   String get bookMatchTitle => 'Könyvpárosítás';
@@ -3572,15 +3571,6 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get genreComics => 'Képregény';
-<<<<<<< Updated upstream
-
-  @override
-  String get onboardingFlowMoveForward => 'Tovább';
-
-  @override
-  String onboardingFlowBookAdded(String title) {
-    return 'Hozzáadva: $title';
-  }
 
   @override
   String get onboardingWelcomeTitle =>
@@ -3602,6 +3592,4 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
-=======
->>>>>>> Stashed changes
 }

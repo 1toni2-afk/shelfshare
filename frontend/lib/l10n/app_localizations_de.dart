@@ -3303,7 +3303,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get greetBookDay => 'Astăzi este Ziua Internațională a Cărții! 📚';
 
   @override
-<<<<<<< Updated upstream
   String get greetMottoStandingTree =>
       'Ein getauschtes Buch ist ein Baum, der stehen bleibt. 🌳';
 
@@ -3322,7 +3321,8 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get greetMottoCirculating =>
       'Weniger neu gedruckte Bücher, mehr Geschichten im Umlauf.';
-=======
+
+  @override
   String get adminFeatureAccessTitle => 'Funktionszugriff';
 
   @override
@@ -3351,7 +3351,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get featureFlagAdvancedStatistics => 'Erweiterte Statistiken';
->>>>>>> Stashed changes
 
   @override
   String get bookMatchTitle => 'Buch-Match';
@@ -3607,15 +3606,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get genreComics => 'Comics';
-<<<<<<< Updated upstream
-
-  @override
-  String get onboardingFlowMoveForward => 'Weiter';
-
-  @override
-  String onboardingFlowBookAdded(String title) {
-    return 'Hinzugefügt: $title';
-  }
 
   @override
   String get onboardingWelcomeTitle =>
@@ -3637,6 +3627,4 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
-=======
->>>>>>> Stashed changes
 }
