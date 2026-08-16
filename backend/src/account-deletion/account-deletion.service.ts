@@ -14,13 +14,26 @@ import { PrismaService } from '../prisma/prisma.service';
 /// (o zi-două) și limita practică peste care userii uită complet de cont.
 export const DELETION_GRACE_PERIOD_DAYS = 15;
 
+/// Doar pentru testare locală/self-hosted - NICIODATĂ pentru producție cu
+/// useri reali. Ocolește complet fereastra de 15 zile (cerută de Google
+/// Play/GDPR - vezi comentariul de mai sus) și șterge contul definitiv pe
+/// loc, din același request pe care userul îl face apăsând „Șterge contul"
+/// din Settings. Implicit OFF (vezi `.env.example`); se activează explicit
+/// din variabila de mediu `INSTANT_ACCOUNT_DELETION=true` pe mașina ta -
+/// oprește-o la loc după ce ai terminat testarea onboardingului, altfel
+/// orice user real care cere ștergerea își pierde definitiv datele instant,
+/// fără nicio fereastră de anulare.
+const INSTANT_DELETION_FOR_TESTING = process.env.INSTANT_ACCOUNT_DELETION === 'true';
+
 @Injectable()
 export class AccountDeletionService {
   private readonly logger = new Logger(AccountDeletionService.name);
 
   constructor(private prisma: PrismaService) {}
 
-  async requestDeletion(userId: string): Promise<{ scheduledFor: Date }> {
+  async requestDeletion(
+    userId: string,
+  ): Promise<{ scheduledFor: Date; immediate: boolean }> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('Utilizator negăsit');
@@ -29,6 +42,14 @@ export class AccountDeletionService {
       throw new BadRequestException(
         'Ștergerea contului este deja programată. Anuleaz-o mai întâi dacă vrei să reprogramezi.',
       );
+    }
+
+    if (INSTANT_DELETION_FOR_TESTING) {
+      await this.prisma.user.delete({ where: { id: userId } });
+      this.logger.warn(
+        `[INSTANT_ACCOUNT_DELETION=true] Cont șters pe loc (fără grace period): ${userId} (${user.email})`,
+      );
+      return { scheduledFor: new Date(), immediate: true };
     }
 
     const scheduledFor = new Date(
@@ -42,7 +63,7 @@ export class AccountDeletionService {
     this.logger.log(
       `Ștergere programată pentru user ${userId} la ${scheduledFor.toISOString()}`,
     );
-    return { scheduledFor };
+    return { scheduledFor, immediate: false };
   }
 
   /**
