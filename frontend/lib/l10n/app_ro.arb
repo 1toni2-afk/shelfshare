@@ -1625,7 +1625,7 @@
     "aboutDevSupportSubtitle": "Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.",
     "aboutDevCoffeeButton": "Buy me a coffee",
     "aboutDevOpenError": "Nu am putut deschide linkul. Încearcă din nou.",
-    "loginMadeWithLove": "Made with ❤️ in Transilvanya",
+    "loginMadeWithLove": "Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺",
     "homeRecommendedTitle": "Recomandate pentru tine",
     "homeNearbyTitle": "Aproape de tine ({km} km)",
     "@homeNearbyTitle": {
@@ -1910,5 +1910,11 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "onboardingWelcomeTitle": "Thank You for using ShelfShare.ro 🇷🇴🇪🇺",
+    "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
+    "onboardingWelcomeBullet2": "🌳 Made to help the environment",
+    "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
+    "onboardingWelcomeBullet4": "🤝 It's not all about the reading, it's about sharing",
+    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
 }

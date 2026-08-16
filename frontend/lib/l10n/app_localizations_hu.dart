@@ -2866,7 +2866,7 @@ class AppLocalizationsHu extends AppLocalizations {
       'Nu am putut deschide linkul. Încearcă din nou.';
 
   @override
-  String get loginMadeWithLove => 'Made with ❤️ in Transilvanya';
+  String get loginMadeWithLove => 'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
   String get homeRecommendedTitle => 'Recomandate pentru tine';
@@ -3584,4 +3584,24 @@ class AppLocalizationsHu extends AppLocalizations {
   String onboardingFlowBookAdded(String title) {
     return 'Hozzáadva: $title';
   }
+
+  @override
+  String get onboardingWelcomeTitle => 'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+
+  @override
+  String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
+
+  @override
+  String get onboardingWelcomeBullet2 => '🌳 Made to help the environment';
+
+  @override
+  String get onboardingWelcomeBullet3 =>
+      '📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează';
+
+  @override
+  String get onboardingWelcomeBullet4 =>
+      '🤝 It\'s not all about the reading, it\'s about sharing';
+
+  @override
+  String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
 }

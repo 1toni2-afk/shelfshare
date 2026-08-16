@@ -5163,7 +5163,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginMadeWithLove.
   ///
   /// In ro, this message translates to:
-  /// **'Made with ❤️ in Transilvanya'**
+  /// **'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺'**
   String get loginMadeWithLove;
 
   /// No description provided for @homeRecommendedTitle.
@@ -6479,6 +6479,42 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Adăugată: {title}'**
   String onboardingFlowBookAdded(String title);
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Thank You for using ShelfShare.ro 🇷🇴🇪🇺'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeBullet1.
+  ///
+  /// In ro, this message translates to:
+  /// **'🌍 European product, self-hosted'**
+  String get onboardingWelcomeBullet1;
+
+  /// No description provided for @onboardingWelcomeBullet2.
+  ///
+  /// In ro, this message translates to:
+  /// **'🌳 Made to help the environment'**
+  String get onboardingWelcomeBullet2;
+
+  /// No description provided for @onboardingWelcomeBullet3.
+  ///
+  /// In ro, this message translates to:
+  /// **'📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează'**
+  String get onboardingWelcomeBullet3;
+
+  /// No description provided for @onboardingWelcomeBullet4.
+  ///
+  /// In ro, this message translates to:
+  /// **'🤝 It\'s not all about the reading, it\'s about sharing'**
+  String get onboardingWelcomeBullet4;
+
+  /// No description provided for @onboardingWelcomeSource.
+  ///
+  /// In ro, this message translates to:
+  /// **'Sursă: ribble-pack.co.uk'**
+  String get onboardingWelcomeSource;
 }
 
 class _AppLocalizationsDelegate

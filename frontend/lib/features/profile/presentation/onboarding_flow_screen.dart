@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
@@ -23,11 +24,13 @@ final _onboardingGenresProvider = FutureProvider<List<String>>((ref) {
 });
 
 /// Wizard-ul de onboarding, arătat o singură dată la primul login (vezi
-/// redirect-ul din app_router.dart). Toți pașii, cu excepția primului
-/// (nume + username, obligatoriu - vezi comentariul de pe pasul 0), au Skip
-/// și Back. Răspunsurile de la pașii 1-4 stau doar în state local și se
-/// salvează o singură dată, la finalul wizard-ului (pasul 6) - așa router-ul
-/// nu ne scoate din mijlocul fluxului, iar Back nu are nimic de anulat pe rețea.
+/// redirect-ul din app_router.dart). Pornește cu pasul -1 (panel de bun venit,
+/// doar informativ) urmat de pasul 0 (nume + username, obligatoriu - vezi
+/// comentariul de acolo); niciunul din astea două nu are Skip/Back. Restul
+/// pașilor au Skip și Back. Răspunsurile de la pașii 1-4 stau doar în state
+/// local și se salvează o singură dată, la finalul wizard-ului (pasul 6) -
+/// așa router-ul nu ne scoate din mijlocul fluxului, iar Back nu are nimic de
+/// anulat pe rețea.
 class OnboardingFlowScreen extends ConsumerStatefulWidget {
   const OnboardingFlowScreen({super.key});
 
@@ -70,9 +73,10 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   void initState() {
     super.initState();
     // Dacă username-ul e deja setat (ex. userul a închis aplicația la mijlocul
-    // wizard-ului și a revenit), pornim direct de la pasul următor.
+    // wizard-ului și a revenit), pornim direct de la pasul următor - fără
+    // panelul de bun venit (pasul -1), care are sens doar la prima intrare.
     final user = ref.read(profileControllerProvider).value;
-    _step = user?.username != null ? 1 : 0;
+    _step = user?.username != null ? 1 : -1;
   }
 
   @override
@@ -191,6 +195,8 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
 
   Widget _buildStep() {
     switch (_step) {
+      case -1:
+        return _WelcomePanel(onContinue: _next);
       case 0:
         return _Step0Username(
           formKey: _formKey,
@@ -694,6 +700,85 @@ class _Step0Username extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pasul -1: panel de bun venit, doar informativ (fără Skip/Back, la fel ca
+/// pasul 0 - e primul lucru pe care userul îl vede, n-are ce să sară sau la
+/// ce să se întoarcă). Reia exact structura vizuală a [_Step0Username]
+/// (Center → SingleChildScrollView → ConstrainedBox 420 → Card) în loc să
+/// inventeze un alt layout de slide.
+class _WelcomePanel extends StatelessWidget {
+  const _WelcomePanel({required this.onContinue});
+  final VoidCallback onContinue;
+
+  static final Uri _sourceUri =
+      Uri.parse('https://ribble-pack.co.uk/blog/much-paper-comes-one-tree');
+
+  Future<void> _openSource() => launchUrl(_sourceUri, mode: LaunchMode.externalApplication);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.onboardingWelcomeTitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 24),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final (index, bullet) in [
+                        l10n.onboardingWelcomeBullet1,
+                        l10n.onboardingWelcomeBullet2,
+                        l10n.onboardingWelcomeBullet3,
+                        l10n.onboardingWelcomeBullet4,
+                      ].indexed)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: index == 3 ? 0 : 16),
+                          child: Text(bullet, style: Theme.of(context).textTheme.bodyLarge),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: _openSource,
+                child: Text(
+                  l10n.onboardingWelcomeSource,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.mutedForeground,
+                        decoration: TextDecoration.underline,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  child: Text(l10n.commonContinue),
+                ),
+              ),
+            ],
           ),
         ),
       ),

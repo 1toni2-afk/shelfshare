@@ -13,6 +13,7 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/motto_text.dart';
 import '../application/my_library_controller.dart';
 import '../data/books_repository.dart';
 import 'edit_listing_sheet.dart';
@@ -498,7 +499,14 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
             data: (books) {
               if (books.isEmpty) {
                 return CenteredScrollable(
-                  child: Text(l10n.libraryEmpty),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.libraryEmpty),
+                      const SizedBox(height: 12),
+                      const MottoText(),
+                    ],
+                  ),
                 );
               }
               final transferred = ref.watch(emptiedShelvesProvider).value ?? const [];
@@ -601,7 +609,16 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 ],
               );
             },
-            loading: () => const CenteredScrollable(child: CircularProgressIndicator()),
+            loading: () => const CenteredScrollable(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  MottoText(),
+                ],
+              ),
+            ),
             error: (error, _) => CenteredScrollable(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
