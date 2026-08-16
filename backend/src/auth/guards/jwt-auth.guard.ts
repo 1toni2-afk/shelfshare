@@ -15,12 +15,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
+  // Tipul de retur trebuie să rămână `any`, nu `unknown`: semnătura de bază
+  // (AuthGuard.handleRequest<TUser = any>) e generică, iar `unknown` nu se
+  // potrivește cu un `TUser` care ar putea fi instanțiat cu orice tip -
+  // vezi eroarea TS2416 dacă încerci să restrângi tipul.
   handleRequest(
     err: unknown,
     user: unknown,
     info: unknown,
     context: ExecutionContext,
-  ): unknown {
+  ): any {
     const userId = (user as { userId?: string } | null)?.userId;
     if (userId) {
       this.touchActivity(userId);

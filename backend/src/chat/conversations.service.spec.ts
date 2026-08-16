@@ -7,6 +7,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { SafetyService } from '../safety/safety.service';
 import { MailService } from '../mail/mail.service';
 import { PresenceService } from './presence.service';
+import { RealtimeService } from '../common/realtime/realtime.service';
 
 describe('ConversationsService', () => {
   let service: ConversationsService;
@@ -21,6 +22,7 @@ describe('ConversationsService', () => {
   let storage: { uploadTextFile: jest.Mock; getPublicUrl: jest.Mock };
   let mail: { sendChatReportNotification: jest.Mock };
   let presence: { isOnline: jest.Mock };
+  let realtime: { emitToConversation: jest.Mock; emitToUser: jest.Mock };
 
   const userA = {
     id: 'user-a',
@@ -62,6 +64,7 @@ describe('ConversationsService', () => {
     };
     mail = { sendChatReportNotification: jest.fn() };
     presence = { isOnline: jest.fn().mockReturnValue(false) };
+    realtime = { emitToConversation: jest.fn(), emitToUser: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -82,6 +85,7 @@ describe('ConversationsService', () => {
         },
         { provide: MailService, useValue: mail },
         { provide: PresenceService, useValue: presence },
+        { provide: RealtimeService, useValue: realtime },
       ],
     }).compile();
 

@@ -2855,7 +2855,8 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu am putut deschide linkul. Încearcă din nou.';
 
   @override
-  String get loginMadeWithLove => 'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
+  String get loginMadeWithLove =>
+      'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
   String get homeRecommendedTitle => 'Recomandate pentru tine';
@@ -3571,7 +3572,8 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get onboardingWelcomeTitle => 'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+  String get onboardingWelcomeTitle =>
+      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
 
   @override
   String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';

@@ -833,13 +833,15 @@ class _OptionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // ignore: deprecated_member_use - migrarea la RadioGroup ar
-              // cere restructurarea widget-ului (fiecare _OptionCard e
-              // independent, cu toată suprafața cardului tap-abilă prin
-              // InkWell, nu doar cercul Radio) - amânată până testăm vizual.
+              // Migrarea la RadioGroup ar cere restructurarea widget-ului
+              // (fiecare _OptionCard e independent, cu toată suprafața
+              // cardului tap-abilă prin InkWell, nu doar cercul Radio) -
+              // amânată până testăm vizual.
               Radio<bool>(
                 value: true,
+                // ignore: deprecated_member_use
                 groupValue: selected ? true : null,
+                // ignore: deprecated_member_use
                 onChanged: (_) => onTap(),
               ),
             ],

@@ -2852,7 +2852,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutDevOpenError => 'Couldn\'t open the link. Please try again.';
 
   @override
-  String get loginMadeWithLove => 'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
+  String get loginMadeWithLove =>
+      'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
   String get homeRecommendedTitle => 'Recommended for you';
@@ -3569,7 +3570,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get onboardingWelcomeTitle => 'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
+  String get onboardingWelcomeTitle =>
+      'Thank You for using ShelfShare.ro 🇷🇴🇪🇺';
 
   @override
   String get onboardingWelcomeBullet1 => '🌍 European product, self-hosted';
