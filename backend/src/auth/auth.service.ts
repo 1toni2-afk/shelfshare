@@ -80,11 +80,13 @@ export class AuthService {
 
   /**
    * Step-up captcha: normal single/double attempts never see this, only
-   * an IP repeatedly hitting the same auth endpoint (register/login/
-   * forgot-password) within 15 minutes. Older app builds that don't yet
-   * send captchaToken/captchaAnswer simply get blocked past the threshold
-   * instead of degrading - acceptable since legitimate users essentially
-   * never retry these flows 4+ times in a quarter hour.
+   * an (IP, email) pair repeatedly hitting the same auth endpoint
+   * (register/login/forgot-password) within 15 minutes. Keyed by email too,
+   * not just IP, so several people on the same network logging into
+   * different accounts don't share one counter. Older app builds that don't
+   * yet send captchaToken/captchaAnswer simply get blocked past the
+   * threshold instead of degrading - acceptable since legitimate users
+   * essentially never retry these flows 4+ times in a quarter hour.
    */
   private requireCaptchaIfSuspicious(
     scope: string,
@@ -93,8 +95,9 @@ export class AuthService {
       captchaToken?: string;
       captchaAnswer?: number;
     },
+    identifier?: string,
   ) {
-    if (!this.attemptGuard.shouldChallenge(scope, ip)) return;
+    if (!this.attemptGuard.shouldChallenge(scope, ip, identifier)) return;
     if (!this.captcha.verify(dto.captchaToken, dto.captchaAnswer)) {
       throw new BadRequestException({
         statusCode: 400,
@@ -170,7 +173,7 @@ export class AuthService {
   // ---------- Register ----------
 
   async register(dto: RegisterDto, ip: string) {
-    this.requireCaptchaIfSuspicious('register', ip, dto);
+    this.requireCaptchaIfSuspicious('register', ip, dto, dto.email);
 
     if (isDisposableEmailDomain(dto.email)) {
       throw new BadRequestException(
@@ -270,7 +273,7 @@ export class AuthService {
     ip: string,
     captcha?: { captchaToken?: string; captchaAnswer?: number },
   ) {
-    this.requireCaptchaIfSuspicious('resend-verification', ip, captcha ?? {});
+    this.requireCaptchaIfSuspicious('resend-verification', ip, captcha ?? {}, email);
 
     const user = await this.users.findByEmail(email);
     const genericResult = {
@@ -307,7 +310,7 @@ export class AuthService {
   // ---------- Login ----------
 
   async login(dto: LoginDto, ip: string) {
-    this.requireCaptchaIfSuspicious('login', ip, dto);
+    this.requireCaptchaIfSuspicious('login', ip, dto, dto.email);
 
     const user = await this.users.findByEmail(dto.email);
 
@@ -426,7 +429,7 @@ export class AuthService {
     ip: string,
     captcha?: { captchaToken?: string; captchaAnswer?: number },
   ) {
-    this.requireCaptchaIfSuspicious('forgot-password', ip, captcha ?? {});
+    this.requireCaptchaIfSuspicious('forgot-password', ip, captcha ?? {}, email);
 
     const user = await this.users.findByEmail(email);
     const genericResult = {

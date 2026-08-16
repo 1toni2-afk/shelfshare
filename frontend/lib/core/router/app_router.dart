@@ -9,6 +9,7 @@ import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
+import '../../features/admin/presentation/feature_access_screen.dart';
 import '../../features/books/presentation/add_book_screen.dart';
 import '../../features/books/presentation/bulk_add_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
@@ -23,11 +24,12 @@ import '../../features/chat/presentation/conversations_list_screen.dart';
 import '../../features/exchanges/presentation/exchange_confirm_screen.dart';
 import '../../features/exchanges/presentation/exchanges_screen.dart';
 import '../../features/exchanges/presentation/ready_to_exchange_screen.dart';
+import '../../features/offers/presentation/ready_to_sell_screen.dart';
+import '../../data/models/price_offer.dart';
 import '../../data/models/exchange_request.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/about_app_screen.dart';
-import '../../features/profile/presentation/about_dev_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/profile/presentation/my_profile_screen.dart';
 import '../../features/profile/presentation/pre_registration_screen.dart';
@@ -46,8 +48,6 @@ import '../../features/groups/presentation/group_detail_screen.dart';
 import '../../features/profile/presentation/seller_analytics_screen.dart';
 import '../../features/profile/presentation/onboarding_flow_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
-import '../../features/safety/presentation/help_center_screen.dart';
-import '../../features/safety/presentation/safety_center_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
@@ -185,7 +185,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
           GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
           GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
-          GoRoute(path: '/about-dev', builder: (context, state) => const AboutDevScreen()),
           GoRoute(path: '/about-app', builder: (context, state) => const AboutAppScreen()),
           GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
           GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
@@ -200,6 +199,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 initialGenre: args?.genre,
                 initialListingType: args?.listingType,
                 initialCity: args?.city,
+                initialSort: args?.sort,
               );
             },
           ),
@@ -216,10 +216,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               initial: state.extra as ExchangeRequest?,
             ),
           ),
+          GoRoute(
+            path: '/offers/:id/ready',
+            builder: (context, state) => ReadyToSellScreen(
+              offerId: state.pathParameters['id']!,
+              initial: state.extra as PriceOffer?,
+            ),
+          ),
           GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
-          GoRoute(path: '/safety-center', builder: (context, state) => const SafetyCenterScreen()),
+          GoRoute(
+            path: '/admin/feature-access',
+            builder: (context, state) => const FeatureAccessScreen(),
+          ),
           GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
-          GoRoute(path: '/help-center', builder: (context, state) => const HelpCenterScreen()),
           GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
           GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),
           GoRoute(path: '/global-stats', builder: (context, state) => const GlobalStatsScreen()),
@@ -265,6 +274,16 @@ final routerProvider = Provider<GoRouter>((ref) {
               conversationId: state.pathParameters['conversationId']!,
               otherUser: state.extra as PublicUser?,
             ),
+          ),
+          GoRoute(
+            path: '/photo-viewer',
+            pageBuilder: (context, state) {
+              final (photos, initialIndex) = state.extra as (List<String>, int);
+              return MaterialPage(
+                fullscreenDialog: true,
+                child: PhotoViewerScreen(photos: photos, initialIndex: initialIndex),
+              );
+            },
           ),
         ],
       ),

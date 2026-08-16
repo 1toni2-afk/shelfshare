@@ -437,6 +437,26 @@ class BooksRepository {
     return (response.data as List<dynamic>).map((e) => e as String).toList();
   }
 
+  /// Detaliile complete ale cărții alese din autocomplete: descriere +
+  /// `subjects` (sugestii de taguri). Se apelează O SINGURĂ DATĂ, la selecție
+  /// - `searchExternal` rămâne intenționat fără descriere, ca dropdown-ul să
+  /// nu plătească latența asta la fiecare tastă.
+  Future<ExternalBookResult?> lookupDetails({
+    String? isbn,
+    String? title,
+    String? author,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/details', queryParameters: {
+      if (isbn != null && isbn.isNotEmpty) 'isbn': isbn,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (author != null && author.isNotEmpty) 'author': author,
+    });
+    return response.data == null
+        ? null
+        : ExternalBookResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
   /// Previzualizare (fără să creeze nimic) pentru un ISBN scanat - vezi Bulk ISBN Scan.
   Future<ExternalBookResult?> lookupIsbn(String isbn) async {
     final dio = _ref.read(apiClientProvider).dio;
@@ -504,6 +524,17 @@ class BooksRepository {
   /// Trece un anunț la vânzare - separat de creare, pentru că backend-ul
   /// cere cel puțin o poză deja urcată (vezi updateUserBook), iar la
   /// creare nu poate exista încă nicio poză.
+  /// „Sau vinde cu X lei" pe un anunț de tip Schimb: NU folosim
+  /// isForSale/salePrice (alea ar muta anunțul în categoria „Vânzare"), ci
+  /// coloana dedicată `swapSalePrice`. `null` dezactivează opțiunea.
+  Future<UserBook> setSwapSalePrice(String userBookId, double? price) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.patch('/books/$userBookId', data: {
+      'swapSalePrice': price,
+    });
+    return UserBook.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<UserBook> markForSale(
     String userBookId, {
     required double salePrice,

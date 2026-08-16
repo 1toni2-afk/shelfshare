@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/locale/locale_controller.dart';
 import 'core/network/providers.dart';
@@ -25,6 +26,11 @@ void main() async {
   };
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    // Fără asta, Flutter web folosește implicit hash routing (/#/...) - un
+    // URL real precum /auth/google/callback?code=X (cum e redirectul din
+    // fluxul Google OAuth) e ignorat la boot, iar aplicația pornește mereu
+    // pe ruta implicită, pierzând codul de schimb.
+    usePathUrlStrategy();
     await initializeDateFormatting();
     runApp(const ProviderScope(child: ShelfShareApp()));
   }, (error, stack) {

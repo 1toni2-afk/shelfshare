@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Întrebări frecvente | ShelfShare</title>
+<meta name="description" content="Răspunsuri la cele mai frecvente întrebări despre schimburi, prețuri și siguranță pe ShelfShare.">
+<meta name="theme-color" content="#7C3A1E">
+<link rel="canonical" href="https://shelfshare.ro/help-center">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shelfshare.ro/help-center">
+<meta property="og:site_name" content="ShelfShare">
+<meta property="og:title" content="Întrebări frecvente | ShelfShare">
+<meta property="og:description" content="Răspunsuri la cele mai frecvente întrebări despre schimburi, prețuri și siguranță pe ShelfShare.">
+<meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+<meta property="og:locale" content="ro_RO">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Cum funcționează un schimb de cărți?", "acceptedAnswer": {"@type": "Answer", "text": "Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat."}},
+    {"@type": "Question", "name": "Ce se întâmplă cu cartea după ce o vând sau o dau la schimb?", "acceptedAnswer": {"@type": "Answer", "text": "Anunțul devine indisponibil definitiv. Dacă persoana care a primit-o vrea să o listeze mai departe, poate face asta din ecranul de Schimburi/Oferte (\"Adaugă în biblioteca ta\") - istoricul cărții rămâne urmăribil pe pagina ei de detalii, cu poze puse de fiecare proprietar."}},
+    {"@type": "Question", "name": "De ce nu-mi apare o carte în Categorii sau la Cărți similare?", "acceptedAnswer": {"@type": "Answer", "text": "Genul unei cărți vine din Open Library sau Google Books la adăugare - unele cărți nu au gen completat în sursele externe, mai ales edițiile mai puțin populare."}},
+    {"@type": "Question", "name": "Cum se calculează prețul „din librării”?", "acceptedAnswer": {"@type": "Answer", "text": "Când adaugi o carte cu ISBN, încercăm să găsim prețul de listă pe Google Books. Acoperirea e parțială - nu toate cărțile au preț disponibil acolo, mai ales edițiile mai vechi sau românești."}},
+    {"@type": "Question", "name": "Ce înseamnă „Preț fix, nenegociabil”?", "acceptedAnswer": {"@type": "Answer", "text": "Dacă cel care vinde o carte bifează asta, cumpărătorii nu mai pot trimite oferte de preț - cartea se cumpără doar la prețul afișat."}},
+    {"@type": "Question", "name": "Ce e Scorul de încredere?", "acceptedAnswer": {"@type": "Answer", "text": "Un indicator 0-100 calculat automat din activitatea din aplicație: vechimea contului, email verificat, câte schimburi ai finalizat, rating-ul primit, cât de des răspunzi și cât de rar anulezi cereri. Nu e o verificare de identitate, doar un semnal de comportament."}},
+    {"@type": "Question", "name": "Cum raportez sau blochez un utilizator?", "acceptedAnswer": {"@type": "Answer", "text": "Din meniul din colțul din dreapta sus al unei conversații, sau din pagina de detalii a unui anunț (iconița de steag). Blocarea oprește mesajele în ambele direcții."}}
+  ]
+}
+</script>
+<style>
+  :root {
+    --background: #F8F4EC;
+    --foreground: #2A1A0E;
+    --card: #FDFAF4;
+    --primary: #7C3A1E;
+    --primary-foreground: #FDF9F3;
+    --accent: #C8783A;
+    --accent-foreground: #FDF9F3;
+    --muted-foreground: #655A4A;
+    --border: rgba(42, 26, 14, 0.13);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0E0E0F;
+      --foreground: #F5F3F0;
+      --card: #19191B;
+      --muted-foreground: #A8A6A3;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .group-label {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    margin: 24px 0 10px;
+  }
+  .group-label:first-of-type { margin-top: 0; }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px 18px;
+    margin-bottom: 10px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 0;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '+';
+    float: right;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  details[open] summary::after { content: '−'; }
+  details p {
+    margin: 0 0 16px;
+    color: var(--foreground);
+    font-size: 14px;
+  }
+  .footer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted-foreground);
+    max-width: 460px;
+  }
+  .contact-btn {
+    flex: none;
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <header><a href="/">← ShelfShare</a></header>
+  <main>
+    <h1>Întrebări frecvente</h1>
+
+    <div class="group-label">Schimburi</div>
+    <details open>
+      <summary>Cum funcționează un schimb de cărți?</summary>
+      <p>Ceri o carte din anunțul altcuiva (poți oferi și tu o carte în schimb), proprietarul acceptă sau refuză, apoi vă stabiliți o întâlnire prin chat. După ce faceți schimbul în realitate, oricare dintre voi marchează schimbul ca finalizat.</p>
+    </details>
+    <details>
+      <summary>Ce se întâmplă cu cartea după ce o vând sau o dau la schimb?</summary>
+      <p>Anunțul devine indisponibil definitiv. Dacă persoana care a primit-o vrea să o listeze mai departe, poate face asta din ecranul de Schimburi/Oferte ("Adaugă în biblioteca ta") - istoricul cărții rămâne urmăribil pe pagina ei de detalii, cu poze puse de fiecare proprietar.</p>
+    </details>
+    <details>
+      <summary>De ce nu-mi apare o carte în Categorii sau la Cărți similare?</summary>
+      <p>Genul unei cărți vine din Open Library sau Google Books la adăugare - unele cărți nu au gen completat în sursele externe, mai ales edițiile mai puțin populare.</p>
+    </details>
+
+    <div class="group-label">Prețuri</div>
+    <details>
+      <summary>Cum se calculează prețul „din librării”?</summary>
+      <p>Când adaugi o carte cu ISBN, încercăm să găsim prețul de listă pe Google Books. Acoperirea e parțială - nu toate cărțile au preț disponibil acolo, mai ales edițiile mai vechi sau românești.</p>
+    </details>
+    <details>
+      <summary>Ce înseamnă „Preț fix, nenegociabil”?</summary>
+      <p>Dacă cel care vinde o carte bifează asta, cumpărătorii nu mai pot trimite oferte de preț - cartea se cumpără doar la prețul afișat.</p>
+    </details>
+
+    <div class="group-label">Încredere și siguranță</div>
+    <details>
+      <summary>Ce e Scorul de încredere?</summary>
+      <p>Un indicator 0-100 calculat automat din activitatea din aplicație: vechimea contului, email verificat, câte schimburi ai finalizat, rating-ul primit, cât de des răspunzi și cât de rar anulezi cereri. Nu e o verificare de identitate, doar un semnal de comportament.</p>
+    </details>
+    <details>
+      <summary>Cum raportez sau blochez un utilizator?</summary>
+      <p>Din meniul din colțul din dreapta sus al unei conversații, sau din pagina de detalii a unui anunț (iconița de steag). Blocarea oprește mesajele în ambele direcții.</p>
+    </details>
+
+    <div class="footer-card">
+      <p>Nu ai găsit răspunsul? Poți raporta o problemă direct din conversația cu utilizatorul implicat, sau scrie unui moderator.</p>
+      <a class="contact-btn" href="mailto:contact@shelfshare.ro">Contactează un moderator</a>
+    </div>
+  </main>
+</body>
+</html>

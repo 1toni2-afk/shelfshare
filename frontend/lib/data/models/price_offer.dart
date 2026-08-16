@@ -2,7 +2,7 @@ import 'book.dart';
 import 'user.dart';
 import 'user_book.dart';
 
-enum OfferStatus { pending, accepted, rejected, cancelled, expired }
+enum OfferStatus { pending, accepted, rejected, cancelled, expired, completed }
 
 extension OfferStatusX on OfferStatus {
   static OfferStatus fromJson(String value) {
@@ -17,6 +17,8 @@ extension OfferStatusX on OfferStatus {
         return OfferStatus.cancelled;
       case 'EXPIRED':
         return OfferStatus.expired;
+      case 'COMPLETED':
+        return OfferStatus.completed;
       default:
         throw ArgumentError('Status necunoscut: $value');
     }
@@ -34,6 +36,8 @@ extension OfferStatusX on OfferStatus {
         return 'Anulată';
       case OfferStatus.expired:
         return 'Expirată';
+      case OfferStatus.completed:
+        return 'Finalizată';
     }
   }
 }
@@ -50,6 +54,24 @@ class PriceOffer {
   final PublicUser owner;
   final DateTime createdAt;
 
+  // Sale flow v2 - mirror exact al câmpurilor de pe ExchangeRequest.
+  final DateTime? acceptedAt;
+  final DateTime? meetingTime;
+  final String? meetingLocation;
+  final String? meetingProposedBy;
+  final DateTime? meetingAcceptedAt;
+  final String? buyerContactPhone;
+  final String? ownerContactPhone;
+  final DateTime? buyerContactSharedAt;
+  final DateTime? ownerContactSharedAt;
+  final DateTime? buyerSafetyAckAt;
+  final DateTime? ownerSafetyAckAt;
+  final DateTime? buyerDoneAt;
+  final DateTime? ownerDoneAt;
+  final String? cancelReason;
+  final String? cancelDetails;
+  final String? cancelledBy;
+
   const PriceOffer({
     required this.id,
     required this.buyerId,
@@ -61,9 +83,67 @@ class PriceOffer {
     required this.buyer,
     required this.owner,
     required this.createdAt,
+    this.acceptedAt,
+    this.meetingTime,
+    this.meetingLocation,
+    this.meetingProposedBy,
+    this.meetingAcceptedAt,
+    this.buyerContactPhone,
+    this.ownerContactPhone,
+    this.buyerContactSharedAt,
+    this.ownerContactSharedAt,
+    this.buyerSafetyAckAt,
+    this.ownerSafetyAckAt,
+    this.buyerDoneAt,
+    this.ownerDoneAt,
+    this.cancelReason,
+    this.cancelDetails,
+    this.cancelledBy,
   });
 
+  bool isBuyer(String myUserId) => myUserId == buyerId;
+
+  bool meetingAwaitsMyResponse(String myUserId) =>
+      meetingTime != null &&
+      meetingAcceptedAt == null &&
+      meetingProposedBy != null &&
+      meetingProposedBy != myUserId;
+
+  bool meetingAwaitsOtherResponse(String myUserId) =>
+      meetingTime != null && meetingAcceptedAt == null && meetingProposedBy == myUserId;
+
+  bool get isMeetingConfirmed => meetingTime != null && meetingAcceptedAt != null;
+
+  bool myContactShared(String myUserId) =>
+      isBuyer(myUserId) ? buyerContactSharedAt != null : ownerContactSharedAt != null;
+
+  bool otherContactShared(String myUserId) =>
+      isBuyer(myUserId) ? ownerContactSharedAt != null : buyerContactSharedAt != null;
+
+  String? otherContactPhone(String myUserId) =>
+      isBuyer(myUserId) ? ownerContactPhone : buyerContactPhone;
+
+  String? myContactPhone(String myUserId) =>
+      isBuyer(myUserId) ? buyerContactPhone : ownerContactPhone;
+
+  bool mySafetyAck(String myUserId) =>
+      isBuyer(myUserId) ? buyerSafetyAckAt != null : ownerSafetyAckAt != null;
+
+  bool otherSafetyAck(String myUserId) =>
+      isBuyer(myUserId) ? ownerSafetyAckAt != null : buyerSafetyAckAt != null;
+
+  bool myDone(String myUserId) => isBuyer(myUserId) ? buyerDoneAt != null : ownerDoneAt != null;
+
+  bool otherDone(String myUserId) => isBuyer(myUserId) ? ownerDoneAt != null : buyerDoneAt != null;
+
+  bool isAwaitingOtherConfirmation(String myUserId) => myDone(myUserId) && !otherDone(myUserId);
+
+  bool isAwaitingMyConfirmation(String myUserId) => otherDone(myUserId) && !myDone(myUserId);
+
   factory PriceOffer.fromJson(Map<String, dynamic> json) {
+    DateTime? parseDate(String key) =>
+        json[key] != null ? DateTime.parse(json[key] as String) : null;
+
     return PriceOffer(
       id: json['id'] as String,
       buyerId: json['buyerId'] as String,
@@ -75,6 +155,22 @@ class PriceOffer {
       buyer: PublicUser.fromJson(json['buyer'] as Map<String, dynamic>),
       owner: PublicUser.fromJson(json['owner'] as Map<String, dynamic>),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      acceptedAt: parseDate('acceptedAt'),
+      meetingTime: parseDate('meetingTime'),
+      meetingLocation: json['meetingLocation'] as String?,
+      meetingProposedBy: json['meetingProposedBy'] as String?,
+      meetingAcceptedAt: parseDate('meetingAcceptedAt'),
+      buyerContactPhone: json['buyerContactPhone'] as String?,
+      ownerContactPhone: json['ownerContactPhone'] as String?,
+      buyerContactSharedAt: parseDate('buyerContactSharedAt'),
+      ownerContactSharedAt: parseDate('ownerContactSharedAt'),
+      buyerSafetyAckAt: parseDate('buyerSafetyAckAt'),
+      ownerSafetyAckAt: parseDate('ownerSafetyAckAt'),
+      buyerDoneAt: parseDate('buyerDoneAt'),
+      ownerDoneAt: parseDate('ownerDoneAt'),
+      cancelReason: json['cancelReason'] as String?,
+      cancelDetails: json['cancelDetails'] as String?,
+      cancelledBy: json['cancelledBy'] as String?,
     );
   }
 }

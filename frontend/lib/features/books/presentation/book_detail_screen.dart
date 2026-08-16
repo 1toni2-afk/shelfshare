@@ -13,7 +13,8 @@ import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../data/models/price_offer.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
-import '../../../shared/utils/genre_localization.dart';
+import '../../../shared/widgets/wishlist_source_icon.dart';
+import '../../../data/models/wishlist_item.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
@@ -42,6 +43,7 @@ class BookDetailScreen extends ConsumerStatefulWidget {
 
 class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   bool _sheetOpen = false;
+  bool _redirectedToAuction = false;
 
   Future<void> _requestExchange(UserBook book) async {
     if (_sheetOpen) return;
@@ -112,11 +114,32 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     // de wishlist a clientului rămâne un fallback optimist ca inima să reacționeze
     // instant la toggle, înainte de refetch-ul detaliului.
     final wishlistState = ref.watch(wishlistControllerProvider);
+    WishlistItem? localWishlistRow;
+    for (final item in wishlistState.value ?? const <WishlistItem>[]) {
+      if (item.book.id == bookId) {
+        localWishlistRow = item;
+        break;
+      }
+    }
     final isWishlisted = bookId != null &&
-        ((currentBook?.isWishlisted ?? false) ||
-            (wishlistState.value ?? const [])
-                .any((item) => item.book.id == bookId));
+        ((currentBook?.isWishlisted ?? false) || localWishlistRow != null);
+    // Sursa: la fel ca inima, serverul are prioritate, cu lista locală drept
+    // fallback optimist imediat după toggle.
+    final wishlistSource =
+        currentBook?.wishlistSource ?? localWishlistRow?.source;
     final l10n = context.l10n;
+
+    // Anunțurile de tip licitație au propriul ecran (cu bid-uri live, buy-now
+    // etc.) - dacă ajungem aici (din browse/home/bibliotecă, care nu știu
+    // să distingă tipul de anunț la navigare), redirecționăm automat spre
+    // /auctions/:id, altfel utilizatorul nu are cum să liciteze.
+    final auctionId = currentBook?.isAuction == true ? currentBook?.auction?.id : null;
+    if (auctionId != null && !_redirectedToAuction) {
+      _redirectedToAuction = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.pushReplacement('/auctions/$auctionId');
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -163,9 +186,12 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                   ),
                 IconButton(
                   icon: Icon(
-                    isWishlisted ? Icons.favorite : Icons.favorite_border,
+                    wishlistIconFor(wishlistSource, wishlisted: isWishlisted),
                   ),
-                  color: isWishlisted ? AppColors.destructive : null,
+                  color: wishlistIconColorFor(
+                    wishlistSource,
+                    wishlisted: isWishlisted,
+                  ),
                   onPressed: () async {
                     await ref
                         .read(wishlistControllerProvider.notifier)
@@ -364,6 +390,15 @@ class _BookDetailContent extends ConsumerWidget {
   }
 }
 
+/// Lista de imagini pentru carusel, cu `primaryImageUrl` mereu prima (coperta
+/// oficială implicit, sau poza starată de user), urmată de restul pozelor
+/// proprii urcate, fără duplicate.
+List<String> _coverGalleryImages(UserBook book) {
+  final primary = book.primaryImageUrl;
+  final rest = book.photos.where((p) => p != primary);
+  return [?primary, ...rest];
+}
+
 /// Coloana din stânga: coperta mare + preț (dacă e la vânzare) + contorul de
 /// vizualizări + acțiunile de listă (colecții, promovare).
 class _CoverPanel extends ConsumerWidget {
@@ -382,17 +417,20 @@ class _CoverPanel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Poze proprii → carusel cu swipe direct pe imaginea mare (nu doar
-        // pe rândul de thumbnail-uri de mai jos). Fără poze proprii, rămâne
-        // coperta unică din catalog - nu are ce să deruleze.
-        book.photos.isNotEmpty
-            ? _BookPhotoCarousel(photos: book.photos)
+        // Imaginea principală urmează `primaryImageUrl` (coperta oficială
+        // implicit, sau poza proprie aleasă explicit cu steluța) - nu doar
+        // "are poze proprii => le arată pe alea", cum era înainte, ceea ce
+        // ignora coperta oficială chiar și când userul nu alesese nimic.
+        // Restul pozelor proprii rămân răsfoibile prin swipe, doar nu mai
+        // sar peste coperta oficială ca primă imagine.
+        _coverGalleryImages(book).length > 1
+            ? _BookPhotoCarousel(photos: _coverGalleryImages(book))
             : ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: AspectRatio(
                   aspectRatio: 5 / 7,
                   child: BookCover(
-                    url: book.book.coverUrl,
+                    url: book.primaryImageUrl,
                     width: double.infinity,
                     height: double.infinity,
                   ),
@@ -400,7 +438,17 @@ class _CoverPanel extends ConsumerWidget {
               ),
         if (book.isForSale && book.salePrice != null) ...[
           const SizedBox(height: 16),
-          Center(child: _PriceBlock(book: book)),
+          Center(
+            child: book.salePrice == 0
+                ? Text(
+                    l10n.shareListingModeDonation,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  )
+                : _PriceBlock(book: book),
+          ),
         ],
         const SizedBox(height: 16),
         Row(
@@ -613,8 +661,7 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            if (book.book.genre != null)
-              _GenrePill(label: localizedGenre(context, book.book.genre!)),
+            if (book.book.genre != null) _GenrePill(label: book.book.genre!),
             _OutlinePill(
               icon: Icons.auto_stories_outlined,
               label: book.condition.label(l10n),
@@ -757,7 +804,12 @@ class _ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final canOffer = book.isForSale && book.isNegotiable;
+    // Al doilea buton („Fă o ofertă") apare fie pe un anunț de vânzare
+    // negociabil, fie pe unul de tip Schimb pe care proprietarul a bifat
+    // „sau vinde cu X lei" la listare (UserBook.swapSalePrice).
+    final canOffer =
+        (book.isForSale && book.isNegotiable) || book.swapSalePrice != null;
+    final isDonation = book.isForSale && book.salePrice == 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -769,9 +821,11 @@ class _ActionButtons extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Text(book.availableForSwap
-                    ? l10n.bookDetailRequestExchange
-                    : l10n.bookDetailUnavailableForExchange),
+                child: Text(!book.availableForSwap
+                    ? l10n.bookDetailUnavailableForExchange
+                    : isDonation
+                        ? l10n.bookDetailRequestDonation
+                        : l10n.bookDetailRequestExchange),
               ),
             ),
             if (canOffer) ...[
@@ -1242,11 +1296,7 @@ class _AboutBookSheet extends StatelessWidget {
               spacing: 16,
               runSpacing: 8,
               children: [
-                if (book.genre != null)
-                  _MetaItem(
-                    icon: Icons.category_outlined,
-                    text: localizedGenre(context, book.genre!),
-                  ),
+                if (book.genre != null) _MetaItem(icon: Icons.category_outlined, text: book.genre!),
                 if (book.publishedYear != null)
                   _MetaItem(icon: Icons.calendar_today_outlined, text: '${book.publishedYear}'),
                 if (book.pageCount != null)
@@ -1324,7 +1374,11 @@ class _HistoryHop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Padding(
+    return InkWell(
+      // Verigile din trecut duc la anunțul lor propriu - veriga curentă (cea
+      // de pe pagina asta) nu face nimic, ca să nu apese pe ea din reflex.
+      onTap: entry.isCurrent ? null : () => context.push('/books/${entry.userBookId}'),
+      child: Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1374,6 +1428,7 @@ class _HistoryHop extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -1662,8 +1717,12 @@ class _MakeOfferSheet extends ConsumerStatefulWidget {
 }
 
 class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
+  /// Pretul de referinta: cel de vanzare, sau cel din „sau vinde cu X lei"
+  /// de pe un anunt de tip Schimb (vezi UserBook.swapSalePrice).
+  double? get _askingPrice => widget.book.salePrice ?? widget.book.swapSalePrice;
+
   late final _amountController =
-      TextEditingController(text: widget.book.salePrice?.toStringAsFixed(0));
+      TextEditingController(text: _askingPrice?.toStringAsFixed(0));
   final _messageController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -1731,11 +1790,11 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
               l10n.bookDetailMakeOfferTitle(widget.book.book.title),
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            if (widget.book.salePrice != null)
+            if (_askingPrice != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  l10n.bookDetailAskingPrice(l10n.priceLei(widget.book.salePrice!.toStringAsFixed(0))),
+                  l10n.bookDetailAskingPrice(l10n.priceLei(_askingPrice!.toStringAsFixed(0))),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -1748,10 +1807,11 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
             const SizedBox(height: 16),
             TextField(
               controller: _messageController,
-              maxLines: 3,
+              maxLines: 2,
+              maxLength: 50,
               decoration: InputDecoration(labelText: l10n.bookDetailMessageOptional),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
               child: _isSubmitting
@@ -1769,26 +1829,26 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
   }
 }
 
+/// Deschide vizualizatorul de poze printr-o rută go_router adevărată
+/// (/photo-viewer), nu direct pe Navigator-ul rădăcină - fără asta, web nu
+/// avea nicio intrare nouă în istoricul browser-ului la deschidere, deci un
+/// singur click pe "back"-ul browser-ului sărea peste tot ecranul anunțului
+/// (nu doar peste poză) direct la pagina de dinainte (discover/home).
 void _openPhotoViewer(BuildContext context, List<String> photos, int initialIndex) {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (context) => _PhotoViewerScreen(photos: photos, initialIndex: initialIndex),
-      fullscreenDialog: true,
-    ),
-  );
+  context.push('/photo-viewer', extra: (photos, initialIndex));
 }
 
 /// Vizualizator plin-ecran cu zoom (pinch) și navigare între poze prin swipe.
-class _PhotoViewerScreen extends StatefulWidget {
-  const _PhotoViewerScreen({required this.photos, required this.initialIndex});
+class PhotoViewerScreen extends StatefulWidget {
+  const PhotoViewerScreen({super.key, required this.photos, required this.initialIndex});
   final List<String> photos;
   final int initialIndex;
 
   @override
-  State<_PhotoViewerScreen> createState() => _PhotoViewerScreenState();
+  State<PhotoViewerScreen> createState() => _PhotoViewerScreenState();
 }
 
-class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
+class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   late final _pageController = PageController(initialPage: widget.initialIndex);
   late int _currentIndex = widget.initialIndex;
 

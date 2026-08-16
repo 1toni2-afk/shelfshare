@@ -142,6 +142,11 @@ class ExchangeRequest {
   String? otherContactPhone(String myUserId) =>
       isRequester(myUserId) ? ownerContactPhone : requesterContactPhone;
 
+  /// Telefonul pe care l-am partajat eu însumi - folosit ca să pre-completăm
+  /// câmpul când userul apasă "Edit details".
+  String? myContactPhone(String myUserId) =>
+      isRequester(myUserId) ? requesterContactPhone : ownerContactPhone;
+
   bool mySafetyAck(String myUserId) =>
       isRequester(myUserId) ? requesterSafetyAckAt != null : ownerSafetyAckAt != null;
 

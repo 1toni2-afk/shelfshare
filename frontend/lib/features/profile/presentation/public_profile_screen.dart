@@ -15,7 +15,6 @@ import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../../shared/widgets/trust_score_card.dart';
 import '../../../shared/widgets/impact_stats_card.dart';
 import '../../../shared/widgets/gamification_card.dart';
-import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
@@ -274,10 +273,7 @@ class _Content extends StatelessWidget {
               if (user.readingStats!.totalPages > 0)
                 _StatChip(label: l10n.publicProfileTotalPages, value: '${user.readingStats!.totalPages}'),
               if (user.readingStats!.topGenres.length <= 1 && user.readingStats!.favoriteGenre != null)
-                _StatChip(
-                  label: l10n.publicProfileFavoriteGenre,
-                  value: localizedGenre(context, user.readingStats!.favoriteGenre!),
-                ),
+                _StatChip(label: l10n.publicProfileFavoriteGenre, value: user.readingStats!.favoriteGenre!),
               if ((user.booksSharedCount ?? 0) > 0)
                 _StatChip(label: l10n.publicProfileBooksShared, value: '${user.booksSharedCount}'),
               if ((user.booksReceivedCount ?? 0) > 0)
@@ -301,7 +297,7 @@ class _Content extends StatelessWidget {
               children: [
                 // Top 3, nu lista completă de genuri.
                 for (final entry in user.readingStats!.topGenres.take(3))
-                  _StatChip(label: localizedGenre(context, entry.genre), value: '${entry.count}'),
+                  _StatChip(label: entry.genre, value: '${entry.count}'),
               ],
             ),
           ],
@@ -369,19 +365,24 @@ class _Content extends StatelessWidget {
             )
           else
             for (final entry in user.acquisitionHistory!)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    BookCover(url: entry.bookCoverUrl, width: 32, height: 44),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${entry.bookTitle} · ${entry.date.day}.${entry.date.month}.${entry.date.year}',
-                        style: Theme.of(context).textTheme.bodySmall,
+              InkWell(
+                onTap: entry.userBookId == null
+                    ? null
+                    : () => context.push('/books/${entry.userBookId}', extra: user),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      BookCover(url: entry.bookCoverUrl, width: 32, height: 44),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${entry.bookTitle} · ${entry.date.day}.${entry.date.month}.${entry.date.year}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
         ],

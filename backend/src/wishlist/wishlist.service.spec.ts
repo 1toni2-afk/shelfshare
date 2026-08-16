@@ -3,6 +3,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { WishlistService } from './wishlist.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ListingScoreService } from '../books/listing-score.service';
 
 describe('WishlistService', () => {
   let service: WishlistService;
@@ -36,6 +37,12 @@ describe('WishlistService', () => {
         WishlistService,
         { provide: PrismaService, useValue: prisma },
         { provide: NotificationsService, useValue: { create: jest.fn() } },
+        {
+          provide: ListingScoreService,
+          useValue: {
+            recordWishlistAdd: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -69,6 +76,21 @@ describe('WishlistService', () => {
         ConflictException,
       );
       expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
+    });
+
+    it('permite wishlist daca singurul anunt al userului pentru titlu a fost deja dat la schimb', async () => {
+      // userBook.findFirst e chemat cu permanentlyTransferred: false in
+      // where, deci mock-ul care simuleaza filtrarea Prisma intoarce null.
+      prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
+      prisma.userBook.findFirst.mockResolvedValue(null);
+      prisma.wishlistItem.findUnique.mockResolvedValue(null);
+      prisma.wishlistItem.create.mockResolvedValue({ id: 'wl-new' });
+
+      await expect(service.add('user-1', 'book-1')).resolves.toEqual({ id: 'wl-new' });
+      expect(prisma.userBook.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'user-1', bookId: 'book-1', deletedAt: null, permanentlyTransferred: false },
+        select: { id: true },
+      });
     });
 
     it('adauga cartea pe wishlist', async () => {

@@ -59,6 +59,12 @@ class ChatSocketService {
           .build(),
     );
     _socket = socket;
+    // Un `io.Socket` nou-creat nu moștenește listener-ii 'notification' legați
+    // pe cel vechi (abandonat) - relegăm imediat dacă exista deja un consumator
+    // înregistrat, altfel notificările live rămân moarte pe acest socket până
+    // la următorul apel `onNotification` (care poate să nu mai vină niciodată,
+    // dacă toate provider-ele relevante s-au montat deja o singură dată).
+    _bindNotificationForwarding();
 
     // `socket.connect()` întoarce imediat, indiferent dacă handshake-ul chiar
     // a reușit - fără să așteptăm evenimentul `connect`, un `sendMessage`
@@ -300,12 +306,30 @@ class ChatSocketService {
   /// fără argument de handler ar șterge TOȚI ascultătorii, nu doar pe al
   /// apelantului curent, deci ținem noi lista și facem un singur `on` real.
   final _notificationHandlers = <void Function()>{};
-  bool _notificationBound = false;
+  // Socket-ul pe care sunt legați efectiv listener-ii 'notification'/
+  // 'notification_read' - NU același lucru cu "am legat vreodată". `connect()`
+  // creează un `io.Socket` NOU (`_doConnect`) de fiecare dată când reconectarea
+  // automată a socket.io eșuează complet și cererea următoare (send/build)
+  // găsește `_socket` neconectat. Cu un simplu flag "bound o dată", legătura
+  // rămânea pe obiectul VECHI, abandonat - noul socket nu mai primea niciodată
+  // 'notification', deci userul nu mai vedea live schimburi/oferte acceptate
+  // de partener (bug: doar cel care apasă Accept vede rezultatul, fiindcă la
+  // el se actualizează local starea, nu prin acest eveniment) până la un
+  // restart complet al aplicației. Ținem referința socket-ului legat curent
+  // și relegăm explicit dacă `_socket` s-a schimbat între timp.
+  io.Socket? _notificationBoundSocket;
 
   void onNotification(void Function() handler) {
     _notificationHandlers.add(handler);
-    if (_notificationBound) return;
-    _notificationBound = true;
+    _bindNotificationForwarding();
+  }
+
+  /// Leagă `forward` pe `_socket` curent dacă nu e deja legat pe EL (nu doar
+  /// "legat vreodată") - apelată atât din `onNotification`, cât și din
+  /// `_doConnect` de fiecare dată când se creează un socket nou.
+  void _bindNotificationForwarding() {
+    if (_notificationBoundSocket == _socket || _socket == null) return;
+    _notificationBoundSocket = _socket;
     void forward(dynamic _) {
       for (final h in List.of(_notificationHandlers)) {
         h();

@@ -22,6 +22,7 @@ import { RomanianCity } from '../common/constants/romanian-cities';
 import { haversineDistanceKm } from '../common/utils/geo';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_BOOK_LISTED } from '../common/utils/xp';
+import { ListingScoreService } from './listing-score.service';
 
 const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
 const MAX_LISTING_IMPORT_ROWS = 500;
@@ -52,6 +53,7 @@ export class BooksService {
     private wishlist: WishlistService,
     private follow: FollowService,
     private notifications: NotificationsService,
+    private listingScore: ListingScoreService,
   ) {}
 
   async searchExternal(query: string) {
@@ -61,11 +63,6 @@ export class BooksService {
     // venită gratis în răspunsul de căutare rămâne. `suggestCovers` folosește
     // varianta completă separat, pentru selectorul de coperte.
     return this.lookup.searchByTitle(query, { skipCoverFallback: true });
-  }
-
-  /** Vezi BookLookupService.fetchCoverImage - de ce există proxy-ul ăsta. */
-  fetchCoverImage(url: string) {
-    return this.lookup.fetchCoverImage(url);
   }
 
   /**
@@ -89,6 +86,20 @@ export class BooksService {
     return [...covers];
   }
 
+  /**
+   * Detalii complete pentru cartea aleasă din autocomplete (descriere +
+   * subiecte pentru sugestiile de taguri). Un singur apel, la selecție -
+   * `searchExternal` rămâne intenționat „subțire", ca dropdown-ul să nu
+   * plătească asta la fiecare tastă.
+   */
+  async lookupFullDetails(params: {
+    isbn?: string;
+    title?: string;
+    author?: string;
+  }) {
+    return this.lookup.lookupFullDetails(params);
+  }
+
   async searchLibrary(filters: SearchLibraryDto) {
     if (filters.title) this.logSearch(filters.title);
 
@@ -104,7 +115,19 @@ export class BooksService {
           : filters.availableOnly === 'false'
             ? undefined
             : true,
-      isForSale: filters.listingType === 'sale' ? true : undefined,
+      isForSale:
+        filters.listingType === 'sale' || filters.listingType === 'donation'
+          ? true
+          : undefined,
+      // Donația = anunț la preț 0 (nu avem coloană separată - vezi
+      // add_book_screen.dart), deci „sale" trebuie să excludă explicit 0,
+      // altfel donațiile ar apărea și la vânzări.
+      salePrice:
+        filters.listingType === 'donation'
+          ? { equals: 0 }
+          : filters.listingType === 'sale'
+            ? { gt: 0 }
+            : undefined,
       isAuction: filters.listingType === 'auction' ? true : undefined,
       condition: filters.condition,
       language: filters.language
@@ -184,7 +207,9 @@ export class BooksService {
       { isPromoted: 'desc' },
       filters.sort === 'mostViewed'
         ? { viewCount: 'desc' }
-        : { createdAt: 'desc' },
+        : filters.sort === 'oldest'
+          ? { createdAt: 'asc' }
+          : { createdAt: 'desc' },
     ];
 
     const [items, total] = await Promise.all([
@@ -248,7 +273,9 @@ export class BooksService {
     });
 
     this.wishlist.notifyWishlistedUsers(book.id, userId).catch(() => {});
-    this.follow.notifyFollowersOfNewBook(userId, book.title).catch(() => {});
+    this.follow
+      .notifyFollowersOfNewBook(userId, book.title, userBook.id)
+      .catch(() => {});
     this.notifyNearbyUsers(userId, book.title).catch(() => {});
     this.notifyInterestedUsers(userId, book.title, book.genre).catch(() => {});
     await awardXp(this.prisma, userId, XP_BOOK_LISTED);
@@ -751,17 +778,69 @@ export class BooksService {
   }
 
   /**
-   * Aceleași cărți ca `getTrendingBooks`, dar returnate ca `UserBook` (cel
-   * mai recent anunț disponibil la schimb per carte). Folosit în Discover:
-   * ne trebuie feed-item, nu doar statistica.
+   * „Cele mai căutate" din Discover (Milestone 20) - anunțurile cu cel mai
+   * mare scor de interes din ultimele 14 zile: view unic 3p, refresh 0.1p,
+   * favorite 1p, fiecare punct expirând individual (vezi ListingScoreService).
+   *
+   * Scorul rămâne INVIZIBIL pentru userii normali - determină doar ordinea.
+   * Doar adminii primesc `searchScore` pe fiecare item (badge de debug în
+   * Discover); verificarea se face aici, nu în controller, fiindcă `isAdmin`
+   * nu e în JWT (vezi AdminGuard - tot un lookup în DB face).
+   *
+   * Dacă nu sunt destule anunțuri punctate (instalare nouă, sau după ce toate
+   * punctele au expirat), completăm cu cele mai recente anunțuri disponibile,
+   * ca secțiunea să nu fie goală.
    */
-  async getTrendingListings() {
-    const uniques = await this.trendingUniqueViewers();
-    const topIds = Array.from(uniques.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 20)
-      .map(([id]) => id);
-    return this.pickListingsForBooks(topIds);
+  async getTrendingListings(viewerId?: string) {
+    const TAKE = 20;
+    const [scored, viewer] = await Promise.all([
+      this.listingScore.topScoringListingIds(TAKE * 2),
+      viewerId
+        ? this.prisma.user.findUnique({
+            where: { id: viewerId },
+            select: { isAdmin: true },
+          })
+        : Promise.resolve(null),
+    ]);
+    const includeScore = viewer?.isAdmin === true;
+    const scoreById = new Map(scored.map((s) => [s.userBookId, s.score]));
+
+    const listings = await this.prisma.userBook.findMany({
+      where: {
+        id: { in: scored.map((s) => s.userBookId) },
+        deletedAt: null,
+        availableForSwap: true,
+      },
+      include: { book: true, user: { select: OWNER_SELECT } },
+    });
+    // Ordinea vine din clasamentul de scor, nu din query (Prisma nu poate
+    // sorta după `in`-ul dat), iar anunțurile șterse/indisponibile între timp
+    // pică pur și simplu din listă.
+    const ordered = listings.sort(
+      (a, b) => (scoreById.get(b.id) ?? 0) - (scoreById.get(a.id) ?? 0),
+    );
+
+    let result = ordered.slice(0, TAKE);
+    if (result.length < TAKE) {
+      const fillers = await this.prisma.userBook.findMany({
+        where: {
+          id: { notIn: result.map((r) => r.id) },
+          deletedAt: null,
+          availableForSwap: true,
+        },
+        include: { book: true, user: { select: OWNER_SELECT } },
+        orderBy: { createdAt: 'desc' },
+        take: TAKE - result.length,
+      });
+      result = [...result, ...fillers];
+    }
+
+    return result.map((item) => {
+      const dto = this.sanitizeOwner(this.toPublicPhotos(item));
+      return includeScore
+        ? { ...dto, searchScore: scoreById.get(item.id) ?? 0 }
+        : dto;
+    });
   }
 
   /// Numără vizualizări unice per carte în ultimele 7 zile. Vizitatorii
@@ -890,21 +969,40 @@ export class BooksService {
   }
 
   /**
-   * "Recommended for You" - rule-based, nu machine learning: adunăm genurile
-   * din cărțile proprii + wishlist ca semnal de gust, apoi arătăm anunțuri
-   * disponibile din acele genuri, sortate după popularitate. Un user fără
-   * nicio carte/wishlist încă (fără semnal) primește cele mai recente
-   * anunțuri, ca să nu vadă o listă goală.
+   * „Recomandări pentru tine" (Milestone 20) - rule-based, nu machine
+   * learning. Semnalul de gust = genurile ȘI tag-urile cărților pe care
+   * userul le-a pus la favorite (wishlist) sau le-a schimbat efectiv
+   * (exchange COMPLETED, în oricare din cele două roluri), plus genurile
+   * declarate în chestionarul de cititor.
+   *
+   * Candidații sunt anunțuri disponibile ale altor useri care ating măcar
+   * unul din aceste semnale, ordonați după CÂTE semnale ating (un anunț cu
+   * genul potrivit ȘI două tag-uri comune bate unul cu doar genul potrivit).
+   * Un user fără niciun semnal primește cele mai recente anunțuri, ca să nu
+   * vadă o secțiune goală.
    */
   async getRecommendedForYou(userId: string) {
-    const [myBooks, myWishlist, me] = await Promise.all([
-      this.prisma.userBook.findMany({
-        where: { userId },
-        select: { book: { select: { genre: true } } },
-      }),
+    const [myWishlist, myExchanges, me] = await Promise.all([
       this.prisma.wishlistItem.findMany({
         where: { userId },
         select: { book: { select: { genre: true } } },
+      }),
+      // Ambele roluri: cartea primită și cea dată spun la fel de mult despre
+      // ce citește userul. Ne interesează doar schimburile duse până la capăt.
+      this.prisma.exchangeRequest.findMany({
+        where: {
+          status: 'COMPLETED',
+          OR: [{ requesterId: userId }, { ownerId: userId }],
+        },
+        select: {
+          requestedBook: {
+            select: { tags: true, book: { select: { genre: true } } },
+          },
+          offeredBook: {
+            select: { tags: true, book: { select: { genre: true } } },
+          },
+        },
+        take: 100,
       }),
       this.prisma.user.findUnique({
         where: { id: userId },
@@ -913,15 +1011,23 @@ export class BooksService {
     ]);
 
     const genres = new Set<string>();
-    for (const row of [...myBooks, ...myWishlist]) {
+    const tags = new Set<string>();
+    for (const row of myWishlist) {
       if (row.book.genre) genres.add(row.book.genre);
     }
+    for (const exchange of myExchanges) {
+      for (const listing of [exchange.requestedBook, exchange.offeredBook]) {
+        if (!listing) continue;
+        if (listing.book.genre) genres.add(listing.book.genre);
+        for (const tag of listing.tags) tags.add(tag.toLowerCase());
+      }
+    }
     // Genurile declarate în chestionarul de cititor contează la fel de mult ca
-    // cele deduse din cărțile deja listate - de fapt sunt singurul semnal
-    // pentru un user nou, care n-a listat încă nimic și n-are wishlist.
+    // cele deduse din activitate - de fapt sunt singurul semnal pentru un user
+    // nou, care n-a schimbat încă nimic și n-are wishlist.
     for (const genre of me?.favoriteGenres ?? []) genres.add(genre);
 
-    if (genres.size === 0) {
+    if (genres.size === 0 && tags.size === 0) {
       const fallback = await this.prisma.userBook.findMany({
         where: { availableForSwap: true, userId: { not: userId } },
         include: {
@@ -943,36 +1049,92 @@ export class BooksService {
       return fallback.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
     }
 
-    const items = await this.prisma.userBook.findMany({
+    const genreList = Array.from(genres);
+    const tagList = Array.from(tags);
+    const candidates = await this.prisma.userBook.findMany({
       where: {
+        deletedAt: null,
         availableForSwap: true,
         userId: { not: userId },
-        book: { genre: { in: Array.from(genres) } },
-      },
-      include: { book: true, user: { select: OWNER_SELECT } },
-      orderBy: { viewCount: 'desc' },
-      take: 15,
-    });
-    return items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
-  }
-
-  /**
-   * "Hidden Gems" - anunțuri disponibile, în stare bună, dar aproape
-   * nevăzute (viewCount mic) - cărți valoroase care se pierd în restul
-   * catalogului, nu neapărat cele mai noi/populare.
-   */
-  async getHiddenGems() {
-    const items = await this.prisma.userBook.findMany({
-      where: {
-        availableForSwap: true,
-        viewCount: { lte: 2 },
-        condition: { in: ['NOUA', 'FOARTE_BUNA'] },
+        OR: [
+          ...(genreList.length ? [{ book: { genre: { in: genreList } } }] : []),
+          ...(tagList.length ? [{ tags: { hasSome: tagList } }] : []),
+        ],
       },
       include: { book: true, user: { select: OWNER_SELECT } },
       orderBy: { createdAt: 'desc' },
-      take: 15,
+      take: 120,
     });
-    return items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
+
+    // Scor de potrivire = câte semnale atinge anunțul (1 pentru gen + 1 pentru
+    // fiecare tag comun). La egalitate rămâne ordinea din query (cel mai
+    // recent primul), ca lista să se mai împrospăteze între vizite.
+    const scored = candidates.map((item) => {
+      let matches = item.book.genre && genres.has(item.book.genre) ? 1 : 0;
+      for (const tag of item.tags) {
+        if (tags.has(tag.toLowerCase())) matches += 1;
+      }
+      return { item, matches };
+    });
+
+    return scored
+      .sort((a, b) => b.matches - a.matches)
+      .slice(0, 15)
+      .map(({ item }) => this.sanitizeOwner(this.toPublicPhotos(item)));
+  }
+
+  /**
+   * „Comori ascunse" (Milestone 20) - anunțuri aproape nevăzute (puțini
+   * vizitatori UNICI) dar care au primit deja cel puțin o inimă. Combinația
+   * asta e ce le face „comori": nu sunt doar necunoscute, ci necunoscute
+   * DEȘI cineva le-a vrut.
+   *
+   * Nu există un concept de „like" separat de wishlist în aplicație (inima de
+   * pe anunț adaugă titlul la favorite), deci „cel puțin o inimă" =
+   * wishlistItem.count(bookId) >= 1.
+   */
+  async getHiddenGems() {
+    const MAX_UNIQUE_VIEWS = 2;
+
+    // Titlurile cu cel puțin o inimă - punctul de plecare, fiindcă e semnalul
+    // rar (mult mai puține titluri au favorite decât au views puține).
+    const wished = await this.prisma.wishlistItem.groupBy({
+      by: ['bookId'],
+      _count: { userId: true },
+      orderBy: { _count: { userId: 'asc' } },
+      take: 400,
+    });
+    if (wished.length === 0) return [];
+
+    const candidates = await this.prisma.userBook.findMany({
+      where: {
+        deletedAt: null,
+        availableForSwap: true,
+        bookId: { in: wished.map((w) => w.bookId) },
+        condition: { in: ['NOUA', 'FOARTE_BUNA', 'BUNA'] },
+      },
+      include: { book: true, user: { select: OWNER_SELECT } },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+    if (candidates.length === 0) return [];
+
+    // Numărul de vizitatori unici se ia separat, nu ca `_count` în include -
+    // altfel ar trebui scos din obiect înainte de serializare, iar DTO-ul de
+    // anunț nu are ce căuta cu un câmp `_count` în el.
+    const viewsPerListing = await this.prisma.bookView.groupBy({
+      by: ['userBookId'],
+      where: { userBookId: { in: candidates.map((c) => c.id) } },
+      _count: { _all: true },
+    });
+    const uniqueViews = new Map(
+      viewsPerListing.map((v) => [v.userBookId, v._count._all]),
+    );
+
+    return candidates
+      .filter((c) => (uniqueViews.get(c.id) ?? 0) <= MAX_UNIQUE_VIEWS)
+      .slice(0, 15)
+      .map((c) => this.sanitizeOwner(this.toPublicPhotos(c)));
   }
 
   /**
@@ -1355,6 +1517,13 @@ export class BooksService {
         })
         .catch(() => {});
     }
+    // Scorul „Cele mai căutate" (Milestone 20): view unic vs. refresh, cu
+    // deduplicare pe 24h - vezi ListingScoreService. Nu punctăm proprietarul
+    // care își deschide propriul anunț, altfel oricine și-ar putea urca
+    // anunțul în top dând refresh la el.
+    if (viewerId !== userBook.userId) {
+      this.listingScore.recordView(userBookId, viewerId).catch(() => {});
+    }
 
     // Starea de favorite vine acum de la server, nu din lista de wishlist a
     // clientului: aceea putea fi neîncărcată sau să conțină un alt `book.id`
@@ -1367,7 +1536,7 @@ export class BooksService {
             where: {
               userId_bookId: { userId: viewerId, bookId: userBook.bookId },
             },
-            select: { id: true },
+            select: { id: true, source: true },
           })
         : Promise.resolve(null),
     ]);
@@ -1376,6 +1545,10 @@ export class BooksService {
       ...this.toPublicPhotos(userBook),
       favoriteCount,
       isWishlisted: !!ownFavorite,
+      // Book Match: de unde a ajuns titlul pe wishlist-ul privitorului
+      // (PERSONAL / BOOK_MATCH). UI-ul schimbă inima pe o iconiță de „match"
+      // pentru rândurile venite din swipe. null = nu e pe wishlist.
+      wishlistSource: ownFavorite?.source ?? null,
     };
   }
 
@@ -1399,6 +1572,7 @@ export class BooksService {
       where: { id: userBookId },
       select: {
         salePrice: true,
+        isForSale: true,
         updatedAt: true,
         book: {
           select: {
@@ -1420,6 +1594,7 @@ export class BooksService {
       description: userBook.book.description,
       coverUrl: userBook.book.coverUrl,
       salePrice: userBook.salePrice,
+      isForSale: userBook.isForSale,
       city: userBook.user.city,
       updatedAt: userBook.updatedAt,
     };

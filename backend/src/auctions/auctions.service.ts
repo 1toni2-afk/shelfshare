@@ -12,7 +12,6 @@ import { CreateAuctionDto } from './dto/create-auction.dto';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_SALE_COMPLETED } from '../common/utils/xp';
-import { assertUnderWatchlistLimit } from '../common/utils/premium';
 
 // Anti-sniping: un bid plasat în ultimele 5 minute împinge termenul cu încă
 // 5 minute, cât timp tot vin bid-uri târzii - descurajează "sniping"-ul de
@@ -97,17 +96,6 @@ export class AuctionsService {
         'Adaugă cel puțin o poză înainte de a începe o licitație',
       );
     }
-    if (dto.reservePrice != null && dto.reservePrice < dto.startingPrice) {
-      throw new BadRequestException(
-        'Prețul de rezervă nu poate fi mai mic decât prețul de pornire',
-      );
-    }
-    if (dto.buyNowPrice != null && dto.buyNowPrice <= dto.startingPrice) {
-      throw new BadRequestException(
-        'Prețul "Cumpără acum" trebuie să fie mai mare decât prețul de pornire',
-      );
-    }
-
     const endsAt = new Date(Date.now() + dto.durationHours * 3_600_000);
 
     const created = await this.prisma.$transaction(async (tx) => {
@@ -115,15 +103,19 @@ export class AuctionsService {
         data: {
           userBookId,
           startingPrice: dto.startingPrice,
-          reservePrice: dto.reservePrice,
-          buyNowPrice: dto.buyNowPrice,
           currentPrice: dto.startingPrice,
           endsAt,
         },
       });
+      // Nu atingem availableForSwap aici: e flag-ul master folosit de
+      // browse/searchLibrary (vezi books.service.ts) pentru a decide dacă un
+      // anunț apare implicit în feed. Setarea lui pe false la creare făcea
+      // licitația invizibilă/indisponibilă chiar din momentul publicării -
+      // trebuie să rămână așa cum era (implicit true) până se termină
+      // licitația sau e câștigată (vezi finalizeWin, care o pune pe false).
       await tx.userBook.update({
         where: { id: userBookId },
-        data: { isAuction: true, isForSale: false, availableForSwap: false },
+        data: { isAuction: true, isForSale: false },
       });
       return auction;
     });
@@ -147,10 +139,9 @@ export class AuctionsService {
       bids: this.anonymizeBids(auction.bids, isSeller),
       isSeller,
       isWatching,
-      canBuyNow:
-        auction.buyNowPrice != null &&
-        auction.bids.length === 0 &&
-        auction.status === 'ACTIVE',
+      // „Cumpără acum" a fost eliminat - licitațiile merg exclusiv pe licitare.
+      // Câmpul rămâne în răspuns (mereu false) ca să nu spargem clienții vechi.
+      canBuyNow: false,
     };
   }
 
@@ -220,60 +211,8 @@ export class AuctionsService {
     return this.getAuction(auctionId, bidderId);
   }
 
-  async buyNow(buyerId: string, auctionId: string) {
-    const auction = await this.findAndExpireIfStale(auctionId);
-    if (auction.userBook.userId === buyerId) {
-      throw new BadRequestException('Nu poți cumpăra propria carte');
-    }
-    if (auction.status !== 'ACTIVE') {
-      throw new BadRequestException('Această licitație s-a încheiat');
-    }
-    if (auction.buyNowPrice == null) {
-      throw new BadRequestException(
-        'Această licitație nu are opțiunea "Cumpără acum"',
-      );
-    }
-
-    await this.prisma.$transaction(async (tx) => {
-      // Atomic claim: only one concurrent buyNow()/placeBid() can flip
-      // status ACTIVE -> ENDED. Losers see count 0 and abort cleanly.
-      const claim = await tx.auction.updateMany({
-        where: { id: auctionId, status: 'ACTIVE' },
-        data: {
-          currentPrice: auction.buyNowPrice!,
-          highestBidderId: buyerId,
-          status: 'ENDED',
-        },
-      });
-      if (claim.count === 0) {
-        throw new BadRequestException('Această licitație s-a încheiat');
-      }
-
-      const bidCount = await tx.bid.count({ where: { auctionId } });
-      if (bidCount > 0) {
-        // Throwing here rolls back the claim above too (interactive tx).
-        throw new BadRequestException(
-          '"Cumpără acum" nu mai este disponibil - licitația are deja oferte',
-        );
-      }
-
-      await tx.bid.create({
-        data: { auctionId, bidderId: buyerId, amount: auction.buyNowPrice! },
-      });
-    });
-
-    await this.finalizeWin(auctionId, buyerId);
-    return this.getAuction(auctionId, buyerId);
-  }
-
   async watch(userId: string, auctionId: string) {
     await this.findAndExpireIfStale(auctionId);
-    const existing = await this.prisma.auctionWatch.findUnique({
-      where: { auctionId_userId: { auctionId, userId } },
-    });
-    if (!existing) {
-      await assertUnderWatchlistLimit(this.prisma, userId);
-    }
     await this.prisma.auctionWatch.upsert({
       where: { auctionId_userId: { auctionId, userId } },
       create: { auctionId, userId },

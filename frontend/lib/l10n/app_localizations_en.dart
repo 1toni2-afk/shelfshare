@@ -1324,6 +1324,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookDetailUnavailableForExchange => 'Unavailable for exchange';
 
   @override
+  String get bookDetailRequestDonation => 'Request Donation';
+
+  @override
   String get bookDetailMakeOffer => 'Make an offer';
 
   @override
@@ -1577,10 +1580,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Waiting for the other party to confirm';
 
   @override
-  String get readyMeetingAccept => 'Confirm time';
+  String get readyMeetingAccept => 'Confirm';
 
   @override
-  String get readyMeetingDecline => 'Decline time';
+  String get readyMeetingDecline => 'Decline';
+
+  @override
+  String get readyMeetingSubtitle => 'Agree on when and where to exchange';
+
+  @override
+  String get readySafetySubtitle => 'Tips for a safe and smooth exchange';
+
+  @override
+  String get readyContactSubtitle =>
+      'Let your exchange partner know how to reach you';
 
   @override
   String get readyContactTitle => 'Contact details';
@@ -1589,10 +1602,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readyContactPhoneLabel => 'Phone (optional)';
 
   @override
-  String get readyContactShare => 'Share my details';
+  String get readyContactShare => 'Share phone number';
+
+  @override
+  String get readyContactSkip => 'I\'d rather not';
+
+  @override
+  String get readyContactEdit => 'Edit';
 
   @override
   String get readyContactShared => 'You shared your contact details';
+
+  @override
+  String get dealFinalisedBanner => 'DEAL FINALISED';
+
+  @override
+  String get dealCancelledBanner => 'DEAL CANCELLED';
+
+  @override
+  String get dealCancelledByYouBanner => 'CANCELLED BY YOU';
+
+  @override
+  String dealCancelledByOtherBanner(String name) {
+    return 'CANCELLED BY $name';
+  }
 
   @override
   String readyContactOtherPhone(String phone) {
@@ -1892,6 +1925,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatOfferActionError => 'Couldn\'t update the offer. Try again.';
 
   @override
+  String get chatOfferCardTitle => 'Price offer';
+
+  @override
+  String chatOfferCardFrom(String bookTitle) {
+    return 'for $bookTitle';
+  }
+
+  @override
+  String get chatExchangeCardTitle => 'Exchange request';
+
+  @override
+  String get readyYouGive => 'You give';
+
+  @override
+  String get readyYouReceive => 'You receive';
+
+  @override
+  String readyFromCity(String city) {
+    return 'from $city';
+  }
+
+  @override
   String chatOfferCardLabel(String amount, String bookTitle) {
     return '$amount lei · $bookTitle';
   }
@@ -1936,6 +1991,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wishlistLoadError => 'We couldn\'t load your wishlist.';
+
+  @override
+  String wishlistSectionPersonal(int count) {
+    return 'Personal Choices ($count)';
+  }
+
+  @override
+  String wishlistSectionBookMatch(int count) {
+    return 'Book Matches ($count)';
+  }
 
   @override
   String get notificationsTitle => 'Notifications';
@@ -2009,144 +2074,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String timeDaysAgo(int days) {
     return '${days}d ago';
   }
-
-  @override
-  String get safetyCenterTitle => 'Safety center';
-
-  @override
-  String get safetyCenterIntro =>
-      'A few simple rules to keep exchanges on ShelfShare pleasant and safe.';
-
-  @override
-  String get safetyTip1Title => 'Meet during the day';
-
-  @override
-  String get safetyTip1Desc =>
-      'Schedule the exchange for a time with natural daylight, ideally morning or afternoon.';
-
-  @override
-  String get safetyTip2Title => 'Choose a public place';
-
-  @override
-  String get safetyTip2Desc =>
-      'A café, bookstore, or mall is safer than someone\'s personal address.';
-
-  @override
-  String get safetyTip3Title => 'Prefer locations with video surveillance';
-
-  @override
-  String get safetyTip3Desc =>
-      'Areas with security cameras discourage unpleasant behavior.';
-
-  @override
-  String get safetyTip4Title => 'Don\'t share personal data';
-
-  @override
-  String get safetyTip4Desc =>
-      'You don\'t need to give your home address, ID number, or other sensitive data to make an exchange.';
-
-  @override
-  String get safetyTip5Title => 'Check the rating and trust score';
-
-  @override
-  String get safetyTip5Desc =>
-      'A good history of completed exchanges is a good sign before meeting someone.';
-
-  @override
-  String get safetyTip6Title => 'A real profile photo builds trust';
-
-  @override
-  String get safetyTip6Desc =>
-      'Profiles with a photo and a complete bio inspire more confidence in other users.';
-
-  @override
-  String get safetyTip7Title =>
-      'Check the book\'s condition before the exchange';
-
-  @override
-  String get safetyTip7Desc =>
-      'Compare the book to the listing\'s description before confirming the exchange as completed.';
-
-  @override
-  String get safetyTip8Title => 'Report any suspicious behavior';
-
-  @override
-  String get safetyTip8Desc =>
-      'You can report or block a user directly from their profile or from the conversation.';
-
-  @override
-  String get helpCenterTitle => 'FAQ';
-
-  @override
-  String get helpGroupSwapping => 'Swapping';
-
-  @override
-  String get helpGroupPricing => 'Pricing';
-
-  @override
-  String get helpGroupSafety => 'Trust and safety';
-
-  @override
-  String get helpStillStuck => 'Still stuck?';
-
-  @override
-  String get helpContactModerator => 'Contact a moderator';
-
-  @override
-  String get helpFaq1Question => 'How does a book exchange work?';
-
-  @override
-  String get helpFaq1Answer =>
-      'You request a book from someone else\'s listing (you can also offer a book in exchange), the owner accepts or declines, then you arrange a meeting via chat. After you complete the exchange in person, either of you marks the exchange as completed.';
-
-  @override
-  String get helpFaq2Question => 'What is the Trust Score?';
-
-  @override
-  String get helpFaq2Answer =>
-      'A 0-100 indicator calculated automatically from in-app activity: account age, verified email, how many exchanges you\'ve completed, your rating, how often you respond, and how rarely you cancel requests. It\'s not an identity check, just a behavior signal.';
-
-  @override
-  String get helpFaq3Question => 'How is the \"bookstore\" price calculated?';
-
-  @override
-  String get helpFaq3Answer =>
-      'When you add a book with an ISBN, we try to find the list price on Google Books. Coverage is partial - not all books have a price available there, especially older or Romanian editions.';
-
-  @override
-  String get helpFaq4Question =>
-      'What does \"Fixed price, non-negotiable\" mean?';
-
-  @override
-  String get helpFaq4Answer =>
-      'If the seller checks this, buyers can no longer send price offers - the book can only be bought at the listed price.';
-
-  @override
-  String get helpFaq5Question => 'How do I report or block a user?';
-
-  @override
-  String get helpFaq5Answer =>
-      'From the menu in the top-right corner of a conversation, or from a listing\'s detail page (the flag icon). Blocking stops messages in both directions.';
-
-  @override
-  String get helpFaq6Question =>
-      'What happens to the book after I sell it or give it in exchange?';
-
-  @override
-  String get helpFaq6Answer =>
-      'The listing becomes permanently unavailable. If the person who received it wants to list it again, they can do so from the Exchanges/Offers screen (\"Add to your library\") - the book\'s history stays traceable on its detail page, with photos from each owner.';
-
-  @override
-  String get helpFaq7Question =>
-      'Why doesn\'t a book show up in Categories or Similar Books?';
-
-  @override
-  String get helpFaq7Answer =>
-      'A book\'s genre comes from Open Library or Google Books when it\'s added - some books don\'t have a genre filled in on those external sources, especially less popular editions.';
-
-  @override
-  String get helpCenterFooter =>
-      'Didn\'t find your answer? You can report an issue directly from the conversation with the user involved.';
 
   @override
   String get adminLoadError => 'We couldn\'t load the admin data.';
@@ -2608,6 +2535,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoverNearYou => 'In your city';
 
   @override
+  String get discoverFilterButton => 'Filter';
+
+  @override
+  String get discoverSortButton => 'Sort';
+
+  @override
+  String get discoverSortTitle => 'Sorting';
+
+  @override
+  String get discoverFilterCategory => 'Category';
+
+  @override
+  String get discoverFilterListingType => 'Listing type';
+
+  @override
+  String get discoverFilterAll => 'All';
+
+  @override
+  String get discoverSortGenre => 'Preferred genre';
+
+  @override
+  String get discoverSortDate => 'By date';
+
+  @override
+  String get discoverSortNewest => 'Newest first';
+
+  @override
+  String get discoverSortOldest => 'Oldest first';
+
+  @override
+  String get discoverSortNearest => 'Nearest first';
+
+  @override
+  String get discoverSortApply => 'Sort';
+
+  @override
+  String get discoverScoreBadgeTooltip => '14-day interest score (admins only)';
+
+  @override
   String get inventorySelectAll => 'Select all';
 
   @override
@@ -2715,16 +2681,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shareListingModeSwap => 'Normal swap';
+  String get shareListingModeSwap => 'Swap';
 
   @override
-  String get shareListingModeSale => 'For sale';
+  String get shareListingModeSale => 'Sale';
 
   @override
   String get shareListingModeDonation => 'Donation';
 
   @override
   String get shareTitleAutocomplete => 'Start typing to see suggestions';
+
+  @override
+  String get shareTitleSearching => 'Searching for the title...';
+
+  @override
+  String get shareSwapAlsoSell => 'Or sell for';
+
+  @override
+  String get shareSwapAlsoSellPrice => 'Sale price';
 
   @override
   String get shareGenreHint => 'Genre';
@@ -2822,31 +2797,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutDevTitle => 'About dev';
-
-  @override
-  String get aboutDevHeadline => 'The person behind ShelfShare';
-
-  @override
-  String get aboutDevBodyWho =>
-      'I\'m a small developer working at an IT company in Transylvania.';
-
-  @override
-  String get aboutDevBodyWhy =>
-      'I made this app because I used to use an app just like this before, but it disappeared because… reasons? So I made one myself.';
-
-  @override
-  String get aboutDevBodyHosting =>
-      'Please don\'t get upset about the possible hickups of the app, because everything is hosted by myself on my small home server ☹️';
-
-  @override
-  String get aboutDevSupportTitle => 'Keep the app alive';
-
-  @override
-  String get aboutDevSupportSubtitle =>
-      'The server, the domain and the backups come out of my own pocket. Anything you chip in keeps the app running.';
-
-  @override
-  String get aboutDevCoffeeButton => 'Buy me a coffee';
 
   @override
   String get aboutDevOpenError => 'Couldn\'t open the link. Please try again.';
@@ -2978,6 +2928,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareCoverRecommended => 'Recommended covers';
+
+  @override
+  String get shareCoverChooseOne => 'Choose a cover';
+
+  @override
+  String get shareCoverRemove => 'Remove';
 
   @override
   String get shareMainPhotoHint =>
@@ -3299,6 +3255,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get greetBookDay => 'Today is World Book Day! 📚';
 
   @override
+<<<<<<< Updated upstream
   String get greetMottoStandingTree =>
       'A swapped book is a tree left standing. 🌳';
 
@@ -3317,6 +3274,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get greetMottoCirculating =>
       'Fewer new books printed, more stories circulating.';
+=======
+  String get adminFeatureAccessTitle => 'Feature access';
+
+  @override
+  String get adminFeatureAccessDesc =>
+      'Give hand-picked users early access to features that are still rolling out.';
+
+  @override
+  String get adminFeatureAccessSearchHint => 'Search by name or email';
+
+  @override
+  String get adminFeatureAccessSearchEmpty =>
+      'Search for a user to see their access.';
+
+  @override
+  String get adminFeatureAccessNoResults => 'No users found.';
+
+  @override
+  String get adminFeatureAccessApply => 'Apply';
+
+  @override
+  String get adminFeatureAccessSaved => 'Access updated.';
+
+  @override
+  String get adminFeatureAccessSaveError => 'Couldn\'t save the access.';
+
+  @override
+  String get featureFlagAdvancedStatistics => 'Advanced statistics';
+>>>>>>> Stashed changes
 
   @override
   String get bookMatchTitle => 'Book Match';
@@ -3393,6 +3379,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingFlowSkip => 'Skip';
+
+  @override
+  String get onboardingFlowMoveForward => 'Move forward';
 
   @override
   String get onboardingFlowBackTooltip => 'Back';
@@ -3502,6 +3491,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingFlowFinish => 'Enter ShelfShare';
 
   @override
+  String onboardingFlowBookAdded(String title) {
+    return 'Added: $title';
+  }
+
+  @override
   String get genreFiction => 'Fiction';
 
   @override
@@ -3560,6 +3554,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get genreComics => 'Comics';
+<<<<<<< Updated upstream
 
   @override
   String get onboardingFlowMoveForward => 'Move forward';
@@ -3589,4 +3584,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
+=======
+>>>>>>> Stashed changes
 }

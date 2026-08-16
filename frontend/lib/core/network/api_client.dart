@@ -16,7 +16,7 @@ class ApiConfig {
 /// Client HTTP central. Atașează automat JWT-ul la fiecare request și
 /// reîncearcă o singură dată cu refresh token dacă primește 401.
 class ApiClient {
-  ApiClient(this._tokenStorage) {
+  ApiClient(this._tokenStorage, {this.onSessionExpired}) {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConfig.baseUrl,
@@ -56,6 +56,12 @@ class ApiClient {
               } catch (_) {
                 // continuă cu eroarea originală dacă nici retry-ul nu merge
               }
+            } else {
+              // Refresh token invalid/expirat/revocat (ex. contul a fost
+              // șters) - fără asta userul rămâne "logat" vizual în UI cu
+              // fiecare request eșuând tăcut la 401, până la un refresh
+              // manual de pagină.
+              onSessionExpired?.call();
             }
           }
           handler.next(error);
@@ -66,6 +72,7 @@ class ApiClient {
 
   late final Dio _dio;
   final TokenStorage _tokenStorage;
+  final void Function()? onSessionExpired;
 
   Dio get dio => _dio;
 

@@ -17,6 +17,6 @@ export class CounterOfferDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(50)
   message?: string;
 }

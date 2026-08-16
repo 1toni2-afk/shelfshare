@@ -34,6 +34,35 @@ class AdminRepository {
     return AdminUsersPage.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<List<AdminUser>> searchUsers(String query) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get(
+      '/admin/users/search',
+      queryParameters: {'q': query},
+    );
+    return (response.data as List)
+        .map((e) => AdminUser.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<UserFeatureFlags> getUserFeatureFlags(String userId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/users/$userId/feature-flags');
+    return UserFeatureFlags.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<UserFeatureFlags> setUserFeatureFlags(
+    String userId,
+    List<FeatureFlagValue> flags,
+  ) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.put(
+      '/admin/users/$userId/feature-flags',
+      data: {'flags': flags.map((f) => f.toJson()).toList()},
+    );
+    return UserFeatureFlags.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> banUser(String userId) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.post('/admin/users/$userId/ban');

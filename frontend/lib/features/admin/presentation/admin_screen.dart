@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/admin_models.dart';
 import '../../../data/models/upcoming_release.dart';
-import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/admin_controller.dart';
@@ -58,6 +58,17 @@ class _AdminContent extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       children: [
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.toggle_on_outlined),
+            title: Text(l10n.adminFeatureAccessTitle),
+            subtitle: Text(l10n.adminFeatureAccessDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/feature-access'),
+          ),
+        ),
+        const SizedBox(height: 28),
         Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _StatsGrid(stats: data.stats),
@@ -423,7 +434,7 @@ class _MarketplaceStatsGrid extends StatelessWidget {
                       separatorBuilder: (_, _) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         final g = stats.topGenresByListings[index];
-                        return Chip(label: Text('${localizedGenre(context, g.genre)} (${g.count})'));
+                        return Chip(label: Text('${g.genre} (${g.count})'));
                       },
                     ),
                   ),

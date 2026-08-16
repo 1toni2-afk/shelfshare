@@ -17,6 +17,16 @@ class WishlistController extends AsyncNotifier<List<WishlistItem>> {
     return (state.value ?? const []).any((item) => item.book.id == bookId);
   }
 
+  /// Sursa rândului de wishlist pentru o carte, sau null dacă nu e pe listă.
+  /// Cardurile o folosesc ca să aleagă între inimă (PERSONAL) și iconița de
+  /// Book Match - fără un apel separat pe card, lista e deja în memorie.
+  WishlistSource? sourceFor(String bookId) {
+    for (final item in state.value ?? const <WishlistItem>[]) {
+      if (item.book.id == bookId) return item.source;
+    }
+    return null;
+  }
+
   Future<void> toggle(String bookId) async {
     final repository = ref.read(wishlistRepositoryProvider);
     final current = state.value ?? const [];

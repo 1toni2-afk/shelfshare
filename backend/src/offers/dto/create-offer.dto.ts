@@ -13,6 +13,6 @@ export class CreateOfferDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(50)
   message?: string;
 }

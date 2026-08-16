@@ -5,13 +5,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { assertUnderWatchlistLimit } from '../common/utils/premium';
+import { ListingScoreService } from '../books/listing-score.service';
 
 @Injectable()
 export class WishlistService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private listingScore: ListingScoreService,
   ) {}
 
   async add(userId: string, bookId: string) {
@@ -22,9 +23,13 @@ export class WishlistService {
 
     // Nu-ți poți pune propria carte la favorite: dacă userul are deja un anunț
     // (UserBook) activ pentru acest titlu, e cartea LUI - inima nu are sens.
-    // Soft-delete-urile nu blochează (deletedAt != null = scoasă din stoc).
+    // Soft-delete-urile nu blochează (deletedAt != null = scoasă din stoc), și
+    // nici cărțile date deja la schimb (permanentlyTransferred: true) - altfel,
+    // dacă cel care a primit-o o relistează, fostul proprietar nu mai poate
+    // s-o pună pe wishlist pentru exemplarul NOU, fiindcă rândul lui vechi
+    // (acum doar istoric) tot mai apărea ca "activ".
     const ownListing = await this.prisma.userBook.findFirst({
-      where: { userId, bookId, deletedAt: null },
+      where: { userId, bookId, deletedAt: null, permanentlyTransferred: false },
       select: { id: true },
     });
     if (ownListing) {
@@ -39,12 +44,17 @@ export class WishlistService {
     if (existing) {
       throw new ConflictException('Cartea este deja pe lista ta de dorințe');
     }
-    await assertUnderWatchlistLimit(this.prisma, userId);
 
-    return this.prisma.wishlistItem.create({
+    const item = await this.prisma.wishlistItem.create({
       data: { userId, bookId },
       include: { book: true },
     });
+
+    // Semnal de interes pentru „Cele mai căutate" - fire-and-forget, un
+    // punct pierdut nu justifică să pice adăugarea la favorite.
+    this.listingScore.recordWishlistAdd(bookId, userId).catch(() => {});
+
+    return item;
   }
 
   async remove(userId: string, bookId: string) {

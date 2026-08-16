@@ -1,5 +1,6 @@
 import 'book.dart';
 import 'user.dart';
+import 'wishlist_item.dart';
 
 /// Exemplarul concret al unei cărți deținut de un utilizator - starea
 /// fizică, pozele reale, disponibilitatea pentru schimb.
@@ -16,6 +17,11 @@ class UserBook {
   final bool isForSale;
   final double? salePrice;
   final bool isNegotiable;
+
+  /// „Sau vinde cu X lei" setat la listare pe un anunt de tip Schimb.
+  /// Anuntul ramane Schimb (isForSale false), dar accepta si oferte in bani -
+  /// pe pagina cartii apar doua butoane. Null = doar schimb.
+  final double? swapSalePrice;
   final bool isAuction;
   final AuctionCardSummary? auction;
   final bool isPromoted;
@@ -51,6 +57,17 @@ class UserBook {
   /// nu e încărcată. Prezent doar în răspunsul de detaliu; null în browse.
   final bool? isWishlisted;
 
+  /// Dacă titlul e pe wishlist-ul viewer-ului, de unde a ajuns acolo
+  /// (manual vs. Book Match) - decide ce iconiță se afișează în locul inimii.
+  /// null când nu e pe wishlist sau în răspunsurile care nu-l trimit (browse).
+  final WishlistSource? wishlistSource;
+
+  /// Scorul intern de interes pe 14 zile care ordonează secțiunea „Cele mai
+  /// căutate" (view unic 3p, refresh 0.1p, favorite 1p, fiecare punct
+  /// expirând individual). Backendul îl trimite DOAR adminilor - pentru
+  /// oricine altcineva e null și nu se afișează nicăieri.
+  final double? searchScore;
+
   const UserBook({
     required this.id,
     required this.userId,
@@ -64,6 +81,7 @@ class UserBook {
     this.isForSale = false,
     this.salePrice,
     this.isNegotiable = true,
+    this.swapSalePrice,
     this.isAuction = false,
     this.auction,
     this.isPromoted = false,
@@ -79,6 +97,8 @@ class UserBook {
     this.city,
     this.favoriteCount,
     this.isWishlisted,
+    this.wishlistSource,
+    this.searchScore,
   });
 
   factory UserBook.fromJson(Map<String, dynamic> json) {
@@ -99,6 +119,9 @@ class UserBook {
           ? double.parse(json['salePrice'].toString())
           : null,
       isNegotiable: json['isNegotiable'] as bool? ?? true,
+      swapSalePrice: json['swapSalePrice'] != null
+          ? double.parse(json['swapSalePrice'].toString())
+          : null,
       isAuction: json['isAuction'] as bool? ?? false,
       auction: json['auction'] != null
           ? AuctionCardSummary.fromJson(json['auction'] as Map<String, dynamic>)
@@ -121,19 +144,28 @@ class UserBook {
       city: json['city'] as String?,
       favoriteCount: json['favoriteCount'] as int?,
       isWishlisted: json['isWishlisted'] as bool?,
+      wishlistSource: json['wishlistSource'] != null
+          ? WishlistSource.fromJson(json['wishlistSource'])
+          : null,
+      searchScore: (json['searchScore'] as num?)?.toDouble(),
     );
   }
 
-  /// Imaginea de afișat în feed/carduri (Batch 8). Ordinea de fallback:
-  /// 1. `mainPhotoUrl` (alegerea explicită a userului),
-  /// 2. prima poză urcată,
-  /// 3. coperta oficială a cărții.
+  /// Imaginea de afișat în feed/carduri. Ordinea de fallback:
+  /// 1. `mainPhotoUrl` (alegerea explicită a userului, prin steluța de pe o
+  ///    poză urcată - vezi `onSetMain` din add_book_screen.dart),
+  /// 2. coperta oficială a cărții (ISBN/lookup extern),
+  /// 3. prima poză urcată, doar dacă nu există copertă oficială.
+  /// Coperta oficială e default-ul, nu poza urcată: userul poate avea o
+  /// poză a exemplarului lui, dar cea oficială e cea recunoscută/de calitate
+  /// - userul alege explicit prin steluță dacă vrea să afișeze poza proprie.
   /// Poate fi null dacă niciuna nu e disponibilă - callerul afișează atunci
   /// propriul placeholder.
   String? get primaryImageUrl {
     if (mainPhotoUrl != null && mainPhotoUrl!.isNotEmpty) return mainPhotoUrl;
+    if (book.coverUrl != null && book.coverUrl!.isNotEmpty) return book.coverUrl;
     if (photos.isNotEmpty) return photos.first;
-    return book.coverUrl;
+    return null;
   }
 }
 

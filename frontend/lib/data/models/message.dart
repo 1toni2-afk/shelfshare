@@ -2,6 +2,7 @@ class PriceOfferSummary {
   final String id;
   final double amount;
   final String status;
+  final String? message;
   final String bookTitle;
   final String? bookAuthor;
   final String? bookCoverUrl;
@@ -10,6 +11,7 @@ class PriceOfferSummary {
     required this.id,
     required this.amount,
     required this.status,
+    this.message,
     required this.bookTitle,
     this.bookAuthor,
     this.bookCoverUrl,
@@ -24,8 +26,12 @@ class PriceOfferSummary {
     final book = userBook?['book'] as Map<String, dynamic>?;
     return PriceOfferSummary(
       id: json['id'] as String,
-      amount: (json['amount'] as num).toDouble(),
+      // Prisma serializează Decimal ca STRING în JSON ("33", nu 33) - cast-ul
+      // direct la num arunca aici pentru orice mesaj cu ofertă de preț, ceea
+      // ce strica parsarea ÎNTREGII conversații (chat-ul apărea complet gol).
+      amount: double.parse(json['amount'].toString()),
       status: json['status'] as String,
+      message: json['message'] as String?,
       bookTitle: book?['title'] as String? ?? '',
       bookAuthor: book?['author'] as String?,
       bookCoverUrl: book?['coverUrl'] as String?,
@@ -65,7 +71,7 @@ class ExchangeRequestSummary {
     return ExchangeRequestSummary(
       id: json['id'] as String,
       status: json['status'] as String,
-      offeredAmount: (json['offeredAmount'] as num?)?.toDouble(),
+      offeredAmount: json['offeredAmount'] != null ? double.parse(json['offeredAmount'].toString()) : null,
       requestedBookTitle: requestedCatalog?['title'] as String? ?? '',
       requestedBookAuthor: requestedCatalog?['author'] as String?,
       requestedBookCoverUrl: requestedCatalog?['coverUrl'] as String?,

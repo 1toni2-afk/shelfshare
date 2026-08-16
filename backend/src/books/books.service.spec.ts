@@ -6,6 +6,7 @@ import { WishlistService } from '../wishlist/wishlist.service';
 import { FollowService } from '../follow/follow.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookLookupService } from './book-lookup.service';
+import { ListingScoreService } from './listing-score.service';
 import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 
 describe('BooksService', () => {
@@ -26,6 +27,7 @@ describe('BooksService', () => {
         { provide: FollowService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: {} },
+        { provide: ListingScoreService, useValue: {} },
       ],
     }).compile();
 

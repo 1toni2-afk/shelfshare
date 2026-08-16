@@ -39,14 +39,29 @@ void openNotification(
     case NotificationType.exchangeDoneDisputed:
     case NotificationType.exchangeCompleted:
     case NotificationType.exchangeCancelled:
+      // Aceste tipuri sunt partajate între schimburile carte-contra-carte
+      // (exchangeRequestId în data) și vânzările cu bani (offerId în data) -
+      // vezi backend/src/offers/offers.service.ts, care refolosește aceleași
+      // NotificationType-uri EXCHANGE_* ca exchanges.service.ts.
       final exchangeRequestId = notification.data?['exchangeRequestId'] as String?;
+      final offerId = notification.data?['offerId'] as String?;
       if (exchangeRequestId != null) {
         context.push('/exchanges/$exchangeRequestId/ready');
+      } else if (offerId != null) {
+        context.push('/offers/$offerId/ready');
+      } else {
+        context.push('/exchanges');
+      }
+    case NotificationType.priceOfferAccepted:
+      // Odată acceptată, oferta intră în flow-ul de "ready to sell" (programare
+      // etc.) - nu mai e doar un card de chat, ca înainte de sale-flow v2.
+      final acceptedOfferId = notification.data?['offerId'] as String?;
+      if (acceptedOfferId != null) {
+        context.push('/offers/$acceptedOfferId/ready');
       } else {
         context.push('/exchanges');
       }
     case NotificationType.priceOfferReceived:
-    case NotificationType.priceOfferAccepted:
     case NotificationType.priceOfferRejected:
       // Oferta e vizibilă și acționabilă direct în chat (vezi
       // Message.priceOfferId) - trimitem acolo, nu la ecranul separat de
@@ -58,9 +73,16 @@ void openNotification(
         context.push('/exchanges');
       }
     case NotificationType.followedUserNewBook:
-      final userId = notification.data?['userId'] as String?;
-      if (userId != null) {
-        context.push('/users/$userId');
+      // Duce direct la anunțul nou postat, nu la profilul proprietarului -
+      // userBookId lipsește doar la notificările vechi, dinainte de a fi
+      // trimis de backend (vezi follow.service.ts), caz în care rămânem cu
+      // fallback pe profil.
+      final newBookUserBookId = notification.data?['userBookId'] as String?;
+      final followedUserId = notification.data?['userId'] as String?;
+      if (newBookUserBookId != null) {
+        context.push('/books/$newBookUserBookId');
+      } else if (followedUserId != null) {
+        context.push('/users/$followedUserId');
       }
     case NotificationType.nearbyBookListed:
     case NotificationType.interestBookListed:

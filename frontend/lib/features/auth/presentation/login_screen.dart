@@ -261,33 +261,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ],
                             ),
                             const SizedBox(height: 20),
-                            // WIP peste butonul Google până când configurarea
-                            // OAuth e completă (Milestone 16 QOL #2).
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                const Opacity(
-                                  opacity: 0.4,
-                                  child: IgnorePointer(child: GoogleSignInButton()),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.warning,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    'Work in progress',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            const GoogleSignInButton(),
                           ],
                           ),
                         ),

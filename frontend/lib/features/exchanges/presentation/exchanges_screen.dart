@@ -10,7 +10,6 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../books/presentation/relist_book_sheet.dart';
-import '../../chat/data/chat_repository.dart';
 import '../../offers/application/offers_controller.dart';
 import '../application/exchanges_controller.dart';
 
@@ -682,7 +681,18 @@ class _OfferCard extends ConsumerWidget {
               const SizedBox(height: 12),
               _OfferActions(offer: offer, isReceived: isReceived),
             ],
-            if (offer.status == OfferStatus.accepted && !isReceived) ...[
+            if (offer.status == OfferStatus.accepted) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.handshake_outlined, size: 18),
+                  label: Text(l10n.exchangeGoToReady),
+                  onPressed: () => context.push('/offers/${offer.id}/ready', extra: offer),
+                ),
+              ),
+            ],
+            if (offer.status == OfferStatus.completed && !isReceived) ...[
               const SizedBox(height: 12),
               Align(
                 alignment: Alignment.centerRight,
@@ -693,23 +703,6 @@ class _OfferCard extends ConsumerWidget {
                     bookTitle: offer.userBook.book.title,
                   ),
                   child: Text(l10n.commonAddToLibrary),
-                ),
-              ),
-            ],
-            if (offer.status == OfferStatus.accepted && isReceived) ...[
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                  onPressed: () async {
-                    final conversation =
-                        await ref.read(chatRepositoryProvider).startConversation(counterpart.id);
-                    if (context.mounted) {
-                      context.push('/chat/${conversation.id}', extra: counterpart);
-                    }
-                  },
-                  label: Text(l10n.commonSendMessage),
                 ),
               ),
             ],
@@ -728,7 +721,8 @@ class _OfferStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, bg) = switch (status) {
       OfferStatus.pending => (AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
-      OfferStatus.accepted => (AppColors.success, AppColors.success.withValues(alpha: 0.12)),
+      OfferStatus.accepted => (AppColors.primary, AppColors.primary.withValues(alpha: 0.15)),
+      OfferStatus.completed => (AppColors.success, AppColors.success.withValues(alpha: 0.12)),
       OfferStatus.rejected => (AppColors.destructive, AppColors.destructive.withValues(alpha: 0.12)),
       OfferStatus.cancelled => (AppColors.mutedForeground, AppColors.muted),
       OfferStatus.expired => (AppColors.mutedForeground, AppColors.muted),

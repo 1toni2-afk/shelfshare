@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About dev | ShelfShare</title>
+<meta name="description" content="Omul din spatele ShelfShare - de ce există aplicația și cum poți susține serverul care o găzduiește.">
+<meta name="theme-color" content="#7C3A1E">
+<link rel="canonical" href="https://shelfshare.ro/about-dev">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shelfshare.ro/about-dev">
+<meta property="og:site_name" content="ShelfShare">
+<meta property="og:title" content="About dev | ShelfShare">
+<meta property="og:description" content="Omul din spatele ShelfShare - de ce există aplicația și cum poți susține serverul care o găzduiește.">
+<meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+<meta property="og:locale" content="ro_RO">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: #F8F4EC;
+    --foreground: #2A1A0E;
+    --card: #FDFAF4;
+    --primary: #7C3A1E;
+    --primary-foreground: #FDF9F3;
+    --accent: #C8783A;
+    --accent-foreground: #FDF9F3;
+    --muted-foreground: #655A4A;
+    --border: rgba(42, 26, 14, 0.13);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0E0E0F;
+      --foreground: #F5F3F0;
+      --card: #19191B;
+      --muted-foreground: #A8A6A3;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  main {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .avatar {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin: 0;
+  }
+  p {
+    font-size: 15px;
+    margin: 0 0 16px;
+  }
+  .support-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 12px;
+  }
+  .support-card h2 {
+    font-size: 16px;
+    margin: 0 0 8px;
+  }
+  .support-card p {
+    color: var(--muted-foreground);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .coffee-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 22px;
+    border-radius: 12px;
+  }
+  .contact {
+    text-align: center;
+    margin-top: 24px;
+    color: var(--muted-foreground);
+    font-size: 14px;
+  }
+  .contact a {
+    color: inherit;
+  }
+</style>
+</head>
+<body>
+  <header><a href="/">← ShelfShare</a></header>
+  <main>
+    <div class="byline">
+      <div class="avatar">💻</div>
+      <h1>Omul din spatele ShelfShare</h1>
+    </div>
+
+    <p>Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.</p>
+    <p>Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.</p>
+    <p>Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️</p>
+
+    <div class="support-card">
+      <h2>☕ Keep the app alive</h2>
+      <p>Serverul, domeniul și backup-urile ies din buzunarul meu. Orice contribuție ține aplicația pornită.</p>
+      <a class="coffee-btn" href="https://paypal.me/tonims" target="_blank" rel="noopener">Buy me a coffee</a>
+    </div>
+
+    <p class="contact"><a href="mailto:contact@shelfshare.ro">contact@shelfshare.ro</a></p>
+  </main>
+</body>
+</html>
