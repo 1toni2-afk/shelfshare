@@ -19,7 +19,6 @@ import { CounterOfferDto } from './dto/counter-offer.dto';
 import { SetMeetingDto } from '../exchanges/dto/set-meeting.dto';
 import { CancelExchangeDto } from '../exchanges/dto/cancel-exchange.dto';
 import { ShareContactDto } from '../exchanges/dto/share-contact.dto';
-import { DoneExchangeDto } from '../exchanges/dto/done-exchange.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -91,13 +90,9 @@ export class OffersController {
 
   @Post('offers/:id/done')
   @HttpCode(HttpStatus.OK)
-  markDone(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Body() dto: DoneExchangeDto,
-  ) {
+  markDone(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.offersService.markDone(id, userId!, dto);
+    return this.offersService.markDone(id, userId!);
   }
 
   @Post('offers/:id/done/dispute')
