@@ -383,13 +383,16 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       );
     }
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 460),
+      // 460 -> 520: aliniat cu lățimea maximă a restului pașilor din wizard
+      // (vezi _wizardScaffold) - las coperta să crească pe ecranele late în
+      // loc să rămână plafonată sub spațiul acum disponibil.
+      constraints: const BoxConstraints(maxWidth: 520),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
         child: Column(
           children: [
             Expanded(child: _buildStack()),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildActions(),
           ],
         ),
@@ -442,38 +445,39 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
+        // Stack, nu un Row cu Expanded-uri: inima trebuie centrată pe toată
+        // lățimea rândului, nu doar în raport cu vecinul ei (close) - altfel
+        // perechea close+heart apărea centrată ca grup, iar inima însăși
+        // rămânea descentrată. Close/info stau la marginile rândului
+        // (spaceBetween), departe de inimă ca să nu fie atinse accidental.
+        Stack(
+          alignment: Alignment.center,
           children: [
-            // Spacer stânga gol - păstrează close+heart centrate, în timp ce
-            // Expanded-ul din dreapta împinge butonul de info spre marginea
-            // ecranului (nu lipit de inimă, ca să nu fie atins accidental).
-            const Expanded(child: SizedBox.shrink()),
-            _RoundAction(
-              icon: Icons.close,
-              color: AppColors.destructive,
-              tooltip: l10n.bookMatchNoTooltip,
-              onPressed: busy ? null : () => _flyOut(_SwipeAction.no),
-            ),
-            const SizedBox(width: 28),
-            _RoundAction(
-              icon: Icons.favorite,
-              color: AppColors.success,
-              tooltip: l10n.bookMatchYesTooltip,
-              onPressed: busy ? null : () => _flyOut(_SwipeAction.yes),
-            ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _RoundAction(
+                  icon: Icons.close,
+                  color: AppColors.destructive,
+                  tooltip: l10n.bookMatchNoTooltip,
+                  onPressed: busy ? null : () => _flyOut(_SwipeAction.no),
+                ),
                 // Descrierea nu mai încape pe card (vezi _BookMatchCardView) -
                 // butonul de info deschide detaliile complete ale cărții
                 // curente, fără să aglomereze cardul de swipe.
-                child: _RoundAction(
+                _RoundAction(
                   icon: Icons.info_outline,
                   color: AppColors.mutedForeground,
                   tooltip: l10n.bookMatchInfoTooltip,
                   onPressed: _cards.isEmpty ? null : () => _showBookInfo(_cards.first),
                 ),
-              ),
+              ],
+            ),
+            _RoundAction(
+              icon: Icons.favorite,
+              color: AppColors.success,
+              tooltip: l10n.bookMatchYesTooltip,
+              onPressed: busy ? null : () => _flyOut(_SwipeAction.yes),
             ),
           ],
         ),
@@ -619,7 +623,7 @@ class _BookMatchCardView extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.only(top: 8),
                       child: AspectRatio(
                         aspectRatio: 5 / 7,
                         child: BookCover.expand(
