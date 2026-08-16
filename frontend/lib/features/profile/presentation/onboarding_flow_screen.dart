@@ -13,6 +13,7 @@ import '../../../shared/widgets/book_cover.dart';
 import '../../../data/models/user_book.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
+import 'onboarding_illustrations.dart';
 
 const _kTotalSteps = 7;
 const _kReadingPaces = ['1', '2-3', '4+'];
@@ -305,6 +306,11 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     );
   }
 
+  // Lățimea standard a unui IconButton Material (48) - folosită și pentru
+  // spacer-ul de sub săgeata Back, ca textul Skip/Move forward să fie
+  // centrat sub Continue, nu sub tot rândul (Back + Continue).
+  static const _backButtonWidth = 48.0;
+
   Widget _buildFooter({required bool isLastStep, bool moveForward = false}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
@@ -341,13 +347,22 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
                   ),
                 ],
               ),
-              TextButton(
-                onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
-                // La BookMatch (pasul 5), acest buton face exact ce face și
-                // Continue (nu există un "răspuns" de sărit peste) - eticheta
-                // "Sari peste" era înșelătoare, sugera că se pierde progresul
-                // din swipe. La celelalte pași rămâne un skip real.
-                child: Text(moveForward ? context.l10n.onboardingFlowMoveForward : context.l10n.onboardingFlowSkip),
+              Row(
+                children: [
+                  const SizedBox(width: _backButtonWidth + 8),
+                  Expanded(
+                    child: Center(
+                      child: TextButton(
+                        onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
+                        // La BookMatch (pasul 5), acest buton face exact ce face și
+                        // Continue (nu există un "răspuns" de sărit peste) - eticheta
+                        // "Sari peste" era înșelătoare, sugera că se pierde progresul
+                        // din swipe. La celelalte pași rămâne un skip real.
+                        child: Text(moveForward ? context.l10n.onboardingFlowMoveForward : context.l10n.onboardingFlowSkip),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -367,6 +382,11 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
             FilterChip(
               label: Text(localizedGenre(context, genre)),
               selected: _selectedGenres.contains(genre),
+              // Fără checkmark: avatarul de check lărgește chip-ul selectat,
+              // ceea ce schimbă lățimea totală a rândului și face Wrap-ul să
+              // rearanjeze tot ce urmează după el. Culoarea rămâne singurul
+              // semnal de selecție, iar chip-urile nu-și mai schimbă poziția.
+              showCheckmark: false,
               onSelected: (selected) => setState(() {
                 if (selected) {
                   _selectedGenres.add(genre);
@@ -385,14 +405,15 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   Widget _buildFrequencyContent() {
     final l10n = context.l10n;
     final options = [
-      (_kReadingPaces[0], l10n.onboardingFlowFrequencyLowTitle, l10n.onboardingFlowFrequencyLowDesc),
-      (_kReadingPaces[1], l10n.onboardingFlowFrequencyMidTitle, l10n.onboardingFlowFrequencyMidDesc),
-      (_kReadingPaces[2], l10n.onboardingFlowFrequencyHighTitle, l10n.onboardingFlowFrequencyHighDesc),
+      (_kReadingPaces[0], l10n.onboardingFlowFrequencyLowTitle, l10n.onboardingFlowFrequencyLowDesc, Icons.menu_book_outlined),
+      (_kReadingPaces[1], l10n.onboardingFlowFrequencyMidTitle, l10n.onboardingFlowFrequencyMidDesc, Icons.auto_stories_outlined),
+      (_kReadingPaces[2], l10n.onboardingFlowFrequencyHighTitle, l10n.onboardingFlowFrequencyHighDesc, Icons.local_library_outlined),
     ];
     return Column(
       children: [
         for (final option in options) ...[
           _OptionCard(
+            icon: option.$4,
             title: option.$2,
             subtitle: option.$3,
             selected: _readingPace == option.$1,
@@ -426,6 +447,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
               FilterChip(
                 label: Text(lang),
                 selected: _selectedLanguages.contains(lang),
+                showCheckmark: false,
                 onSelected: (selected) => setState(() {
                   if (selected) {
                     _selectedLanguages.add(lang);
@@ -443,15 +465,16 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   Widget _buildPurposeContent() {
     final l10n = context.l10n;
     final options = [
-      (_kPurposes[0], l10n.onboardingFlowPurposeSwapTitle, l10n.onboardingFlowPurposeSwapDesc),
-      (_kPurposes[1], l10n.onboardingFlowPurposeSellTitle, l10n.onboardingFlowPurposeSellDesc),
-      (_kPurposes[2], l10n.onboardingFlowPurposeDiscoverTitle, l10n.onboardingFlowPurposeDiscoverDesc),
-      (_kPurposes[3], l10n.onboardingFlowPurposeAllTitle, l10n.onboardingFlowPurposeAllDesc),
+      (_kPurposes[0], l10n.onboardingFlowPurposeSwapTitle, l10n.onboardingFlowPurposeSwapDesc, Icons.swap_horiz),
+      (_kPurposes[1], l10n.onboardingFlowPurposeSellTitle, l10n.onboardingFlowPurposeSellDesc, Icons.sell_outlined),
+      (_kPurposes[2], l10n.onboardingFlowPurposeDiscoverTitle, l10n.onboardingFlowPurposeDiscoverDesc, Icons.explore_outlined),
+      (_kPurposes[3], l10n.onboardingFlowPurposeAllTitle, l10n.onboardingFlowPurposeAllDesc, Icons.done_all),
     ];
     return Column(
       children: [
         for (final option in options) ...[
           _OptionCard(
+            icon: option.$4,
             title: option.$2,
             subtitle: option.$3,
             selected: _purpose == option.$1,
@@ -471,7 +494,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // cu Skip. Așa, AddBookScreen se deschide peste ecranul curent
     // fără ca GoRouter să considere că am părăsit /onboarding.
     final added = await Navigator.of(context, rootNavigator: true).push<UserBook>(
-      MaterialPageRoute(builder: (_) => const AddBookScreen()),
+      MaterialPageRoute<UserBook>(builder: (_) => const AddBookScreen()),
     );
     if (added != null && mounted) setState(() => _addedBook = added);
   }
@@ -481,86 +504,10 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_addedBook != null) ...[
-          Card(
-            color: AppColors.primary.withValues(alpha: 0.08),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: BorderSide(color: AppColors.primary),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 40,
-                    height: 58,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: BookCover.expand(
-                        url: _addedBook!.primaryImageUrl,
-                        title: _addedBook!.book.title,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      l10n.onboardingFlowBookAdded(_addedBook!.book.title),
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                  Icon(Icons.check_circle, color: AppColors.success),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-        ],
-        Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: AppColors.border, style: BorderStyle.solid),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: _openAddBook,
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: AppColors.muted,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Icon(Icons.add, color: AppColors.primary),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l10n.onboardingFlowAddBooksCta,
-                            style: Theme.of(context).textTheme.titleSmall),
-                        const SizedBox(height: 2),
-                        Text(
-                          l10n.onboardingFlowAddBooksCtaSubtitle,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: AppColors.mutedForeground),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        // Cartea abia adăugată ia locul cardului CTA (nu stă deasupra lui) -
+        // altfel userul revine din AddBookScreen și tot vede doar "+ Add a
+        // book", ca și cum n-ar fi ținut minte ce a adăugat.
+        _addedBook != null ? _buildAddedBookCard() : _buildAddBookCta(),
         const SizedBox(height: 14),
         Text(
           l10n.onboardingFlowAddBooksSkipNote,
@@ -570,6 +517,101 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
               ?.copyWith(color: AppColors.mutedForeground, fontStyle: FontStyle.italic),
         ),
       ],
+    );
+  }
+
+  Widget _buildAddedBookCard() {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(color: AppColors.primary),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  height: 58,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: BookCover.expand(
+                      url: _addedBook!.primaryImageUrl,
+                      title: _addedBook!.book.title,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    l10n.onboardingFlowBookAdded(_addedBook!.book.title),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                Icon(Icons.check_circle, color: AppColors.success),
+              ],
+            ),
+          ),
+        ),
+        TextButton.icon(
+          onPressed: _openAddBook,
+          icon: const Icon(Icons.add, size: 18),
+          label: Text(l10n.onboardingFlowAddBooksCta),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddBookCta() {
+    final l10n = context.l10n;
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: AppColors.border, style: BorderStyle.solid),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: _openAddBook,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.search, color: AppColors.primary),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.onboardingFlowAddBooksCta,
+                        style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.onboardingFlowAddBooksCtaSubtitle,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: AppColors.mutedForeground),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -732,6 +774,8 @@ class _WelcomePanel extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const BookshelfIllustration(),
+              const SizedBox(height: 16),
               Text(
                 l10n.onboardingWelcomeTitle,
                 textAlign: TextAlign.center,
@@ -786,16 +830,20 @@ class _WelcomePanel extends StatelessWidget {
   }
 }
 
-/// Card de opțiune cu radio, pentru întrebările cu răspuns unic (frecvență,
-/// scop) - vizual apropiat de mockup-ul primit de la user.
+/// Card de opțiune tip "tile" (iconiță + checkbox), pentru întrebările cu
+/// răspuns unic (frecvență, scop) - semantica rămâne single-select (un
+/// singur card selectat per grup), doar indicatorul vizual e un checkbox,
+/// nu un Radio.
 class _OptionCard extends StatelessWidget {
   const _OptionCard({
+    this.icon,
     required this.title,
     required this.subtitle,
     required this.selected,
     required this.onTap,
   });
 
+  final IconData? icon;
   final String title;
   final String subtitle;
   final bool selected;
@@ -810,13 +858,17 @@ class _OptionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: selected ? AppColors.primary : AppColors.border),
           ),
           child: Row(
             children: [
+              if (icon != null) ...[
+                _OptionIconTile(icon: icon!, selected: selected),
+                const SizedBox(width: 14),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -833,21 +885,65 @@ class _OptionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Migrarea la RadioGroup ar cere restructurarea widget-ului
-              // (fiecare _OptionCard e independent, cu toată suprafața
-              // cardului tap-abilă prin InkWell, nu doar cercul Radio) -
-              // amânată până testăm vizual.
-              Radio<bool>(
-                value: true,
-                // ignore: deprecated_member_use
-                groupValue: selected ? true : null,
-                // ignore: deprecated_member_use
-                onChanged: (_) => onTap(),
-              ),
+              const SizedBox(width: 8),
+              _SelectionCheckbox(selected: selected),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Iconița din stânga fiecărui [_OptionCard], într-un pătrat rotunjit -
+/// preia stilul "tile" cerut de user, colorat cu tema aplicației (nu
+/// culorile din mockup-ul de referință).
+class _OptionIconTile extends StatelessWidget {
+  const _OptionIconTile({required this.icon, required this.selected});
+
+  final IconData icon;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: selected ? AppColors.primary : AppColors.muted,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(
+        icon,
+        size: 20,
+        color: selected ? AppColors.primaryForeground : AppColors.mutedForeground,
+      ),
+    );
+  }
+}
+
+/// Indicator de selecție în stil checkbox (pătrat, nu cerc) - vizual mai
+/// prietenos decât [Radio], deși semantica rămâne single-select (whole-tile
+/// tap, un singur `_OptionCard` selectat per grup de opțiuni).
+class _SelectionCheckbox extends StatelessWidget {
+  const _SelectionCheckbox({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: selected ? AppColors.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: selected ? AppColors.primary : AppColors.border, width: 1.5),
+      ),
+      child: selected
+          ? const Icon(Icons.check, size: 16, color: AppColors.primaryForeground)
+          : null,
     );
   }
 }

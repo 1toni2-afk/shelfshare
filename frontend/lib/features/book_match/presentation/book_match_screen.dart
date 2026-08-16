@@ -411,8 +411,11 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Spacer stânga gol - păstrează close+heart centrate, în timp ce
+            // Expanded-ul din dreapta împinge butonul de info spre marginea
+            // ecranului (nu lipit de inimă, ca să nu fie atins accidental).
+            const Expanded(child: SizedBox.shrink()),
             _RoundAction(
               icon: Icons.close,
               color: AppColors.destructive,
@@ -425,6 +428,20 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
               color: AppColors.success,
               tooltip: l10n.bookMatchYesTooltip,
               onPressed: busy ? null : () => _flyOut(_SwipeAction.yes),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                // Descrierea nu mai încape pe card (vezi _BookMatchCardView) -
+                // butonul de info deschide detaliile complete ale cărții
+                // curente, fără să aglomereze cardul de swipe.
+                child: _RoundAction(
+                  icon: Icons.info_outline,
+                  color: AppColors.mutedForeground,
+                  tooltip: l10n.bookMatchInfoTooltip,
+                  onPressed: _cards.isEmpty ? null : () => _showBookInfo(_cards.first),
+                ),
+              ),
             ),
           ],
         ),
@@ -446,6 +463,51 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
+    );
+  }
+
+  /// Detaliile complete ale cărții curente (inclusiv descrierea, scoasă de
+  /// pe cardul de swipe - vezi _BookMatchCardView) - deschise din butonul
+  /// de info, nu impuse tuturor userilor pe fiecare card.
+  Future<void> _showBookInfo(BookMatchCard card) {
+    final meta = [
+      if (card.genre != null && card.genre!.isNotEmpty) localizedGenre(context, card.genre!),
+      if (card.publishedYear != null) '${card.publishedYear}',
+    ].join(' · ');
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(card.title, style: Theme.of(sheetContext).textTheme.titleLarge),
+              if (card.author != null && card.author!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  card.author!,
+                  style: Theme.of(sheetContext)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: AppColors.mutedForeground),
+                ),
+              ],
+              if (meta.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(meta, style: Theme.of(sheetContext).textTheme.bodySmall),
+              ],
+              if (card.description != null && card.description!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(card.description!, style: Theme.of(sheetContext).textTheme.bodyMedium),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -484,7 +546,9 @@ class _RoundAction extends StatelessWidget {
   }
 }
 
-/// Cardul propriu-zis: copertă mare + titlu, autor, gen/an, descriere scurtă.
+/// Cardul propriu-zis: copertă mare + titlu, autor, gen/an - fără descriere,
+/// ca userul să decidă rapid din copertă (descrierea completă e disponibilă
+/// din butonul de info, vezi [_BookMatchScreenState._showBookInfo]).
 /// Ștampilele DA/NU/SKIP apar peste el pe măsură ce userul trage de card.
 class _BookMatchCardView extends StatelessWidget {
   const _BookMatchCardView({
@@ -559,15 +623,6 @@ class _BookMatchCardView extends StatelessWidget {
                       if (meta.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(meta, style: theme.textTheme.bodySmall),
-                      ],
-                      if (card.description != null && card.description!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          card.description!,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall,
-                        ),
                       ],
                     ],
                   ),
