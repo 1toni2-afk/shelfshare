@@ -241,7 +241,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
           content: const BookMatchScreen(embedded: true),
           scrollable: false,
           compact: true,
-          moveForward: true,
+          hideSkipLink: true,
         );
       default:
         return _wizardScaffold(
@@ -264,7 +264,10 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // prea puțin loc, iar coperta cărții se micșora ca să încapă. Varianta
     // compactă renunță la subtitlu și reduce titlul/padding-ul de sus.
     bool compact = false,
-    bool moveForward = false,
+    // BookMatch (pasul 5) are deja propriul link „Skip" în interiorul
+    // cardului de swipe (vezi BookMatchScreen._buildActions) - linkul
+    // generic de Skip din footer ar fi un al doilea link identic, redundant.
+    bool hideSkipLink = false,
   }) {
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +304,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
             ),
           ),
         ),
-        _buildFooter(isLastStep: isLastStep, moveForward: moveForward),
+        _buildFooter(isLastStep: isLastStep, hideSkipLink: hideSkipLink),
       ],
     );
   }
@@ -311,7 +314,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   // Continue, nu sub tot rândul (Back + Continue).
   static const _backButtonWidth = 48.0;
 
-  Widget _buildFooter({required bool isLastStep, bool moveForward = false}) {
+  Widget _buildFooter({required bool isLastStep, bool hideSkipLink = false}) {
     final continueButton = FilledButton(
       onPressed: _finishing ? null : () => isLastStep ? _finish() : _next(),
       child: _finishing
@@ -340,22 +343,11 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
                     onPressed: _finishing ? null : _back,
                     icon: const Icon(Icons.arrow_back),
                   ),
-                  // La BookMatch (pasul 5, moveForward), Continue coboară pe
-                  // rândul de mai jos, centrat, în locul fostului link „Move
-                  // forward" - acesta era redundant (făcea exact ce face
-                  // Continue), deci a fost eliminat, nu doar redenumit.
-                  if (!moveForward) ...[
-                    const SizedBox(width: 8),
-                    Expanded(child: continueButton),
-                  ],
+                  const SizedBox(width: 8),
+                  Expanded(child: continueButton),
                 ],
               ),
-              if (moveForward)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: SizedBox(width: 240, child: continueButton),
-                )
-              else
+              if (!hideSkipLink)
                 Row(
                   children: [
                     const SizedBox(width: _backButtonWidth + 8),
