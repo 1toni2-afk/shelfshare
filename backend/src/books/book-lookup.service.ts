@@ -215,13 +215,17 @@ export class BookLookupService {
     const cacheKey = `${query.trim().toLowerCase()}|${skip ? 'nocov' : 'cov'}`;
     const cached = this._searchCache.get(cacheKey);
     const now = Date.now();
-    if (cached && now - cached.at < BookLookupService._cacheTtlMs) {
+    if (cached && now - cached.at < cached.ttl) {
       return cached.results;
     }
 
+    // `status` spune dacă providerul a eșuat (excepție/timeout) sau chiar nu a
+    // avut potriviri - distincție de care depinde cache-ul de mai jos.
+    const google = { failed: false };
+    const openLibrary = { failed: false };
     const [fromGoogle, fromOpenLibrary] = await Promise.all([
-      this.tryGoogleBooksSearch(query),
-      this.tryOpenLibrarySearch(query),
+      this.tryGoogleBooksSearch(query, google),
+      this.tryOpenLibrarySearch(query, openLibrary),
     ]);
     const results = this.preferNewestEditions(
       fromGoogle.length > 0 ? fromGoogle : fromOpenLibrary,
@@ -237,7 +241,23 @@ export class BookLookupService {
           ),
         );
 
-    this._searchCache.set(cacheKey, { at: now, results: finalResults });
+    // Nu cache-uim un rezultat gol venit dintr-o pană de upstream: altfel un
+    // singur 503 de la Google (se întâmplă intermitent) cu Open Library căzut
+    // îngheța termenul ăla ca „niciun rezultat" 5 minute întregi, deși
+    // upstream-ul își revenea imediat. Un gol real (căutare fără potriviri)
+    // se cache-uiește totuși, dar scurt - altfel fiecare tastă dintr-o
+    // interogare fără rezultate ar lovi API-urile externe.
+    const bothFailed = google.failed && openLibrary.failed;
+    if (!bothFailed) {
+      this._searchCache.set(cacheKey, {
+        at: now,
+        ttl:
+          finalResults.length === 0
+            ? BookLookupService._emptyCacheTtlMs
+            : BookLookupService._cacheTtlMs,
+        results: finalResults,
+      });
+    }
     if (this._searchCache.size > BookLookupService._cacheMaxEntries) {
       const oldestKey = this._searchCache.keys().next().value as
         string | undefined;
@@ -283,10 +303,12 @@ export class BookLookupService {
 
   /** Cache in-memory pentru searchByTitle: TTL 5 min, ~200 chei. */
   private static readonly _cacheTtlMs = 5 * 60 * 1000;
+  /** TTL scurt pentru căutările fără rezultate - vezi `searchByTitle`. */
+  private static readonly _emptyCacheTtlMs = 30 * 1000;
   private static readonly _cacheMaxEntries = 200;
   private readonly _searchCache = new Map<
     string,
-    { at: number; results: ExternalBookResult[] }
+    { at: number; ttl: number; results: ExternalBookResult[] }
   >();
 
   /**
@@ -457,6 +479,7 @@ export class BookLookupService {
 
   private async tryOpenLibrarySearch(
     query: string,
+    status?: { failed: boolean },
   ): Promise<ExternalBookResult[]> {
     try {
       type OpenLibrarySearchDoc = {
@@ -503,12 +526,45 @@ export class BookLookupService {
         };
       });
     } catch (error) {
+      if (status) status.failed = true;
       this.logger.warn(`Open Library search eșuat pentru "${query}": ${error}`);
       return [];
     }
   }
 
   // ---------- Google Books (fallback) ----------
+
+  /**
+   * Google Books întoarce intermitent 503 `backendFailed` - măsurat manual,
+   * trei cereri identice la câteva secunde distanță au dat 200, 503, 503, cu
+   * cota proiectului la ~12% din limita zilnică. Nu e nici cotă, nici cheie:
+   * e o pană de moment la ei, iar o singură reîncercare o prinde de obicei.
+   * Reîncercăm DOAR la 5xx și la timeout - un 4xx (cheie invalidă, query prost)
+   * s-ar repeta identic, iar 429 e cotă și n-are rost bătut a doua oară.
+   */
+  private async getGoogleBooksWithRetry<T>(url: string): Promise<T> {
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get<T>(url, { timeout: 4000 }),
+      );
+      return data;
+    } catch (error) {
+      const err = error as { response?: { status?: number }; code?: string };
+      const status = err.response?.status;
+      const retriable =
+        (status !== undefined && status >= 500) ||
+        (status === undefined && err.code !== undefined);
+      if (!retriable) throw error;
+
+      this.logger.warn(
+        `Google Books a răspuns ${status ?? err.code}; reîncerc o dată.`,
+      );
+      const { data } = await firstValueFrom(
+        this.http.get<T>(url, { timeout: 4000 }),
+      );
+      return data;
+    }
+  }
 
   private async tryGoogleBooksByIsbn(
     isbn: string,
@@ -519,6 +575,7 @@ export class BookLookupService {
 
   private async tryGoogleBooksSearch(
     query: string,
+    status?: { failed: boolean },
   ): Promise<ExternalBookResult[]> {
     try {
       type GoogleVolume = {
@@ -539,9 +596,9 @@ export class BookLookupService {
       const url = this.withGoogleBooksKey(
         `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`,
       );
-      const { data } = await firstValueFrom(
-        this.http.get<{ items?: GoogleVolume[] }>(url, { timeout: 4000 }),
-      );
+      const data = await this.getGoogleBooksWithRetry<{
+        items?: GoogleVolume[];
+      }>(url);
 
       return (data.items ?? []).map((item): ExternalBookResult => {
         const info = item.volumeInfo ?? {};
@@ -574,6 +631,7 @@ export class BookLookupService {
         };
       });
     } catch (error) {
+      if (status) status.failed = true;
       this.logger.warn(`Google Books search eșuat pentru "${query}": ${error}`);
       return [];
     }
