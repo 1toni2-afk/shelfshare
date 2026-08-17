@@ -549,7 +549,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.addBookSuccess)));
-        Navigator.of(context).pop();
+        // Cu valoare, nu gol: onboarding-ul (vezi
+        // OnboardingFlowScreen._openAddBook) așteaptă cartea creată înapoi ca
+        // să o afișeze în locul cardului CTA - un pop() fără argument o lăsa
+        // mereu null, iar cardul nu se schimba niciodată după adăugare.
+        Navigator.of(context).pop(userBook);
       }
     } on DioException catch (e) {
       if (mounted) {

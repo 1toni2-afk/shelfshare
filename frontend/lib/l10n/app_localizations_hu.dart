@@ -3334,6 +3334,15 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookMatchInfoTooltip => 'Könyv részletei';
 
   @override
+  String get bookMatchYesLabel => 'Igen';
+
+  @override
+  String get bookMatchNoLabel => 'Nem';
+
+  @override
+  String get bookMatchInfoLabel => 'Részletek';
+
+  @override
   String get bookMatchSkip => 'Kihagyom';
 
   @override

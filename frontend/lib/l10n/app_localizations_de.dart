@@ -3368,6 +3368,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookMatchInfoTooltip => 'Buchdetails';
 
   @override
+  String get bookMatchYesLabel => 'Ja';
+
+  @override
+  String get bookMatchNoLabel => 'Nein';
+
+  @override
+  String get bookMatchInfoLabel => 'Details';
+
+  @override
   String get bookMatchSkip => 'Überspringen';
 
   @override

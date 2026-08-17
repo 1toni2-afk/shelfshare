@@ -3325,6 +3325,15 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookMatchInfoTooltip => 'Detalii carte';
 
   @override
+  String get bookMatchYesLabel => 'Da';
+
+  @override
+  String get bookMatchNoLabel => 'Nu';
+
+  @override
+  String get bookMatchInfoLabel => 'Detalii';
+
+  @override
   String get bookMatchSkip => 'Sari peste';
 
   @override
