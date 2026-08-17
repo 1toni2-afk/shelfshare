@@ -460,6 +460,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
                   icon: Icons.close,
                   color: AppColors.destructive,
                   tooltip: l10n.bookMatchNoTooltip,
+                  label: l10n.bookMatchNoLabel,
                   onPressed: busy ? null : () => _flyOut(_SwipeAction.no),
                 ),
                 // Descrierea nu mai încape pe card (vezi _BookMatchCardView) -
@@ -469,6 +470,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
                   icon: Icons.info_outline,
                   color: AppColors.mutedForeground,
                   tooltip: l10n.bookMatchInfoTooltip,
+                  label: l10n.bookMatchInfoLabel,
                   onPressed: _cards.isEmpty ? null : () => _showBookInfo(_cards.first),
                 ),
               ],
@@ -477,6 +479,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
               icon: Icons.favorite,
               color: AppColors.success,
               tooltip: l10n.bookMatchYesTooltip,
+              label: l10n.bookMatchYesLabel,
               onPressed: busy ? null : () => _flyOut(_SwipeAction.yes),
             ),
           ],
@@ -548,36 +551,53 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   }
 }
 
+/// Buton rotund + etichetă text sub el (No/Yes/More info, ca în mockup) - un
+/// singur Tooltip cu aceeași frază nu era vizibil pe touch, doar la hover.
 class _RoundAction extends StatelessWidget {
   const _RoundAction({
     required this.icon,
     required this.color,
     required this.tooltip,
+    required this.label,
     required this.onPressed,
   });
 
   final IconData icon;
   final Color color;
   final String tooltip;
+  final String label;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: SizedBox(
-        width: 52,
-        height: 52,
-        child: Material(
-          shape: const CircleBorder(),
-          color: color.withValues(alpha: 0.12),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onPressed,
-            child: Icon(icon, color: color, size: 24),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Tooltip(
+          message: tooltip,
+          child: SizedBox(
+            width: 52,
+            height: 52,
+            child: Material(
+              shape: const CircleBorder(),
+              color: color.withValues(alpha: 0.12),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: onPressed,
+                child: Icon(icon, color: color, size: 24),
+              ),
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .labelMedium
+              ?.copyWith(color: onPressed == null ? AppColors.mutedForeground.withValues(alpha: 0.5) : null),
+        ),
+      ],
     );
   }
 }

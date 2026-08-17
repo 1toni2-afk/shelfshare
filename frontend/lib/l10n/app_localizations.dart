@@ -6042,6 +6042,24 @@ abstract class AppLocalizations {
   /// **'Detalii carte'**
   String get bookMatchInfoTooltip;
 
+  /// No description provided for @bookMatchYesLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Da'**
+  String get bookMatchYesLabel;
+
+  /// No description provided for @bookMatchNoLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu'**
+  String get bookMatchNoLabel;
+
+  /// No description provided for @bookMatchInfoLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii'**
+  String get bookMatchInfoLabel;
+
   /// No description provided for @bookMatchSkip.
   ///
   /// In ro, this message translates to:
