@@ -294,6 +294,51 @@ describe('BookMatchService', () => {
       // Nu s-au citit scorurile: la cold start nu exista inca.
       expect(prisma.userGenreScore.findMany).not.toHaveBeenCalled();
     });
+
+    it('cu genuri declarate, batch-ul respecta raportul 80/20 favorite/wildcard', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        onboardingSwipesCount: 3,
+        discoveryBoostSwipesRemaining: 0,
+        favoriteGenres: ['Fantasy', 'SF'],
+        lastRecalibrationAt: null,
+      });
+
+      // 2 genuri favorite x pana la 4 titluri/gen = exact 8 candidati posibili,
+      // deci favoriteTarget (round(10 * 0.8) = 8) epuizeaza tot pool-ul si
+      // rezultatul e determinist, nu doar probabil.
+      const { cards } = await service.getQueue('user-1', 'sess-1', 10);
+
+      expect(cards).toHaveLength(10);
+      const favoriteCards = cards.filter((c) =>
+        ['Fantasy', 'SF'].includes(c.genre ?? ''),
+      );
+      const wildcardCards = cards.filter(
+        (c) => !['Fantasy', 'SF'].includes(c.genre ?? ''),
+      );
+      expect(favoriteCards).toHaveLength(8);
+      expect(wildcardCards).toHaveLength(2);
+    });
+
+    it('genurile favorite nu se dizolva in restul catalogului (bug-ul „prea random")', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        onboardingSwipesCount: 3,
+        discoveryBoostSwipesRemaining: 0,
+        favoriteGenres: ['Fantasy'],
+        lastRecalibrationAt: null,
+      });
+
+      const { cards } = await service.getQueue('user-1', 'sess-1', 10);
+
+      // Fara ratio explicit, un singur gen favorit ar concura de la egal la
+      // egal cu celelalte 5 genuri din catalog (4 titluri fiecare) si ar
+      // ajunge sub 20% din batch. Cu ratio-ul de 80%, Fantasy trebuie sa
+      // domine clar batch-ul: cei 4 candidati initiali plus cei 2 ramasi din
+      // catalogul de test (6 carti Fantasy in total) sunt maturati garantat
+      // de completarea cu resturi, deci rezultatul e determinist, nu doar
+      // probabil.
+      const favoriteCount = cards.filter((c) => c.genre === 'Fantasy').length;
+      expect(favoriteCount).toBe(6);
+    });
   });
 
   describe('recordSwipe', () => {
