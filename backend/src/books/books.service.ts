@@ -79,10 +79,9 @@ export class BooksService {
   async suggestCovers(title?: string, author?: string): Promise<string[]> {
     const cleanTitle = title?.trim();
     if (!cleanTitle || cleanTitle.length < 2) return [];
-    const query = author?.trim()
-      ? `${cleanTitle} ${author.trim()}`
-      : cleanTitle;
-    const results = await this.lookup.searchByTitle(query);
+    const results = await this.lookup.searchByTitle(cleanTitle, {
+      author: author?.trim() || null,
+    });
     const covers = new Set<string>();
     for (const r of results) {
       if (r.coverUrl) covers.add(r.coverUrl);

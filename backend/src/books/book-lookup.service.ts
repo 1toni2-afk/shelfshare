@@ -27,6 +27,29 @@ export class BookLookupService {
   }
 
   /**
+   * `q=` simplu la Google Books e o căutare full-text peste tot catalogul
+   * (descriere, editură, recenzii citate etc.), nu doar titlu/autor - o
+   * interogare gen "Awakenings Oliver Sacks" trimisă ca text liber aduce
+   * orice carte care doar MENȚIONEAZĂ acele cuvinte (manuale de neuroștiințe,
+   * cărți despre Batman care citează un review, etc.), nu neapărat cartea
+   * căutată. `intitle:`/`inauthor:` restrâng potrivirea la acele câmpuri -
+   * exact ce înseamnă o căutare pe titlu + autor.
+   *
+   * Ghilimelele contează: `intitle:` fără ele leagă doar cuvântul imediat
+   * următor de câmpul titlu - restul cuvintelor din titlu ar rămâne text
+   * liber, căutat peste tot catalogul, exact problema pe care vrem s-o
+   * evităm. Un titlu/autor pe mai multe cuvinte trebuie deci citat ca frază.
+   */
+  private googleBooksQuery(title: string, author?: string | null): string {
+    // Ghilimelele din titlu/autor ar rupe citarea frazei - le eliminăm, un
+    // caz suficient de rar încât să nu merite escaping.
+    const quote = (s: string) => `"${s.replace(/"/g, '')}"`;
+    const parts = [`intitle:${quote(title)}`];
+    if (author) parts.push(`inauthor:${quote(author)}`);
+    return parts.join(' ');
+  }
+
+  /**
    * Coperțile de la Google Books nu trimit `Access-Control-Allow-Origin`
    * (verificat manual - Open Library da, Google Books nu), iar pe Flutter Web
    * randarea prin CanvasKit cere bytes-ii imaginii printr-un fetch supus CORS,
@@ -148,20 +171,18 @@ export class BookLookupService {
     const author = params.author?.trim() || null;
     if (!isbn && !title) return null;
 
-    const titleQuery = author && title ? `${title} ${author}` : title;
-
     let base = isbn ? await this.lookupByIsbn(isbn) : null;
-    if (!base && titleQuery) {
+    if (!base && title) {
       // `searchByTitle` e deja cache-uit 5 min, deci de obicei rezultatul
       // e deja în memorie de la dropdown-ul de autocomplete.
-      const results = await this.searchByTitle(titleQuery);
+      const results = await this.searchByTitle(title, { author });
       base = results[0] ?? null;
     }
     if (!base) return null;
 
     if (base.description && base.subjects.length > 0) return base;
 
-    const extra = await this.lookupComplementary(base.isbn ?? isbn, titleQuery);
+    const extra = await this.lookupComplementary(base.isbn ?? isbn, title, author);
     if (!extra) return base;
 
     return {
@@ -176,11 +197,14 @@ export class BookLookupService {
   /** O singură cerere Google Books pentru completarea unui rezultat parțial. */
   private async lookupComplementary(
     isbn: string | null,
-    titleQuery: string | null,
+    title: string | null,
+    author: string | null,
   ): Promise<ExternalBookResult | null> {
     if (isbn) return this.tryGoogleBooksByIsbn(isbn);
-    if (!titleQuery) return null;
-    const results = await this.tryGoogleBooksSearch(titleQuery);
+    if (!title) return null;
+    const results = await this.tryGoogleBooksSearch(
+      this.googleBooksQuery(title, author),
+    );
     return results[0] ?? null;
   }
 
@@ -208,11 +232,16 @@ export class BookLookupService {
    * varianta completă (skip=false), deci cache-uim separat pe cheie.
    */
   async searchByTitle(
-    query: string,
-    opts: { skipCoverFallback?: boolean } = {},
+    title: string,
+    opts: { author?: string | null; skipCoverFallback?: boolean } = {},
   ): Promise<ExternalBookResult[]> {
+    const author = opts.author?.trim() || null;
     const skip = opts.skipCoverFallback === true;
-    const cacheKey = `${query.trim().toLowerCase()}|${skip ? 'nocov' : 'cov'}`;
+    // Cheia de cache/query-ul spre Open Library rămân pe textul combinat -
+    // Open Library nu are operatori de câmp ca Google, deci textul liber e
+    // deja ce trebuie acolo.
+    const plainQuery = author ? `${title} ${author}` : title;
+    const cacheKey = `${plainQuery.trim().toLowerCase()}|${skip ? 'nocov' : 'cov'}`;
     const cached = this._searchCache.get(cacheKey);
     const now = Date.now();
     if (cached && now - cached.at < cached.ttl) {
@@ -224,8 +253,8 @@ export class BookLookupService {
     const google = { failed: false };
     const openLibrary = { failed: false };
     const [fromGoogle, fromOpenLibrary] = await Promise.all([
-      this.tryGoogleBooksSearch(query, google),
-      this.tryOpenLibrarySearch(query, openLibrary),
+      this.tryGoogleBooksSearch(this.googleBooksQuery(title, author), google),
+      this.tryOpenLibrarySearch(plainQuery, openLibrary),
     ]);
     const results = this.preferNewestEditions(
       fromGoogle.length > 0 ? fromGoogle : fromOpenLibrary,
@@ -356,7 +385,7 @@ export class BookLookupService {
     if (fromOpenLibrary) return fromOpenLibrary;
 
     const results = await this.tryGoogleBooksSearch(
-      author ? `${title} ${author}` : title,
+      this.googleBooksQuery(title, author),
     );
     return results.find((r) => r.coverUrl)?.coverUrl ?? null;
   }
