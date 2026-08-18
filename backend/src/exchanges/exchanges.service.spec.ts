@@ -4,6 +4,7 @@ import { ExchangesService } from './exchanges.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
+import { ListingScoreService } from '../books/listing-score.service';
 import { XP_EXCHANGE_COMPLETED } from '../common/utils/xp';
 
 describe('ExchangesService', () => {
@@ -66,9 +67,17 @@ describe('ExchangesService', () => {
         {
           provide: ConversationsService,
           useValue: {
-            findOrCreateConversation: jest.fn().mockResolvedValue({ id: 'conv-1' }),
+            findOrCreateConversation: jest
+              .fn()
+              .mockResolvedValue({ id: 'conv-1' }),
             createExchangeRequestMessage: jest.fn(),
             broadcastExchangeRequestUpdate: jest.fn(),
+          },
+        },
+        {
+          provide: ListingScoreService,
+          useValue: {
+            recordExchangeRequest: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],

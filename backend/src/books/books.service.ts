@@ -783,8 +783,9 @@ export class BooksService {
 
   /**
    * „Cele mai căutate" din Discover (Milestone 20) - anunțurile cu cel mai
-   * mare scor de interes din ultimele 14 zile: view unic 3p, refresh 0.1p,
-   * favorite 1p, fiecare punct expirând individual (vezi ListingScoreService).
+   * mare scor de popularitate din ultimele 30 de zile (vezi
+   * POPULARITY_WEIGHTS din ListingScoreService), fiecare punct expirând
+   * individual, sau overrideul manual de admin dacă există.
    *
    * Scorul rămâne INVIZIBIL pentru userii normali - determină doar ordinea.
    * Doar adminii primesc `searchScore` pe fiecare item (badge de debug în

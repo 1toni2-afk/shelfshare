@@ -4,6 +4,7 @@ import { AdminService } from './admin.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeedbackService } from '../feedback/feedback.service';
 import { SupportService } from '../support/support.service';
+import { ListingScoreService } from '../books/listing-score.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -39,6 +40,7 @@ describe('AdminService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: FeedbackService, useValue: { getAll: jest.fn() } },
         { provide: SupportService, useValue: { getAll: jest.fn() } },
+        { provide: ListingScoreService, useValue: { getBreakdown: jest.fn() } },
       ],
     }).compile();
 

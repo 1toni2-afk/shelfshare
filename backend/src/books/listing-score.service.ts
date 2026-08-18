@@ -1,29 +1,66 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ListingScoreEventKind } from '@prisma/client';
 
-/// Cât valorează fiecare tip de interes. Un view unic e semnalul tare, un
-/// refresh contează aproape deloc (altfel un singur user cu F5 ar putea urca
-/// orice anunț în „Cele mai căutate"), iar un favorite e undeva la mijloc.
-export const SCORE_UNIQUE_VIEW = 3;
-export const SCORE_REVIEW = 0.1;
-export const SCORE_WISHLIST_ADD = 1;
+/// Cât valorează fiecare tip de interes pentru scorul de popularitate. Un
+/// view unic e semnalul cel mai slab, o cerere de schimb/ofertă de preț
+/// (intenție reală de tranzacție) e semnalul cel mai tare.
+export const POPULARITY_WEIGHTS: Record<ListingScoreEventKind, number> = {
+  UNIQUE_VIEW: 1,
+  // Deprecated, nu se mai scrie (vezi enum-ul din schema) - păstrat doar ca
+  // evenimentele vechi din DB să continue să conteze puțin până expiră.
+  REVIEW: 0.1,
+  RETURN_VISIT: 0.5,
+  WISHLIST_ADD: 7,
+  EXCHANGE_REQUEST: 10,
+  BUY_OFFER: 12,
+};
 
-/// Fiecare punct expiră individual la 14 zile după ce a fost câștigat.
-export const SCORE_WINDOW_DAYS = 14;
+/// Scorul de "potențial de schimb" - cât de probabil e ca anunțul să ducă
+/// efectiv la o tranzacție. Ignoră deliberat view-urile: 5.000 de vizualizări
+/// fără nicio cerere de schimb valorează mai puțin, pentru ShelfShare, decât
+/// 300 de vizualizări cu 15 cereri de schimb.
+export const EXCHANGE_POTENTIAL_WEIGHTS: Record<ListingScoreEventKind, number> =
+  {
+    UNIQUE_VIEW: 0,
+    REVIEW: 0,
+    RETURN_VISIT: 0,
+    WISHLIST_ADD: 3,
+    EXCHANGE_REQUEST: 10,
+    BUY_OFFER: 12,
+  };
 
-/// Fereastra în care re-deschiderea aceluiași anunț de către același viewer
-/// e considerată „refresh", nu view unic.
-const UNIQUE_VIEW_DEDUPE_HOURS = 24;
+/// Fiecare punct expiră individual la 30 de zile după ce a fost câștigat.
+export const SCORE_WINDOW_DAYS = 30;
+
+/// Fereastra sub care re-deschiderea aceluiași anunț de către același viewer
+/// e considerată „refresh" și nu contează deloc (nici măcar ca revenire).
+const RETURN_VISIT_DEDUPE_HOURS = 6;
+
+/// Câte reveniri ale aceluiași viewer contează, cel mult, per anunț și per
+/// fereastră de scor - altfel un singur user care revine obsesiv ar putea
+/// urca artificial un anunț.
+const MAX_RETURN_VISITS_PER_WINDOW = 3;
+
+export interface ListingScoreBreakdown {
+  userBookId: string;
+  counts: Partial<Record<ListingScoreEventKind, number>>;
+  popularityScore: number;
+  exchangePotentialScore: number;
+  manualScoreOverride: number | null;
+}
 
 /**
  * Scorul de interes al anunțurilor - baza secțiunii „Cele mai căutate" din
- * Discover (Milestone 20). Scorul NU e vizibil userilor normali: nu apare pe
- * card, nu e returnat de endpointurile publice; determină doar ordinea
- * secțiunii. Adminii îl primesc explicit (vezi BooksService.getTrendingListings).
+ * Discover (Milestone 20), extinsă cu un al doilea scor („potențial de
+ * schimb") și cu suprascriere manuală din consola de admin. Scorul NU e
+ * vizibil userilor normali: nu apare pe card, nu e returnat de endpointurile
+ * publice; determină doar ordinea. Adminii îl primesc explicit (vezi
+ * BooksService.getTrendingListings și AdminService.getListingScore).
  *
- * Serviciu separat de BooksService fiindcă și WishlistService trebuie să
- * înregistreze evenimente, iar BooksService deja depinde de WishlistService
- * (dependența inversă ar fi ciclică).
+ * Serviciu separat de BooksService fiindcă și WishlistService/ExchangesService/
+ * OffersService trebuie să înregistreze evenimente, iar BooksService deja
+ * depinde de WishlistService (dependența inversă ar fi ciclică).
  */
 @Injectable()
 export class ListingScoreService {
@@ -35,8 +72,10 @@ export class ListingScoreService {
 
   /**
    * Înregistrează deschiderea unui anunț. Prima deschidere a viewerului în
-   * ultimele 24h = view unic (3p); orice re-deschidere în acel interval =
-   * refresh (0.1p). Viewerii ne-autentificați sunt tratați ca o singură
+   * fereastra de scor = view unic; o re-deschidere la ≥6h de la ultima
+   * vizită = revenire reală (max 3/user/fereastră); orice altceva (refresh
+   * sub 6h) nu se scrie deloc - altfel un singur user cu F5 ar putea urca
+   * orice anunț. Viewerii ne-autentificați sunt tratați ca o singură
    * entitate (userId null), la fel ca la BookView, ca un tab incognito să nu
    * poată genera view-uri „unice" la infinit.
    *
@@ -44,35 +83,101 @@ export class ListingScoreService {
    * afișarea anunțului.
    */
   async recordView(userBookId: string, userId?: string): Promise<void> {
-    const dedupeSince = new Date(
-      Date.now() - UNIQUE_VIEW_DEDUPE_HOURS * 60 * 60 * 1000,
-    );
-    const recent = await this.prisma.listingScoreEvent.findFirst({
+    const key = userId ?? null;
+
+    const lastVisit = await this.prisma.listingScoreEvent.findFirst({
       where: {
         userBookId,
-        userId: userId ?? null,
-        kind: 'UNIQUE_VIEW',
-        createdAt: { gte: dedupeSince },
+        userId: key,
+        kind: { in: ['UNIQUE_VIEW', 'RETURN_VISIT'] },
       },
-      select: { id: true },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
     });
+
+    if (!lastVisit) {
+      await this.prisma.listingScoreEvent.create({
+        data: {
+          userBookId,
+          userId: key,
+          kind: 'UNIQUE_VIEW',
+          points: POPULARITY_WEIGHTS.UNIQUE_VIEW,
+        },
+      });
+      return;
+    }
+
+    const dedupeSince = new Date(
+      Date.now() - RETURN_VISIT_DEDUPE_HOURS * 60 * 60 * 1000,
+    );
+    if (lastVisit.createdAt >= dedupeSince) {
+      return; // refresh - nu contează
+    }
+
+    const returnVisitsInWindow = await this.prisma.listingScoreEvent.count({
+      where: {
+        userBookId,
+        userId: key,
+        kind: 'RETURN_VISIT',
+        createdAt: { gte: this.since() },
+      },
+    });
+    if (returnVisitsInWindow >= MAX_RETURN_VISITS_PER_WINDOW) {
+      return; // a atins deja capul de reveniri pentru fereastra curentă
+    }
 
     await this.prisma.listingScoreEvent.create({
       data: {
         userBookId,
-        userId: userId ?? null,
-        kind: recent ? 'REVIEW' : 'UNIQUE_VIEW',
-        points: recent ? SCORE_REVIEW : SCORE_UNIQUE_VIEW,
+        userId: key,
+        kind: 'RETURN_VISIT',
+        points: POPULARITY_WEIGHTS.RETURN_VISIT,
       },
     });
   }
 
   /**
-   * Un titlu pus la favorite = +1p pentru fiecare anunț activ al titlului.
-   * Wishlist-ul e per carte (Book), nu per exemplar, deci nu avem cum să
-   * atribuim punctul unui singur anunț - iar interesul e real pentru toate.
+   * Un titlu pus la favorite = eveniment pentru fiecare anunț activ al
+   * titlului. Wishlist-ul e per carte (Book), nu per exemplar, deci nu avem
+   * cum să atribuim punctul unui singur anunț - iar interesul e real pentru
+   * toate.
    */
   async recordWishlistAdd(bookId: string, userId: string): Promise<void> {
+    await this.recordForActiveListings(bookId, userId, 'WISHLIST_ADD');
+  }
+
+  /** O cerere de schimb trimisă pentru anunțul cerut - semnal puternic de intenție. */
+  async recordExchangeRequest(
+    userBookId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.prisma.listingScoreEvent.create({
+      data: {
+        userBookId,
+        userId,
+        kind: 'EXCHANGE_REQUEST',
+        points: POPULARITY_WEIGHTS.EXCHANGE_REQUEST,
+      },
+    });
+  }
+
+  /** O ofertă de preț trimisă pentru anunțul cerut - cel mai puternic semnal. */
+  async recordBuyOffer(userBookId: string, userId: string): Promise<void> {
+    await this.prisma.listingScoreEvent.create({
+      data: {
+        userBookId,
+        userId,
+        kind: 'BUY_OFFER',
+        points: POPULARITY_WEIGHTS.BUY_OFFER,
+      },
+    });
+  }
+
+  private async recordForActiveListings(
+    bookId: string,
+    userId: string,
+    kind: ListingScoreEventKind,
+  ): Promise<void> {
     const listings = await this.prisma.userBook.findMany({
       where: { bookId, deletedAt: null, availableForSwap: true },
       select: { id: true },
@@ -83,54 +188,119 @@ export class ListingScoreService {
       data: listings.map((l) => ({
         userBookId: l.id,
         userId,
-        kind: 'WISHLIST_ADD' as const,
-        points: SCORE_WISHLIST_ADD,
+        kind,
+        points: POPULARITY_WEIGHTS[kind],
       })),
     });
   }
 
   /**
-   * Scorul curent (suma punctelor ne-expirate) pentru anunțurile date.
-   * Anunțurile fără niciun eveniment în fereastră lipsesc din Map.
+   * Scorul de popularitate curent (suma punctelor ne-expirate, sau
+   * suprascrierea manuală de admin dacă există) pentru anunțurile date.
+   * Anunțurile fără niciun eveniment în fereastră și fără override lipsesc
+   * din Map.
    */
   async scoresFor(userBookIds: string[]): Promise<Map<string, number>> {
     if (userBookIds.length === 0) return new Map();
-    const grouped = await this.prisma.listingScoreEvent.groupBy({
-      by: ['userBookId'],
-      where: {
-        userBookId: { in: userBookIds },
-        createdAt: { gte: this.since() },
-      },
-      _sum: { points: true },
-    });
-    return new Map(
+
+    const [grouped, overridden] = await Promise.all([
+      this.prisma.listingScoreEvent.groupBy({
+        by: ['userBookId'],
+        where: {
+          userBookId: { in: userBookIds },
+          createdAt: { gte: this.since() },
+        },
+        _sum: { points: true },
+      }),
+      this.prisma.userBook.findMany({
+        where: { id: { in: userBookIds }, manualScoreOverride: { not: null } },
+        select: { id: true, manualScoreOverride: true },
+      }),
+    ]);
+
+    const scores = new Map(
       grouped.map((g) => [g.userBookId, round1(g._sum.points ?? 0)]),
     );
+    for (const o of overridden) {
+      scores.set(o.id, o.manualScoreOverride!);
+    }
+    return scores;
   }
 
   /**
-   * Top anunțuri după scor, ordonat descrescător. Întoarce doar anunțuri cu
-   * cel puțin un eveniment ne-expirat - apelantul decide ce face când lista e
-   * mai scurtă decât `take` (vezi fallback-ul din getTrendingListings).
+   * Top anunțuri după scorul de popularitate, ordonat descrescător.
+   * Include anunțurile cu override manual chiar dacă nu au evenimente
+   * ne-expirate. Apelantul decide ce face când lista e mai scurtă decât
+   * `take` (vezi fallback-ul din getTrendingListings).
    */
   async topScoringListingIds(
     take: number,
   ): Promise<{ userBookId: string; score: number }[]> {
-    const grouped = await this.prisma.listingScoreEvent.groupBy({
-      by: ['userBookId'],
-      where: { createdAt: { gte: this.since() } },
-      _sum: { points: true },
-      orderBy: { _sum: { points: 'desc' } },
-      take,
-    });
-    return grouped.map((g) => ({
-      userBookId: g.userBookId,
-      score: round1(g._sum.points ?? 0),
-    }));
+    const [grouped, overridden] = await Promise.all([
+      this.prisma.listingScoreEvent.groupBy({
+        by: ['userBookId'],
+        where: { createdAt: { gte: this.since() } },
+        _sum: { points: true },
+      }),
+      this.prisma.userBook.findMany({
+        where: { manualScoreOverride: { not: null } },
+        select: { id: true, manualScoreOverride: true },
+      }),
+    ]);
+
+    const scores = new Map(
+      grouped.map((g) => [g.userBookId, round1(g._sum.points ?? 0)]),
+    );
+    for (const o of overridden) {
+      scores.set(o.id, o.manualScoreOverride!);
+    }
+
+    return [...scores.entries()]
+      .map(([userBookId, score]) => ({ userBookId, score }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, take);
+  }
+
+  /**
+   * Breakdown complet pentru panoul de admin: counts brute per tip de
+   * eveniment (ne-expirate), scorul de popularitate, scorul de potențial de
+   * schimb și overrideul manual curent. Popularitatea folosește overrideul
+   * dacă există; potențialul de schimb rămâne mereu calculat (overrideul nu
+   * îl afectează - vezi comentariul de pe UserBook.manualScoreOverride).
+   */
+  async getBreakdown(userBookId: string): Promise<ListingScoreBreakdown> {
+    const [grouped, userBook] = await Promise.all([
+      this.prisma.listingScoreEvent.groupBy({
+        by: ['kind'],
+        where: { userBookId, createdAt: { gte: this.since() } },
+        _count: { _all: true },
+      }),
+      this.prisma.userBook.findUnique({
+        where: { id: userBookId },
+        select: { manualScoreOverride: true },
+      }),
+    ]);
+
+    const counts: Partial<Record<ListingScoreEventKind, number>> = {};
+    let rawPopularity = 0;
+    let exchangePotential = 0;
+    for (const g of grouped) {
+      counts[g.kind] = g._count._all;
+      rawPopularity += g._count._all * POPULARITY_WEIGHTS[g.kind];
+      exchangePotential += g._count._all * EXCHANGE_POTENTIAL_WEIGHTS[g.kind];
+    }
+
+    return {
+      userBookId,
+      counts,
+      popularityScore: round1(userBook?.manualScoreOverride ?? rawPopularity),
+      exchangePotentialScore: round1(exchangePotential),
+      manualScoreOverride: userBook?.manualScoreOverride ?? null,
+    };
   }
 }
 
-/// Punctele sunt fracționare (0.1 per refresh) - fără rotunjire, sumele ies
+/// Punctele sunt fracționare (0.5 per revenire) - fără rotunjire, sumele ies
 /// cu coada de floating point (3.0000000000000004) în răspunsul de admin.
 function round1(value: number): number {
   return Math.round(value * 10) / 10;

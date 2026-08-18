@@ -9,6 +9,7 @@ import {
   isFeatureFlagKey,
 } from '../common/constants/feature-flags';
 import { FeatureFlagValueDto } from './dto/set-feature-flags.dto';
+import { ListingScoreService } from '../books/listing-score.service';
 
 @Injectable()
 export class AdminService {
@@ -16,6 +17,7 @@ export class AdminService {
     private prisma: PrismaService,
     private feedback: FeedbackService,
     private support: SupportService,
+    private listingScore: ListingScoreService,
   ) {}
 
   async getStats() {
@@ -248,6 +250,45 @@ export class AdminService {
 
     await this.prisma.userBook.delete({ where: { id: userBookId } });
     return { message: 'Anunț șters' };
+  }
+
+  /**
+   * Breakdown-ul scorului de interes al unui anunț (Milestone 20, extins) -
+   * counts brute per tip de eveniment, popularityScore, exchangePotentialScore
+   * și overrideul manual curent, pentru panoul de admin.
+   */
+  async getListingScore(userBookId: string) {
+    const userBook = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+      select: { id: true, book: { select: { title: true, author: true } } },
+    });
+    if (!userBook) {
+      throw new NotFoundException('Anunțul nu a fost găsit');
+    }
+
+    const breakdown = await this.listingScore.getBreakdown(userBookId);
+    return { ...breakdown, book: userBook.book };
+  }
+
+  /**
+   * Suprascrie manual scorul de popularitate al unui anunț (promovare/
+   * corecție arbitrară din consola de admin). `score: null` elimină
+   * overrideul și revine la scorul calculat din evenimente.
+   */
+  async setListingScoreOverride(userBookId: string, score: number | null) {
+    const userBook = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+    });
+    if (!userBook) {
+      throw new NotFoundException('Anunțul nu a fost găsit');
+    }
+
+    await this.prisma.userBook.update({
+      where: { id: userBookId },
+      data: { manualScoreOverride: score ?? null },
+    });
+
+    return this.getListingScore(userBookId);
   }
 
   getInactiveListingsReport() {

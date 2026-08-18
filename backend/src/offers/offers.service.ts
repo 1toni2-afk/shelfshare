@@ -9,6 +9,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
+import { ListingScoreService } from '../books/listing-score.service';
 import { NotificationType } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { CounterOfferDto } from './dto/counter-offer.dto';
@@ -67,6 +68,7 @@ export class OffersService {
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private conversations: ConversationsService,
+    private listingScore: ListingScoreService,
   ) {}
 
   private async notifySafe(
@@ -155,6 +157,10 @@ export class OffersService {
       `${buyer?.name ?? 'Un utilizator'} ți-a oferit ${dto.amount} lei pentru cartea ta "${userBook.book.title}"`,
       { offerId: created.id, conversationId: conversation.id },
     );
+
+    // Cel mai puternic semnal de interes pentru „Cele mai căutate" -
+    // fire-and-forget, un punct pierdut nu justifică să pice oferta.
+    this.listingScore.recordBuyOffer(userBookId, buyerId).catch(() => {});
 
     // Frontend-ul deschide chatul cu cumpărătorul direct după trimiterea
     // ofertei - vezi book_detail_screen.dart#_MakeOfferSheet.
