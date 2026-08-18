@@ -2754,6 +2754,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shareAddPhotos => 'Fotos hinzufügen';
 
   @override
+  String get shareFromMyBooks => 'Aus meinen Büchern';
+
+  @override
+  String get shareChooseFromMyBooks => 'Aus meinen Büchern wählen';
+
+  @override
+  String get shareNoBooksInMyLibrary => 'Du hast noch keine Bücher in deiner Bibliothek.';
+
+  @override
   String get preRegisterAlreadyLoggedIn =>
       'Wir nutzen deine Konto-E-Mail, wenn du das Feld leer lässt';
 

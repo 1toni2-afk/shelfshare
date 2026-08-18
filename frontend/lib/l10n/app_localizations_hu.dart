@@ -2722,6 +2722,15 @@ class AppLocalizationsHu extends AppLocalizations {
   String get shareAddPhotos => 'Fotók hozzáadása';
 
   @override
+  String get shareFromMyBooks => 'A könyveim közül';
+
+  @override
+  String get shareChooseFromMyBooks => 'Válassz a könyveim közül';
+
+  @override
+  String get shareNoBooksInMyLibrary => 'Még nincs egyetlen könyved sem a könyvtáradban.';
+
+  @override
   String get preRegisterAlreadyLoggedIn =>
       'A fiókod címét használjuk, ha üresen hagyod';
 

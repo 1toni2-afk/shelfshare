@@ -2708,6 +2708,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareAddPhotos => 'Add photos';
 
   @override
+  String get shareFromMyBooks => 'From my books';
+
+  @override
+  String get shareChooseFromMyBooks => 'Choose from my books';
+
+  @override
+  String get shareNoBooksInMyLibrary => 'You don\'t have any books in your library yet.';
+
+  @override
   String get preRegisterAlreadyLoggedIn =>
       'We\'ll use your account email if you leave this blank';
 
