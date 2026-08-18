@@ -955,6 +955,7 @@
     "discoverSortNewest": "Newest first",
     "discoverSortOldest": "Oldest first",
     "discoverSortNearest": "Nearest first",
+    "discoverSortPopular": "Recommended",
     "discoverSortApply": "Sort",
     "discoverScoreBadgeTooltip": "14-day interest score (admins only)",
     "inventorySelectAll": "Select all",

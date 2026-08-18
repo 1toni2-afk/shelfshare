@@ -12,11 +12,13 @@ import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coo
 describe('BooksService', () => {
   let service: BooksService;
   let prisma: { userBook: Record<string, jest.Mock> };
+  let listingScore: { scoresFor: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
       userBook: { findMany: jest.fn() },
     };
+    listingScore = { scoresFor: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -27,7 +29,7 @@ describe('BooksService', () => {
         { provide: FollowService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: {} },
-        { provide: ListingScoreService, useValue: {} },
+        { provide: ListingScoreService, useValue: listingScore },
       ],
     }).compile();
 
@@ -84,6 +86,50 @@ describe('BooksService', () => {
         where: { availableForSwap: true },
         select: { user: { select: { city: true } } },
       });
+    });
+  });
+
+  describe('searchLibrary - sortare implicită (popularity)', () => {
+    it('sortează după scor descrescător, promovate primele, fallback pe cele mai noi', async () => {
+      const now = new Date('2026-08-18T00:00:00Z');
+      const older = new Date('2026-08-01T00:00:00Z');
+      // Candidați: b are cel mai mare scor; c e promovat, deci trece înaintea
+      // lui b deși are scor mai mic; a și d n-au scor (rămân după b/c,
+      // ordonați între ei după createdAt desc).
+      const candidates = [
+        { id: 'a', isPromoted: false, createdAt: older },
+        { id: 'b', isPromoted: false, createdAt: older },
+        { id: 'c', isPromoted: true, createdAt: older },
+        { id: 'd', isPromoted: false, createdAt: now },
+      ];
+      prisma.userBook.findMany.mockImplementation(
+        (args: { select?: unknown }) => {
+          if (args.select) return Promise.resolve(candidates);
+          return Promise.resolve(
+            candidates.map((c) => ({
+              ...c,
+              book: {},
+              user: { name: 'Test', nameVisible: true },
+              photos: [],
+            })),
+          );
+        },
+      );
+      listingScore.scoresFor.mockResolvedValue(
+        new Map([
+          ['b', 42],
+          ['c', 10],
+        ]),
+      );
+
+      const result = await service.searchLibrary({ limit: 20, offset: 0 });
+
+      expect(result.items.map((i: { id: string }) => i.id)).toEqual([
+        'c',
+        'b',
+        'd',
+        'a',
+      ]);
     });
   });
 });

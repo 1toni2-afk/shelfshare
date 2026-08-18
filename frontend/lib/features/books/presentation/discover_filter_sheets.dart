@@ -213,10 +213,10 @@ class _DiscoverSortSheet extends ConsumerStatefulWidget {
 
 class _DiscoverSortSheetState extends ConsumerState<_DiscoverSortSheet> {
   late String? _genre = widget.genre;
-  // 'recent' (implicit) / 'oldest' / 'distance'. Proximitatea nu e o ordine
-  // după dată, dar tot o sortare e - o ținem în aceeași variabilă ca să nu
-  // poată fi selectate două ordini contradictorii simultan.
-  late String _sort = widget.sort ?? 'recent';
+  // 'popularity' (implicit) / 'recent' / 'oldest' / 'distance'. Proximitatea
+  // nu e o ordine după dată, dar tot o sortare e - o ținem în aceeași
+  // variabilă ca să nu poată fi selectate două ordini contradictorii simultan.
+  late String _sort = widget.sort ?? 'popularity';
 
   @override
   Widget build(BuildContext context) {
@@ -239,9 +239,14 @@ class _DiscoverSortSheetState extends ConsumerState<_DiscoverSortSheet> {
         _SectionLabel(l10n.discoverSortDate),
         RadioGroup<String>(
           groupValue: _sort,
-          onChanged: (value) => setState(() => _sort = value ?? 'recent'),
+          onChanged: (value) => setState(() => _sort = value ?? 'popularity'),
           child: Column(
             children: [
+              RadioListTile<String>(
+                contentPadding: EdgeInsets.zero,
+                value: 'popularity',
+                title: Text(l10n.discoverSortPopular),
+              ),
               RadioListTile<String>(
                 contentPadding: EdgeInsets.zero,
                 value: 'recent',

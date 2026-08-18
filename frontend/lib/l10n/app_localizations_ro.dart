@@ -2571,6 +2571,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get discoverSortNearest => 'Cele mai apropiate întâi';
 
   @override
+  String get discoverSortPopular => 'Recomandate';
+
+  @override
   String get discoverSortApply => 'Sortează';
 
   @override
