@@ -321,6 +321,43 @@ class FeatureFlagValue {
   Map<String, dynamic> toJson() => {'key': key, 'enabled': enabled};
 }
 
+/// Breakdown-ul scorului de interes al unui anunț - vezi
+/// backend/src/books/listing-score.service.ts. Nu e vizibil userilor
+/// normali, doar din acest panou de admin.
+class ListingScoreBreakdown {
+  final String userBookId;
+  final String bookTitle;
+  final String? bookAuthor;
+  final Map<String, int> counts;
+  final double popularityScore;
+  final double exchangePotentialScore;
+  final double? manualScoreOverride;
+
+  const ListingScoreBreakdown({
+    required this.userBookId,
+    required this.bookTitle,
+    this.bookAuthor,
+    required this.counts,
+    required this.popularityScore,
+    required this.exchangePotentialScore,
+    this.manualScoreOverride,
+  });
+
+  factory ListingScoreBreakdown.fromJson(Map<String, dynamic> json) {
+    final book = json['book'] as Map<String, dynamic>;
+    final counts = json['counts'] as Map<String, dynamic>;
+    return ListingScoreBreakdown(
+      userBookId: json['userBookId'] as String,
+      bookTitle: book['title'] as String,
+      bookAuthor: book['author'] as String?,
+      counts: counts.map((key, value) => MapEntry(key, value as int)),
+      popularityScore: (json['popularityScore'] as num).toDouble(),
+      exchangePotentialScore: (json['exchangePotentialScore'] as num).toDouble(),
+      manualScoreOverride: (json['manualScoreOverride'] as num?)?.toDouble(),
+    );
+  }
+}
+
 class UserFeatureFlags {
   final String userId;
   final String email;

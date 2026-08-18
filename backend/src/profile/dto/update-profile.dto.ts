@@ -54,6 +54,13 @@ export class UpdateProfileDto {
   @IsBoolean()
   showAcquisitionHistory?: boolean;
 
+  // Preferință per-admin pentru badge-ul de scor pe cardurile de carte - vezi
+  // User.showAllListingScores. Fără efect pentru non-admini (endpointul de
+  // scoruri întoarce mereu {} pentru ei, indiferent de acest flag).
+  @IsOptional()
+  @IsBoolean()
+  showAllListingScores?: boolean;
+
   // Ziua de naștere, fără an - vezi comentariul de pe User.birthdayDay. Nu
   // validăm aici combinația zi/lună (ex. 31 februarie): singurul efect al unei
   // date imposibile e că mesajul „La mulți ani" nu apare niciodată.

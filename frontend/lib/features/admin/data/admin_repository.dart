@@ -142,6 +142,25 @@ class AdminRepository {
         .toList();
   }
 
+  Future<ListingScoreBreakdown> getListingScore(String userBookId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/listings/$userBookId/score');
+    return ListingScoreBreakdown.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// `score: null` elimină overrideul și revine la scorul calculat.
+  Future<ListingScoreBreakdown> setListingScoreOverride(
+    String userBookId,
+    double? score,
+  ) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.put(
+      '/admin/listings/$userBookId/score-override',
+      data: {'score': score},
+    );
+    return ListingScoreBreakdown.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<List<SupportRequestItem>> getSupportRequests() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/admin/support-requests');

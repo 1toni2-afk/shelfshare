@@ -206,6 +206,7 @@ class _SettingsList extends ConsumerWidget {
                             icon: Icons.admin_panel_settings_outlined,
                             label: l10n.profileAdminPanel,
                             onTap: () => context.push('/admin')),
+                      if (user.isAdmin) _ScoreBadgeToggle(user: user),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -379,6 +380,49 @@ class _SettingsTile extends StatelessWidget {
         ],
       ),
       onTap: onTap,
+    );
+  }
+}
+
+/// Comutator per-admin pentru badge-ul de scor de pe cardurile de carte -
+/// vezi ListingScoreBadge. Dezactivat (implicit): badge doar pe cărțile din
+/// top 256 la nivel de platformă. Activat: badge pe orice carte cu scor.
+/// Salvează imediat, fără buton separat de „Aplică" - la fel ca celelalte
+/// toggle-uri de admin (togglePremium etc.).
+class _ScoreBadgeToggle extends ConsumerStatefulWidget {
+  const _ScoreBadgeToggle({required this.user});
+  final AppUser user;
+
+  @override
+  ConsumerState<_ScoreBadgeToggle> createState() => _ScoreBadgeToggleState();
+}
+
+class _ScoreBadgeToggleState extends ConsumerState<_ScoreBadgeToggle> {
+  bool _saving = false;
+
+  Future<void> _toggle(bool value) async {
+    setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(profileControllerProvider.notifier)
+          .updateProfile(showAllListingScores: value);
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(content: Text('Salvarea a eșuat.')));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      secondary: const Icon(Icons.local_fire_department_outlined),
+      title: const Text('Vezi scorul tuturor cărților'),
+      subtitle: const Text('Dezactivat: badge doar pe primele 256 din top'),
+      value: widget.user.showAllListingScores,
+      onChanged: _saving ? null : _toggle,
     );
   }
 }

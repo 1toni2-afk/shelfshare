@@ -32,6 +32,7 @@ class ProfileRepository {
     int? birthdayMonth,
     List<String>? languages,
     bool? showAcquisitionHistory,
+    bool? showAllListingScores,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.patch('/profile/me', data: {
@@ -44,6 +45,7 @@ class ProfileRepository {
       'birthdayMonth': ?birthdayMonth,
       'languages': ?languages,
       'showAcquisitionHistory': ?showAcquisitionHistory,
+      'showAllListingScores': ?showAllListingScores,
     });
     return getMyProfile();
   }

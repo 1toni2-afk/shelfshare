@@ -848,6 +848,33 @@ export class BooksService {
     });
   }
 
+  /**
+   * Scorurile pentru badge-ul de pe cardurile de carte (colțul stânga-sus) -
+   * strict admin-only, `{}` pentru orice alt viewer (inclusiv ne-autentificat).
+   * Respectă preferința per-admin `User.showAllListingScores`: implicit,
+   * badge doar pe cărțile din top 256 la nivel de platformă (vezi
+   * ListingScoreService.scoresForCards); un admin poate alege să vadă
+   * scorul pe orice carte, din Setări.
+   */
+  async getListingScoresForCards(
+    viewerId: string | undefined,
+    userBookIds: string[],
+  ): Promise<Record<string, number>> {
+    if (!viewerId || userBookIds.length === 0) return {};
+
+    const viewer = await this.prisma.user.findUnique({
+      where: { id: viewerId },
+      select: { isAdmin: true, showAllListingScores: true },
+    });
+    if (!viewer?.isAdmin) return {};
+
+    const scores = await this.listingScore.scoresForCards(
+      userBookIds,
+      viewer.showAllListingScores,
+    );
+    return Object.fromEntries(scores);
+  }
+
   /// Numără vizualizări unice per carte în ultimele 7 zile. Vizitatorii
   /// ne-autentificați sunt tratați ca o singură entitate, altfel trendingul
   /// s-ar putea umfla cu vizite din tab-uri incognito.

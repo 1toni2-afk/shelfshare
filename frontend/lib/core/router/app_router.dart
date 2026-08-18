@@ -10,6 +10,7 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
 import '../../features/admin/presentation/feature_access_screen.dart';
+import '../../features/admin/presentation/listing_score_screen.dart';
 import '../../features/books/presentation/add_book_screen.dart';
 import '../../features/books/presentation/bulk_add_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
@@ -227,6 +228,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/feature-access',
             builder: (context, state) => const FeatureAccessScreen(),
+          ),
+          GoRoute(
+            path: '/admin/listings/score',
+            builder: (context, state) => const ListingScoreScreen(),
           ),
           GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
           GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),

@@ -42,6 +42,10 @@ const RETURN_VISIT_DEDUPE_HOURS = 6;
 /// urca artificial un anunț.
 const MAX_RETURN_VISITS_PER_WINDOW = 3;
 
+/// Cardul de carte arată badge de scor doar pentru primele N anunțuri din
+/// clasament (implicit) - vezi scoresForCards.
+export const MAX_CARD_BADGE_LISTINGS = 256;
+
 export interface ListingScoreBreakdown {
   userBookId: string;
   counts: Partial<Record<ListingScoreEventKind, number>>;
@@ -225,6 +229,29 @@ export class ListingScoreService {
       scores.set(o.id, o.manualScoreOverride!);
     }
     return scores;
+  }
+
+  /**
+   * Scorurile de afișat ca badge pe cardurile de carte (colțul stânga-sus),
+   * pentru admini. `showAll=false` (implicit) restrânge badge-ul la anunțurile
+   * din top [MAX_CARD_BADGE_LISTINGS] la nivel de platformă, ca „Cele mai
+   * căutate" din Discover - restul cărților rămân fără badge, chiar dacă au
+   * un scor mic. `showAll=true` întoarce scorul pentru orice anunț din
+   * `userBookIds` care are unul.
+   */
+  async scoresForCards(
+    userBookIds: string[],
+    showAll: boolean,
+  ): Promise<Map<string, number>> {
+    const all = await this.scoresFor(userBookIds);
+    if (showAll) return all;
+
+    const top = await this.topScoringListingIds(MAX_CARD_BADGE_LISTINGS);
+    const topIds = new Set(top.map((t) => t.userBookId));
+    for (const id of all.keys()) {
+      if (!topIds.has(id)) all.delete(id);
+    }
+    return all;
   }
 
   /**
