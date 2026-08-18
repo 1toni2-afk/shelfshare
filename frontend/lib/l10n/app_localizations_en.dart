@@ -2568,6 +2568,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoverSortNearest => 'Nearest first';
 
   @override
+  String get discoverSortPopular => 'Recommended';
+
+  @override
   String get discoverSortApply => 'Sort';
 
   @override

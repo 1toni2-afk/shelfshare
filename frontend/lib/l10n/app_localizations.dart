@@ -4644,6 +4644,12 @@ abstract class AppLocalizations {
   /// **'Cele mai apropiate întâi'**
   String get discoverSortNearest;
 
+  /// No description provided for @discoverSortPopular.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recomandate'**
+  String get discoverSortPopular;
+
   /// No description provided for @discoverSortApply.
   ///
   /// In ro, this message translates to:

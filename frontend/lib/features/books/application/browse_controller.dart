@@ -27,9 +27,10 @@ class BrowseFilters {
   final int? maxDistanceKm;
   final String? listingType;
 
-  /// „recent" (implicit) / „oldest" / „distance" - vine din sheet-ul
-  /// „Sortează" din Discover. „distance" cade înapoi pe ordinea implicită
-  /// dacă userul nu are oraș setat (fără el nu putem calcula distanța).
+  /// „popularity" (implicit, după scorul de interes) / „recent" / „oldest" /
+  /// „distance" - vine din sheet-ul „Sortează" din Discover. „distance" cade
+  /// înapoi pe ordinea implicită dacă userul nu are oraș setat (fără el nu
+  /// putem calcula distanța).
   final String? sort;
 
   bool get hasActiveFilters =>
@@ -40,7 +41,7 @@ class BrowseFilters {
       condition != null ||
       maxDistanceKm != null ||
       listingType != null ||
-      (sort != null && sort != 'recent');
+      (sort != null && sort != 'popularity');
 
   BrowseFilters withTitle(String? title) {
     return BrowseFilters(

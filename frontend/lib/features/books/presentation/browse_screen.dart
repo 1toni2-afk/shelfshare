@@ -33,8 +33,9 @@ class SearchScreenArgs {
   /// „Filtrează" din Discover.
   final String? listingType;
   final String? city;
-  /// „recent" / „oldest" / „distance" - sheet-ul „Sortează" din Discover.
-  /// „distance" are efect doar dacă userul are oraș setat în profil.
+  /// „popularity" / „recent" / „oldest" / „distance" - sheet-ul „Sortează"
+  /// din Discover. „distance" are efect doar dacă userul are oraș setat în
+  /// profil.
   final String? sort;
 }
 

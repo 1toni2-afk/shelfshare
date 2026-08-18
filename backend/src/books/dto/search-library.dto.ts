@@ -52,8 +52,8 @@ export class SearchLibraryDto {
   listingType?: 'swap' | 'sale' | 'auction' | 'donation';
 
   @IsOptional()
-  @IsIn(['recent', 'oldest', 'mostViewed', 'distance'])
-  sort?: 'recent' | 'oldest' | 'mostViewed' | 'distance';
+  @IsIn(['popularity', 'recent', 'oldest', 'mostViewed', 'distance'])
+  sort?: 'popularity' | 'recent' | 'oldest' | 'mostViewed' | 'distance';
 
   /** Orașul utilizatorului care caută - folosit pentru calculul de distanță. */
   @IsOptional()

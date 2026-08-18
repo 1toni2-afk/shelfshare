@@ -2581,6 +2581,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get discoverSortNearest => 'Legközelebbiek elöl';
 
   @override
+  String get discoverSortPopular => 'Ajánlott';
+
+  @override
   String get discoverSortApply => 'Rendezés';
 
   @override

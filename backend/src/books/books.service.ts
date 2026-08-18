@@ -205,6 +205,59 @@ export class BooksService {
       return { items, total, limit: filters.limit, offset: filters.offset };
     }
 
+    // Sortarea implicită (fără alegere explicită din sheet-ul „Sortează", sau
+    // aleasă explicit „popularity") - scorul de interes nu e o coloană SQL
+    // (vine din ListingScoreEvent, agregat), deci sortăm în JS ca la
+    // „distance" mai sus: candidați (doar id-uri, ieftin), scoruri în batch,
+    // sortare, apoi datele complete doar pentru pagina cerută.
+    const usePopularity = filters.sort === 'popularity' || filters.sort == null;
+    if (usePopularity) {
+      const candidates = await this.prisma.userBook.findMany({
+        where,
+        select: { id: true, isPromoted: true, createdAt: true },
+      });
+      const scores = await this.listingScore.scoresFor(
+        candidates.map((c) => c.id),
+      );
+      const ordered = candidates.sort((a, b) => {
+        if (a.isPromoted !== b.isPromoted) return a.isPromoted ? -1 : 1;
+        const scoreDiff = (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        // Fără scor (marea majoritate a anunțurilor), cele mai noi întâi -
+        // altfel ordinea printre anunțurile cu scor 0 ar fi arbitrară.
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
+
+      const total = ordered.length;
+      const pageIds = ordered
+        .slice(filters.offset, filters.offset! + filters.limit!)
+        .map((c) => c.id);
+      const pageItems = await this.prisma.userBook.findMany({
+        where: { id: { in: pageIds } },
+        include: {
+          book: true,
+          user: { select: OWNER_SELECT },
+          auction: {
+            select: {
+              id: true,
+              currentPrice: true,
+              endsAt: true,
+              status: true,
+              buyNowPrice: true,
+            },
+          },
+        },
+      });
+      // Prisma nu garantează ordinea pentru `id: { in }` - o reconstruim din
+      // pageIds, care deja are ordinea corectă de scor.
+      const byId = new Map(pageItems.map((i) => [i.id, i]));
+      const items = pageIds
+        .map((id) => byId.get(id))
+        .filter((i) => i != null)
+        .map((item) => this.sanitizeOwner(this.toPublicPhotos(item)));
+      return { items, total, limit: filters.limit, offset: filters.offset };
+    }
+
     // Anunțurile promovate (Premium) apar mereu primele, apoi criteriul de
     // sortare ales - vezi togglePromoted și User.isPremium.
     const orderBy: Prisma.UserBookOrderByWithRelationInput[] = [
