@@ -26,6 +26,7 @@ import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
 import { SearchLibraryDto } from './dto/search-library.dto';
+import { GetListingScoresDto } from './dto/get-listing-scores.dto';
 import { AddPhotoUrlDto } from './dto/add-photo-url.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
@@ -135,6 +136,22 @@ export class BooksController {
   getTrendingListings(@Req() req: Request) {
     const user = req.user as AuthenticatedUser | undefined;
     return this.booksService.getTrendingListings(user?.userId);
+  }
+
+  /**
+   * Scorurile pentru badge-ul de pe cardurile de carte - vezi
+   * BooksService.getListingScoresForCards. Întoarce `{}` pentru orice
+   * viewer care nu e admin; frontend-ul apelează asta în batch pentru
+   * id-urile vizibile pe ecran curent.
+   */
+  @UseGuards(OptionalJwtAuthGuard)
+  @Post('scores')
+  getListingScores(@Req() req: Request, @Body() dto: GetListingScoresDto) {
+    const user = req.user as AuthenticatedUser | undefined;
+    return this.booksService.getListingScoresForCards(
+      user?.userId,
+      dto.userBookIds,
+    );
   }
 
   @Get('most-wished')

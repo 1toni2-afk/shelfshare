@@ -139,6 +139,7 @@ export class ProfileService {
       isAdmin: user.isAdmin,
       isPremium: user.isPremium,
       showAcquisitionHistory: user.showAcquisitionHistory,
+      showAllListingScores: user.showAllListingScores,
       referralCode: user.referralCode,
       referralCount,
       createdAt: user.createdAt,
@@ -191,6 +192,7 @@ export class ProfileService {
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
       showAcquisitionHistory: user.showAcquisitionHistory,
+      showAllListingScores: user.showAllListingScores,
     };
   }
 

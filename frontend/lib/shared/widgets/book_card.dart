@@ -8,6 +8,7 @@ import '../../data/models/user_book.dart';
 import '../../data/models/wishlist_item.dart';
 import '../../features/wishlist/application/wishlist_controller.dart';
 import 'book_cover.dart';
+import 'listing_score_badge.dart';
 import 'wishlist_source_icon.dart';
 
 /// Card compact pentru o carte, cu copertă, buton inimă (adăugare rapidă la
@@ -66,6 +67,11 @@ class BookCard extends StatelessWidget {
                     fallbackUrl:
                         userBook.photos.isNotEmpty ? userBook.photos.first : null,
                     title: userBook.book.title,
+                  ),
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: ListingScoreBadge(userBookId: userBook.id),
                   ),
                   if (showWishlistHeart)
                     Positioned(

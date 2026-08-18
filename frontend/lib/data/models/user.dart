@@ -30,6 +30,13 @@ class AppUser {
   final bool isAdmin;
   final bool isPremium;
   final bool showAcquisitionHistory;
+
+  /// Preferință per-admin: badge de scor pe TOATE cardurile de carte, nu
+  /// doar pe top 256. Fără efect pentru non-admini (backend-ul nu întoarce
+  /// niciodată scoruri pentru ei, indiferent de acest flag) - vezi
+  /// listing_score_cache.dart.
+  final bool showAllListingScores;
+
   final String? referralCode;
   final int referralCount;
 
@@ -82,6 +89,7 @@ class AppUser {
     this.isAdmin = false,
     this.isPremium = false,
     this.showAcquisitionHistory = false,
+    this.showAllListingScores = false,
     this.referralCode,
     this.referralCount = 0,
     this.createdAt,
@@ -121,6 +129,7 @@ class AppUser {
       isAdmin: json['isAdmin'] as bool? ?? false,
       isPremium: json['isPremium'] as bool? ?? false,
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
+      showAllListingScores: json['showAllListingScores'] as bool? ?? false,
       referralCode: json['referralCode'] as String?,
       referralCount: json['referralCount'] as int? ?? 0,
       createdAt: json['createdAt'] != null

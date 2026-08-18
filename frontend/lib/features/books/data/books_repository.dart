@@ -146,6 +146,17 @@ class BooksRepository {
     return BrowseResult(items: items, total: response.data['total'] as int);
   }
 
+  /// Scorurile pentru badge-ul de pe cardurile de carte - vezi
+  /// listing_score_cache.dart. Întoarce `{}` pentru orice viewer care nu e
+  /// admin, deci apelul e sigur de făcut necondiționat din UI.
+  Future<Map<String, double>> getListingScores(List<String> userBookIds) async {
+    if (userBookIds.isEmpty) return {};
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/books/scores', data: {'userBookIds': userBookIds});
+    return (response.data as Map<String, dynamic>)
+        .map((key, value) => MapEntry(key, (value as num).toDouble()));
+  }
+
   Future<UserBook> getUserBook(String id) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/books/$id');
