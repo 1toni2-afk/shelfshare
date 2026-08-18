@@ -37,6 +37,13 @@ const CATALOG_SIZE_THRESHOLD_FOR_SAMPLING = CANDIDATE_POOL_LIMIT * 20;
 /// Câte titluri per gen intră în pool-ul de cold start.
 const COLD_START_PER_GENRE = 4;
 
+/// Din batch-ul de cold start, cât la sută vine din genurile declarate de
+/// user la onboarding - restul e „wildcard" din genuri conexe. Fără ratio,
+/// genurile favorite se dizolvă în restul catalogului (câte 4 titluri per
+/// gen, la fel ca oricare altul) și primele carduri arată aleator, nu
+/// personalizat - exact ce raportează userii ca „prea random".
+const COLD_START_FAVORITE_RATIO = 0.8;
+
 /// Câte genuri „de top" alimentează cardurile de profil.
 const TOP_GENRES_FOR_PROFILE = 3;
 
@@ -240,10 +247,20 @@ export class BookMatchService {
   }
 
   /**
-   * Cold start: încă nu știm nimic despre user, deci întindem plasa pe cât mai
-   * multe genuri din lista canonică (max COLD_START_PER_GENRE titluri de gen),
-   * preferând titlurile marcate ca populare. Genurile favorite declarate în
-   * chestionarul de profil intră primele - e singurul semnal pe care îl avem.
+   * Cold start: încă nu știm nimic despre user din swipe-uri, dar avem
+   * genurile declarate la onboarding (pasul 5, chestionarul de profil).
+   *
+   * Cu genuri declarate: batch-ul respectă COLD_START_FAVORITE_RATIO (80%
+   * din genurile alese, 20% wildcard din restul catalogului) - altfel
+   * favoritele se dizolvă în restul genurilor canonice (fiecare tratat la
+   * fel, câte COLD_START_PER_GENRE titluri) și userul vede un amestec
+   * aproape aleator la primul contact cu Book Match.
+   *
+   * Fără genuri declarate (userul a sărit peste pasul de genuri): nu avem
+   * niciun semnal propriu, deci întindem plasa pe toată lista canonică,
+   * preferând titlurile cu popularityScore mare - inclusiv cele din lista
+   * de rezervă (`seed-bookmatch-fallback.js`), care au un scor peste orice
+   * altă carte curatoriată tocmai ca să domine acest caz.
    */
   private coldStartBatch(
     candidates: CandidateBook[],
@@ -258,43 +275,100 @@ export class BookMatchService {
       else byGenre.set(genre, [book]);
     }
 
-    const favorites = new Set(favoriteGenres);
-    // Ordinea genurilor: favoritele userului, apoi lista canonică, apoi
-    // orice gen liber din catalog (importurile externe scriu text arbitrar).
-    const genreOrder = [
-      ...favoriteGenres,
-      ...BOOK_GENRES.filter((g) => !favorites.has(g)),
-      ...[...byGenre.keys()].filter(
+    const freeTextGenres = (favorites: Set<string>) =>
+      [...byGenre.keys()].filter(
         (g) =>
           g &&
           !favorites.has(g) &&
           !(BOOK_GENRES as readonly string[]).includes(g),
-      ),
+      );
+
+    if (favoriteGenres.length === 0) {
+      const genreOrder = [...BOOK_GENRES, ...freeTextGenres(new Set())];
+      const pool = this.sampleGenrePool(byGenre, genreOrder);
+      return this.finishColdStartPool(pool, candidates, size);
+    }
+
+    const favorites = new Set(favoriteGenres);
+    const wildcardGenres = [
+      ...BOOK_GENRES.filter((g) => !favorites.has(g)),
+      ...freeTextGenres(favorites),
     ];
 
+    const favoriteTarget = Math.round(size * COLD_START_FAVORITE_RATIO);
+    const wildcardTarget = size - favoriteTarget;
+
+    const favoritePool = this.sampleGenrePool(byGenre, favoriteGenres);
+    const wildcardPool = this.sampleGenrePool(byGenre, wildcardGenres);
+
+    const favoritePicks = weightedSample(
+      this.withPopularityWeight(favoritePool),
+      favoriteTarget,
+    );
+    const chosen = new Set(favoritePicks.map((b) => b.id));
+    const wildcardPicks = weightedSample(
+      this.withPopularityWeight(
+        wildcardPool.filter((b) => !chosen.has(b.id)),
+      ),
+      wildcardTarget,
+    );
+    for (const book of wildcardPicks) chosen.add(book.id);
+
+    return this.finishColdStartPool(
+      [...favoritePicks, ...wildcardPicks],
+      candidates,
+      size,
+      chosen,
+    );
+  }
+
+  /// Până la COLD_START_PER_GENRE titluri per gen din `genreOrder`, ponderate
+  /// de popularitate - „genele" din care se compun pool-urile de mai sus.
+  private sampleGenrePool(
+    byGenre: Map<string, CandidateBook[]>,
+    genreOrder: readonly string[],
+  ): CandidateBook[] {
     const pool: CandidateBook[] = [];
     for (const genre of genreOrder) {
       const bucket = byGenre.get(genre);
       if (!bucket) continue;
-      const picked = weightedSample(
-        bucket.map((book) => ({
-          item: book,
-          weight: 1 + (book.popularityScore ?? BOOK_MATCH_DEFAULT_POPULARITY),
-        })),
-        COLD_START_PER_GENRE,
+      pool.push(
+        ...weightedSample(
+          this.withPopularityWeight(bucket),
+          COLD_START_PER_GENRE,
+        ),
       );
-      pool.push(...picked);
     }
-    // Dacă genurile n-au acoperit batch-ul (catalog subțire), completăm cu
-    // orice altceva - mai bine o carte fără gen decât un ecran gol.
+    return pool;
+  }
+
+  private withPopularityWeight(books: CandidateBook[]) {
+    return books.map((book) => ({
+      item: book,
+      weight: 1 + (book.popularityScore ?? BOOK_MATCH_DEFAULT_POPULARITY),
+    }));
+  }
+
+  /**
+   * Completează pool-ul până la `size` (catalog subțire pe genurile cerute -
+   * mai bine o carte în afara lor decât un ecran gol) și amestecă rezultatul
+   * final, altfel cardurile favorite ar veni mereu înaintea celor wildcard.
+   */
+  private finishColdStartPool(
+    pool: CandidateBook[],
+    candidates: CandidateBook[],
+    size: number,
+    used: Set<string> = new Set(pool.map((b) => b.id)),
+  ): BookMatchCard[] {
     if (pool.length < size) {
-      const used = new Set(pool.map((b) => b.id));
       for (const book of candidates) {
         if (pool.length >= size) break;
-        if (!used.has(book.id)) pool.push(book);
+        if (!used.has(book.id)) {
+          pool.push(book);
+          used.add(book.id);
+        }
       }
     }
-
     return weightedSample(
       pool.map((item) => ({ item, weight: 1 })),
       size,
