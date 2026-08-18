@@ -1612,6 +1612,9 @@
     "shareSwapAlsoSellPrice": "Preț de vânzare",
     "shareGenreHint": "Gen",
     "shareAddPhotos": "Adaugă poze",
+    "shareFromMyBooks": "Din cărțile mele",
+    "shareChooseFromMyBooks": "Alege din cărțile mele",
+    "shareNoBooksInMyLibrary": "Nu ai încă nicio carte adăugată în bibliotecă.",
     "@shareDescriptionCharsLeft": {
         "placeholders": {
             "n": {

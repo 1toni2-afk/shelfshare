@@ -2712,6 +2712,15 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareAddPhotos => 'Adaugă poze';
 
   @override
+  String get shareFromMyBooks => 'Din cărțile mele';
+
+  @override
+  String get shareChooseFromMyBooks => 'Alege din cărțile mele';
+
+  @override
+  String get shareNoBooksInMyLibrary => 'Nu ai încă nicio carte adăugată în bibliotecă.';
+
+  @override
   String get preRegisterAlreadyLoggedIn =>
       'Vom folosi emailul tău dacă nu completezi altul';
 

@@ -4914,6 +4914,24 @@ abstract class AppLocalizations {
   /// **'Adaugă poze'**
   String get shareAddPhotos;
 
+  /// No description provided for @shareFromMyBooks.
+  ///
+  /// In ro, this message translates to:
+  /// **'Din cărțile mele'**
+  String get shareFromMyBooks;
+
+  /// No description provided for @shareChooseFromMyBooks.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege din cărțile mele'**
+  String get shareChooseFromMyBooks;
+
+  /// No description provided for @shareNoBooksInMyLibrary.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai încă nicio carte adăugată în bibliotecă.'**
+  String get shareNoBooksInMyLibrary;
+
   /// No description provided for @preRegisterAlreadyLoggedIn.
   ///
   /// In ro, this message translates to:

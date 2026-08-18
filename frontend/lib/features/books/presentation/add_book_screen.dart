@@ -13,6 +13,7 @@ import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/utils/cover_proxy.dart';
+import '../../../shared/widgets/book_cover.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../application/my_library_controller.dart';
@@ -336,6 +337,59 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     );
   }
 
+  /// Deschide popup-ul centrat cu cărțile din biblioteca proprie a userului
+  /// (`myLibraryControllerProvider`) - alternativă la autocomplete-ul extern
+  /// pentru cine relistează o carte pe care a mai avut-o pe platformă.
+  Future<void> _openMyBooksPicker() async {
+    final selected = await showDialog<UserBook>(
+      context: context,
+      builder: (_) => const _MyBooksPickerDialog(),
+    );
+    if (selected != null) _applyMyBook(selected);
+  }
+
+  /// Completează câmpurile de mai jos cu detaliile unei cărți deja listate de
+  /// user - simetric cu `_applySuggestion`, dar sursa e propria bibliotecă,
+  /// nu căutarea externă.
+  void _applyMyBook(UserBook userBook) {
+    final book = userBook.book;
+    setState(() {
+      _titleController.text = book.title;
+      _authorController.text = book.author ?? '';
+      if (book.genre != null && book.genre!.isNotEmpty) {
+        _genreController.text = book.genre!;
+      }
+      final description = (userBook.description?.isNotEmpty ?? false)
+          ? userBook.description!
+          : (book.description ?? '');
+      _descriptionController.text =
+          description.length > 256 ? description.substring(0, 256) : description;
+      _tags
+        ..clear()
+        ..addAll(userBook.tags.take(5));
+      if (userBook.city != null && userBook.city!.isNotEmpty) {
+        _city = userBook.city;
+      }
+      if (book.publisher != null && book.publisher!.isNotEmpty) {
+        _publisherController.text = book.publisher!;
+      }
+      if (book.publishedYear != null) {
+        _publishedYearController.text = book.publishedYear!.toString();
+      }
+      if (book.pageCount != null) {
+        _pageCountController.text = book.pageCount!.toString();
+      }
+      _condition = userBook.condition;
+      _isHardcover = userBook.isHardcover;
+      _isbnFromAutocomplete = book.isbn;
+      final cover = userBook.primaryImageUrl;
+      if (cover != null && cover.isNotEmpty) {
+        _selectedCoverUrl = cover;
+        _recommendedCovers = [cover];
+      }
+    });
+  }
+
   void _applySuggestion(ExternalBookResult result) {
     setState(() {
       _titleController.text = result.title;
@@ -639,8 +693,8 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             ),
             const SizedBox(height: 24),
 
-            // 2. Titlu cu autocomplete
-            _titleField(context),
+            // 2. Titlu cu autocomplete + buton „Din cărțile mele"
+            _titleFieldWithMyBooksButton(context),
             const SizedBox(height: 12),
 
             // 3. Autor
@@ -803,7 +857,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 2, child: _titleField(context)),
+                    Expanded(flex: 2, child: _titleFieldWithMyBooksButton(context)),
                     const SizedBox(width: 14),
                     Expanded(
                       child: TextField(
@@ -899,6 +953,33 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // Câmpul de titlu + butonul „Din cărțile mele" în dreapta lui, ca în
+  // mockup - buton care deschide popup-ul centrat din `_MyBooksPickerDialog`.
+  Widget _titleFieldWithMyBooksButton(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _titleField(context)),
+        const SizedBox(width: 8),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: OutlinedButton.icon(
+            onPressed: _openMyBooksPicker,
+            icon: const Icon(Icons.menu_book_outlined, size: 16),
+            label: Text(context.l10n.shareFromMyBooks),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.accent,
+              side: BorderSide(color: AppColors.accent),
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1580,6 +1661,103 @@ class _CoverPicker extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Popup centrat pe ecran (nu panou lateral) cu cărțile din biblioteca
+/// proprie a userului - alegerea uneia completează câmpurile de mai jos cu
+/// detaliile ei (vezi `_AddBookScreenState._applyMyBook`). `showDialog` cu
+/// `Dialog` centrează implicit pe orice mărime de ecran.
+class _MyBooksPickerDialog extends ConsumerWidget {
+  const _MyBooksPickerDialog();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final asyncBooks = ref.watch(myLibraryControllerProvider);
+    return Dialog(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 560),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.shareChooseFromMyBooks,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: asyncBooks.when(
+                  data: (books) {
+                    final active =
+                        books.where((b) => b.deletedAt == null).toList();
+                    if (active.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Text(
+                          l10n.shareNoBooksInMyLibrary,
+                          style: TextStyle(color: AppColors.mutedForeground),
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.only(top: 4),
+                      itemCount: active.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final userBook = active[index];
+                        final book = userBook.book;
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: BookCover(
+                            url: userBook.primaryImageUrl,
+                            title: book.title,
+                            width: 44,
+                            height: 60,
+                            borderRadius: 6,
+                          ),
+                          title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: book.author != null
+                              ? Text(book.author!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                              : null,
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => Navigator.of(context).pop(userBook),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (_, _) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Text(
+                      l10n.addBookGenericError,
+                      style: TextStyle(color: AppColors.mutedForeground),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
