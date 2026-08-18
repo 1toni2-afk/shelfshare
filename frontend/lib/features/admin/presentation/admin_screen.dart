@@ -68,6 +68,17 @@ class _AdminContent extends StatelessWidget {
             onTap: () => context.push('/admin/feature-access'),
           ),
         ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.trending_up),
+            title: const Text('Scor de interes anunț'),
+            subtitle: const Text('Popularitate, potențial de schimb, override manual'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/listings/score'),
+          ),
+        ),
         const SizedBox(height: 28),
         Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
