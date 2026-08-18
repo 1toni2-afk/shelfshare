@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminAuditInterceptor } from './admin-audit.interceptor';
 import { SetFeatureFlagsDto } from './dto/set-feature-flags.dto';
+import { SetListingScoreOverrideDto } from './dto/set-listing-score-override.dto';
 import { FEATURE_FLAG_KEYS } from '../common/constants/feature-flags';
 
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -107,6 +108,19 @@ export class AdminController {
   @Delete('user-books/:id')
   deleteUserBook(@Param('id') id: string) {
     return this.adminService.deleteUserBook(id);
+  }
+
+  @Get('listings/:id/score')
+  getListingScore(@Param('id') id: string) {
+    return this.adminService.getListingScore(id);
+  }
+
+  @Put('listings/:id/score-override')
+  setListingScoreOverride(
+    @Param('id') id: string,
+    @Body() dto: SetListingScoreOverrideDto,
+  ) {
+    return this.adminService.setListingScoreOverride(id, dto.score ?? null);
   }
 
   @Get('reports/inactive-listings')

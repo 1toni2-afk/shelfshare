@@ -44,16 +44,16 @@ model User {
   googleId String? @unique
 
   name         String?
-  username     String?  @unique
-  nameVisible  Boolean  @default(true)
+  username     String? @unique
+  nameVisible  Boolean @default(true)
   city         String?
   bio          String?
   profileImage String?
 
-  rating               Float @default(0)
-  booksExchangedCount  Int   @default(0)
-  booksSharedCount     Int   @default(0)
-  booksReceivedCount   Int   @default(0)
+  rating              Float @default(0)
+  booksExchangedCount Int   @default(0)
+  booksSharedCount    Int   @default(0)
+  booksReceivedCount  Int   @default(0)
 
   // Medii pe dimensiuni, calculate din ExchangeRequest.*RatingFor* - vezi
   // recomputeRating în exchanges.service.ts. Rămân 0 până la prima evaluare
@@ -75,8 +75,8 @@ model User {
 
   // Reading Streak - zile consecutive cu activitate (vezi JwtAuthGuard),
   // calculat pe zi calendaristică, nu pe fereastră de 24h.
-  currentStreakDays Int      @default(0)
-  longestStreakDays Int      @default(0)
+  currentStreakDays Int       @default(0)
+  longestStreakDays Int       @default(0)
   lastStreakDate    DateTime?
 
   // XP & Levels - punctele se acumulează la acțiuni cheie deja existente
@@ -148,11 +148,11 @@ model User {
   // (multiplicatorul de popularitate). Contorul se oprește la 50, nu e un
   // total pe viață - numărul total de swipe-uri se poate afla oricând din
   // book_swipes.
-  onboardingSwipesCount Int @default(0)
+  onboardingSwipesCount         Int       @default(0)
   // Ultima recalibrare („resetează-mi gusturile") - cooldown 30 de zile.
-  lastRecalibrationAt DateTime?
+  lastRecalibrationAt           DateTime?
   // Câte swipe-uri mai primesc raport crescut de discovery după recalibrare.
-  discoveryBoostSwipesRemaining Int @default(0)
+  discoveryBoostSwipesRemaining Int       @default(0)
 
   referralCode String? @unique
   invitedById  String?
@@ -169,31 +169,31 @@ model User {
   updatedAt DateTime @updatedAt
 
   userBooks                UserBook[]
-  sentExchangeRequests     ExchangeRequest[] @relation("RequesterExchanges")
-  receivedExchangeRequests ExchangeRequest[] @relation("OwnerExchanges")
-  conversationsAsUserA     Conversation[]    @relation("ConversationUserA")
-  conversationsAsUserB     Conversation[]    @relation("ConversationUserB")
-  messagesSent             Message[]         @relation("MessageSender")
+  sentExchangeRequests     ExchangeRequest[]   @relation("RequesterExchanges")
+  receivedExchangeRequests ExchangeRequest[]   @relation("OwnerExchanges")
+  conversationsAsUserA     Conversation[]      @relation("ConversationUserA")
+  conversationsAsUserB     Conversation[]      @relation("ConversationUserB")
+  messagesSent             Message[]           @relation("MessageSender")
   wishlistItems            WishlistItem[]
   notifications            Notification[]
   deviceTokens             DeviceToken[]
-  blocksMade               Block[]           @relation("BlockBlocker")
-  blocksReceived           Block[]           @relation("BlockBlocked")
-  reportsMade              Report[]          @relation("ReportReporter")
-  reportsReceived          Report[]          @relation("ReportReported")
-  offersMade               PriceOffer[]      @relation("OfferBuyer")
-  offersReceived           PriceOffer[]      @relation("OfferOwner")
-  following                Follow[]          @relation("FollowFollower")
-  followers                Follow[]          @relation("FollowFollowing")
+  blocksMade               Block[]             @relation("BlockBlocker")
+  blocksReceived           Block[]             @relation("BlockBlocked")
+  reportsMade              Report[]            @relation("ReportReporter")
+  reportsReceived          Report[]            @relation("ReportReported")
+  offersMade               PriceOffer[]        @relation("OfferBuyer")
+  offersReceived           PriceOffer[]        @relation("OfferOwner")
+  following                Follow[]            @relation("FollowFollower")
+  followers                Follow[]            @relation("FollowFollowing")
   feedback                 Feedback[]
   bookViews                BookView[]
   listingScoreEvents       ListingScoreEvent[]
   bookshelfEntries         BookshelfEntry[]
-  auctionBids              Bid[]             @relation("AuctionBidder")
-  auctionsWon              Auction[]         @relation("AuctionHighestBidder")
+  auctionBids              Bid[]               @relation("AuctionBidder")
+  auctionsWon              Auction[]           @relation("AuctionHighestBidder")
   auctionWatches           AuctionWatch[]
   collections              Collection[]
-  createdGroups            Group[]           @relation("GroupCreator")
+  createdGroups            Group[]             @relation("GroupCreator")
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
   securityEvents           SecurityEvent[]
@@ -328,16 +328,16 @@ enum BookCondition {
 model Book {
   id String @id @default(uuid())
 
-  isbn        String? @unique
-  title       String
-  author      String?
-  description String?
-  coverUrl    String?
-  publisher   String?
+  isbn          String? @unique
+  title         String
+  author        String?
+  description   String?
+  coverUrl      String?
+  publisher     String?
   publishedYear Int?
-  pageCount   Int?
-  language    String?
-  genre       String?
+  pageCount     Int?
+  language      String?
+  genre         String?
 
   referencePrice         Decimal? @db.Decimal(10, 2)
   referencePriceCurrency String?
@@ -353,11 +353,11 @@ model Book {
   /// NULL = necurat, se folosește BOOK_MATCH_DEFAULT_POPULARITY.
   popularityScore Float?
 
-  userBooks UserBook[]
-  wishlistItems WishlistItem[]
+  userBooks        UserBook[]
+  wishlistItems    WishlistItem[]
   bookshelfEntries BookshelfEntry[]
-  collectionItems CollectionItem[]
-  swipes BookSwipe[]
+  collectionItems  CollectionItem[]
+  swipes           BookSwipe[]
 
   @@map("books")
 }
@@ -433,7 +433,7 @@ model GroupMember {
   id String @id @default(uuid())
 
   groupId String
-  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -449,7 +449,7 @@ model GroupPost {
   id String @id @default(uuid())
 
   groupId String
-  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -468,7 +468,7 @@ model GroupEvent {
   id String @id @default(uuid())
 
   groupId String
-  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   title       String
   description String?
@@ -519,6 +519,12 @@ model UserBook {
 
   viewCount Int @default(0)
 
+  /// Suprascriere manuală din consola de admin a scorului de interes
+  /// (popularityScore), pentru corecții/promovări arbitrare - vezi
+  /// ListingScoreService.scoresFor. Null = scorul rămâne cel calculat din
+  /// ListingScoreEvent. Nu afectează exchangePotentialScore.
+  manualScoreOverride Float?
+
   photos String[]
 
   /// URL-ul pozei principale afișate în feed/carduri. Poate fi una din
@@ -549,8 +555,8 @@ model UserBook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  exchangeRequestsReceived ExchangeRequest[] @relation("RequestedBook")
-  exchangeRequestsOffered  ExchangeRequest[] @relation("OfferedBook")
+  exchangeRequestsReceived ExchangeRequest[]   @relation("RequestedBook")
+  exchangeRequestsOffered  ExchangeRequest[]   @relation("OfferedBook")
   priceOffers              PriceOffer[]
   reports                  Report[]
   bookViews                BookView[]
@@ -668,21 +674,30 @@ model BookView {
 }
 
 enum ListingScoreEventKind {
-  /// Prima deschidere a anunțului de către un viewer, în ultimele 24h - 3p.
+  /// Prima deschidere a anunțului de către un viewer, în ultimele 30 de zile.
   UNIQUE_VIEW
-  /// Re-deschidere/refresh în aceeași zi - 0.1p (contează, dar aproape deloc).
+  /// Deprecated - fostul „refresh în aceeași zi" (0.1p). Nu se mai scrie de la
+  /// v2 (vezi RETURN_VISIT), păstrat doar ca evenimentele vechi din DB să nu
+  /// invalideze coloana; expiră natural din fereastra de scor în 30 de zile.
   REVIEW
-  /// Titlul a fost pus la favorite (wishlist) - 1p.
+  /// Revenire reală (la ≥6h de la ultima vizită) - cap 3/user/30 zile, ca să
+  /// nu se poată umfla scorul cu F5 sau navigare repetată.
+  RETURN_VISIT
+  /// Titlul a fost pus la favorite (wishlist).
   WISHLIST_ADD
+  /// Cerere de schimb trimisă pentru acest anunț.
+  EXCHANGE_REQUEST
+  /// Ofertă de preț trimisă pentru acest anunț.
+  BUY_OFFER
 }
 
 /// „Cele mai căutate" (Milestone 20) - scorul de interes al unui anunț.
-/// Fiecare punct EXPIRĂ individual la 14 zile după ce a fost câștigat, deci
+/// Fiecare punct EXPIRĂ individual la 30 de zile după ce a fost câștigat, deci
 /// nu putem ține un singur contor cumulat pe UserBook: logăm fiecare eveniment
-/// cu timestamp și calculăm scorul ca SUM(points) WHERE createdAt > now()-14d.
+/// cu timestamp și calculăm scorul ca SUM(points) WHERE createdAt > now()-30d.
 /// `userId` e null pentru vizitatorii ne-autentificați (tratați ca o singură
 /// entitate la deduplicare, ca la BookView) și e folosit DOAR ca să distingem
-/// un view unic de un refresh - nu expunem niciodată cine a văzut ce.
+/// un view unic de o revenire - nu expunem niciodată cine a văzut ce.
 /// Scorul e invizibil pentru userii normali; apare doar pentru admini.
 model ListingScoreEvent {
   id String @id @default(uuid())
@@ -774,10 +789,10 @@ model PriceOffer {
   // mutuală înainte ca acceptarea ofertei să transfere efectiv cartea.
   acceptedAt DateTime?
 
-  meetingTime        DateTime?
-  meetingLocation     String?
-  meetingProposedBy   String?
-  meetingAcceptedAt   DateTime?
+  meetingTime       DateTime?
+  meetingLocation   String?
+  meetingProposedBy String?
+  meetingAcceptedAt DateTime?
 
   buyerContactPhone    String?
   ownerContactPhone    String?
@@ -856,8 +871,8 @@ model ExchangeRequest {
   // Programare cu accept/decline: cel care propune ora e reținut ca să știm
   // cui îi cerem confirmarea; meetingAcceptedAt rămâne null cât timp
   // propunerea așteaptă răspunsul celeilalte părți.
-  meetingProposedBy  String?
-  meetingAcceptedAt  DateTime?
+  meetingProposedBy String?
+  meetingAcceptedAt DateTime?
 
   // Ancora pentru timeout-ul de 7 zile (job programat, nu expirare leneșă -
   // vezi expireStaleAccepted în exchanges.service.ts). Setat în accept().
@@ -1151,7 +1166,7 @@ model DeviceToken {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  token    String   @unique
+  token    String @unique
   platform String // "android" | "ios" | "web"
 
   createdAt DateTime @default(now())
@@ -1219,7 +1234,6 @@ model SecurityEvent {
  * Acces per-user la funcții încă în rulare (beta / acces preferențial),
  * acordat manual din panoul de admin - vezi FEATURE_FLAG_KEYS din
  * common/constants/feature-flags.ts pentru cheile cunoscute.
- *
  * Un tabel separat, nu o coloană `String[]` pe User, ca să putem revoca
  * fără să rescriem lista întreagă și ca să știm cine/când a acordat accesul
  * (createdAt/updatedAt). Rândul se păstrează și cu enabled=false: „revocat

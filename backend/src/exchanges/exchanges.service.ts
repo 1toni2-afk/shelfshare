@@ -9,6 +9,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
+import { ListingScoreService } from '../books/listing-score.service';
 import { NotificationType } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
@@ -74,6 +75,7 @@ export class ExchangesService {
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private conversations: ConversationsService,
+    private listingScore: ListingScoreService,
   ) {}
 
   /**
@@ -175,6 +177,12 @@ export class ExchangesService {
       `${publicName(created.requester)} ți-a trimis o cerere de schimb pentru "${requestedBook.book.title}"`,
       { exchangeRequestId: created.id },
     );
+
+    // Semnal puternic de interes pentru „Cele mai căutate" - fire-and-forget,
+    // un punct pierdut nu justifică să pice cererea de schimb.
+    this.listingScore
+      .recordExchangeRequest(dto.requestedBookId, requesterId)
+      .catch(() => {});
 
     // Cererea devine vizibilă și acționabilă direct în chat, nu doar o
     // notificare separată - la fel ca oferta de preț (offers.service.ts).
