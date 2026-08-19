@@ -956,26 +956,32 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     );
   }
 
-  // Câmpul de titlu + butonul „Din cărțile mele" în dreapta lui, ca în
-  // mockup - buton care deschide popup-ul centrat din `_MyBooksPickerDialog`.
+  // Câmpul de titlu (rămâne pe toată lățimea rândului) + sigla ShelfShare în
+  // dreapta lui, ca buton compact care deschide popup-ul centrat din
+  // `_MyBooksPickerDialog` - aceeași siglă (cerc accent + menu_book_rounded)
+  // ca în header-ul sidebar-ului și în login_screen, nu un buton nou cu text.
   Widget _titleFieldWithMyBooksButton(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: _titleField(context)),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Padding(
           padding: const EdgeInsets.only(top: 4),
-          child: OutlinedButton.icon(
-            onPressed: _openMyBooksPicker,
-            icon: const Icon(Icons.menu_book_outlined, size: 16),
-            label: Text(context.l10n.shareFromMyBooks),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
-              side: BorderSide(color: AppColors.accent),
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              visualDensity: VisualDensity.compact,
+          child: Tooltip(
+            message: context.l10n.shareFromMyBooks,
+            child: Material(
+              color: AppColors.accent.withValues(alpha: 0.15),
+              shape: const CircleBorder(),
+              child: InkWell(
+                onTap: _openMyBooksPicker,
+                customBorder: const CircleBorder(),
+                child: const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Icon(Icons.menu_book_rounded,
+                      color: AppColors.accent, size: 22),
+                ),
+              ),
             ),
           ),
         ),
