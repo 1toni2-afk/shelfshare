@@ -1020,6 +1020,36 @@ abstract class AppLocalizations {
   /// **'Nicio conversație de suport încă.'**
   String get adminChatInboxEmpty;
 
+  /// No description provided for @adminChatGuidelinesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Aici poți vorbi cu moderatorii'**
+  String get adminChatGuidelinesTitle;
+
+  /// No description provided for @adminChatGuidelinesIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrie-ne orice întrebare, problemă sau raport legat de aplicație.'**
+  String get adminChatGuidelinesIntro;
+
+  /// No description provided for @adminChatGuidelineResponseTime.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poate dura ceva până răspunde cineva - nu suntem online non-stop.'**
+  String get adminChatGuidelineResponseTime;
+
+  /// No description provided for @adminChatGuidelineNoSpam.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fără spam sau mesaje repetate - un singur mesaj clar e suficient.'**
+  String get adminChatGuidelineNoSpam;
+
+  /// No description provided for @adminChatGuidelineBeRespectful.
+  ///
+  /// In ro, this message translates to:
+  /// **'Te rugăm să păstrezi un ton respectuos - suntem aici să te ajutăm.'**
+  String get adminChatGuidelineBeRespectful;
+
   /// No description provided for @profileUsernameLabel.
   ///
   /// In ro, this message translates to:
@@ -5615,6 +5645,12 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Arhivate'**
   String get chatFilterArchived;
+
+  /// No description provided for @chatFilterModerator.
+  ///
+  /// In ro, this message translates to:
+  /// **'Moderator'**
+  String get chatFilterModerator;
 
   /// No description provided for @chatEmptySearch.
   ///

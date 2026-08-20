@@ -517,6 +517,25 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminChatInboxEmpty => 'Nicio conversație de suport încă.';
 
   @override
+  String get adminChatGuidelinesTitle => 'Aici poți vorbi cu moderatorii';
+
+  @override
+  String get adminChatGuidelinesIntro =>
+      'Scrie-ne orice întrebare, problemă sau raport legat de aplicație.';
+
+  @override
+  String get adminChatGuidelineResponseTime =>
+      'Poate dura ceva până răspunde cineva - nu suntem online non-stop.';
+
+  @override
+  String get adminChatGuidelineNoSpam =>
+      'Fără spam sau mesaje repetate - un singur mesaj clar e suficient.';
+
+  @override
+  String get adminChatGuidelineBeRespectful =>
+      'Te rugăm să păstrezi un ton respectuos - suntem aici să te ajutăm.';
+
+  @override
   String get profileUsernameLabel => 'Username';
 
   @override
@@ -3092,6 +3111,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get chatFilterArchived => 'Arhivate';
+
+  @override
+  String get chatFilterModerator => 'Moderator';
 
   @override
   String get chatEmptySearch => 'Nicio conversație nu se potrivește căutării.';

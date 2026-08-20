@@ -7,6 +7,7 @@ import '../../../core/utils/support_pages.dart';
 import '../../../data/models/conversation.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../profile/application/profile_controller.dart';
 import '../application/conversations_controller.dart';
 import 'conversation_screen.dart';
 
@@ -412,6 +413,20 @@ class _ConversationsPane extends ConsumerWidget {
                   onTap: () =>
                       onFilterChange(_ConversationsFilter.archived),
                 ),
+                const SizedBox(width: 8),
+                // Nu e un filtru ca celelalte 3 (nu filtrează lista de mai jos) -
+                // deschide direct chatul cu echipa de admini (userul obișnuit)
+                // sau inbox-ul de suport (adminii) - vezi backend/src/admin-chat.
+                _FilterChip(
+                  label: l10n.chatFilterModerator,
+                  selected: false,
+                  icon: Icons.shield_outlined,
+                  onTap: () {
+                    final isAdmin =
+                        ref.read(profileControllerProvider).value?.isAdmin ?? false;
+                    context.push(isAdmin ? '/admin/chat' : '/support/chat');
+                  },
+                ),
               ],
             ),
           ),
@@ -522,12 +537,14 @@ class _FilterChip extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.badge,
+    this.icon,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final int? badge;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -543,6 +560,10 @@ class _FilterChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (icon != null) ...[
+              Icon(icon, size: 15, color: selected ? AppColors.accent : AppColors.foreground),
+              const SizedBox(width: 4),
+            ],
             Text(
               label,
               style: TextStyle(

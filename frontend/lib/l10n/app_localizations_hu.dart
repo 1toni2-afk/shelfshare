@@ -520,6 +520,25 @@ class AppLocalizationsHu extends AppLocalizations {
   String get adminChatInboxEmpty => 'Még nincs támogatási beszélgetés.';
 
   @override
+  String get adminChatGuidelinesTitle => 'Itt beszélhetsz a moderátorokkal';
+
+  @override
+  String get adminChatGuidelinesIntro =>
+      'Írj nekünk bármilyen kérdést, problémát vagy bejelentést az alkalmazással kapcsolatban.';
+
+  @override
+  String get adminChatGuidelineResponseTime =>
+      'Eltarthat egy ideig, míg valaki válaszol - nem vagyunk mindig elérhetők.';
+
+  @override
+  String get adminChatGuidelineNoSpam =>
+      'Kerüld a spam-et vagy az ismétlődő üzeneteket - egy világos üzenet elég.';
+
+  @override
+  String get adminChatGuidelineBeRespectful =>
+      'Kérjük, maradj tiszteletteljes - itt vagyunk, hogy segítsünk.';
+
+  @override
   String get profileUsernameLabel => 'Felhasználónév';
 
   @override
@@ -3100,6 +3119,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get chatFilterArchived => 'Arhivate';
+
+  @override
+  String get chatFilterModerator => 'Moderator';
 
   @override
   String get chatEmptySearch => 'Nicio conversație nu se potrivește căutării.';

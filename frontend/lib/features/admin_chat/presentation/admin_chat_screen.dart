@@ -67,23 +67,23 @@ class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
               child: async.when(
                 data: (conversation) {
                   if (conversation.messages.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          l10n.adminChatEmpty,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: const _ModeratorGuidelines(),
                     );
                   }
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
-                    itemCount: conversation.messages.length,
+                    itemCount: conversation.messages.length + 1,
                     itemBuilder: (context, index) {
-                      final message = conversation.messages[index];
+                      if (index == 0) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16),
+                          child: _ModeratorGuidelines(),
+                        );
+                      }
+                      final message = conversation.messages[index - 1];
                       return _MessageBubble(
                         content: message.content,
                         isMine: !message.isFromAdmin,
@@ -133,6 +133,75 @@ class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Mesajul „by default" + reguli, cerut explicit: userul trebuie să vadă
+/// clar ce e acest chat înainte să scrie, nu doar un placeholder gol. Rămâne
+/// vizibil și după primul mesaj (ancorat sus în listă), nu doar la gol -
+/// ghidul e util pe tot parcursul conversației, nu doar la prima vizită.
+class _ModeratorGuidelines extends StatelessWidget {
+  const _ModeratorGuidelines();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Card(
+      color: AppColors.card,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.shield_outlined, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l10n.adminChatGuidelinesTitle,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(l10n.adminChatGuidelinesIntro, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 12),
+            _GuidelineItem(text: l10n.adminChatGuidelineResponseTime),
+            _GuidelineItem(text: l10n.adminChatGuidelineNoSpam),
+            _GuidelineItem(text: l10n.adminChatGuidelineBeRespectful),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GuidelineItem extends StatelessWidget {
+  const _GuidelineItem({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(Icons.circle, size: 5, color: AppColors.mutedForeground),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall)),
+        ],
       ),
     );
   }
