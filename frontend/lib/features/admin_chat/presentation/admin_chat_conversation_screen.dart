@@ -25,11 +25,18 @@ class AdminChatConversationScreen extends ConsumerStatefulWidget {
 
 class _AdminChatConversationScreenState extends ConsumerState<AdminChatConversationScreen> {
   final _controller = TextEditingController();
+  // Vezi admin_chat_screen.dart - fără focusNode dedicat, Enter (onSubmitted)
+  // declanșează și comportamentul implicit al TextField de a-și pierde
+  // focusul după submit.
+  final _messageFocusNode = FocusNode();
+  final _sendButtonFocusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
   bool _sending = false;
 
   @override
   void dispose() {
     _controller.dispose();
+    _messageFocusNode.dispose();
+    _sendButtonFocusNode.dispose();
     super.dispose();
   }
 
@@ -49,6 +56,9 @@ class _AdminChatConversationScreenState extends ConsumerState<AdminChatConversat
       }
     } finally {
       if (mounted) setState(() => _sending = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _messageFocusNode.requestFocus();
+      });
     }
   }
 
@@ -99,6 +109,7 @@ class _AdminChatConversationScreenState extends ConsumerState<AdminChatConversat
                     Expanded(
                       child: TextField(
                         controller: _controller,
+                        focusNode: _messageFocusNode,
                         minLines: 1,
                         maxLines: 4,
                         textInputAction: TextInputAction.send,
@@ -112,6 +123,7 @@ class _AdminChatConversationScreenState extends ConsumerState<AdminChatConversat
                     ),
                     const SizedBox(width: 8),
                     IconButton.filled(
+                      focusNode: _sendButtonFocusNode,
                       icon: _sending
                           ? const SizedBox(
                               width: 18,

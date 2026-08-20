@@ -26,12 +26,20 @@ class AdminChatScreen extends ConsumerStatefulWidget {
 class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  // Fără focusNode dedicat, apăsarea Enter (onSubmitted) declanșează și
+  // comportamentul implicit al TextField de a-și pierde focusul după submit
+  // - userul trebuia să dea din nou click în câmp după fiecare mesaj. Vezi
+  // conversation_screen.dart pentru același fix.
+  final _messageFocusNode = FocusNode();
+  final _sendButtonFocusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
   bool _sending = false;
 
   @override
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    _messageFocusNode.dispose();
+    _sendButtonFocusNode.dispose();
     super.dispose();
   }
 
@@ -50,6 +58,13 @@ class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
       }
     } finally {
       if (mounted) setState(() => _sending = false);
+      // Comportamentul implicit de submit al TextField (Enter) scoate focusul
+      // DUPĂ ce onSubmitted rulează - un requestFocus() sincron aici ar fi
+      // depășit de el. Cerem focus într-un post-frame callback, ca să câștige
+      // mereu, indiferent dacă trimiterea a fost prin Enter sau prin buton.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _messageFocusNode.requestFocus();
+      });
     }
   }
 
@@ -105,6 +120,7 @@ class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
                     Expanded(
                       child: TextField(
                         controller: _controller,
+                        focusNode: _messageFocusNode,
                         minLines: 1,
                         maxLines: 4,
                         textInputAction: TextInputAction.send,
@@ -118,6 +134,7 @@ class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
                     ),
                     const SizedBox(width: 8),
                     IconButton.filled(
+                      focusNode: _sendButtonFocusNode,
                       icon: _sending
                           ? const SizedBox(
                               width: 18,
