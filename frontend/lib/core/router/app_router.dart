@@ -9,8 +9,10 @@ import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
+import '../../features/admin/presentation/administrators_screen.dart';
 import '../../features/admin/presentation/feature_access_screen.dart';
 import '../../features/admin/presentation/listing_score_screen.dart';
+import '../../features/admin/presentation/roles_permissions_screen.dart';
 import '../../features/admin_chat/presentation/admin_chat_conversation_screen.dart';
 import '../../features/admin_chat/presentation/admin_chat_inbox_screen.dart';
 import '../../features/admin_chat/presentation/admin_chat_screen.dart';
@@ -235,6 +237,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/listings/score',
             builder: (context, state) => const ListingScoreScreen(),
+          ),
+          GoRoute(
+            path: '/admin/administrators',
+            builder: (context, state) => const AdministratorsScreen(),
+          ),
+          GoRoute(
+            path: '/admin/roles',
+            builder: (context, state) => const RolesPermissionsScreen(),
           ),
           GoRoute(
             path: '/admin/chat',

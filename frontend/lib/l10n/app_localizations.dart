@@ -6126,6 +6126,120 @@ abstract class AppLocalizations {
   /// **'Nu am putut salva accesul.'**
   String get adminFeatureAccessSaveError;
 
+  /// No description provided for @adminAdministratorsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Administratori'**
+  String get adminAdministratorsTitle;
+
+  /// No description provided for @adminAdministratorsDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gestionează administratorii și rolurile lor'**
+  String get adminAdministratorsDesc;
+
+  /// No description provided for @adminRolesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Roluri și permisiuni'**
+  String get adminRolesTitle;
+
+  /// No description provided for @adminRolesDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi și editează permisiunile fiecărui rol'**
+  String get adminRolesDesc;
+
+  /// No description provided for @adminAdministratorsAddButton.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă administrator'**
+  String get adminAdministratorsAddButton;
+
+  /// No description provided for @adminAdministratorsAddTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă administrator'**
+  String get adminAdministratorsAddTitle;
+
+  /// No description provided for @adminAdministratorsUserIdHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'ID utilizator'**
+  String get adminAdministratorsUserIdHint;
+
+  /// No description provided for @adminAdministratorsRoleHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rol'**
+  String get adminAdministratorsRoleHint;
+
+  /// No description provided for @adminAdministratorsRevoke.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină acces admin'**
+  String get adminAdministratorsRevoke;
+
+  /// No description provided for @adminAdministratorsChangeRole.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbă rolul'**
+  String get adminAdministratorsChangeRole;
+
+  /// No description provided for @adminAdministratorsNoRole.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fără rol'**
+  String get adminAdministratorsNoRole;
+
+  /// No description provided for @adminAdministratorsLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca administratorii.'**
+  String get adminAdministratorsLoadError;
+
+  /// No description provided for @adminAdministratorsGrantError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut acorda rolul.'**
+  String get adminAdministratorsGrantError;
+
+  /// No description provided for @adminAdministratorsRevokeError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut elimina accesul.'**
+  String get adminAdministratorsRevokeError;
+
+  /// No description provided for @adminRolesCreateCustom.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rol nou (custom)'**
+  String get adminRolesCreateCustom;
+
+  /// No description provided for @adminRolesLabelHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nume rol'**
+  String get adminRolesLabelHint;
+
+  /// No description provided for @adminRolesBuiltIn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rol predefinit - nu poate fi editat'**
+  String get adminRolesBuiltIn;
+
+  /// No description provided for @adminRolesSave.
+  ///
+  /// In ro, this message translates to:
+  /// **'Salvează'**
+  String get adminRolesSave;
+
+  /// No description provided for @adminRolesSaveError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva rolul.'**
+  String get adminRolesSaveError;
+
   /// No description provided for @featureFlagAdvancedStatistics.
   ///
   /// In ro, this message translates to:

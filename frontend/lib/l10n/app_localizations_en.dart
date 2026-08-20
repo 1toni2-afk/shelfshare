@@ -3370,6 +3370,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminFeatureAccessSaveError => 'Couldn\'t save the access.';
 
   @override
+  String get adminAdministratorsTitle => 'Administrators';
+
+  @override
+  String get adminAdministratorsDesc => 'Manage administrators and their roles';
+
+  @override
+  String get adminRolesTitle => 'Roles & Permissions';
+
+  @override
+  String get adminRolesDesc => 'View and edit each role\'s permissions';
+
+  @override
+  String get adminAdministratorsAddButton => 'Add administrator';
+
+  @override
+  String get adminAdministratorsAddTitle => 'Add administrator';
+
+  @override
+  String get adminAdministratorsUserIdHint => 'User ID';
+
+  @override
+  String get adminAdministratorsRoleHint => 'Role';
+
+  @override
+  String get adminAdministratorsRevoke => 'Revoke admin access';
+
+  @override
+  String get adminAdministratorsChangeRole => 'Change role';
+
+  @override
+  String get adminAdministratorsNoRole => 'No role';
+
+  @override
+  String get adminAdministratorsLoadError => 'Couldn\'t load administrators.';
+
+  @override
+  String get adminAdministratorsGrantError => 'Couldn\'t grant the role.';
+
+  @override
+  String get adminAdministratorsRevokeError => 'Couldn\'t revoke access.';
+
+  @override
+  String get adminRolesCreateCustom => 'New custom role';
+
+  @override
+  String get adminRolesLabelHint => 'Role name';
+
+  @override
+  String get adminRolesBuiltIn => 'Built-in role - cannot be edited';
+
+  @override
+  String get adminRolesSave => 'Save';
+
+  @override
+  String get adminRolesSaveError => 'Couldn\'t save the role.';
+
+  @override
   String get featureFlagAdvancedStatistics => 'Advanced statistics';
 
   @override

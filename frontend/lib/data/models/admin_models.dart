@@ -361,6 +361,100 @@ class ListingScoreBreakdown {
   }
 }
 
+/// Catalogul de permisiuni granulare (Admin Control Panel, Milestone 19) -
+/// trebuie să rămână identic cu ADMIN_PERMISSION_KEYS din backend
+/// (admin/constants/admin-permissions.ts).
+const kAdminPermissionKeys = <String>[
+  'users.view',
+  'users.edit',
+  'users.suspend',
+  'users.ban',
+  'users.delete',
+  'books.view',
+  'books.edit',
+  'books.hide',
+  'books.delete',
+  'reports.view',
+  'reports.resolve',
+  'reports.dismiss',
+  'exchanges.view',
+  'exchanges.manage',
+  'admins.view',
+  'admins.create',
+  'admins.edit',
+  'admins.delete',
+  'moderation.approve',
+  'moderation.review',
+];
+
+class AdminRole {
+  final String id;
+  final String name;
+  final String label;
+  final List<String> permissions;
+
+  const AdminRole({
+    required this.id,
+    required this.name,
+    required this.label,
+    required this.permissions,
+  });
+
+  bool get isCustom => name == 'CUSTOM';
+
+  factory AdminRole.fromJson(Map<String, dynamic> json) {
+    return AdminRole(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      label: json['label'] as String,
+      permissions: (json['permissions'] as List).map((e) => e as String).toList(),
+    );
+  }
+}
+
+class AdminRolesPage {
+  final List<AdminRole> roles;
+  final List<String> permissionKeys;
+
+  const AdminRolesPage({required this.roles, required this.permissionKeys});
+
+  factory AdminRolesPage.fromJson(Map<String, dynamic> json) {
+    return AdminRolesPage(
+      roles: (json['roles'] as List)
+          .map((e) => AdminRole.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      permissionKeys: (json['permissionKeys'] as List).map((e) => e as String).toList(),
+    );
+  }
+}
+
+class Administrator {
+  final String id;
+  final String email;
+  final String? name;
+  final String? username;
+  final AdminRole? adminRole;
+
+  const Administrator({
+    required this.id,
+    required this.email,
+    this.name,
+    this.username,
+    this.adminRole,
+  });
+
+  factory Administrator.fromJson(Map<String, dynamic> json) {
+    final role = json['adminRole'] as Map<String, dynamic>?;
+    return Administrator(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      name: json['name'] as String?,
+      username: json['username'] as String?,
+      adminRole: role != null ? AdminRole.fromJson(role) : null,
+    );
+  }
+}
+
 class UserFeatureFlags {
   final String userId;
   final String email;

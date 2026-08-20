@@ -115,6 +115,13 @@ model User {
   isAdmin  Boolean @default(false)
   isBanned Boolean @default(false)
 
+  // Admin Control Panel (Milestone 19) - rol granular, în plus față de
+  // isAdmin. isAdmin rămâne derivat (true <=> adminRoleId != null) ca să nu
+  // trebuiască rescrise dintr-o dată toate verificările existente de
+  // `user.isAdmin` din cod - vezi AdminGuard vs PermissionGuard.
+  adminRoleId String?
+  adminRole   AdminRole? @relation("UserAdminRole", fields: [adminRoleId], references: [id])
+
   // Premium (Milestone 5) - doar flag + acordare manuală din admin panel,
   // fără procesare de plăți reale (vezi togglePremium în admin.service.ts).
   isPremium Boolean @default(false)
@@ -487,6 +494,34 @@ model GroupEvent {
   createdAt DateTime @default(now())
 
   @@map("group_events")
+}
+
+// Admin Control Panel (Milestone 19) - roluri de admin cu permisiuni
+// granulare. 4 roluri predefinite (SUPER_ADMIN/MODERATOR/CONTENT_MODERATOR/
+// USER_SUPPORT) + CUSTOM pentru roluri create manual din admin panel. Vezi
+// admin/constants/admin-permissions.ts pentru catalogul de permisiuni.
+enum AdminRoleName {
+  SUPER_ADMIN
+  MODERATOR
+  CONTENT_MODERATOR
+  USER_SUPPORT
+  CUSTOM
+}
+
+model AdminRole {
+  id          String        @id @default(uuid())
+  name        AdminRoleName
+  // Nume afișat - obligatoriu semnificativ pentru CUSTOM; pentru rolurile
+  // predefinite reflectă pur și simplu numele enumului.
+  label       String
+  permissions String[]      @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admins User[] @relation("UserAdminRole")
+
+  @@map("admin_roles")
 }
 
 model UserBook {

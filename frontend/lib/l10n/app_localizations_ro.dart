@@ -3375,6 +3375,65 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminFeatureAccessSaveError => 'Nu am putut salva accesul.';
 
   @override
+  String get adminAdministratorsTitle => 'Administratori';
+
+  @override
+  String get adminAdministratorsDesc =>
+      'Gestionează administratorii și rolurile lor';
+
+  @override
+  String get adminRolesTitle => 'Roluri și permisiuni';
+
+  @override
+  String get adminRolesDesc => 'Vezi și editează permisiunile fiecărui rol';
+
+  @override
+  String get adminAdministratorsAddButton => 'Adaugă administrator';
+
+  @override
+  String get adminAdministratorsAddTitle => 'Adaugă administrator';
+
+  @override
+  String get adminAdministratorsUserIdHint => 'ID utilizator';
+
+  @override
+  String get adminAdministratorsRoleHint => 'Rol';
+
+  @override
+  String get adminAdministratorsRevoke => 'Elimină acces admin';
+
+  @override
+  String get adminAdministratorsChangeRole => 'Schimbă rolul';
+
+  @override
+  String get adminAdministratorsNoRole => 'Fără rol';
+
+  @override
+  String get adminAdministratorsLoadError =>
+      'Nu am putut încărca administratorii.';
+
+  @override
+  String get adminAdministratorsGrantError => 'Nu am putut acorda rolul.';
+
+  @override
+  String get adminAdministratorsRevokeError => 'Nu am putut elimina accesul.';
+
+  @override
+  String get adminRolesCreateCustom => 'Rol nou (custom)';
+
+  @override
+  String get adminRolesLabelHint => 'Nume rol';
+
+  @override
+  String get adminRolesBuiltIn => 'Rol predefinit - nu poate fi editat';
+
+  @override
+  String get adminRolesSave => 'Salvează';
+
+  @override
+  String get adminRolesSaveError => 'Nu am putut salva rolul.';
+
+  @override
   String get featureFlagAdvancedStatistics => 'Statistici avansate';
 
   @override

@@ -88,6 +88,61 @@ class AdminRepository {
     await dio.delete('/admin/user-books/$userBookId');
   }
 
+  Future<List<Administrator>> getAdministrators() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/administrators');
+    return (response.data as List)
+        .map((e) => Administrator.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<Administrator> grantAdminRole(String userId, String roleId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post(
+      '/admin/administrators',
+      data: {'userId': userId, 'roleId': roleId},
+    );
+    return Administrator.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<Administrator> updateAdminRole(String userId, String roleId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.put(
+      '/admin/administrators/$userId/role',
+      data: {'roleId': roleId},
+    );
+    return Administrator.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> revokeAdmin(String userId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.delete('/admin/administrators/$userId');
+  }
+
+  Future<AdminRolesPage> getRoles() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/roles');
+    return AdminRolesPage.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<AdminRole> createCustomRole(String label, List<String> permissions) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post(
+      '/admin/roles',
+      data: {'label': label, 'permissions': permissions},
+    );
+    return AdminRole.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<AdminRole> updateCustomRole(String roleId, String label, List<String> permissions) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.put(
+      '/admin/roles/$roleId',
+      data: {'label': label, 'permissions': permissions},
+    );
+    return AdminRole.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<List<InactiveListing>> getInactiveListings() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/admin/reports/inactive-listings');

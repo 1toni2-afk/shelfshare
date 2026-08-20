@@ -3419,6 +3419,70 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zugriff konnte nicht gespeichert werden.';
 
   @override
+  String get adminAdministratorsTitle => 'Administratoren';
+
+  @override
+  String get adminAdministratorsDesc =>
+      'Administratoren und ihre Rollen verwalten';
+
+  @override
+  String get adminRolesTitle => 'Rollen & Berechtigungen';
+
+  @override
+  String get adminRolesDesc =>
+      'Berechtigungen jeder Rolle anzeigen und bearbeiten';
+
+  @override
+  String get adminAdministratorsAddButton => 'Administrator hinzufügen';
+
+  @override
+  String get adminAdministratorsAddTitle => 'Administrator hinzufügen';
+
+  @override
+  String get adminAdministratorsUserIdHint => 'Benutzer-ID';
+
+  @override
+  String get adminAdministratorsRoleHint => 'Rolle';
+
+  @override
+  String get adminAdministratorsRevoke => 'Admin-Zugriff entziehen';
+
+  @override
+  String get adminAdministratorsChangeRole => 'Rolle ändern';
+
+  @override
+  String get adminAdministratorsNoRole => 'Keine Rolle';
+
+  @override
+  String get adminAdministratorsLoadError =>
+      'Administratoren konnten nicht geladen werden.';
+
+  @override
+  String get adminAdministratorsGrantError =>
+      'Die Rolle konnte nicht zugewiesen werden.';
+
+  @override
+  String get adminAdministratorsRevokeError =>
+      'Der Zugriff konnte nicht entzogen werden.';
+
+  @override
+  String get adminRolesCreateCustom => 'Neue benutzerdefinierte Rolle';
+
+  @override
+  String get adminRolesLabelHint => 'Rollenname';
+
+  @override
+  String get adminRolesBuiltIn =>
+      'Vordefinierte Rolle - kann nicht bearbeitet werden';
+
+  @override
+  String get adminRolesSave => 'Speichern';
+
+  @override
+  String get adminRolesSaveError =>
+      'Die Rolle konnte nicht gespeichert werden.';
+
+  @override
   String get featureFlagAdvancedStatistics => 'Erweiterte Statistiken';
 
   @override

@@ -3384,6 +3384,68 @@ class AppLocalizationsHu extends AppLocalizations {
       'Nem sikerült menteni a hozzáférést.';
 
   @override
+  String get adminAdministratorsTitle => 'Adminisztrátorok';
+
+  @override
+  String get adminAdministratorsDesc =>
+      'Adminisztrátorok és szerepköreik kezelése';
+
+  @override
+  String get adminRolesTitle => 'Szerepkörök és jogosultságok';
+
+  @override
+  String get adminRolesDesc =>
+      'Minden szerepkör jogosultságainak megtekintése és szerkesztése';
+
+  @override
+  String get adminAdministratorsAddButton => 'Adminisztrátor hozzáadása';
+
+  @override
+  String get adminAdministratorsAddTitle => 'Adminisztrátor hozzáadása';
+
+  @override
+  String get adminAdministratorsUserIdHint => 'Felhasználó azonosító';
+
+  @override
+  String get adminAdministratorsRoleHint => 'Szerepkör';
+
+  @override
+  String get adminAdministratorsRevoke => 'Admin hozzáférés visszavonása';
+
+  @override
+  String get adminAdministratorsChangeRole => 'Szerepkör módosítása';
+
+  @override
+  String get adminAdministratorsNoRole => 'Nincs szerepkör';
+
+  @override
+  String get adminAdministratorsLoadError =>
+      'Nem sikerült betölteni az adminisztrátorokat.';
+
+  @override
+  String get adminAdministratorsGrantError =>
+      'Nem sikerült hozzárendelni a szerepkört.';
+
+  @override
+  String get adminAdministratorsRevokeError =>
+      'Nem sikerült visszavonni a hozzáférést.';
+
+  @override
+  String get adminRolesCreateCustom => 'Új egyedi szerepkör';
+
+  @override
+  String get adminRolesLabelHint => 'Szerepkör neve';
+
+  @override
+  String get adminRolesBuiltIn => 'Beépített szerepkör - nem szerkeszthető';
+
+  @override
+  String get adminRolesSave => 'Mentés';
+
+  @override
+  String get adminRolesSaveError => 'Nem sikerült menteni a szerepkört.';
+
+  @override
   String get featureFlagAdvancedStatistics => 'Speciális statisztikák';
 
   @override

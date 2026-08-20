@@ -90,6 +90,28 @@ class _AdminContent extends StatelessWidget {
             onTap: () => context.push('/admin/listings/score'),
           ),
         ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.admin_panel_settings_outlined),
+            title: Text(l10n.adminAdministratorsTitle),
+            subtitle: Text(l10n.adminAdministratorsDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/administrators'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.security_outlined),
+            title: Text(l10n.adminRolesTitle),
+            subtitle: Text(l10n.adminRolesDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/roles'),
+          ),
+        ),
         const SizedBox(height: 28),
         Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
