@@ -212,6 +212,7 @@ class UserReport {
 class FeedbackItem {
   final String id;
   final String message;
+  final String? photoUrl;
   final String userEmail;
   final String? userName;
   final DateTime createdAt;
@@ -219,6 +220,7 @@ class FeedbackItem {
   const FeedbackItem({
     required this.id,
     required this.message,
+    this.photoUrl,
     required this.userEmail,
     this.userName,
     required this.createdAt,
@@ -229,6 +231,7 @@ class FeedbackItem {
     return FeedbackItem(
       id: json['id'] as String,
       message: json['message'] as String,
+      photoUrl: json['photoUrl'] as String?,
       userEmail: user['email'] as String,
       userName: user['name'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),

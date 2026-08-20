@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/locale/locale_controller.dart';
 import '../../../core/theme/app_theme.dart';
@@ -198,6 +199,10 @@ class _SettingsList extends ConsumerWidget {
                           label: l10n.profileSendFeedback,
                           onTap: () => _showFeedbackDialog(context, ref)),
                       _SettingsTile(
+                          icon: Icons.support_agent_outlined,
+                          label: l10n.adminChatTitle,
+                          onTap: () => context.push('/support/chat')),
+                      _SettingsTile(
                           icon: Icons.android,
                           label: l10n.profilePreRegister,
                           onTap: () => context.push('/pre-register')),
@@ -236,28 +241,81 @@ class _SettingsList extends ConsumerWidget {
   Future<void> _showFeedbackDialog(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final controller = TextEditingController();
+    XFile? photo;
+    Uint8List? photoBytes;
+
     final message = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.profileSendFeedback),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: 4,
-          decoration: InputDecoration(hintText: l10n.profileFeedbackHint),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: Text(l10n.commonSubmit),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(l10n.profileSendFeedback),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                autofocus: true,
+                maxLines: 4,
+                decoration: InputDecoration(hintText: l10n.profileFeedbackHint),
+              ),
+              const SizedBox(height: 12),
+              if (photoBytes != null)
+                Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(photoBytes!, height: 120, fit: BoxFit.cover),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: l10n.profileFeedbackRemovePhoto,
+                      onPressed: () => setState(() {
+                        photo = null;
+                        photoBytes = null;
+                      }),
+                    ),
+                  ],
+                )
+              else
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.image_outlined, size: 18),
+                  label: Text(l10n.profileFeedbackAddPhoto),
+                  onPressed: () async {
+                    final picked = await ImagePicker().pickImage(
+                      source: ImageSource.gallery,
+                      maxWidth: 1600,
+                      maxHeight: 1600,
+                      imageQuality: 85,
+                    );
+                    if (picked == null) return;
+                    final bytes = await picked.readAsBytes();
+                    setState(() {
+                      photo = picked;
+                      photoBytes = bytes;
+                    });
+                  },
+                ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonCancel)),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: Text(l10n.commonSubmit),
+            ),
+          ],
+        ),
       ),
     );
     if (message != null && message.trim().length >= 3) {
       try {
-        await ref.read(feedbackRepositoryProvider).submit(message.trim());
+        await ref.read(feedbackRepositoryProvider).submit(
+              message.trim(),
+              photoBytes: photoBytes,
+              photoFilename: photo?.name,
+            );
         if (context.mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(l10n.profileFeedbackThanks)));

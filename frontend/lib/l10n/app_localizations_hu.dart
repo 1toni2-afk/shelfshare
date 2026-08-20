@@ -494,6 +494,32 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileFeedbackError => 'Nem sikerült elküldeni a visszajelzést';
 
   @override
+  String get profileFeedbackAddPhoto => 'Fénykép hozzáadása';
+
+  @override
+  String get profileFeedbackRemovePhoto => 'Fénykép eltávolítása';
+
+  @override
+  String get adminChatTitle => 'Chat egy adminnal';
+
+  @override
+  String get adminChatEmpty =>
+      'Írj nekünk bármilyen kérdést vagy problémát - egy admin itt válaszol.';
+
+  @override
+  String get adminChatInputHint => 'Írj egy üzenetet…';
+
+  @override
+  String get adminChatInboxTitle => 'Chat az adminokkal';
+
+  @override
+  String get adminChatInboxDesc =>
+      'Támogatási beszélgetések, minden admin számára láthatóak';
+
+  @override
+  String get adminChatInboxEmpty => 'Még nincs támogatási beszélgetés.';
+
+  @override
   String get profileUsernameLabel => 'Felhasználónév';
 
   @override
@@ -636,6 +662,13 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get bookshelfLoadError => 'Nem sikerült betölteni a polcot.';
+
+  @override
+  String get bookshelfGenreChartTitle => 'A te műfajaid';
+
+  @override
+  String get bookshelfGenreChartEmpty =>
+      'Adj hozzá könyveket a polcodhoz, hogy lásd, milyen műfajokat olvasol a legtöbbet.';
 
   @override
   String get bookshelfImportTooltip =>
@@ -2731,7 +2764,8 @@ class AppLocalizationsHu extends AppLocalizations {
   String get shareChooseFromMyBooks => 'Válassz a könyveim közül';
 
   @override
-  String get shareNoBooksInMyLibrary => 'Még nincs egyetlen könyved sem a könyvtáradban.';
+  String get shareNoBooksInMyLibrary =>
+      'Még nincs egyetlen könyved sem a könyvtáradban.';
 
   @override
   String get preRegisterAlreadyLoggedIn =>

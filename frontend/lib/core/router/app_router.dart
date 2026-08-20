@@ -11,6 +11,9 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
 import '../../features/admin/presentation/feature_access_screen.dart';
 import '../../features/admin/presentation/listing_score_screen.dart';
+import '../../features/admin_chat/presentation/admin_chat_conversation_screen.dart';
+import '../../features/admin_chat/presentation/admin_chat_inbox_screen.dart';
+import '../../features/admin_chat/presentation/admin_chat_screen.dart';
 import '../../features/books/presentation/add_book_screen.dart';
 import '../../features/books/presentation/bulk_add_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
@@ -233,6 +236,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/admin/listings/score',
             builder: (context, state) => const ListingScoreScreen(),
           ),
+          GoRoute(
+            path: '/admin/chat',
+            builder: (context, state) => const AdminChatInboxScreen(),
+          ),
+          GoRoute(
+            path: '/admin/chat/:id',
+            builder: (context, state) => AdminChatConversationScreen(
+              conversationId: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(path: '/support/chat', builder: (context, state) => const AdminChatScreen()),
           GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
           GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
           GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),

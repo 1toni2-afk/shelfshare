@@ -26,11 +26,17 @@ const MAX_IMPORT_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB - suficient pentru 
 export class BookshelfController {
   constructor(private bookshelfService: BookshelfService) {}
 
-  // Înainte de ':bookId', altfel 'me'/'import' ar fi interpretate ca id de carte.
+  // Înainte de ':bookId', altfel 'me'/'import'/'me/genres' ar fi interpretate ca id de carte.
   @Get('me')
   getMyShelf(@Req() req: Request) {
     const { userId } = req.user as AuthenticatedUser;
     return this.bookshelfService.getMyShelf(userId!);
+  }
+
+  @Get('me/genres')
+  getGenreDistribution(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.bookshelfService.getGenreDistribution(userId!);
   }
 
   @Post('import/:source')

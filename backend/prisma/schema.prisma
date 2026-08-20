@@ -187,6 +187,8 @@ model User {
   blocksReceived           Block[]             @relation("BlockBlocked")
   reportsMade              Report[]            @relation("ReportReporter")
   reportsReceived          Report[]            @relation("ReportReported")
+  adminSupportConversation AdminSupportConversation?
+  adminSupportMessagesSent AdminSupportMessage[] @relation("AdminSupportMessageSender")
   offersMade               PriceOffer[]        @relation("OfferBuyer")
   offersReceived           PriceOffer[]        @relation("OfferOwner")
   following                Follow[]            @relation("FollowFollower")
@@ -220,6 +222,7 @@ model Feedback {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   message String
+  photoUrl String?
 
   createdAt DateTime @default(now())
 
@@ -948,6 +951,59 @@ model Conversation {
 
   @@unique([userAId, userBId])
   @@map("conversations")
+}
+
+/**
+ * „Chat with an admin" - o singură conversație per user cu ECHIPA de admini,
+ * nu cu un admin anume (spre deosebire de `Conversation`, gândit pentru
+ * perechi fixe A/B). Orice admin (User.isAdmin) poate citi și răspunde la
+ * orice conversație - nu există „adminId" de proprietar. Userul obișnuit
+ * are un singur inbox de tip ăsta (unique pe userId); adminii au ÎN PLUS
+ * propriile conversații normale (`Conversation`) ca „inbox personal" - cele
+ * două fluxuri sunt complet separate, nu se suprapun în UI sau în date.
+ */
+model AdminSupportConversation {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime?
+
+  // Un singur reper de citire per parte, nu per-admin: „citit" înseamnă
+  // „vreun admin l-a văzut", suficient pentru un badge de neciit în lista
+  // de admini - a ține evidența per-admin ar cere un join table fără să
+  // aducă vreun beneficiu vizibil userului sau echipei.
+  userLastReadAt  DateTime?
+  adminLastReadAt DateTime?
+
+  messages AdminSupportMessage[]
+
+  @@map("admin_support_conversations")
+}
+
+model AdminSupportMessage {
+  id String @id @default(uuid())
+
+  conversationId String
+  conversation   AdminSupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("AdminSupportMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  // Denormalizat direct pe mesaj (nu derivat din sender.isAdmin la citire):
+  // dacă un admin își pierde ulterior rolul, istoricul conversației trebuie
+  // să rămână corect din perspectiva „cine a răspuns ca admin la momentul respectiv".
+  isFromAdmin Boolean @default(false)
+
+  content String
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@map("admin_support_messages")
 }
 
 model Message {

@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
@@ -11,6 +14,11 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/motto_text.dart';
 import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
+
+/// Prag de lățime peste care graficul de genuri intră ca panou lateral în
+/// dreapta (vezi build()) - sub el, ecranul e prea îngust pentru o coloană
+/// în plus lângă listele de cărți, deci graficul trece deasupra tab-urilor.
+const _wideLayoutBreakpoint = 900.0;
 
 final _myShelfProvider = FutureProvider((ref) {
   return ref.watch(bookshelfRepositoryProvider).getMyShelf();
@@ -95,15 +103,129 @@ class MyBookshelfScreen extends ConsumerWidget {
             ],
           ),
         ),
-        body: const SafeArea(
-          child: TabBarView(
-            children: [
-              _ShelfList(section: _ShelfSection.reading),
-              _ShelfList(section: _ShelfSection.wantToRead),
-              _ShelfList(section: _ShelfSection.finished),
-              _SharedList(),
-            ],
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const tabView = TabBarView(
+                children: [
+                  _ShelfList(section: _ShelfSection.reading),
+                  _ShelfList(section: _ShelfSection.wantToRead),
+                  _ShelfList(section: _ShelfSection.finished),
+                  _SharedList(),
+                ],
+              );
+              if (constraints.maxWidth < _wideLayoutBreakpoint) {
+                return const Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: _GenreRadarCard(),
+                    ),
+                    Expanded(child: tabView),
+                  ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(child: tabView),
+                  SizedBox(
+                    width: 300,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                      child: _GenreRadarCard(),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Cardul din dreapta cu top 5 genuri din raft, ca grafic radar - vezi
+/// GET /bookshelf/me/genres (backend/src/bookshelf/bookshelf.service.ts).
+class _GenreRadarCard extends ConsumerWidget {
+  const _GenreRadarCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final async = ref.watch(myGenreDistributionProvider);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.bookshelfGenreChartTitle, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            async.when(
+              data: (genres) {
+                // Sub 3 puncte, un radar nu are formă (degenerează într-o
+                // linie/punct) - preferăm mesajul gol în loc de un grafic
+                // ilizibil.
+                if (genres.length < 3) {
+                  return SizedBox(
+                    height: 160,
+                    child: Center(
+                      child: Text(
+                        l10n.bookshelfGenreChartEmpty,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  );
+                }
+                final maxCount = genres.map((g) => g.count).reduce((a, b) => a > b ? a : b);
+                return SizedBox(
+                  height: 220,
+                  child: RadarChart(
+                    RadarChartData(
+                      radarShape: RadarShape.polygon,
+                      tickCount: maxCount < 4 ? maxCount : 4,
+                      ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 0),
+                      radarBorderData: BorderSide(color: AppColors.mutedForeground.withValues(alpha: 0.3)),
+                      gridBorderData: BorderSide(color: AppColors.mutedForeground.withValues(alpha: 0.2)),
+                      tickBorderData: const BorderSide(color: Colors.transparent),
+                      getTitle: (index, angle) => RadarChartTitle(
+                        text: localizedGenre(context, genres[index].genre),
+                      ),
+                      titleTextStyle: Theme.of(context)
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(color: AppColors.mutedForeground),
+                      dataSets: [
+                        RadarDataSet(
+                          fillColor: AppColors.primary.withValues(alpha: 0.25),
+                          borderColor: AppColors.primary,
+                          borderWidth: 2,
+                          entryRadius: 3,
+                          dataEntries: [
+                            for (final g in genres) RadarEntry(value: g.count.toDouble()),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SizedBox(
+                height: 220,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, _) => SizedBox(
+                height: 160,
+                child: Center(
+                  child: Text(l10n.bookshelfLoadError, style: Theme.of(context).textTheme.bodySmall),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

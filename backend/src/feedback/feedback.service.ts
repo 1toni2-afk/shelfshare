@@ -1,12 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class FeedbackService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
-  create(userId: string, message: string) {
-    return this.prisma.feedback.create({ data: { userId, message } });
+  async create(userId: string, message: string, photoBuffer?: Buffer) {
+    let photoUrl: string | undefined;
+    if (photoBuffer) {
+      const path = await this.storage.uploadImage(photoBuffer, 'feedback');
+      photoUrl = this.storage.getPublicUrl(path);
+    }
+    return this.prisma.feedback.create({
+      data: { userId, message, photoUrl },
+    });
   }
 
   getAll() {

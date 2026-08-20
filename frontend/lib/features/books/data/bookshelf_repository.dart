@@ -19,6 +19,20 @@ class BookshelfImportResult {
   }
 }
 
+class GenreCount {
+  final String genre;
+  final int count;
+
+  const GenreCount({required this.genre, required this.count});
+
+  factory GenreCount.fromJson(Map<String, dynamic> json) {
+    return GenreCount(
+      genre: json['genre'] as String,
+      count: (json['count'] as num).toInt(),
+    );
+  }
+}
+
 class BookshelfRepository {
   BookshelfRepository(this._ref);
   final Ref _ref;
@@ -27,6 +41,14 @@ class BookshelfRepository {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/bookshelf/me');
     return Bookshelf.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<GenreCount>> getGenreDistribution() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/bookshelf/me/genres');
+    return (response.data as List)
+        .map((e) => GenreCount.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<BookshelfStatus?> getStatusForBook(String bookId) async {
@@ -76,4 +98,9 @@ final bookshelfRepositoryProvider = Provider<BookshelfRepository>((ref) {
 /// se rebuiește (ex. la logout/login).
 final myBookshelfProvider = FutureProvider<Bookshelf>((ref) {
   return ref.watch(bookshelfRepositoryProvider).getMyShelf();
+});
+
+/// Top 5 genuri din raftul propriu - alimentează graficul radar din My Shelf.
+final myGenreDistributionProvider = FutureProvider<List<GenreCount>>((ref) {
+  return ref.watch(bookshelfRepositoryProvider).getGenreDistribution();
 });

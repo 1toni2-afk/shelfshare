@@ -61,6 +61,17 @@ class _AdminContent extends StatelessWidget {
         Card(
           margin: EdgeInsets.zero,
           child: ListTile(
+            leading: const Icon(Icons.support_agent_outlined),
+            title: Text(l10n.adminChatInboxTitle),
+            subtitle: Text(l10n.adminChatInboxDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/chat'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
             leading: const Icon(Icons.toggle_on_outlined),
             title: Text(l10n.adminFeatureAccessTitle),
             subtitle: Text(l10n.adminFeatureAccessDesc),
@@ -186,12 +197,33 @@ class _FeedbackTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        title: Text(item.message),
-        subtitle: Text(
-          '${item.userName ?? item.userEmail} · ${item.createdAt.day}.${item.createdAt.month}.${item.createdAt.year}',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              title: Text(item.message),
+              subtitle: Text(
+                '${item.userName ?? item.userEmail} · ${item.createdAt.day}.${item.createdAt.month}.${item.createdAt.year}',
+              ),
+              isThreeLine: item.message.length > 60,
+            ),
+            if (item.photoUrl != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    item.photoUrl!,
+                    height: 160,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+          ],
         ),
-        isThreeLine: item.message.length > 60,
       ),
     );
   }

@@ -491,6 +491,32 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileFeedbackError => 'Nu am putut trimite feedback-ul';
 
   @override
+  String get profileFeedbackAddPhoto => 'Adaugă o poză';
+
+  @override
+  String get profileFeedbackRemovePhoto => 'Elimină poza';
+
+  @override
+  String get adminChatTitle => 'Chat cu un admin';
+
+  @override
+  String get adminChatEmpty =>
+      'Scrie-ne orice întrebare sau problemă ai - un admin îți răspunde aici.';
+
+  @override
+  String get adminChatInputHint => 'Scrie un mesaj…';
+
+  @override
+  String get adminChatInboxTitle => 'Chat cu adminii';
+
+  @override
+  String get adminChatInboxDesc =>
+      'Conversații de suport, vizibile tuturor adminilor';
+
+  @override
+  String get adminChatInboxEmpty => 'Nicio conversație de suport încă.';
+
+  @override
   String get profileUsernameLabel => 'Username';
 
   @override
@@ -632,6 +658,13 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bookshelfLoadError => 'Nu am putut încărca raftul.';
+
+  @override
+  String get bookshelfGenreChartTitle => 'Genurile tale';
+
+  @override
+  String get bookshelfGenreChartEmpty =>
+      'Adaugă cărți pe raft ca să vezi ce genuri citești cel mai mult.';
 
   @override
   String get bookshelfImportTooltip => 'Importă din Goodreads sau StoryGraph';
@@ -2721,7 +2754,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareChooseFromMyBooks => 'Alege din cărțile mele';
 
   @override
-  String get shareNoBooksInMyLibrary => 'Nu ai încă nicio carte adăugată în bibliotecă.';
+  String get shareNoBooksInMyLibrary =>
+      'Nu ai încă nicio carte adăugată în bibliotecă.';
 
   @override
   String get preRegisterAlreadyLoggedIn =>

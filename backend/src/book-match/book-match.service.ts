@@ -37,8 +37,120 @@ const CATALOG_SIZE_THRESHOLD_FOR_SAMPLING = CANDIDATE_POOL_LIMIT * 20;
 /// Câte titluri per gen intră în pool-ul de cold start.
 const COLD_START_PER_GENRE = 4;
 
+/// Cota din batch-ul de cold start rezervată genurilor alese de user la
+/// onboarding (pasul 5, Book Match) - restul sunt wildcard-uri din genuri
+/// conexe, ca să nu se simtă recomandările ca fiind complet random.
+const COLD_START_FAVORITE_RATIO = 0.8;
+
 /// Câte genuri „de top" alimentează cardurile de profil.
 const TOP_GENRES_FOR_PROFILE = 3;
+
+/// Titluri populare, cross-gen, folosite ca pool de cold start atunci când
+/// userul nu a selectat niciun gen favorit la onboarding - fără el, primele
+/// carduri de Book Match ar fi complet random.
+const COLD_START_FALLBACK_TITLES: readonly string[] = [
+  '1984',
+  'Marele Gatsby',
+  'The Great Gatsby',
+  'Mândrie și prejudecată',
+  'Crimă și pedeapsă',
+  'Un veac de singurătate',
+  'One Hundred Years of Solitude',
+  'Hoțul de cărți',
+  'The Book Thief',
+  'Alchimistul',
+  'Să ucizi o pasăre cântătoare',
+  'To Kill a Mockingbird',
+  'Micul prinț',
+  'The Little Prince',
+  'Portretul lui Dorian Gray',
+  'The Picture of Dorian Gray',
+  'Harry Potter și Piatra Filosofală',
+  'Stăpânul Inelelor: Frăția Inelului',
+  'Hobbitul',
+  'Urzeala tronurilor',
+  'Cronicile din Narnia: Leul, vrăjitoarea și dulapul',
+  'Numele vântului',
+  'Mistborn: Ultimul Imperiu',
+  'Circe',
+  'O curte de spini și trandafiri',
+  'Umbra vântului',
+  'The Shadow of the Wind',
+  'Dune',
+  'Fundația',
+  'Neuromantul',
+  'Jocul lui Ender',
+  'Fahrenheit 451',
+  'Marțianul',
+  'Proiectul Hail Mary',
+  'Ready Player One',
+  'Problema celor trei corpuri',
+  'Mașina timpului',
+  'Povestea noastră',
+  'Înainte să te cunosc',
+  'It Ends with Us',
+  'It Starts with Us',
+  'The Love Hypothesis',
+  'Oameni normali',
+  'Me Before You',
+  'The Fault in Our Stars',
+  'Beach Read',
+  'Book Lovers',
+  'Fata din tren',
+  'Fata dispărută',
+  'Pacienta tăcută',
+  'The Silent Patient',
+  'Și apoi n-a mai rămas niciunul',
+  'Crima din Orient Express',
+  'Codul lui Da Vinci',
+  'Îngeri și demoni',
+  'Shutter Island',
+  'În pădure',
+  'Atomic Habits',
+  'Thinking, Fast and Slow',
+  'Omul în căutarea sensului vieții',
+  'Puterea prezentului',
+  'The 7 Habits of Highly Effective People',
+  'Deep Work',
+  'The Psychology of Money',
+  'Sapiens',
+  'Factfulness',
+  'Quiet',
+  'Educated',
+  'Becoming',
+  'Steve Jobs',
+  'Leonardo da Vinci',
+  'Alexander Hamilton',
+  'Homo Deus',
+  'Prizonierul lui Stalin și Hitler',
+  'Noaptea',
+  'Jurnalul Annei Frank',
+  'Into the Wild',
+  'The Hunger Games',
+  'Divergent',
+  'The Maze Runner',
+  "The Handmaid's Tale",
+  'Never Let Me Go',
+  'The Road',
+  'Life of Pi',
+  'The Kite Runner',
+  'A Thousand Splendid Suns',
+  'The Midnight Library',
+  'The Seven Husbands of Evelyn Hugo',
+  'Daisy Jones & The Six',
+  'Where the Crawdads Sing',
+  'The Song of Achilles',
+  'Fourth Wing',
+  'Iron Flame',
+  'Shadow and Bone',
+  'Six of Crows',
+  'The Cruel Prince',
+  'American Gods',
+  'Good Omens',
+  'Numele trandafirului',
+  'The Catcher in the Rye',
+  'One Hundred Years of Solitude',
+];
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -125,7 +237,12 @@ export class BookMatchService {
     if (user.onboardingSwipesCount < ONBOARDING_SWIPES_TARGET) {
       return {
         sessionId,
-        cards: this.coldStartBatch(candidates, size, user.favoriteGenres),
+        cards: await this.coldStartBatch(
+          candidates,
+          size,
+          user.favoriteGenres,
+          [...excluded.all],
+        ),
       };
     }
 
@@ -240,16 +357,29 @@ export class BookMatchService {
   }
 
   /**
-   * Cold start: încă nu știm nimic despre user, deci întindem plasa pe cât mai
-   * multe genuri din lista canonică (max COLD_START_PER_GENRE titluri de gen),
-   * preferând titlurile marcate ca populare. Genurile favorite declarate în
-   * chestionarul de profil intră primele - e singurul semnal pe care îl avem.
+   * Cold start: încă nu știm nimic despre user din swipe-uri.
+   *
+   * - Dacă userul a bifat genuri favorite la onboarding (pasul de profil de
+   *   dinaintea Book Match), batch-ul e 80% din acele genuri și 20%
+   *   wildcard-uri din restul catalogului - fără cota de 80%, cardurile de
+   *   profil se dilueaza printre atâtea genuri necunoscute încât userul le
+   *   simte ca fiind complet random.
+   * - Dacă n-a bifat niciun gen, nu avem niciun semnal de la user, deci
+   *   pornim de la o listă fixă de titluri populare cross-gen (vezi
+   *   COLD_START_FALLBACK_TITLES) în loc să întindem plasa uniform pe tot
+   *   catalogul.
    */
-  private coldStartBatch(
+  private async coldStartBatch(
     candidates: CandidateBook[],
     size: number,
     favoriteGenres: string[],
-  ): BookMatchCard[] {
+    excludedIds: string[],
+  ): Promise<BookMatchCard[]> {
+    if (favoriteGenres.length === 0) {
+      return this.coldStartFallbackBatch(candidates, size, excludedIds);
+    }
+
+    const favorites = new Set(favoriteGenres);
     const byGenre = new Map<string, CandidateBook[]>();
     for (const book of candidates) {
       const genre = book.genre ?? '';
@@ -258,40 +388,118 @@ export class BookMatchService {
       else byGenre.set(genre, [book]);
     }
 
-    const favorites = new Set(favoriteGenres);
-    // Ordinea genurilor: favoritele userului, apoi lista canonică, apoi
-    // orice gen liber din catalog (importurile externe scriu text arbitrar).
-    const genreOrder = [
-      ...favoriteGenres,
-      ...BOOK_GENRES.filter((g) => !favorites.has(g)),
-      ...[...byGenre.keys()].filter(
-        (g) =>
-          g &&
-          !favorites.has(g) &&
-          !(BOOK_GENRES as readonly string[]).includes(g),
-      ),
-    ];
+    const weightOf = (book: CandidateBook) =>
+      1 + (book.popularityScore ?? BOOK_MATCH_DEFAULT_POPULARITY);
 
-    const pool: CandidateBook[] = [];
-    for (const genre of genreOrder) {
+    // Pool-ul de profil: câte COLD_START_PER_GENRE titluri din fiecare gen
+    // favorit, ca un singur gen popular să nu acopere tot batch-ul.
+    const favoritePool: CandidateBook[] = [];
+    for (const genre of favoriteGenres) {
       const bucket = byGenre.get(genre);
       if (!bucket) continue;
-      const picked = weightedSample(
-        bucket.map((book) => ({
-          item: book,
-          weight: 1 + (book.popularityScore ?? BOOK_MATCH_DEFAULT_POPULARITY),
-        })),
-        COLD_START_PER_GENRE,
+      favoritePool.push(
+        ...weightedSample(
+          bucket.map((book) => ({ item: book, weight: weightOf(book) })),
+          COLD_START_PER_GENRE,
+        ),
       );
-      pool.push(...picked);
     }
-    // Dacă genurile n-au acoperit batch-ul (catalog subțire), completăm cu
-    // orice altceva - mai bine o carte fără gen decât un ecran gol.
+
+    const wildcardPool = candidates.filter(
+      (book) => !favorites.has(book.genre ?? ''),
+    );
+
+    const favoriteTarget = Math.round(size * COLD_START_FAVORITE_RATIO);
+    const wildcardTarget = size - favoriteTarget;
+
+    const wildcard = weightedSample(
+      wildcardPool.map((book) => ({ item: book, weight: weightOf(book) })),
+      wildcardTarget,
+    );
+    const chosen = new Set(wildcard.map((b) => b.id));
+    const profile = weightedSample(
+      favoritePool
+        .filter((book) => !chosen.has(book.id))
+        .map((book) => ({ item: book, weight: weightOf(book) })),
+      favoriteTarget,
+    );
+    for (const book of profile) chosen.add(book.id);
+
+    const pool = [...profile, ...wildcard];
+    // Dacă genurile favorite n-au acoperit cota (catalog subțire pe acele
+    // genuri), completăm cu orice altceva - mai bine o carte în plus decât
+    // un ecran gol.
     if (pool.length < size) {
-      const used = new Set(pool.map((b) => b.id));
       for (const book of candidates) {
         if (pool.length >= size) break;
-        if (!used.has(book.id)) pool.push(book);
+        if (!chosen.has(book.id)) {
+          pool.push(book);
+          chosen.add(book.id);
+        }
+      }
+    }
+
+    return weightedSample(
+      pool.map((item) => ({ item, weight: 1 })),
+      size,
+    ).map((book) => this.toCard(book, false));
+  }
+
+  /**
+   * Cold start fără niciun gen favorit declarat: pornim de la titlurile
+   * populare cross-gen (COLD_START_FALLBACK_TITLES), interogate direct din
+   * DB (nu doar din bazinul `candidates`, care e eșantionat și poate să nu
+   * le conțină). Completăm cu genurile din catalog dacă lista fixă nu are
+   * destule titluri disponibile (excluse/fără copertă/catalog de test mic).
+   */
+  private async coldStartFallbackBatch(
+    candidates: CandidateBook[],
+    size: number,
+    excludedIds: string[],
+  ): Promise<BookMatchCard[]> {
+    const fallbackBooks = await this.prisma.book.findMany({
+      where: {
+        id: { notIn: excludedIds },
+        coverUrl: { not: null },
+        title: { in: [...COLD_START_FALLBACK_TITLES], mode: 'insensitive' },
+      },
+      select: CARD_SELECT,
+      take: size,
+    });
+
+    const pool = [...fallbackBooks];
+    if (pool.length < size) {
+      const byGenre = new Map<string, CandidateBook[]>();
+      for (const book of candidates) {
+        const genre = book.genre ?? '';
+        const bucket = byGenre.get(genre);
+        if (bucket) bucket.push(book);
+        else byGenre.set(genre, [book]);
+      }
+      const used = new Set(pool.map((b) => b.id));
+      for (const genre of BOOK_GENRES) {
+        const bucket = byGenre.get(genre);
+        if (!bucket) continue;
+        for (const book of weightedSample(
+          bucket.map((book) => ({
+            item: book,
+            weight: 1 + (book.popularityScore ?? BOOK_MATCH_DEFAULT_POPULARITY),
+          })),
+          COLD_START_PER_GENRE,
+        )) {
+          if (used.has(book.id)) continue;
+          pool.push(book);
+          used.add(book.id);
+        }
+      }
+      if (pool.length < size) {
+        for (const book of candidates) {
+          if (pool.length >= size) break;
+          if (!used.has(book.id)) {
+            pool.push(book);
+            used.add(book.id);
+          }
+        }
       }
     }
 

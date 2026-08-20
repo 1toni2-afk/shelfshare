@@ -499,6 +499,32 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dein Feedback konnte nicht gesendet werden';
 
   @override
+  String get profileFeedbackAddPhoto => 'Foto hinzufügen';
+
+  @override
+  String get profileFeedbackRemovePhoto => 'Foto entfernen';
+
+  @override
+  String get adminChatTitle => 'Chat mit einem Admin';
+
+  @override
+  String get adminChatEmpty =>
+      'Schreib uns deine Frage oder dein Problem - ein Admin antwortet hier.';
+
+  @override
+  String get adminChatInputHint => 'Nachricht schreiben…';
+
+  @override
+  String get adminChatInboxTitle => 'Chat mit Admins';
+
+  @override
+  String get adminChatInboxDesc =>
+      'Support-Gespräche, für alle Admins sichtbar';
+
+  @override
+  String get adminChatInboxEmpty => 'Noch keine Support-Gespräche.';
+
+  @override
   String get profileUsernameLabel => 'Benutzername';
 
   @override
@@ -642,6 +668,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get bookshelfLoadError => 'Bücherregal konnte nicht geladen werden.';
+
+  @override
+  String get bookshelfGenreChartTitle => 'Deine Genres';
+
+  @override
+  String get bookshelfGenreChartEmpty =>
+      'Füge Bücher zu deinem Regal hinzu, um zu sehen, welche Genres du am meisten liest.';
 
   @override
   String get bookshelfImportTooltip =>
@@ -2763,7 +2796,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shareChooseFromMyBooks => 'Aus meinen Büchern wählen';
 
   @override
-  String get shareNoBooksInMyLibrary => 'Du hast noch keine Bücher in deiner Bibliothek.';
+  String get shareNoBooksInMyLibrary =>
+      'Du hast noch keine Bücher in deiner Bibliothek.';
 
   @override
   String get preRegisterAlreadyLoggedIn =>

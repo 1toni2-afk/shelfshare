@@ -157,6 +157,26 @@
       color: #8A7A68;
       min-height: 16px;
     }
+    /* Splash-ul avea doar paleta light (fundal crem) - noaptea, sau cu
+       tema device-ului pe dark, ecranul alb-crem orbea userul pentru cele
+       ~1-2s cât se încarcă bundle-ul. Urmează tema browserului/OS-ului
+       (nu tema aleasă în aplicație - aia nu există încă la acest punct,
+       Flutter nici n-a pornit). Culorile de mai jos oglindesc paleta dark
+       din app_theme.dart (fundal #0E0E0F, ca html/body de mai sus). */
+    @media (prefers-color-scheme: dark) {
+      #splash {
+        background: #0E0E0F;
+      }
+      #splash .splash-ring-bg {
+        stroke: #2A2A2C;
+      }
+      #splash .splash-percent {
+        color: #F2ECE2;
+      }
+      #splash .splash-stage {
+        color: #A69A8C;
+      }
+    }
     /* Conținut randat server-side (vezi scripts/static-server.js) pentru
        cartea/profilul cerut, ca paginile /books/:id și /users/:id să aibă
        text real indexabil - fără el, Googlebot nu vede decât <title>/<meta>,

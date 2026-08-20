@@ -972,6 +972,54 @@ abstract class AppLocalizations {
   /// **'Nu am putut trimite feedback-ul'**
   String get profileFeedbackError;
 
+  /// No description provided for @profileFeedbackAddPhoto.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă o poză'**
+  String get profileFeedbackAddPhoto;
+
+  /// No description provided for @profileFeedbackRemovePhoto.
+  ///
+  /// In ro, this message translates to:
+  /// **'Elimină poza'**
+  String get profileFeedbackRemovePhoto;
+
+  /// No description provided for @adminChatTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat cu un admin'**
+  String get adminChatTitle;
+
+  /// No description provided for @adminChatEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrie-ne orice întrebare sau problemă ai - un admin îți răspunde aici.'**
+  String get adminChatEmpty;
+
+  /// No description provided for @adminChatInputHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrie un mesaj…'**
+  String get adminChatInputHint;
+
+  /// No description provided for @adminChatInboxTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Chat cu adminii'**
+  String get adminChatInboxTitle;
+
+  /// No description provided for @adminChatInboxDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversații de suport, vizibile tuturor adminilor'**
+  String get adminChatInboxDesc;
+
+  /// No description provided for @adminChatInboxEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio conversație de suport încă.'**
+  String get adminChatInboxEmpty;
+
   /// No description provided for @profileUsernameLabel.
   ///
   /// In ro, this message translates to:
@@ -1223,6 +1271,18 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Nu am putut încărca raftul.'**
   String get bookshelfLoadError;
+
+  /// No description provided for @bookshelfGenreChartTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Genurile tale'**
+  String get bookshelfGenreChartTitle;
+
+  /// No description provided for @bookshelfGenreChartEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă cărți pe raft ca să vezi ce genuri citești cel mai mult.'**
+  String get bookshelfGenreChartEmpty;
 
   /// No description provided for @bookshelfImportTooltip.
   ///

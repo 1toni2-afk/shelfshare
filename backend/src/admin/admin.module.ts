@@ -12,5 +12,6 @@ import { ListingScoreModule } from '../books/listing-score.module';
   imports: [FeedbackModule, SupportModule, SecurityEventsModule, ListingScoreModule],
   controllers: [AdminController],
   providers: [AdminService, AdminGuard, AdminAuditInterceptor],
+  exports: [AdminGuard],
 })
 export class AdminModule {}

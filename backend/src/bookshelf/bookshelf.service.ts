@@ -228,6 +228,32 @@ export class BookshelfService {
     return this.groupByStatus(entries);
   }
 
+  /**
+   * Top 5 genuri din raftul userului (Reading/Want to Read/Finished), pentru
+   * graficul radar din My Shelf. Pornim de la cărțile efectiv aflate pe raft
+   * (nu de la scorurile Book Match, derivate din swipe-uri - un user poate
+   * să nu fi jucat deloc Book Match, dar tot are un raft) - de asta e o
+   * interogare separată aici, nu o reutilizare a userGenreScore.
+   */
+  async getGenreDistribution(userId: string) {
+    const entries = await this.prisma.bookshelfEntry.findMany({
+      where: { userId },
+      select: { book: { select: { genre: true } } },
+    });
+
+    const counts = new Map<string, number>();
+    for (const entry of entries) {
+      const genre = entry.book.genre;
+      if (!genre) continue;
+      counts.set(genre, (counts.get(genre) ?? 0) + 1);
+    }
+
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([genre, count]) => ({ genre, count }));
+  }
+
   private groupByStatus(entries: { status: BookshelfStatus; book: Book }[]) {
     return {
       reading: entries.filter((e) => e.status === 'READING').map((e) => e.book),
