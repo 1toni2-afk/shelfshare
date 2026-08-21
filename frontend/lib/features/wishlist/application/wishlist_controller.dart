@@ -27,10 +27,31 @@ class WishlistController extends AsyncNotifier<List<WishlistItem>> {
     return null;
   }
 
+  /// Scoatere necondiționată de pe wishlist, indiferent de sursă - folosită
+  /// de butonul „×" din ecranul de Wishlist, unde intenția e mereu eliminarea
+  /// (spre deosebire de `toggle`, care pe o sugestie din Book Match o
+  /// confirmă ca favorit explicit în loc s-o elimine).
+  Future<void> removeItem(String bookId) async {
+    final repository = ref.read(wishlistRepositoryProvider);
+    final current = state.value ?? const [];
+    await repository.removeFromWishlist(bookId);
+    state = AsyncData(current.where((item) => item.book.id != bookId).toList());
+  }
+
   Future<void> toggle(String bookId) async {
     final repository = ref.read(wishlistRepositoryProvider);
     final current = state.value ?? const [];
-    if (isWishlisted(bookId)) {
+    final source = sourceFor(bookId);
+    if (source == WishlistSource.bookMatch) {
+      // Deja pe wishlist ca sugestie din Book Match (scânteie) - primul tap
+      // pe iconiță confirmă alegerea ca favorit explicit (inimă), nu o
+      // elimină. Un remove real se face doar din ecranul de Wishlist.
+      final confirmed = await repository.addToWishlist(bookId);
+      state = AsyncData([
+        confirmed,
+        ...current.where((item) => item.book.id != bookId),
+      ]);
+    } else if (source != null) {
       await repository.removeFromWishlist(bookId);
       state = AsyncData(current.where((item) => item.book.id != bookId).toList());
     } else {
