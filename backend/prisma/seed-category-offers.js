@@ -12,9 +12,10 @@
  *   - sale             -> PriceOffer (85% din prețul cerut).
  *   - auction          -> Bid (licitant nou, +10% peste prețul curent).
  *
- * NU creează useri sau anunțuri noi - referă doar UserBook-uri deja
- * existente, create de seed-test-accounts.js (source: 'test-accounts-seed').
- * Rulează seed-test-accounts.js ÎNAINTE de acest script.
+ * NU creează useri sau anunțuri noi - referă doar UserBook-urile deja
+ * deținute de cele 6 conturi (indiferent din ce script provin cărțile din
+ * catalog - catalogul e partajat). Rulează seed-test-accounts.js ÎNAINTE
+ * de acest script, ca cele 6 conturi să aibă anunțuri în toate categoriile.
  *
  * Idempotent: sare o pereche dacă există deja o ofertă/cerere PENDING
  * identică, sau dacă cel vizat a licitat deja pe acea licitație.
@@ -38,7 +39,6 @@ const EMAILS = [
   'test4@yahoo.com',
   'test5@yahoo.com',
 ];
-const SOURCE = 'test-accounts-seed';
 const OFFER_EXPIRY_DAYS = 7;
 const OFFERS_PER_CATEGORY = 4;
 
@@ -148,8 +148,14 @@ async function main() {
     throw new Error(`Conturi negăsite: ${missing.join(', ')} - rulează seed-test-accounts.js întâi.`);
   }
 
+  // NU filtrăm după book.source: catalogul de cărți e partajat, iar
+  // upsertBook (din seed-test-accounts.js) reface un rând Book deja creat de
+  // alt script (ex. seed-40-test-users.js, dacă ISBN-ul se suprapune) fără
+  // să-i schimbe `source`-ul. Filtrarea după proprietar (userId în EMAILS)
+  // e suficientă - toate anunțurile celor 6 conturi ne interesează, oricare
+  // le-ar fi creat cartea din catalog.
   const listings = await prisma.userBook.findMany({
-    where: { user: { email: { in: EMAILS } }, book: { source: SOURCE }, deletedAt: null },
+    where: { user: { email: { in: EMAILS } }, deletedAt: null },
     include: { book: true, user: true },
     orderBy: { createdAt: 'asc' },
   });
