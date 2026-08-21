@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { WishlistItemSource } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ListingScoreService } from '../books/listing-score.service';
@@ -42,6 +43,18 @@ export class WishlistService {
       where: { userId_bookId: { userId, bookId } },
     });
     if (existing) {
+      // Cartea a ajuns pe wishlist dintr-un „Yes" în Book Match (scânteie) -
+      // un tap pe iconița din card confirmă alegerea ca favorit explicit
+      // (inimă), nu aruncă eroare. Fără asta, tap-ul pe scânteie o elimina
+      // de pe listă (toggle simplu), iar userul trebuia să mai dea click o
+      // dată ca s-o și adauge înapoi ca favorit propriu-zis.
+      if (existing.source === WishlistItemSource.BOOK_MATCH) {
+        return this.prisma.wishlistItem.update({
+          where: { id: existing.id },
+          data: { source: WishlistItemSource.PERSONAL },
+          include: { book: true },
+        });
+      }
       throw new ConflictException('Cartea este deja pe lista ta de dorințe');
     }
 

@@ -171,7 +171,7 @@ class _WishlistCard extends ConsumerWidget {
                   // comunică nimic. Singura acțiune care are sens aici e
                   // scoaterea din listă, deci devine un „×" discret.
                   child: _RemoveButton(
-                    onTap: () => ref.read(wishlistControllerProvider.notifier).toggle(item.book.id),
+                    onTap: () => ref.read(wishlistControllerProvider.notifier).removeItem(item.book.id),
                   ),
                 ),
               ],

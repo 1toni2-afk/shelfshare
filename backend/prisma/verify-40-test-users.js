@@ -1,7 +1,7 @@
 /**
  * Verifică rezultatul lui seed-40-test-users.js: exact 40 de useri cu
- * domeniul @shelfshare.test, fiecare cu exact 3 anunțuri din fiecare
- * categorie (Swap / Vânzare / Licitație / Donație) = 12 total.
+ * domeniul @shelfshare.test, fiecare cu exact 5 anunțuri (categoriile diferă
+ * de la un user la altul, prin rotație - nu mai e 3/3/3/3 fix ca înainte).
  *
  * Categoria e derivată din UserBook exact ca în frontend (_categoryOf din
  * my_library_screen.dart): isAuction -> auction; isForSale && salePrice
@@ -54,19 +54,18 @@ async function main() {
     for (const key of Object.keys(totals)) totals[key] += counts[key];
 
     const total = user.userBooks.length;
-    const isGood = counts.swap === 3 && counts.sale === 3 && counts.auction === 3 && counts.donation === 3 && total === 12;
-    if (!isGood) {
+    if (total !== 5) {
       allGood = false;
       console.log(
-        `✗ ${user.email} (${user.name}): swap=${counts.swap} sale=${counts.sale} auction=${counts.auction} donation=${counts.donation} total=${total}`,
+        `✗ ${user.email} (${user.name}): swap=${counts.swap} sale=${counts.sale} auction=${counts.auction} donation=${counts.donation} total=${total} (așteptat: 5)`,
       );
     }
   }
 
-  console.log(`\nTotaluri pe toți userii: swap=${totals.swap} sale=${totals.sale} auction=${totals.auction} donation=${totals.donation} (fiecare așteptat: 120)`);
+  console.log(`\nTotaluri pe toți userii: swap=${totals.swap} sale=${totals.sale} auction=${totals.auction} donation=${totals.donation} (sumă așteptată: 200)`);
 
   if (users.length === 40 && allGood) {
-    console.log('\n✓ Totul corect: 40 useri, câte 3 anunțuri din fiecare categorie.');
+    console.log('\n✓ Totul corect: 40 useri, câte 5 anunțuri fiecare.');
   } else {
     console.log('\n✗ Sunt abateri de la ce era de așteptat - vezi detaliile de mai sus.');
   }
