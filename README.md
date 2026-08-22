@@ -57,12 +57,38 @@ Prima dată:
    ```
 4. Configurează Nginx Proxy Manager (UI la `http://IP-NUC:81`, credențiale default la prima logare — schimbă-le imediat) ca să facă proxy către `backend:3000`, cu domeniul tău (ex: `api.shelfshare.ro`) și HTTPS automat prin Let's Encrypt.
 
-După prima dată, pentru fiecare update:
+După prima dată, deploy-ul e automat (vezi „CI/CD" mai jos) — `./scripts/deploy.sh` rămâne util doar pentru un deploy manual/de urgență, direct pe NUC.
+
+## Deploy web (shelfshare.ro)
+
+Pe mașina care găzduiește `static-server.js`:
 
 ```
-./scripts/deploy.sh
+./scripts/deploy-web.ps1 -Pull -ApiBaseUrl https://api.shelfshare.ro
 ```
 
-## CI
+La fel, automatizat prin CI/CD după fiecare push pe `main` (vezi mai jos).
 
-La fiecare push pe `main` sau Pull Request, GitHub Actions rulează automat lint + build check pe backend. Deploy-ul rămâne manual (vezi mai sus) — se automatizează mai târziu, când are sens.
+## CI/CD
+
+La fiecare push pe `main` sau Pull Request, GitHub Actions rulează automat lint + teste + build pe backend și frontend (`backend-check` / `frontend-check`, pe runnere GitHub-hosted).
+
+Doar la push direct pe `main` (nu la PR), și doar dacă ambele joburi de mai sus trec, rulează automat și deploy-ul:
+
+- `deploy-backend` — pe un runner **self-hosted**, instalat pe NUC, rulează `./scripts/deploy.sh`.
+- `deploy-web` — pe un runner **self-hosted**, instalat pe mașina cu `static-server.js`, rulează `./scripts/deploy-web.ps1`.
+
+Ambele joburi rulează în clona persistentă existentă pe mașina respectivă (nu într-un checkout temporar al runner-ului) — calea vine din variabilele de repo `NUC_DEPLOY_PATH` / `WEB_DEPLOY_PATH` (**Settings → Secrets and variables → Actions → Variables**), ca să rămână scriptul de deploy singura sursă de adevăr pentru `git pull` + restart.
+
+### Configurare runner self-hosted (o singură dată, per mașină)
+
+1. **Settings → Actions → Runners → New self-hosted runner**, alegi OS-ul mașinii respective și copiezi comenzile generate acolo (au un token unic, expiră rapid — nu le refolosi de aici).
+2. La pasul `config.sh` / `config.cmd`, adaugi eticheta corectă:
+   - pe NUC: `--labels nuc`
+   - pe mașina web: `--labels web`
+3. Instalezi runner-ul ca serviciu, ca să pornească automat la reboot:
+   - Linux (NUC): `sudo ./svc.sh install && sudo ./svc.sh start`
+   - Windows: opțiunea de „Run as service" din `config.cmd`, sau `./svc.sh` echivalentul din pachetul descărcat.
+4. Setezi variabila de repo corespunzătoare (`NUC_DEPLOY_PATH` / `WEB_DEPLOY_PATH`) cu calea absolută unde e clonat deja repo-ul pe acea mașină.
+
+De atunci, orice merge pe `main` ajunge live automat, pe ambele mașini, fără pași manuali.
