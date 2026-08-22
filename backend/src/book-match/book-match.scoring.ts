@@ -46,6 +46,12 @@ export const RECALIBRATION_COOLDOWN_DAYS = 30;
 /// Câte swipe-uri primesc discovery crescut după o recalibrare.
 export const DISCOVERY_BOOST_SWIPES = 20;
 
+/// Din cota de discovery, ce parte rămâne serendipity pură (complet random,
+/// orice gen cunoscut, nerespins) - restul e „distanță controlată": genuri
+/// adiacente celor din top, nu tot catalogul la întâmplare (vezi
+/// GENRE_ADJACENCY din book-genres.ts).
+export const DISCOVERY_SERENDIPITY_RATIO = 0.15;
+
 /// Sub acest scor un gen e considerat respins - nu mai apare nici măcar ca
 /// discovery. Ușor negativ, nu 0, ca un singur „no" accidental să nu îngroape
 /// un gen pentru totdeauna.
