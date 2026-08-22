@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -163,7 +164,12 @@ class Scraper:
     vizită normală.
     """
 
-    def __init__(self, delay_range: tuple[float, float] = (1.0, 2.0), headless: bool = True):
+    def __init__(
+        self,
+        delay_range: tuple[float, float] = (1.0, 2.0),
+        headless: bool = True,
+        debug_html_dir: str | None = None,
+    ):
         self._playwright = sync_playwright().start()
         self.browser: Browser = self._playwright.chromium.launch(headless=headless)
         self.context = self.browser.new_context(
@@ -173,6 +179,8 @@ class Scraper:
         )
         self.page: Page = self.context.new_page()
         self.delay_range = delay_range
+        self.debug_html_dir = debug_html_dir
+        self._debug_counter = 0
 
     def close(self) -> None:
         self.context.close()
@@ -203,7 +211,14 @@ class Scraper:
                 print(f"  [!] Challenge Cloudflare încă activ pe {url}", file=sys.stderr)
                 return None
 
-        return self.page.content()
+        html = self.page.content()
+        if self.debug_html_dir:
+            self._debug_counter += 1
+            path = os.path.join(self.debug_html_dir, f"{self._debug_counter:03d}.html")
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(html)
+            print(f"  [debug] pagină salvată în {path}", file=sys.stderr)
+        return html
 
     def enrich_one(self, isbn: str, title_hint: str | None, adapter: SiteAdapter) -> EnrichedBook:
         query = isbn if not title_hint else f"{isbn} {title_hint}"
@@ -343,6 +358,10 @@ def main() -> None:
         action="store_true",
         help="Deschide fereastra browserului (implicit: headless) - util la depanarea selectoarelor",
     )
+    parser.add_argument(
+        "--debug-html-dir",
+        help="Salvează fiecare pagină navigată ca .html în acest folder (util ca să corectăm selectoarele)",
+    )
     args = parser.parse_args()
 
     if not args.input and not args.isbn:
@@ -361,8 +380,15 @@ def main() -> None:
         else [SITE_ADAPTERS["carturesti"], SITE_ADAPTERS["elefant"]]
     )
 
+    if args.debug_html_dir:
+        os.makedirs(args.debug_html_dir, exist_ok=True)
+
     results: list[dict] = []
-    with Scraper(delay_range=(args.delay_min, args.delay_max), headless=not args.headed) as scraper:
+    with Scraper(
+        delay_range=(args.delay_min, args.delay_max),
+        headless=not args.headed,
+        debug_html_dir=args.debug_html_dir,
+    ) as scraper:
         for index, (isbn, title_hint) in enumerate(entries, start=1):
             print(f"[{index}/{len(entries)}] {isbn} ({title_hint or '—'})")
             best: EnrichedBook | None = None
