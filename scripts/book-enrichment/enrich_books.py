@@ -11,35 +11,50 @@ detail-table fields (ISBN, an apariție, nr. pagini, format, tip copertă,
 colecție, limbă). This script does NOT touch the database or discover new
 books - it is pure enrichment for ISBNs you already have.
 
-Sources (robots.txt checked, both permissive on product pages):
-  - carturesti.ro
-  - elefant.ro
+Sources:
+  - carturesti.ro  - working (see "Cloudflare" below)
+  - elefant.ro     - BLOCKED, see ELEFANT_BLOCKED_NOTE
 
+Cloudflare
+----------
 Both sites sit behind Cloudflare, which 403s plain `requests` calls (even
 with a browser-like User-Agent) - that's IP/fingerprint based, not something
-a User-Agent string can talk around. This script instead drives a real
-headless Chromium via Playwright, which clears Cloudflare's passive checks
-the same way an actual browser visit would.
+a User-Agent string can talk around. This script drives a real headless
+Chromium via Playwright instead.
 
-IMPORTANT - selectors are best-effort: this script extracts cover/title/
-description primarily from Open Graph meta tags (og:image, og:title,
-og:description), which are far more stable across a site's markup changes
-than hand-picked CSS classes. The detail table (ISBN/an/pagini/format/etc.)
-is parsed by matching row *labels* (tolerant of diacritics and spacing)
-rather than by class name, for the same reason. Still, verify a handful of
-results against the live pages before trusting a large batch - e-commerce
-markup does change, and the selectors here were not validated against the
-live DOM by the person who wrote them (see the script's README).
+Measured behaviour on carturesti.ro (2026-08, see README):
+  * the FIRST navigation of a fresh browser session passes Cloudflare's
+    passive check and serves real content;
+  * every SUBSEQUENT navigation in that same session gets a managed
+    challenge ("Doar un moment..." - the Romanian "Just a moment...") which a
+    Playwright-driven Chromium never solves, headless or headed, no matter
+    how long it waits (tested up to 2 min of cooldown).
+
+So the scraper opens a fresh browser context per navigation and paces itself
+with a long delay between them. Same IP, same User-Agent, same browser
+fingerprint - no spoofing, no proxy rotation; just a clean session and a slow,
+polite request rate. If that stops working, stop and reconsider rather than
+reaching for evasion.
+
+Result correctness
+------------------
+Carturesti's search is fuzzy (Solr): searching ISBN 9789734692765 happily
+returns 9789734692965, a completely different book. Taking "the first search
+result" therefore silently writes WRONG metadata onto a book. This script
+reads the site's own /product/json-search response (which carries each hit's
+`code`, i.e. its ISBN) and only accepts a hit whose ISBN equals the one asked
+for. If nothing matches exactly the record comes back with an error instead
+of a plausible-looking lie. `--allow-fuzzy-match` opts out, and flags every
+such record with `"isbnVerified": false`.
 
 Usage:
     pip install -r requirements.txt
     playwright install chromium
     python enrich_books.py --input isbns.txt --output enriched.json
-    python enrich_books.py --input isbns.txt --output enriched.json --source elefant
-    python enrich_books.py --isbn 9789734692765 --source carturesti
+    python enrich_books.py --isbn 9789735965006
 
 Input file format (one entry per line, blank lines and '#' comments ignored):
-    9789734692765
+    9789735965006
     9786063312345,Numele trandafirului
 """
 
@@ -58,32 +73,62 @@ from typing import Iterable
 from urllib.parse import quote, urljoin
 
 from bs4 import BeautifulSoup
-from playwright.sync_api import Browser, Page, sync_playwright
+from playwright.sync_api import Browser, BrowserContext, Page, sync_playwright
+
+# stdout on a Windows console defaults to cp1252, which blows up on the
+# diacritics in both our own messages and the scraped titles.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+    except (AttributeError, OSError):  # pragma: no cover - non-reconfigurable stream
+        pass
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
 
-PAGE_TIMEOUT_MS = 20_000
+PAGE_TIMEOUT_MS = 45_000
 
-# Cloudflare's interstitial ("Just a moment...") title while it runs its
-# passive checks - dacă apare, mai așteptăm puțin în loc să parsăm imediat
-# pagina de challenge ca și cum ar fi conținutul real.
-CHALLENGE_TITLE_MARKERS = ("just a moment", "verificăm dacă conexiunea")
-CHALLENGE_WAIT_SECONDS = 6
+# Cât așteptăm ca rezultatele randate de Angular să apară în DOM.
+RENDER_TIMEOUT_MS = 20_000
+
+# Titlurile paginilor de challenge Cloudflare. "Doar un moment..." e varianta
+# românească a lui "Just a moment..." și e cea pe care o servește carturesti.ro
+# - fără ea am parsa pagina de challenge ca și cum ar fi conținut real.
+# Comparația se face pe text normalizat (fără diacritice), vezi `_is_challenge`.
+CHALLENGE_TITLE_MARKERS = (
+    "just a moment",
+    "doar un moment",
+    "verificam daca conexiunea",
+    "checking your browser",
+    "403 forbidden",
+)
+
+# Challenge-ul *nu* se rezolvă singur sub Playwright (măsurat: >120s fără
+# efect), deci nu așteptăm mult degeaba - doar cât să prindem un redirect
+# întârziat, apoi raportăm.
+CHALLENGE_WAIT_SECONDS = 8
+
+ELEFANT_BLOCKED_NOTE = (
+    "elefant.ro serves a hard Cloudflare 403 for the whole origin (homepage "
+    "included) to a real Chromium, headless or headed - an active block, not a "
+    "solvable challenge. Left in place so the adapter is ready if that changes."
+)
 
 # Etichetele căutate în tabelul de detalii, cu variante (diacritice/fără,
 # ortografii alternative). Comparația se face pe text normalizat (vezi
 # `_normalize_label`), deci fiecare variantă de mai jos e deja "curată".
+# Cele marcate `# carturesti` sunt confirmate pe DOM-ul real.
 DETAIL_LABELS: dict[str, tuple[str, ...]] = {
-    "isbn": ("isbn",),
-    "publishedYear": ("an aparitie", "anul aparitiei", "an publicare"),
-    "pageCount": ("nr pagini", "numar pagini", "numar de pagini"),
-    "format": ("format",),
-    "coverType": ("tip coperta", "coperta"),
-    "collection": ("colectie", "seria"),
-    "language": ("limba",),
+    "sourceIsbn": ("isbn",),  # carturesti
+    "publishedYear": ("data publicarii", "an aparitie", "anul aparitiei", "an publicare"),  # carturesti
+    "pageCount": ("nr pagini", "numar pagini", "numar de pagini"),  # carturesti
+    "format": ("format", "dimensiuni"),  # carturesti: "Dimensiuni"
+    "coverType": ("tip coperta", "coperta"),  # carturesti
+    "collection": ("colectie", "seria", "serie"),  # carturesti
+    "language": ("limba",),  # carturesti
+    "publisher": ("editura",),  # carturesti
 }
 
 
@@ -92,6 +137,16 @@ def _normalize_label(text: str) -> str:
     decomposed = unicodedata.normalize("NFKD", text)
     ascii_only = "".join(c for c in decomposed if not unicodedata.combining(c))
     return re.sub(r"[^a-z0-9]+", " ", ascii_only.lower()).strip()
+
+
+def _normalize_isbn(value: str | None) -> str:
+    """ISBN-uri comparabile: doar cifre și X final (fără cratime/spații)."""
+    return re.sub(r"[^0-9xX]", "", value or "").upper()
+
+
+def _is_challenge(title: str | None) -> bool:
+    normalized = _normalize_label(title or "")
+    return any(marker in normalized for marker in CHALLENGE_TITLE_MARKERS)
 
 
 @dataclass
@@ -110,6 +165,8 @@ class EnrichedBook:
     coverType: str | None = None
     collection: str | None = None
     language: str | None = None
+    sourceIsbn: str | None = None
+    isbnVerified: bool = False
     error: str | None = None
 
 
@@ -117,17 +174,18 @@ class EnrichedBook:
 class SiteAdapter:
     """Cum se caută și se parsează o carte pe un anumit site.
 
-    Fiecare adapter face DOAR două lucruri specifice site-ului: construiește
-    URL-ul de căutare și alege primul rezultat plauzibil dintr-o pagină de
-    căutare. Restul (extragerea din pagina de produs) e comun, pe OG tags +
-    potrivire de etichete, tocmai ca să nu depindă de clasele CSS ale fiecărui
-    site (mult mai fragile).
+    Adapterul știe doar ce e specific site-ului: URL-ul de căutare, endpoint-ul
+    JSON pe care îl apelează singură pagina de rezultate, și selectorul de
+    rezervă pentru linkurile de produs. Restul (extragerea din pagina de
+    produs) e comun.
     """
 
     name: str
     base_url: str
     search_path: str  # cu `{query}` de interpolat
     result_link_selector: str  # selector CSS pentru linkurile din rezultate
+    search_api_marker: str | None = None  # substring din URL-ul XHR de căutare
+    blocked_note: str | None = None
 
     def search_url(self, query: str) -> str:
         # `quote` (nu `quote_plus`): search_path poate fi un segment de path
@@ -141,51 +199,81 @@ class SiteAdapter:
                 return urljoin(self.base_url, href)
         return None
 
+    def products_from_api(self, payload: dict) -> list[dict]:
+        """Normalizează răspunsul JSON al căutării la {isbn, url, title}."""
+        products: list[dict] = []
+        for item in payload.get("products") or []:
+            gtm = item.get("gtmData") or {}
+            products.append(
+                {
+                    "isbn": _normalize_isbn(item.get("code") or gtm.get("item_ISBN_code")),
+                    "url": urljoin(self.base_url, item.get("url") or ""),
+                    "title": item.get("name"),
+                }
+            )
+        return products
+
 
 SITE_ADAPTERS: dict[str, SiteAdapter] = {
+    # Verificat pe DOM-ul real: pagina de rezultate e un SPA AngularJS care
+    # cere /product/json-search și randează tile-urile în
+    # .product-grid-container > a.select-item-event[href^="/carte/"].
     "carturesti": SiteAdapter(
         name="carturesti",
         base_url="https://carturesti.ro",
         search_path="/product/search/{query}",
-        result_link_selector="a[href*='/carte/']",
+        result_link_selector=".product-grid-container a[href*='/carte/'], a.select-item-event[href*='/carte/']",
+        search_api_marker="/product/json-search",
     ),
     "elefant": SiteAdapter(
         name="elefant",
         base_url="https://www.elefant.ro",
         search_path="/search?SearchTerm={query}",
+        # Neverificat: originea răspunde 403 pe tot site-ul, deci n-am putut
+        # inspecta DOM-ul real al paginii de rezultate.
         result_link_selector="a.product-title, a[href*='/carti/'], .product-list a",
+        blocked_note=ELEFANT_BLOCKED_NOTE,
     ),
 }
 
 
 class Scraper:
-    """Navighează cu un Chromium headless real (Playwright), nu cu request-uri
-    HTTP brute - Cloudflare respinge (403) request-urile `requests`/`curl` pe
-    baza reputației IP-ului și a amprentei TLS/HTTP2, indiferent de
-    User-Agent; un browser real trece de verificările pasive la fel ca la o
-    vizită normală.
+    """Navighează cu un Chromium real (Playwright), nu cu request-uri HTTP
+    brute - Cloudflare respinge (403) request-urile `requests`/`curl` pe baza
+    reputației IP-ului și a amprentei TLS/HTTP2, indiferent de User-Agent.
+
+    Deschide un context de browser nou pentru fiecare navigare: pe
+    carturesti.ro doar prima cerere a unei sesiuni trece de verificarea
+    pasivă, iar challenge-ul primit la a doua nu se rezolvă niciodată sub
+    Playwright. Vezi docstring-ul modulului.
     """
 
     def __init__(
         self,
-        delay_range: tuple[float, float] = (1.0, 2.0),
+        delay_range: tuple[float, float] = (6.0, 10.0),
         headless: bool = True,
         debug_html_dir: str | None = None,
+        reuse_session: bool = False,
     ):
         self._playwright = sync_playwright().start()
         self.browser: Browser = self._playwright.chromium.launch(headless=headless)
-        self.context = self.browser.new_context(
+        self.delay_range = delay_range
+        self.debug_html_dir = debug_html_dir
+        self.reuse_session = reuse_session
+        self._shared_context: BrowserContext | None = None
+        self._debug_counter = 0
+        self._first_navigation = True
+
+    def _new_context(self) -> BrowserContext:
+        return self.browser.new_context(
             user_agent=USER_AGENT,
             locale="ro-RO",
             viewport={"width": 1280, "height": 900},
         )
-        self.page: Page = self.context.new_page()
-        self.delay_range = delay_range
-        self.debug_html_dir = debug_html_dir
-        self._debug_counter = 0
 
     def close(self) -> None:
-        self.context.close()
+        if self._shared_context is not None:
+            self._shared_context.close()
         self.browser.close()
         self._playwright.stop()
 
@@ -195,78 +283,204 @@ class Scraper:
     def __exit__(self, *exc_info: object) -> None:
         self.close()
 
-    def _throttled_navigate(self, url: str) -> str | None:
-        time.sleep(uniform(*self.delay_range))
+    def _save_debug(self, html: str, url: str) -> None:
+        if not self.debug_html_dir:
+            return
+        self._debug_counter += 1
+        path = os.path.join(self.debug_html_dir, f"{self._debug_counter:03d}.html")
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(f"<!-- {url} -->\n{html}")
+        print(f"  [debug] pagină salvată în {path}", file=sys.stderr)
+
+    def _navigate(
+        self,
+        url: str,
+        wait_selector: str | None = None,
+        api_marker: str | None = None,
+    ) -> tuple[str | None, dict | None, str | None]:
+        """-> (html, payload JSON al căutării, mesaj de eroare)."""
+        # Prima navigare nu așteaptă degeaba; restul sunt distanțate.
+        if self._first_navigation:
+            self._first_navigation = False
+        else:
+            time.sleep(uniform(*self.delay_range))
+
+        if self.reuse_session:
+            if self._shared_context is None:
+                self._shared_context = self._new_context()
+            context = self._shared_context
+        else:
+            context = self._new_context()
+
+        page: Page = context.new_page()
+        captured: dict[str, str] = {}
+
+        if api_marker:
+
+            def on_response(response) -> None:  # noqa: ANN001 - tip Playwright intern
+                if api_marker in response.url and response.status == 200 and "body" not in captured:
+                    try:
+                        captured["body"] = response.text()
+                    except Exception:  # noqa: BLE001 - corpul poate fi deja eliberat
+                        pass
+
+            page.on("response", on_response)
+
         try:
-            self.page.goto(url, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
+            page.goto(url, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
         except Exception as exc:  # noqa: BLE001 - orice eșec de navigare e non-fatal aici
             print(f"  [!] Navigare la {url} a eșuat: {exc}", file=sys.stderr)
-            return None
+            self._release(context, page)
+            return None, None, "navigation failed"
 
-        title = (self.page.title() or "").lower()
-        if any(marker in title for marker in CHALLENGE_TITLE_MARKERS):
-            # Challenge-ul Cloudflare se rezolvă singur în câteva secunde (nu
-            # necesită interacțiune) - mai așteptăm o dată, apoi renunțăm.
-            time.sleep(CHALLENGE_WAIT_SECONDS)
-            title = (self.page.title() or "").lower()
-            if any(marker in title for marker in CHALLENGE_TITLE_MARKERS):
-                print(f"  [!] Challenge Cloudflare încă activ pe {url}", file=sys.stderr)
-                return None
+        if _is_challenge(page.title()):
+            # Nu se rezolvă singur sub Playwright, dar mai lăsăm o fereastră
+            # scurtă în caz că e doar un redirect întârziat.
+            deadline = time.time() + CHALLENGE_WAIT_SECONDS
+            while time.time() < deadline and _is_challenge(page.title()):
+                page.wait_for_timeout(1000)
+            if _is_challenge(page.title()):
+                print(f"  [!] Cloudflare a blocat {url} ({page.title()!r})", file=sys.stderr)
+                self._save_debug(page.content(), url)
+                self._release(context, page)
+                return None, None, "blocked by Cloudflare"
 
-        html = self.page.content()
-        if self.debug_html_dir:
-            self._debug_counter += 1
-            path = os.path.join(self.debug_html_dir, f"{self._debug_counter:03d}.html")
-            with open(path, "w", encoding="utf-8") as handle:
-                handle.write(html)
-            print(f"  [debug] pagină salvată în {path}", file=sys.stderr)
-        return html
+        # Pagina de rezultate e randată de Angular după domcontentloaded, deci
+        # așteptăm fie XHR-ul de căutare, fie tile-urile din DOM.
+        if api_marker:
+            deadline = time.time() + RENDER_TIMEOUT_MS / 1000
+            while time.time() < deadline and "body" not in captured:
+                page.wait_for_timeout(250)
+        if wait_selector:
+            try:
+                page.wait_for_selector(wait_selector, timeout=RENDER_TIMEOUT_MS)
+            except Exception:  # noqa: BLE001 - lipsa selectorului e un rezultat valid (0 hits)
+                pass
 
-    def enrich_one(self, isbn: str, title_hint: str | None, adapter: SiteAdapter) -> EnrichedBook:
-        query = isbn if not title_hint else f"{isbn} {title_hint}"
+        html = page.content()
+        self._save_debug(html, url)
+        self._release(context, page)
+
+        payload = None
+        if captured.get("body"):
+            try:
+                payload = json.loads(captured["body"])
+            except json.JSONDecodeError:
+                payload = None
+        return html, payload, None
+
+    def _release(self, context: BrowserContext, page: Page) -> None:
+        try:
+            page.close()
+        except Exception:  # noqa: BLE001
+            pass
+        if not self.reuse_session:
+            try:
+                context.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    def enrich_one(
+        self,
+        isbn: str,
+        title_hint: str | None,
+        adapter: SiteAdapter,
+        allow_fuzzy: bool = False,
+    ) -> EnrichedBook:
         result = EnrichedBook(isbn=isbn, source=adapter.name)
+        wanted = _normalize_isbn(isbn)
 
-        search_html = self._throttled_navigate(adapter.search_url(query))
-        if search_html is None:
-            result.error = "search request failed"
+        # Căutăm după ISBN: e singurul termen care poate fi verificat exact.
+        # `title_hint` rămâne doar ca plasă de siguranță (--allow-fuzzy-match).
+        html, payload, nav_error = self._navigate(
+            adapter.search_url(isbn),
+            wait_selector=adapter.result_link_selector,
+            api_marker=adapter.search_api_marker,
+        )
+        if nav_error:
+            result.error = nav_error
             return result
 
-        search_soup = BeautifulSoup(search_html, "html.parser")
-        product_url = adapter.pick_product_url(search_soup)
-        if not product_url:
-            # Fallback: încearcă doar cu titlul, dacă ISBN-ul singur n-a găsit nimic.
-            if title_hint:
-                search_html = self._throttled_navigate(adapter.search_url(title_hint))
-                if search_html is not None:
-                    search_soup = BeautifulSoup(search_html, "html.parser")
-                    product_url = adapter.pick_product_url(search_soup)
-        if not product_url:
-            result.error = "no search result found"
+        candidates: list[dict] = adapter.products_from_api(payload) if payload else []
+        exact = next((c for c in candidates if c["isbn"] and c["isbn"] == wanted), None)
+
+        if exact:
+            result.productUrl = exact["url"]
+            result.isbnVerified = True
+        elif allow_fuzzy:
+            fallback_url = candidates[0]["url"] if candidates else None
+            if not fallback_url and html:
+                fallback_url = adapter.pick_product_url(BeautifulSoup(html, "html.parser"))
+            if not fallback_url and title_hint:
+                html2, payload2, _ = self._navigate(
+                    adapter.search_url(title_hint),
+                    wait_selector=adapter.result_link_selector,
+                    api_marker=adapter.search_api_marker,
+                )
+                more = adapter.products_from_api(payload2) if payload2 else []
+                if more:
+                    fallback_url = more[0]["url"]
+                elif html2:
+                    fallback_url = adapter.pick_product_url(BeautifulSoup(html2, "html.parser"))
+            if not fallback_url:
+                result.error = "no search result found"
+                return result
+            result.productUrl = fallback_url
+            result.isbnVerified = False
+        else:
+            # Căutarea e fuzzy: fără potrivire exactă pe ISBN am scrie datele
+            # altei cărți. Mai bine un rezultat gol decât unul greșit.
+            result.error = (
+                f"no exact ISBN match ({len(candidates)} fuzzy result(s); "
+                "use --allow-fuzzy-match to accept them)"
+            )
             return result
 
-        result.productUrl = product_url
-        product_html = self._throttled_navigate(product_url)
-        if product_html is None:
-            result.error = "product page request failed"
+        product_html, _, nav_error = self._navigate(result.productUrl)
+        if nav_error:
+            result.error = nav_error
             return result
 
         self._parse_product_page(BeautifulSoup(product_html, "html.parser"), result)
+
+        if result.sourceIsbn and _normalize_isbn(result.sourceIsbn) == wanted:
+            result.isbnVerified = True
         return result
 
     def _parse_product_page(self, soup: BeautifulSoup, result: EnrichedBook) -> None:
-        result.coverUrl = self._meta(soup, "og:image")
-        result.title = self._meta(soup, "og:title") or self._first_text(soup, "h1")
-        result.description = self._meta(soup, "og:description") or self._first_text(
-            soup, "[class*='descri']"
+        ld = self._product_ld_json(soup)
+
+        # og:image e coperta la rezoluție plină; JSON-LD dă doar thumb-ul -240.
+        result.coverUrl = self._meta(soup, "og:image") or (ld.get("image") if ld else None)
+        result.title = (
+            self._first_text(soup, "h1.titluProdus")
+            or self._meta(soup, "og:title")
+            or (ld.get("name") if ld else None)
+            or self._first_text(soup, "h1")
         )
 
-        author = self._first_text(soup, "[class*='author'], [class*='autor']")
-        if author:
-            result.author = re.sub(r"(?i)^autor:?\s*", "", author).strip()
+        # .descriereProdus e textul randat (diacritice corecte, fără taguri);
+        # og:description conține HTML brut și entități (&icirc;), deci e doar
+        # rezerva. Pot exista mai multe noduri, primul plin e cel bun.
+        for node in soup.select(".descriereProdus, [class*='descriere'], [class*='descri']"):
+            text = node.get_text(" ", strip=True)
+            if text:
+                result.description = text
+                break
+        if not result.description:
+            raw = self._meta(soup, "og:description") or (ld.get("description") if ld else None)
+            if raw:
+                result.description = BeautifulSoup(raw, "html.parser").get_text(" ", strip=True)
 
-        publisher = self._first_text(soup, "[class*='publisher'], [class*='editura']")
-        if publisher:
-            result.publisher = re.sub(r"(?i)^editur[aă]:?\s*", "", publisher).strip()
+        # Autorul e în .autorProdus (care mai conține și butonul "Alertă când
+        # apare o carte nouă"), deci luăm doar linkurile /autor/.
+        authors = [
+            a.get_text(" ", strip=True)
+            for a in soup.select(".autorProdus a[href*='/autor/']")
+            if a.get_text(strip=True)
+        ]
+        if authors:
+            result.author = ", ".join(dict.fromkeys(authors))
 
         details = self._extract_detail_table(soup)
         for field_name, raw_value in details.items():
@@ -281,18 +495,38 @@ class Scraper:
             else:
                 setattr(result, field_name, raw_value.strip())
 
+        if ld:
+            brand = ld.get("brand") if isinstance(ld.get("brand"), dict) else None
+            result.publisher = result.publisher or (brand.get("name") if brand else None)
+            result.sourceIsbn = result.sourceIsbn or ld.get("GTIN13") or ld.get("sku")
+
     def _extract_detail_table(self, soup: BeautifulSoup) -> dict[str, str]:
-        """Parcurge orice pereche etichetă/valoare plauzibilă (rânduri de tabel,
-        liste de definiții, sau div-uri de tip "specificații") și potrivește
+        """Parcurge orice pereche etichetă/valoare plauzibilă și potrivește
         eticheta normalizată cu DETAIL_LABELS - independent de markup-ul exact.
         """
         found: dict[str, str] = {}
         candidate_rows: list[tuple[str, str]] = []
 
+        # carturesti.ro: <div class="productAttr">
+        #                  <span class="productAttrLabel">Nr. pagini: </span><div>64</div>
+        #                </div>
+        # Valoarea nu e mereu într-un tag propriu ("Dimensiuni" o are ca text
+        # liber), deci o luăm ca "textul blocului minus eticheta".
+        for attr in soup.select(".productAttr"):
+            label_node = attr.select_one(".productAttrLabel")
+            if not label_node:
+                continue
+            label_text = label_node.get_text(" ", strip=True)
+            whole = attr.get_text(" ", strip=True)
+            value_text = whole[len(label_text) :] if whole.startswith(label_text) else whole
+            candidate_rows.append((label_text, value_text.strip().lstrip(":").strip()))
+
         for row in soup.select("tr"):
             cells = row.find_all(["td", "th"])
             if len(cells) >= 2:
-                candidate_rows.append((cells[0].get_text(" ", strip=True), cells[1].get_text(" ", strip=True)))
+                candidate_rows.append(
+                    (cells[0].get_text(" ", strip=True), cells[1].get_text(" ", strip=True))
+                )
 
         for dt in soup.select("dt"):
             dd = dt.find_next_sibling("dd")
@@ -311,6 +545,20 @@ class Scraper:
                     break
 
         return found
+
+    @staticmethod
+    def _product_ld_json(soup: BeautifulSoup) -> dict | None:
+        for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
+            raw = script.string or script.get_text()
+            if not raw or '"Product"' not in raw:
+                continue
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(data, dict) and data.get("@type") == "Product":
+                return data
+        return None
 
     @staticmethod
     def _meta(soup: BeautifulSoup, property_name: str) -> str | None:
@@ -342,19 +590,33 @@ def read_input(path: str) -> Iterable[tuple[str, str | None]]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--input", help="Fișier cu ISBN-uri (unul pe linie, opțional 'isbn,titlu')")
     parser.add_argument("--isbn", help="Un singur ISBN, pentru teste rapide")
-    parser.add_argument("--title", help="Titlu opțional, folosit ca query alături de --isbn")
+    parser.add_argument("--title", help="Titlu opțional, folosit ca query de rezervă (--allow-fuzzy-match)")
     parser.add_argument("--output", default="enriched.json", help="Fișier JSON de ieșire")
     parser.add_argument(
         "--source",
         choices=["carturesti", "elefant", "both"],
-        default="both",
-        help="Ce site(uri) să interogheze (implicit: ambele, carturesti primul)",
+        default="carturesti",
+        help="Ce site(uri) să interogheze (implicit: carturesti; elefant.ro e blocat, vezi README)",
     )
-    parser.add_argument("--delay-min", type=float, default=1.0, help="Pauză minimă între request-uri (sec)")
-    parser.add_argument("--delay-max", type=float, default=2.0, help="Pauză maximă între request-uri (sec)")
+    parser.add_argument("--delay-min", type=float, default=6.0, help="Pauză minimă între navigări (sec)")
+    parser.add_argument("--delay-max", type=float, default=10.0, help="Pauză maximă între navigări (sec)")
+    parser.add_argument(
+        "--allow-fuzzy-match",
+        action="store_true",
+        help="Acceptă primul rezultat chiar dacă ISBN-ul nu se potrivește exact "
+        "(marcat cu isbnVerified=false) - căutarea e fuzzy, deci poate fi altă carte",
+    )
+    parser.add_argument(
+        "--reuse-session",
+        action="store_true",
+        help="Refolosește un singur context de browser (implicit: unul nou per navigare). "
+        "Pe carturesti.ro asta primește challenge Cloudflare de la a doua cerere.",
+    )
     parser.add_argument(
         "--headed",
         action="store_true",
@@ -381,6 +643,9 @@ def main() -> None:
         if args.source != "both"
         else [SITE_ADAPTERS["carturesti"], SITE_ADAPTERS["elefant"]]
     )
+    for adapter in adapters:
+        if adapter.blocked_note:
+            print(f"[!] {adapter.name}: {adapter.blocked_note}", file=sys.stderr)
 
     if args.debug_html_dir:
         os.makedirs(args.debug_html_dir, exist_ok=True)
@@ -390,16 +655,24 @@ def main() -> None:
         delay_range=(args.delay_min, args.delay_max),
         headless=not args.headed,
         debug_html_dir=args.debug_html_dir,
+        reuse_session=args.reuse_session,
     ) as scraper:
         for index, (isbn, title_hint) in enumerate(entries, start=1):
             print(f"[{index}/{len(entries)}] {isbn} ({title_hint or '—'})")
             best: EnrichedBook | None = None
             for adapter in adapters:
-                candidate = scraper.enrich_one(isbn, title_hint, adapter)
+                candidate = scraper.enrich_one(
+                    isbn, title_hint, adapter, allow_fuzzy=args.allow_fuzzy_match
+                )
                 if candidate.error is None:
                     best = candidate
                     break
                 best = best or candidate
+            assert best is not None
+            if best.error:
+                print(f"    -> {best.error}")
+            else:
+                print(f"    -> {best.title} ({best.publisher or '?'}) {best.productUrl}")
             results.append(asdict(best))
 
     with open(args.output, "w", encoding="utf-8") as handle:
