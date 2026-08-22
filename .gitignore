@@ -3,6 +3,10 @@ node_modules/
 dist/
 coverage/
 
+# Python
+__pycache__/
+*.pyc
+
 # Env
 .env
 .env.local
