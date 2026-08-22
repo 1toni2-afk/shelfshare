@@ -152,7 +152,7 @@ SITE_ADAPTERS: dict[str, SiteAdapter] = {
     "elefant": SiteAdapter(
         name="elefant",
         base_url="https://www.elefant.ro",
-        search_path="/cautare/?q={query}",
+        search_path="/search?SearchTerm={query}",
         result_link_selector="a.product-title, a[href*='/carti/'], .product-list a",
     ),
 }
