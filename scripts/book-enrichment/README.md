@@ -14,7 +14,15 @@ login, pe care scriptul nu le atinge.
 ```bash
 cd scripts/book-enrichment
 pip install -r requirements.txt
+playwright install chromium
 ```
+
+Rulează cu un Chromium headless real (Playwright), nu cu request-uri HTTP
+brute: ambele site-uri sunt în spatele Cloudflare, care respinge (403) orice
+request `requests`/`curl` pe baza reputației IP-ului/amprentei TLS, indiferent
+de User-Agent - un browser real trece de verificarea pasivă la fel ca o
+vizită normală. Adaugă `--headed` la orice comandă ca să vezi fereastra
+browserului (util la depanarea selectoarelor).
 
 ## Utilizare
 
@@ -49,10 +57,14 @@ python enrich_books.py --input isbns.txt --source elefant --output enriched.json
 
 ## Limitări cunoscute
 
-- **Selectoarele nu au putut fi validate live**: acest mediu de execuție iese
-  prin un proxy care a primit challenge Cloudflare (JS) la ambele domenii, deci
-  parsing-ul de mai sus e cel mai bun efort bazat pe structuri tipice de
-  e-commerce (OG tags + etichete de tabel), nu verificat pe DOM-ul real.
+- **Cloudflare**: navigarea cu Playwright trece de verificarea pasivă
+  (challenge-ul „Just a moment...” se rezolvă singur în câteva secunde, fără
+  interacțiune) - scriptul așteaptă automat până la `CHALLENGE_WAIT_SECONDS`.
+  Dacă totuși apare `"search request failed"` sau `"product page request failed"`
+  în rezultat, rulează din nou cu `--headed` ca să vezi ce se întâmplă vizual
+  (poate fi un challenge interactiv, IP blocat definitiv, sau selector greșit).
+- **Selectoarele nu au fost validate pe DOM-ul real**: parsing-ul e cel mai bun
+  efort bazat pe structuri tipice de e-commerce (OG tags + etichete de tabel).
   Rulează scriptul o dată pe un eșantion mic (10-20 ISBN-uri) și verifică manual
   rezultatul din `enriched.json` înainte de a-l folosi pentru un batch mare;
   ajustează `result_link_selector` din `SITE_ADAPTERS` dacă pagina de căutare

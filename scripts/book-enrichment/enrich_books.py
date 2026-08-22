@@ -15,6 +15,12 @@ Sources (robots.txt checked, both permissive on product pages):
   - carturesti.ro
   - elefant.ro
 
+Both sites sit behind Cloudflare, which 403s plain `requests` calls (even
+with a browser-like User-Agent) - that's IP/fingerprint based, not something
+a User-Agent string can talk around. This script instead drives a real
+headless Chromium via Playwright, which clears Cloudflare's passive checks
+the same way an actual browser visit would.
+
 IMPORTANT - selectors are best-effort: this script extracts cover/title/
 description primarily from Open Graph meta tags (og:image, og:title,
 og:description), which are far more stable across a site's markup changes
@@ -22,12 +28,12 @@ than hand-picked CSS classes. The detail table (ISBN/an/pagini/format/etc.)
 is parsed by matching row *labels* (tolerant of diacritics and spacing)
 rather than by class name, for the same reason. Still, verify a handful of
 results against the live pages before trusting a large batch - e-commerce
-markup does change, and this was not (and could not be, from this sandbox,
-which sits behind Cloudflare's bot challenge on both sites) validated
-against the live DOM.
+markup does change, and the selectors here were not validated against the
+live DOM by the person who wrote them (see the script's README).
 
 Usage:
     pip install -r requirements.txt
+    playwright install chromium
     python enrich_books.py --input isbns.txt --output enriched.json
     python enrich_books.py --input isbns.txt --output enriched.json --source elefant
     python enrich_books.py --isbn 9789734692765 --source carturesti
@@ -45,20 +51,26 @@ import re
 import sys
 import time
 import unicodedata
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from random import uniform
 from typing import Iterable
 from urllib.parse import quote_plus, urljoin
 
-import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import Browser, Page, sync_playwright
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
 
-REQUEST_TIMEOUT_SECONDS = 15
+PAGE_TIMEOUT_MS = 20_000
+
+# Cloudflare's interstitial ("Just a moment...") title while it runs its
+# passive checks - dacă apare, mai așteptăm puțin în loc să parsăm imediat
+# pagina de challenge ca și cum ar fi conținutul real.
+CHALLENGE_TITLE_MARKERS = ("just a moment", "verificăm dacă conexiunea")
+CHALLENGE_WAIT_SECONDS = 6
 
 # Etichetele căutate în tabelul de detalii, cu variante (diacritice/fără,
 # ortografii alternative). Comparația se face pe text normalizat (vezi
@@ -144,55 +156,84 @@ SITE_ADAPTERS: dict[str, SiteAdapter] = {
 
 
 class Scraper:
-    def __init__(self, delay_range: tuple[float, float] = (1.0, 2.0)):
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": USER_AGENT,
-                "Accept-Language": "ro-RO,ro;q=0.9,en;q=0.5",
-            }
+    """Navighează cu un Chromium headless real (Playwright), nu cu request-uri
+    HTTP brute - Cloudflare respinge (403) request-urile `requests`/`curl` pe
+    baza reputației IP-ului și a amprentei TLS/HTTP2, indiferent de
+    User-Agent; un browser real trece de verificările pasive la fel ca la o
+    vizită normală.
+    """
+
+    def __init__(self, delay_range: tuple[float, float] = (1.0, 2.0), headless: bool = True):
+        self._playwright = sync_playwright().start()
+        self.browser: Browser = self._playwright.chromium.launch(headless=headless)
+        self.context = self.browser.new_context(
+            user_agent=USER_AGENT,
+            locale="ro-RO",
+            viewport={"width": 1280, "height": 900},
         )
+        self.page: Page = self.context.new_page()
         self.delay_range = delay_range
 
-    def _throttled_get(self, url: str) -> requests.Response | None:
+    def close(self) -> None:
+        self.context.close()
+        self.browser.close()
+        self._playwright.stop()
+
+    def __enter__(self) -> "Scraper":
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
+
+    def _throttled_navigate(self, url: str) -> str | None:
         time.sleep(uniform(*self.delay_range))
         try:
-            response = self.session.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
-            response.raise_for_status()
-            return response
-        except requests.RequestException as exc:
-            print(f"  [!] GET {url} a eșuat: {exc}", file=sys.stderr)
+            self.page.goto(url, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
+        except Exception as exc:  # noqa: BLE001 - orice eșec de navigare e non-fatal aici
+            print(f"  [!] Navigare la {url} a eșuat: {exc}", file=sys.stderr)
             return None
+
+        title = (self.page.title() or "").lower()
+        if any(marker in title for marker in CHALLENGE_TITLE_MARKERS):
+            # Challenge-ul Cloudflare se rezolvă singur în câteva secunde (nu
+            # necesită interacțiune) - mai așteptăm o dată, apoi renunțăm.
+            time.sleep(CHALLENGE_WAIT_SECONDS)
+            title = (self.page.title() or "").lower()
+            if any(marker in title for marker in CHALLENGE_TITLE_MARKERS):
+                print(f"  [!] Challenge Cloudflare încă activ pe {url}", file=sys.stderr)
+                return None
+
+        return self.page.content()
 
     def enrich_one(self, isbn: str, title_hint: str | None, adapter: SiteAdapter) -> EnrichedBook:
         query = isbn if not title_hint else f"{isbn} {title_hint}"
         result = EnrichedBook(isbn=isbn, source=adapter.name)
 
-        search_response = self._throttled_get(adapter.search_url(query))
-        if search_response is None:
+        search_html = self._throttled_navigate(adapter.search_url(query))
+        if search_html is None:
             result.error = "search request failed"
             return result
 
-        search_soup = BeautifulSoup(search_response.text, "html.parser")
+        search_soup = BeautifulSoup(search_html, "html.parser")
         product_url = adapter.pick_product_url(search_soup)
         if not product_url:
             # Fallback: încearcă doar cu titlul, dacă ISBN-ul singur n-a găsit nimic.
             if title_hint:
-                search_response = self._throttled_get(adapter.search_url(title_hint))
-                if search_response is not None:
-                    search_soup = BeautifulSoup(search_response.text, "html.parser")
+                search_html = self._throttled_navigate(adapter.search_url(title_hint))
+                if search_html is not None:
+                    search_soup = BeautifulSoup(search_html, "html.parser")
                     product_url = adapter.pick_product_url(search_soup)
         if not product_url:
             result.error = "no search result found"
             return result
 
         result.productUrl = product_url
-        product_response = self._throttled_get(product_url)
-        if product_response is None:
+        product_html = self._throttled_navigate(product_url)
+        if product_html is None:
             result.error = "product page request failed"
             return result
 
-        self._parse_product_page(BeautifulSoup(product_response.text, "html.parser"), result)
+        self._parse_product_page(BeautifulSoup(product_html, "html.parser"), result)
         return result
 
     def _parse_product_page(self, soup: BeautifulSoup, result: EnrichedBook) -> None:
@@ -297,6 +338,11 @@ def main() -> None:
     )
     parser.add_argument("--delay-min", type=float, default=1.0, help="Pauză minimă între request-uri (sec)")
     parser.add_argument("--delay-max", type=float, default=2.0, help="Pauză maximă între request-uri (sec)")
+    parser.add_argument(
+        "--headed",
+        action="store_true",
+        help="Deschide fereastra browserului (implicit: headless) - util la depanarea selectoarelor",
+    )
     args = parser.parse_args()
 
     if not args.input and not args.isbn:
@@ -315,19 +361,18 @@ def main() -> None:
         else [SITE_ADAPTERS["carturesti"], SITE_ADAPTERS["elefant"]]
     )
 
-    scraper = Scraper(delay_range=(args.delay_min, args.delay_max))
     results: list[dict] = []
-
-    for index, (isbn, title_hint) in enumerate(entries, start=1):
-        print(f"[{index}/{len(entries)}] {isbn} ({title_hint or '—'})")
-        best: EnrichedBook | None = None
-        for adapter in adapters:
-            candidate = scraper.enrich_one(isbn, title_hint, adapter)
-            if candidate.error is None:
-                best = candidate
-                break
-            best = best or candidate
-        results.append(asdict(best))
+    with Scraper(delay_range=(args.delay_min, args.delay_max), headless=not args.headed) as scraper:
+        for index, (isbn, title_hint) in enumerate(entries, start=1):
+            print(f"[{index}/{len(entries)}] {isbn} ({title_hint or '—'})")
+            best: EnrichedBook | None = None
+            for adapter in adapters:
+                candidate = scraper.enrich_one(isbn, title_hint, adapter)
+                if candidate.error is None:
+                    best = candidate
+                    break
+                best = best or candidate
+            results.append(asdict(best))
 
     with open(args.output, "w", encoding="utf-8") as handle:
         json.dump(results, handle, ensure_ascii=False, indent=2)
