@@ -55,7 +55,7 @@ import unicodedata
 from dataclasses import asdict, dataclass
 from random import uniform
 from typing import Iterable
-from urllib.parse import quote_plus, urljoin
+from urllib.parse import quote, urljoin
 
 from bs4 import BeautifulSoup
 from playwright.sync_api import Browser, Page, sync_playwright
@@ -130,7 +130,9 @@ class SiteAdapter:
     result_link_selector: str  # selector CSS pentru linkurile din rezultate
 
     def search_url(self, query: str) -> str:
-        return urljoin(self.base_url, self.search_path.format(query=quote_plus(query)))
+        # `quote` (nu `quote_plus`): search_path poate fi un segment de path
+        # (ex. /product/search/{query}), unde spațiile trebuie %20, nu '+'.
+        return urljoin(self.base_url, self.search_path.format(query=quote(query, safe="")))
 
     def pick_product_url(self, soup: BeautifulSoup) -> str | None:
         for link in soup.select(self.result_link_selector):
@@ -144,8 +146,8 @@ SITE_ADAPTERS: dict[str, SiteAdapter] = {
     "carturesti": SiteAdapter(
         name="carturesti",
         base_url="https://carturesti.ro",
-        search_path="/cauta?q={query}",
-        result_link_selector="a.product-item, a[href*='/carte/'], .product-list a",
+        search_path="/product/search/{query}",
+        result_link_selector="a[href*='/carte/']",
     ),
     "elefant": SiteAdapter(
         name="elefant",
