@@ -22,7 +22,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -34,6 +34,12 @@ services:
     # Portul 9000 e expus pe host pentru ca tunelul Cloudflare
     # (storage.shelfshare.ro -> http://localhost:9000) îl accesează direct,
     # din afara rețelei Docker.
+    #
+    # Legat explicit la 127.0.0.1: `"9000:9000"` asculta pe TOATE interfețele,
+    # iar publicarea de porturi Docker scrie direct în lanțul iptables DOCKER,
+    # deci ocolește firewall-ul host-ului - MinIO era accesibil direct din
+    # rețea, sărind peste Cloudflare. Tunelul rulează pe host, deci loopback
+    # îi este suficient.
 
   backend:
     build:
@@ -45,8 +51,15 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       NODE_ENV: production
+      # Aplicația stă în spatele Cloudflare Tunnel, deci trebuie să citească
+      # IP-ul clientului din header, nu din socket - altfel rate-limiting-ul
+      # și jurnalul de securitate văd o singură adresă pentru toți userii
+      # (vezi backend/src/common/utils/client-ip.ts). Sigur de activat doar
+      # pentru că portul e legat la loopback mai sus: nimeni nu poate ajunge
+      # la aplicație ocolind tunelul ca să-și fabrice singur header-ul.
+      TRUST_PROXY: "true"
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,6 +84,14 @@ services:
       BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
       # Câte generații se păstrează pe discul extern (numărate, nu pe zile).
       BACKUP_EXTERNAL_KEEP: ${BACKUP_EXTERNAL_KEEP:-10}
+      # Parola cu care se criptează dump-ul (vezi scripts/backup.sh). Fără ea,
+      # backup-ul conține în clar toată tabela User - emailuri, nume, hash-uri
+      # de parolă - iar o copie ajunge pe un HDD extern, unde e suficient să
+      # se piardă discul. Scriptul refuză să ruleze dacă lipsește.
+      BACKUP_ENCRYPTION_PASSPHRASE: ${BACKUP_ENCRYPTION_PASSPHRASE:-}
+      # Portiță explicită, doar pentru cazuri în care chiar vrei dump necriptat
+      # (ex. restaurare locală de test). Lăsată nesetată în funcționare normală.
+      BACKUP_ALLOW_UNENCRYPTED: ${BACKUP_ALLOW_UNENCRYPTED:-false}
       # Fără asta containerul merge pe UTC, iar „03:15" din crontab ar cădea la
       # 06:15 ora României. Cu TZ setat, ora din crontab e chiar ora locală.
       TZ: Europe/Bucharest
@@ -95,8 +116,11 @@ services:
     # `docker logs backup` ar arăta doar că job-ul a pornit, nu ce a făcut -
     # exact genul de eșec pe care nu l-ai observa decât când ai nevoie de un
     # backup care nu există.
+    # `apk add gnupg` la pornire: imaginea postgres:16-alpine aduce pg_dump,
+    # dar nu și gpg, de care scriptul are nevoie ca să cripteze dump-ul.
     command: >
-      sh -c "echo '15 3 * * * /scripts/backup.sh >> /proc/1/fd/1 2>&1' > /etc/crontabs/root &&
+      sh -c "apk add --no-cache gnupg &&
+             echo '15 3 * * * /scripts/backup.sh >> /proc/1/fd/1 2>&1' > /etc/crontabs/root &&
              crond -f -d 8"
 
   nginx-proxy-manager:

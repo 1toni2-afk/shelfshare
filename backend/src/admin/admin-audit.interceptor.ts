@@ -7,6 +7,7 @@ import {
 import type { Request } from 'express';
 import { tap } from 'rxjs/operators';
 import { SecurityEventsService } from '../security-events/security-events.service';
+import { clientIp } from '../common/utils/client-ip';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
 /**
@@ -33,7 +34,7 @@ export class AdminAuditInterceptor implements NestInterceptor {
         void this.securityEvents.log(
           'ADMIN_ACTION',
           userId ?? null,
-          req.ip ?? null,
+          clientIp(req) || null,
           {
             method: req.method,
             path: req.originalUrl ?? req.url,

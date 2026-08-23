@@ -84,6 +84,24 @@ export class BookLookupService {
           responseType: 'arraybuffer',
           timeout: 8000,
           maxContentLength: 8 * 1024 * 1024,
+          // Verificarea de mai sus acoperă doar URL-ul inițial. Axios urmează
+          // implicit redirect-urile, deci o gazdă permisă care răspunde cu 302
+          // spre o adresă internă ar readuce exact SSRF-ul pe care lista albă
+          // îl previne. Nu le oprim de tot (unele coperte chiar redirecționează
+          // legitim), ci verificăm fiecare pas cu aceeași regulă.
+          beforeRedirect: (options: {
+            protocol?: string;
+            hostname?: string;
+          }) => {
+            if (
+              options.protocol !== 'https:' ||
+              !PROXYABLE_COVER_HOSTS.includes(options.hostname ?? '')
+            ) {
+              throw new Error(
+                `Redirect refuzat către gazdă nepermisă: ${options.hostname ?? '?'}`,
+              );
+            }
+          },
         }),
       );
       const contentType = String(response.headers['content-type'] ?? '');
@@ -182,7 +200,11 @@ export class BookLookupService {
 
     if (base.description && base.subjects.length > 0) return base;
 
-    const extra = await this.lookupComplementary(base.isbn ?? isbn, title, author);
+    const extra = await this.lookupComplementary(
+      base.isbn ?? isbn,
+      title,
+      author,
+    );
     if (!extra) return base;
 
     return {

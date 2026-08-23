@@ -18,6 +18,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 import { RealtimeService } from '../common/realtime/realtime.service';
 import { corsOrigin } from '../common/utils/cors-origin';
 import { SlidingWindowLimiterService } from '../common/rate-limit/sliding-window-limiter.service';
+import { RevokedTokenService } from '../common/security/revoked-token.service';
 
 interface AuthenticatedSocket extends Socket {
   data: { userId: string };
@@ -45,6 +46,7 @@ export class ChatGateway
     private presence: PresenceService,
     private realtime: RealtimeService,
     private rateLimiter: SlidingWindowLimiterService,
+    private revokedTokens: RevokedTokenService,
   ) {}
 
   // Punem serverul namespace-ului /chat la dispoziția serviciilor care nu au
@@ -59,9 +61,17 @@ export class ChatGateway
       const token = client.handshake.auth?.token as string | undefined;
       if (!token) throw new UnauthorizedException();
 
-      const payload = this.jwt.verify<{ sub: string }>(token, {
+      const payload = this.jwt.verify<{ sub: string; jti?: string }>(token, {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
       });
+
+      // Aceeași verificare pe care o face JwtStrategy pe HTTP. Fără ea,
+      // logout-ul revoca token-ul doar pentru API: cu același token, un
+      // socket se putea conecta în continuare (și primea mesajele private
+      // ale userului) până la expirarea naturală a token-ului.
+      if (this.revokedTokens.isRevoked(payload.jti)) {
+        throw new UnauthorizedException();
+      }
 
       client.data.userId = payload.sub;
       await client.join(`user:${payload.sub}`);

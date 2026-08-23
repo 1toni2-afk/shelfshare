@@ -1420,19 +1420,15 @@ export class BooksService {
       },
       include: {
         book: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
-            rating: true,
-            profileImage: true,
-          },
-        },
+        // OWNER_SELECT, nu un select inline: acesta include `nameVisible`, de
+        // care are nevoie sanitizeOwner. Varianta inline de dinainte îl omitea,
+        // deci endpointul (public, fără autentificare) întorcea numele
+        // proprietarului chiar dacă acesta îl ascunsese din setări.
+        user: { select: OWNER_SELECT },
       },
       take: 10,
     });
-    return items.map((i) => this.toPublicPhotos(i));
+    return items.map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
   }
 
   /**
@@ -1473,7 +1469,13 @@ export class BooksService {
 
     const listings = await this.prisma.userBook.findMany({
       where: { id: { in: chainIds } },
-      include: { user: { select: { id: true, name: true } } },
+      // `nameVisible` e necesar pentru publicName() de mai jos: endpointul e
+      // public, iar lanțul de re-listări expune numele FIECĂRUI proprietar
+      // anterior - fără filtru, tocmai userii care își ascunseseră numele
+      // apăreau aici, alături de istoricul lor de schimburi.
+      include: {
+        user: { select: { id: true, name: true, nameVisible: true } },
+      },
     });
     const byId = new Map(listings.map((l) => [l.id, l]));
 
@@ -1506,7 +1508,7 @@ export class BooksService {
           userBookId: listing.id,
           isCurrent: listing.id === userBookId,
           ownerId: listing.user.id,
-          ownerName: listing.user.name,
+          ownerName: publicName(listing.user),
           condition: listing.condition,
           photos: listing.photos.map((p) => this.storage.getPublicUrl(p)),
           listedAt: listing.createdAt,

@@ -11,12 +11,22 @@ import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coo
 
 describe('BooksService', () => {
   let service: BooksService;
-  let prisma: { userBook: Record<string, jest.Mock> };
+  let prisma: {
+    userBook: Record<string, jest.Mock>;
+    priceOffer: Record<string, jest.Mock>;
+    exchangeRequest: Record<string, jest.Mock>;
+  };
   let listingScore: { scoresFor: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
-      userBook: { findMany: jest.fn() },
+      userBook: {
+        findMany: jest.fn(),
+        findUnique: jest.fn(),
+        findFirst: jest.fn(),
+      },
+      priceOffer: { findFirst: jest.fn().mockResolvedValue(null) },
+      exchangeRequest: { findFirst: jest.fn().mockResolvedValue(null) },
     };
     listingScore = { scoresFor: jest.fn() };
 
@@ -24,7 +34,10 @@ describe('BooksService', () => {
       providers: [
         BooksService,
         { provide: PrismaService, useValue: prisma },
-        { provide: StorageService, useValue: {} },
+        {
+          provide: StorageService,
+          useValue: { getPublicUrl: (p: string) => `https://cdn.test/${p}` },
+        },
         { provide: WishlistService, useValue: {} },
         { provide: FollowService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
@@ -130,6 +143,61 @@ describe('BooksService', () => {
         'd',
         'a',
       ]);
+    });
+  });
+  // Regresie de confidentialitate: `nameVisible: false` inseamna „nu-mi arata
+  // numele altora". Ambele endpointuri de mai jos sunt PUBLICE (fara
+  // autentificare) si sareau peste `publicName()`, deci expuneau numele
+  // tocmai userilor care il ascunsesera.
+  describe('respectarea setarii nameVisible pe endpointurile publice', () => {
+    it('getSimilarBooks nu intoarce numele unui proprietar care l-a ascuns', async () => {
+      prisma.userBook.findUnique.mockResolvedValue({
+        id: 'ub-1',
+        book: { genre: 'SF', author: 'Autor' },
+      });
+      prisma.userBook.findMany.mockResolvedValue([
+        {
+          id: 'ub-2',
+          photos: [],
+          book: { title: 'Alta carte' },
+          user: { id: 'u-ascuns', name: 'Ion Popescu', nameVisible: false },
+        },
+        {
+          id: 'ub-3',
+          photos: [],
+          book: { title: 'A treia' },
+          user: { id: 'u-vizibil', name: 'Maria Ionescu', nameVisible: true },
+        },
+      ]);
+
+      const result = await service.getSimilarBooks('ub-1');
+
+      expect(result[0].user.name).toBeNull();
+      expect(result[1].user.name).toBe('Maria Ionescu');
+    });
+
+    it('getListingHistory nu intoarce numele proprietarilor anteriori care l-au ascuns', async () => {
+      // Lant cu un singur anunt: radacina e chiar anuntul cerut.
+      prisma.userBook.findUnique.mockResolvedValue({
+        id: 'ub-1',
+        previousListingId: null,
+      });
+      prisma.userBook.findFirst.mockResolvedValue(null);
+      prisma.userBook.findMany.mockResolvedValue([
+        {
+          id: 'ub-1',
+          condition: 'GOOD',
+          photos: [],
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          user: { id: 'u-ascuns', name: 'Ion Popescu', nameVisible: false },
+        },
+      ]);
+
+      const result = await service.getListingHistory('ub-1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].ownerId).toBe('u-ascuns');
+      expect(result[0].ownerName).toBeNull();
     });
   });
 });
