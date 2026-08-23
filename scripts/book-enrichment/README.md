@@ -62,9 +62,32 @@ Scriptul citește răspunsul JSON pe care și-l cere singură pagina de rezultat
 și **acceptă doar potrivirea exactă**. Dacă nu există, rezultatul iese cu
 `error: "no exact ISBN match (...)"` în loc de date plauzibile dar false.
 
-`--allow-fuzzy-match` acceptă totuși primul rezultat, dar îl marchează cu
-`isbnVerified: false` și păstrează în `sourceIsbn` ISBN-ul real al paginii, ca
-nepotrivirea să fie vizibilă la revizuire.
+`--allow-fuzzy-match` acceptă un rezultat fără potrivire exactă pe ISBN, dar
+**numai dacă titlul lui confirmă cartea**. Rezultatul e marcat cu
+`isbnVerified: false`, primește un `titleMatchScore`, iar `sourceIsbn` păstrează
+ISBN-ul real al paginii, ca nepotrivirea să rămână vizibilă la revizuire.
+
+Verificarea pe titlu nu e opțională, e ce face flag-ul utilizabil. „Primul
+rezultat” nu e o dovadă de nimic: Solr, interogat cu un ISBN, potrivește șirul
+de cifre pe coduri și EAN-uri arbitrare de produs. La primul batch de 100 de
+cărți, ISBN-ul lui *Cum funcționează Google* a întors ca prim rezultat **un
+tricou** (cod `6427416198628`), iar **31 din 42** de potriviri fuzzy erau cărți
+complet diferite (*Sapiens* → „Munca”, *Alice în Țara Minunilor* → „Pinocchio”)
+— date care ar fi corupt rânduri din `books` dacă ajungeau în DB.
+
+Scorul măsoară cât din titlul rezultatului se regăsește în titlul cerut,
+asimetric: titlurile noastre vin din Open Library cu subtitluri lungi, pe când
+carturesti afișează doar titlul scurt. Un singur cuvânt comun nu e suficient
+(„Munca” apare integral în „Munca forțată în Transnistria”). Peste asta există
+o punte pe similaritate de caractere, cu prag strict (0.9), pentru typo-urile
+din catalog: *Fata Din Forografie* → *Fata din fotografie* trece cu 0.95, dar
+*Războinicii 1* → *Războinicii iernii* rămâne respins la 0.77. Pragul se reglează
+din `--fuzzy-title-threshold` (implicit 0.6).
+
+Fără titlu în input (`isbn,titlu`) modul fuzzy refuză din start: n-are cu ce
+verifica. La fel, rezultatele fără titlu în răspunsul JSON sunt ignorate, iar
+căutarea după titlu trimite doar cuvintele, fără diacritice și punctuație —
+path-urile lungi cu `:` și `?` encodate primeau 403 (3 din 100 la primul batch).
 
 ## Cloudflare – comportament măsurat
 
@@ -115,4 +138,10 @@ disponibile dacă blocajul dispare.
   general nu există pe carturesti; se vor întoarce cu `no exact ISBN match`.
 - Rate limiting: 6–10 secunde între orice două navigări, configurabil din
   `--delay-min`/`--delay-max`.
+- Randamentul depinde masiv de *ce* cărți alegi, nu de scraper. Catalogul e
+  ~99,97% dump Open Library în engleză, iar `popularityScore` e non-NULL pe doar
+  17 rânduri din 2,7M, deci nu poate ordona un batch. Pe un batch ales din
+  subsetul românesc (ISBN-13 `978973`/`978606`/`978630`, ~329 de cărți) am
+  obținut 27/100 potriviri exacte; pe un batch ordonat după `popularityScore`,
+  0/20.
 - nemira.ro nu e inclus.

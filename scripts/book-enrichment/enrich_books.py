@@ -61,6 +61,7 @@ Input file format (one entry per line, blank lines and '#' comments ignored):
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import os
 import re
@@ -144,6 +145,70 @@ def _normalize_isbn(value: str | None) -> str:
     return re.sub(r"[^0-9xX]", "", value or "").upper()
 
 
+# Cuvinte prea comune ca sa fie dovada ca doua titluri sunt aceeasi carte.
+_TITLE_STOPWORDS = {
+    "the", "and", "for", "din", "cu", "de", "la", "un", "una", "sau",
+    "si", "in", "pe", "al", "ale", "lui", "care", "dintre",
+}
+
+# Cate cuvinte trimitem in query-ul de cautare (vezi _search_query).
+_SEARCH_QUERY_MAX_TOKENS = 8
+
+
+def _title_tokens(text: str | None) -> list[str]:
+    normalized = _normalize_label(text or "")
+    return [t for t in normalized.split() if len(t) > 2 and t not in _TITLE_STOPWORDS]
+
+
+def _title_similarity(wanted_title: str | None, candidate_title: str | None) -> float:
+    """Cat din titlul candidatului se regaseste in titlul cerut (0..1).
+
+    Asimetric, intentionat: titlurile din catalogul nostru vin din Open Library
+    cu subtitluri lungi ("Spion pentru eternitate: Frank Wisner : o poveste
+    trista despre..."), pe cand carturesti afiseaza doar titlul scurt. Masuram
+    deci acoperirea titlului de pe site in cel din catalog, nu invers - altfel
+    am respinge exact potrivirile bune.
+    """
+    wanted = set(_title_tokens(wanted_title))
+    got = _title_tokens(candidate_title)
+    if not wanted or not got:
+        return 0.0
+
+    overlap = sum(1 for token in got if token in wanted)
+    coverage = overlap / len(got)
+
+    # Un singur cuvant comun nu e dovada: "Munca" se potriveste 100% in "Munca
+    # fortata in Transnistria", desi sunt carti diferite. Exceptam doar cazul in
+    # care ambele titluri chiar au un singur cuvant ("Paradis" / "Paradis").
+    if overlap < 2 and not (len(got) == 1 and len(wanted) == 1 and coverage == 1.0):
+        coverage = coverage / 2
+
+    # Punte pentru greselile de tipar din catalog: titlurile importate din Open
+    # Library au typo-uri ("Fata Din Forografie" pentru "Fata din fotografie"),
+    # iar cuvantul gresit e chiar cel distinctiv, deci potrivirea pe cuvinte
+    # intregi il rateaza. Comparam si la nivel de caractere, dar cerem un prag
+    # mult mai strict: 0.9 accepta un typo, si respinge perechi inselatoare de
+    # tipul "Razboinicii 1" / "Razboinicii iernii" (0.77).
+    char_ratio = difflib.SequenceMatcher(
+        None, _normalize_label(wanted_title or ""), _normalize_label(candidate_title or "")
+    ).ratio()
+    if char_ratio >= 0.9:
+        return max(coverage, char_ratio)
+
+    return coverage
+
+
+def _search_query(title: str) -> str:
+    """Titlu -> query inofensiv pentru URL-ul de cautare.
+
+    Cautarea de pe carturesti e un segment de path, nu un query string: un titlu
+    cu diacritice, ':' si '?' produce un path lung si dublu-encodat pe care
+    site-ul il respinge cu 403 (masurat: 3 din 100 la primul batch de test).
+    Trimitem deci doar cuvintele, fara diacritice si fara punctuatie.
+    """
+    return " ".join(_normalize_label(title).split()[:_SEARCH_QUERY_MAX_TOKENS])
+
+
 def _is_challenge(title: str | None) -> bool:
     normalized = _normalize_label(title or "")
     return any(marker in normalized for marker in CHALLENGE_TITLE_MARKERS)
@@ -167,6 +232,9 @@ class EnrichedBook:
     language: str | None = None
     sourceIsbn: str | None = None
     isbnVerified: bool = False
+    # Scorul de potrivire pe titlu care a facut acceptabil un rezultat fuzzy
+    # (None cand potrivirea a fost exacta pe ISBN si n-a fost nevoie de el).
+    titleMatchScore: float | None = None
     error: str | None = None
 
 
@@ -191,13 +259,6 @@ class SiteAdapter:
         # `quote` (nu `quote_plus`): search_path poate fi un segment de path
         # (ex. /product/search/{query}), unde spațiile trebuie %20, nu '+'.
         return urljoin(self.base_url, self.search_path.format(query=quote(query, safe="")))
-
-    def pick_product_url(self, soup: BeautifulSoup) -> str | None:
-        for link in soup.select(self.result_link_selector):
-            href = link.get("href")
-            if href:
-                return urljoin(self.base_url, href)
-        return None
 
     def products_from_api(self, payload: dict) -> list[dict]:
         """Normalizează răspunsul JSON al căutării la {isbn, url, title}."""
@@ -386,13 +447,14 @@ class Scraper:
         title_hint: str | None,
         adapter: SiteAdapter,
         allow_fuzzy: bool = False,
+        fuzzy_title_threshold: float = 0.6,
     ) -> EnrichedBook:
         result = EnrichedBook(isbn=isbn, source=adapter.name)
         wanted = _normalize_isbn(isbn)
 
         # Căutăm după ISBN: e singurul termen care poate fi verificat exact.
         # `title_hint` rămâne doar ca plasă de siguranță (--allow-fuzzy-match).
-        html, payload, nav_error = self._navigate(
+        _, payload, nav_error = self._navigate(
             adapter.search_url(isbn),
             wait_selector=adapter.result_link_selector,
             api_marker=adapter.search_api_marker,
@@ -408,24 +470,43 @@ class Scraper:
             result.productUrl = exact["url"]
             result.isbnVerified = True
         elif allow_fuzzy:
-            fallback_url = candidates[0]["url"] if candidates else None
-            if not fallback_url and html:
-                fallback_url = adapter.pick_product_url(BeautifulSoup(html, "html.parser"))
-            if not fallback_url and title_hint:
-                html2, payload2, _ = self._navigate(
-                    adapter.search_url(title_hint),
+            # Fara potrivire exacta pe ISBN acceptam un rezultat DOAR daca
+            # titlul lui confirma cartea.
+            #
+            # "Primul rezultat" nu e o dovada de nimic: cautarea e Solr, iar
+            # interogata cu un ISBN potriveste sirul de cifre pe coduri si
+            # EAN-uri arbitrare de produs. La primul batch de 100, ISBN-ul
+            # cartii "Cum functioneaza Google" a intors ca prim rezultat un
+            # tricou (cod 6427416198628), iar 31 din 42 de potriviri fuzzy erau
+            # carti complet diferite - date care ar fi corupt randuri din
+            # `books` daca ajungeau in DB.
+            if not title_hint:
+                result.error = "fuzzy refuzat: fara titlu nu se poate verifica potrivirea"
+                return result
+
+            best = self._best_title_match(candidates, title_hint, fuzzy_title_threshold)
+
+            if best is None:
+                # Cautarea dupa ISBN n-a intors nimic verificabil; reincercam cu
+                # titlul, curatat de diacritice si punctuatie.
+                _, payload2, _ = self._navigate(
+                    adapter.search_url(_search_query(title_hint)),
                     wait_selector=adapter.result_link_selector,
                     api_marker=adapter.search_api_marker,
                 )
-                more = adapter.products_from_api(payload2) if payload2 else []
-                if more:
-                    fallback_url = more[0]["url"]
-                elif html2:
-                    fallback_url = adapter.pick_product_url(BeautifulSoup(html2, "html.parser"))
-            if not fallback_url:
-                result.error = "no search result found"
+                by_title = adapter.products_from_api(payload2) if payload2 else []
+                best = self._best_title_match(by_title, title_hint, fuzzy_title_threshold)
+
+            if best is None:
+                result.error = (
+                    "niciun rezultat nu a trecut verificarea pe titlu "
+                    f"(prag {fuzzy_title_threshold:.2f})"
+                )
                 return result
-            result.productUrl = fallback_url
+
+            candidate, score = best
+            result.productUrl = candidate["url"]
+            result.titleMatchScore = round(score, 2)
             result.isbnVerified = False
         else:
             # Căutarea e fuzzy: fără potrivire exactă pe ISBN am scrie datele
@@ -446,6 +527,28 @@ class Scraper:
         if result.sourceIsbn and _normalize_isbn(result.sourceIsbn) == wanted:
             result.isbnVerified = True
         return result
+
+    @staticmethod
+    def _best_title_match(
+        candidates: list[dict],
+        title_hint: str,
+        threshold: float,
+    ) -> tuple[dict, float] | None:
+        """Cel mai bun candidat al carui titlu trece pragul, sau None.
+
+        Candidatii fara titlu (ex. linkurile smulse din HTML, cand raspunsul
+        JSON al cautarii n-a fost prins) sunt ignorati: nu au cu ce fi
+        verificati, iar un rezultat neverificabil e exact ce vrem sa evitam.
+        """
+        scored = [
+            (candidate, _title_similarity(title_hint, candidate.get("title")))
+            for candidate in candidates
+            if candidate.get("url") and candidate.get("title")
+        ]
+        if not scored:
+            return None
+        best = max(scored, key=lambda pair: pair[1])
+        return best if best[1] >= threshold else None
 
     def _parse_product_page(self, soup: BeautifulSoup, result: EnrichedBook) -> None:
         ld = self._product_ld_json(soup)
@@ -608,8 +711,16 @@ def main() -> None:
     parser.add_argument(
         "--allow-fuzzy-match",
         action="store_true",
-        help="Acceptă primul rezultat chiar dacă ISBN-ul nu se potrivește exact "
-        "(marcat cu isbnVerified=false) - căutarea e fuzzy, deci poate fi altă carte",
+        help="Acceptă un rezultat fără potrivire exactă pe ISBN, dar numai dacă titlul "
+        "lui confirmă cartea (marcat cu isbnVerified=false și titleMatchScore). "
+        "Necesită titlu în input: 'isbn,titlu'",
+    )
+    parser.add_argument(
+        "--fuzzy-title-threshold",
+        type=float,
+        default=0.6,
+        help="Cât din titlul rezultatului trebuie să se regăsească în titlul cerut "
+        "ca potrivirea fuzzy să fie acceptată (0..1, implicit 0.6)",
     )
     parser.add_argument(
         "--reuse-session",
@@ -662,7 +773,11 @@ def main() -> None:
             best: EnrichedBook | None = None
             for adapter in adapters:
                 candidate = scraper.enrich_one(
-                    isbn, title_hint, adapter, allow_fuzzy=args.allow_fuzzy_match
+                    isbn,
+                    title_hint,
+                    adapter,
+                    allow_fuzzy=args.allow_fuzzy_match,
+                    fuzzy_title_threshold=args.fuzzy_title_threshold,
                 )
                 if candidate.error is None:
                     best = candidate
