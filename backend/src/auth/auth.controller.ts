@@ -14,6 +14,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CaptchaService } from '../common/captcha/captcha.service';
+import { clientIp } from '../common/utils/client-ip';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -47,7 +48,7 @@ export class AuthController {
   @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
   @Post('register')
   register(@Req() req: Request, @Body() dto: RegisterDto) {
-    return this.authService.register(dto, req.ip ?? '');
+    return this.authService.register(dto, clientIp(req));
   }
 
   // 6-digit codes (1e6 space) - keep guess attempts per IP low enough that
@@ -65,7 +66,7 @@ export class AuthController {
   resendVerification(@Req() req: Request, @Body() dto: ResendVerificationDto) {
     return this.authService.resendVerificationCode(
       dto.email,
-      req.ip ?? '',
+      clientIp(req),
       dto,
     );
   }
@@ -74,14 +75,14 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Req() req: Request, @Body() dto: LoginDto) {
-    return this.authService.login(dto, req.ip ?? '');
+    return this.authService.login(dto, clientIp(req));
   }
 
   @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   forgotPassword(@Req() req: Request, @Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto.email, req.ip ?? '', dto);
+    return this.authService.forgotPassword(dto.email, clientIp(req), dto);
   }
 
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
@@ -99,7 +100,7 @@ export class AuthController {
       dto.email,
       dto.code,
       dto.newPassword,
-      req.ip ?? '',
+      clientIp(req),
     );
   }
 

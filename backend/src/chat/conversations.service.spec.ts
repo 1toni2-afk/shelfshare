@@ -19,7 +19,11 @@ describe('ConversationsService', () => {
     $transaction: jest.Mock;
   };
   let notifications: jest.Mocked<NotificationsService>;
-  let storage: { uploadTextFile: jest.Mock; getPublicUrl: jest.Mock };
+  let storage: {
+    uploadTextFile: jest.Mock;
+    getPublicUrl: jest.Mock;
+    getSignedUrl: jest.Mock;
+  };
   let mail: { sendChatReportNotification: jest.Mock };
   let presence: { isOnline: jest.Mock };
   let realtime: { emitToConversation: jest.Mock; emitToUser: jest.Mock };
@@ -61,6 +65,13 @@ describe('ConversationsService', () => {
     storage = {
       uploadTextFile: jest.fn().mockResolvedValue('chat-reports/x.txt'),
       getPublicUrl: jest.fn((path: string) => `https://cdn.test/${path}`),
+      // Transcripturile din `chat-reports` nu mai sunt citibile anonim - merg
+      // prin URL semnat, cu expirare (vezi StorageService.getSignedUrl).
+      getSignedUrl: jest
+        .fn()
+        .mockImplementation((path: string) =>
+          Promise.resolve(`https://cdn.test/${path}?signature=test`),
+        ),
     };
     mail = { sendChatReportNotification: jest.fn() };
     presence = { isOnline: jest.fn().mockReturnValue(false) };
@@ -416,6 +427,14 @@ describe('ConversationsService', () => {
         expect.stringContaining('ceva nepotrivit'),
         'chat-reports',
         'conversatie-conv-1',
+      );
+      // Transcriptul conține conversația privată a doi useri, deci linkul din
+      // emailul de moderare trebuie să fie semnat și expirabil. `getPublicUrl`
+      // ar produce un URL permanent, către un obiect care oricum nu mai e
+      // citibil anonim (vezi PUBLIC_PREFIXES) - deci linkul ar și pica.
+      expect(storage.getSignedUrl).toHaveBeenCalledWith('chat-reports/x.txt');
+      expect(storage.getPublicUrl).not.toHaveBeenCalledWith(
+        'chat-reports/x.txt',
       );
       expect(prisma.report.create).toHaveBeenCalledWith({
         data: expect.objectContaining({

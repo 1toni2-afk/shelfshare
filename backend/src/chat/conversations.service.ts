@@ -614,7 +614,10 @@ export class ConversationsService {
         reason: dto.reason,
         details: dto.details,
         messageCount: messages.length,
-        transcriptUrl: this.storage.getPublicUrl(transcriptPath),
+        // Link semnat, cu expirare: `chat-reports` nu mai e citibil anonim
+        // (vezi PUBLIC_PREFIXES în storage.service.ts), fiindcă transcriptul
+        // conține conversația privată dintre doi useri.
+        transcriptUrl: await this.storage.getSignedUrl(transcriptPath),
         excerpt: lines.slice(-REPORT_EXCERPT_MESSAGES).join('\n') || '(niciun mesaj)',
       });
     } catch (error) {

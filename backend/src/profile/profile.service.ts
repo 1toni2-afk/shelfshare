@@ -262,14 +262,31 @@ export class ProfileService {
       this.prisma.exchangeRequest.findMany({
         where: { ownerId: userId, requesterReviewForOwner: { not: null } },
         include: {
-          requester: { select: { id: true, name: true, profileImage: true } },
+          // `nameVisible` e obligatoriu în select: fără el nu se poate aplica
+          // publicName() de mai jos, iar numele recenzentului ajungea brut pe
+          // profilul public - deși acesta îl ascunsese din setări.
+          requester: {
+            select: {
+              id: true,
+              name: true,
+              nameVisible: true,
+              profileImage: true,
+            },
+          },
         },
         orderBy: { updatedAt: 'desc' },
       }),
       this.prisma.exchangeRequest.findMany({
         where: { requesterId: userId, ownerReviewForRequester: { not: null } },
         include: {
-          owner: { select: { id: true, name: true, profileImage: true } },
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              nameVisible: true,
+              profileImage: true,
+            },
+          },
         },
         orderBy: { updatedAt: 'desc' },
       }),
@@ -277,7 +294,7 @@ export class ProfileService {
 
     const fromOwnerRole = asOwner.map((e) => ({
       reviewerId: e.requester.id,
-      reviewerName: e.requester.name,
+      reviewerName: publicName(e.requester),
       reviewerImage: e.requester.profileImage,
       rating: e.requesterRatingForOwner,
       comment: e.requesterReviewForOwner,
@@ -285,7 +302,7 @@ export class ProfileService {
     }));
     const fromRequesterRole = asRequester.map((e) => ({
       reviewerId: e.owner.id,
-      reviewerName: e.owner.name,
+      reviewerName: publicName(e.owner),
       reviewerImage: e.owner.profileImage,
       rating: e.ownerRatingForRequester,
       comment: e.ownerReviewForRequester,

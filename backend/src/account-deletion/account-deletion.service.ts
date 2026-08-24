@@ -23,7 +23,8 @@ export const DELETION_GRACE_PERIOD_DAYS = 15;
 /// oprește-o la loc după ce ai terminat testarea onboardingului, altfel
 /// orice user real care cere ștergerea își pierde definitiv datele instant,
 /// fără nicio fereastră de anulare.
-const INSTANT_DELETION_FOR_TESTING = process.env.INSTANT_ACCOUNT_DELETION === 'true';
+const INSTANT_DELETION_FOR_TESTING =
+  process.env.INSTANT_ACCOUNT_DELETION === 'true';
 
 @Injectable()
 export class AccountDeletionService {
@@ -46,8 +47,12 @@ export class AccountDeletionService {
 
     if (INSTANT_DELETION_FOR_TESTING) {
       await this.prisma.user.delete({ where: { id: userId } });
+      // Doar ID-ul, nu și emailul: contul tocmai a fost șters, dar un email
+      // scris în log îi supraviețuiește cât ține retenția log-urilor - exact
+      // datele pe care ștergerea trebuia să le facă să dispară. ID-ul e
+      // suficient pentru a corela cu SecurityEvent la o investigație.
       this.logger.warn(
-        `[INSTANT_ACCOUNT_DELETION=true] Cont șters pe loc (fără grace period): ${userId} (${user.email})`,
+        `[INSTANT_ACCOUNT_DELETION=true] Cont șters pe loc (fără grace period): ${userId}`,
       );
       return { scheduledFor: new Date(), immediate: true };
     }
@@ -155,7 +160,7 @@ export class AccountDeletionService {
     const now = new Date();
     const expired = await this.prisma.user.findMany({
       where: { deletionScheduledAt: { lte: now } },
-      select: { id: true, email: true },
+      select: { id: true },
     });
 
     if (expired.length === 0) {
@@ -166,12 +171,10 @@ export class AccountDeletionService {
     for (const user of expired) {
       try {
         await this.prisma.user.delete({ where: { id: user.id } });
-        this.logger.log(`Cont șters: ${user.id} (${user.email})`);
+        // Fără email în log - vezi comentariul din scheduleDeletion.
+        this.logger.log(`Cont șters: ${user.id}`);
       } catch (error) {
-        this.logger.error(
-          `Nu am putut șterge contul ${user.id} (${user.email})`,
-          error,
-        );
+        this.logger.error(`Nu am putut șterge contul ${user.id}`, error);
       }
     }
   }

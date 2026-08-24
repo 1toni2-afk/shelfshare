@@ -7,28 +7,82 @@ import { randomUUID } from 'crypto';
 const MAX_DIMENSION = 1200;
 const WEBP_QUALITY = 80;
 
+/**
+ * Prefixele care chiar trebuie citite anonim: sunt referite direct din
+ * `<img>`-urile aplicației, deci nu pot purta un antet de autentificare.
+ *
+ * Policy-ul de dinainte acorda `s3:GetObject` pe `bucket/*`, adică pe TOT
+ * bucket-ul - inclusiv `chat-reports/`, unde stau transcripturile
+ * conversațiilor raportate (conținut privat între useri). Singura protecție
+ * era că numele fișierului conține un UUID, iar linkul din emailul de
+ * moderare nu expira niciodată: scăpat sau redirecționat o dată, transcriptul
+ * rămânea public permanent. Vezi `getSignedUrl` pentru cum sunt servite acum.
+ */
+const PUBLIC_PREFIXES = ['avatars', 'user-books', 'chat', 'feedback'] as const;
+
+/** Cât ține linkul de transcript din emailul de moderare (maximul S3 e 7 zile). */
+const SIGNED_URL_TTL_SECONDS = 7 * 24 * 60 * 60;
+
 @Injectable()
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
   private client: Client;
+  private signingClient: Client;
   private bucket: string;
   private publicBaseUrl: string;
 
   constructor(private config: ConfigService) {
     this.bucket = this.config.get<string>('MINIO_BUCKET', 'shelfshare');
 
+    const credentials = {
+      accessKey: this.config.get<string>('MINIO_ROOT_USER')!,
+      secretKey: this.config.get<string>('MINIO_ROOT_PASSWORD')!,
+    };
+
     this.client = new Client({
       endPoint: this.config.get<string>('MINIO_ENDPOINT', 'minio'),
       port: this.config.get<number>('MINIO_PORT', 9000),
       useSSL: this.config.get<string>('MINIO_USE_SSL', 'false') === 'true',
-      accessKey: this.config.get<string>('MINIO_ROOT_USER')!,
-      secretKey: this.config.get<string>('MINIO_ROOT_PASSWORD')!,
+      ...credentials,
     });
 
     this.publicBaseUrl = this.config.get<string>(
       'MINIO_PUBLIC_URL',
       `http://localhost:${this.config.get<string>('MINIO_API_PORT', '9000')}/${this.bucket}`,
     );
+
+    // Client separat, doar pentru semnat URL-uri. `client` de mai sus vorbește
+    // cu MinIO pe rețeaua internă Docker (`minio:9000`) - un URL semnat de el
+    // ar arăta spre acea gazdă, inaccesibilă din afară. Nu putem nici semna
+    // intern și rescrie apoi domeniul: semnătura AWS V4 acoperă header-ul
+    // `Host`, deci schimbarea gazdei o invalidează. Semnăm direct pentru
+    // gazda publică, aceeași pe care o va trimite browserul moderatorului.
+    this.signingClient = this.buildSigningClient(credentials);
+  }
+
+  private buildSigningClient(credentials: {
+    accessKey: string;
+    secretKey: string;
+  }): Client {
+    try {
+      const publicUrl = new URL(this.publicBaseUrl);
+      const useSSL = publicUrl.protocol === 'https:';
+      return new Client({
+        endPoint: publicUrl.hostname,
+        port: publicUrl.port ? Number(publicUrl.port) : useSSL ? 443 : 80,
+        useSSL,
+        ...credentials,
+      });
+    } catch (error) {
+      // MINIO_PUBLIC_URL malformat: nu oprim pornirea aplicației pentru o
+      // funcție marginală (linkul de transcript din emailul de moderare),
+      // dar spunem clar de ce acel link va fi nefolositor din exterior.
+      this.logger.warn(
+        `MINIO_PUBLIC_URL invalid ("${this.publicBaseUrl}"): ${error}. ` +
+          'URL-urile semnate vor arăta spre gazda internă.',
+      );
+      return this.client;
+    }
   }
 
   async onModuleInit() {
@@ -40,6 +94,9 @@ export class StorageService implements OnModuleInit {
       this.logger.log(`Bucket "${this.bucket}" creat`);
     }
 
+    // Doar prefixele de imagini, nu `bucket/*` - vezi PUBLIC_PREFIXES.
+    // `s3:ListBucket` rămâne neacordat: fără el, nici măcar prefixele publice
+    // nu pot fi enumerate, ci doar citite dacă știi calea exactă.
     const policy = {
       Version: '2012-10-17',
       Statement: [
@@ -47,7 +104,9 @@ export class StorageService implements OnModuleInit {
           Effect: 'Allow',
           Principal: { AWS: ['*'] },
           Action: ['s3:GetObject'],
-          Resource: [`arn:aws:s3:::${this.bucket}/*`],
+          Resource: PUBLIC_PREFIXES.map(
+            (prefix) => `arn:aws:s3:::${this.bucket}/${prefix}/*`,
+          ),
         },
       ],
     };
@@ -84,10 +143,9 @@ export class StorageService implements OnModuleInit {
 
   /**
    * Fișiere text generate de server (momentan doar transcripturile de chat
-   * raportate, folderul `chat-reports`). Spre deosebire de imagini, astea nu
-   * sunt destinate afișării publice - bucket-ul e citibil de oricine care
-   * ghicește calea, așa că numele conține un UUID, iar linkul ajunge doar în
-   * emailul intern de moderare.
+   * raportate, folderul `chat-reports`). Spre deosebire de imagini, astea NU
+   * sunt citibile anonim: `chat-reports` nu e în PUBLIC_PREFIXES, deci se
+   * ajunge la ele doar printr-un link semnat, cu expirare (`getSignedUrl`).
    */
   async uploadTextFile(
     content: string,
@@ -111,9 +169,25 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
+   * Link temporar către un obiect care NU e public (momentan transcripturile
+   * din `chat-reports`, trimise în emailul intern de moderare). Expiră după
+   * SIGNED_URL_TTL_SECONDS, deci un email scăpat mai târziu nu mai dă acces.
+   */
+  getSignedUrl(path: string): Promise<string> {
+    return this.signingClient.presignedGetObject(
+      this.bucket,
+      path,
+      SIGNED_URL_TTL_SECONDS,
+    );
+  }
+
+  /**
    * `path` e de obicei o cheie relativă din bucket, dar datele demo (seed.ts)
    * referențiază direct URL-uri absolute către imagini placeholder - le
    * lăsăm neschimbate în loc să le prefixăm greșit cu bucket-ul local.
+   *
+   * Doar pentru prefixele din PUBLIC_PREFIXES - orice altceva are nevoie de
+   * `getSignedUrl`, altfel linkul rezultat dă 403.
    */
   getPublicUrl(path: string): string {
     if (path.startsWith('http://') || path.startsWith('https://')) {
