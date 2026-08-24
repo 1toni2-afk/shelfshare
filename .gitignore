@@ -3,6 +3,10 @@ node_modules/
 dist/
 coverage/
 
+# Python
+__pycache__/
+*.pyc
+
 # Env
 .env
 .env.local
@@ -34,3 +38,8 @@ postgres_data/
 # rupt build-ul Docker: tsc credea că output-ul e deja generat și nu emitea
 # dist/ (vezi backend/.dockerignore).
 *.tsbuildinfo
+
+# Output generat de scraper-ul de enrichment (nu se versioneaza)
+scripts/book-enrichment/enriched.json
+scripts/book-enrichment/isbns.txt
+scripts/book-enrichment/debug_pages*/

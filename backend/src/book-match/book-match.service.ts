@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { BOOK_GENRES } from '../common/constants/book-genres';
+import { BOOK_GENRES, GENRE_ADJACENCY } from '../common/constants/book-genres';
 import {
   BOOK_MATCH_DEFAULT_POPULARITY,
   DISCOVERY_BOOST_SWIPES,
+  DISCOVERY_SERENDIPITY_RATIO,
   NEGATIVE_GENRE_THRESHOLD,
   ONBOARDING_SWIPES_TARGET,
   RECALIBRATION_COOLDOWN_DAYS,
@@ -280,11 +281,20 @@ export class BookMatchService {
     // Fără copertă, cardul de swipe arată doar un placeholder - o experiență
     // proastă la un ecran gândit tocmai să arate cărți atractiv. Excludem
     // cărțile fără `coverUrl` din pool-ul candidat, nu doar din selecție.
+    // La fel excludem metadate insuficiente (fără descriere sau fără gen) -
+    // sunt exact cărțile prost taggate din importurile Google Books/Open
+    // Library care ajungeau des în discovery pentru că nu se potriveau cu
+    // niciun gen cunoscut (vezi `personalizedBatch`).
     if (approxTotal <= CATALOG_SIZE_THRESHOLD_FOR_SAMPLING) {
       // Neschimbat față de implementarea dinainte de import (`notIn: []` e
       // un filtru Prisma valid, echivalent cu "fără restricție").
       return this.prisma.book.findMany({
-        where: { id: { notIn: excludedIds }, coverUrl: { not: null } },
+        where: {
+          id: { notIn: excludedIds },
+          coverUrl: { not: null },
+          description: { not: null },
+          genre: { not: null },
+        },
         select: CARD_SELECT,
         take: CANDIDATE_POOL_LIMIT,
       });
@@ -301,6 +311,8 @@ export class BookMatchService {
           FROM books TABLESAMPLE SYSTEM (${samplePercent})
           WHERE id NOT IN (${Prisma.join(excludedIds)})
             AND "coverUrl" IS NOT NULL
+            AND description IS NOT NULL
+            AND genre IS NOT NULL
           ORDER BY RANDOM()
           LIMIT ${CANDIDATE_POOL_LIMIT}
         `
@@ -308,6 +320,8 @@ export class BookMatchService {
           SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore"
           FROM books TABLESAMPLE SYSTEM (${samplePercent})
           WHERE "coverUrl" IS NOT NULL
+            AND description IS NOT NULL
+            AND genre IS NOT NULL
           ORDER BY RANDOM()
           LIMIT ${CANDIDATE_POOL_LIMIT}
         `;
@@ -537,8 +551,18 @@ export class BookMatchService {
       genre != null &&
       (scores.genre.get(genre) ?? 0) < NEGATIVE_GENRE_THRESHOLD;
 
+    // Genuri „vecine" celor din top - discovery-ul controlat le preferă în
+    // loc să tragă uniform din tot catalogul eșantionat (vezi GENRE_ADJACENCY).
+    const adjacentGenres = new Set<string>();
+    for (const genre of topGenres) {
+      for (const adjacent of GENRE_ADJACENCY[genre] ?? []) {
+        adjacentGenres.add(adjacent);
+      }
+    }
+
     const profilePool: { item: CandidateBook; weight: number }[] = [];
-    const discoveryPool: { item: CandidateBook; weight: number }[] = [];
+    const nearDiscoveryPool: { item: CandidateBook; weight: number }[] = [];
+    const farDiscoveryPool: { item: CandidateBook; weight: number }[] = [];
 
     for (const book of candidates) {
       if (isRejectedGenre(book.genre)) continue;
@@ -560,11 +584,45 @@ export class BookMatchService {
         !knownGenre ||
         Math.abs(genreScore) <= Math.abs(NEGATIVE_GENRE_THRESHOLD)
       ) {
-        discoveryPool.push({ item: book, weight: resurface });
+        // Distanță controlată: un gen vecin celor din top e discovery „aproape"
+        // (ex. userul iubește Fantasy, nu a atins încă SF); orice altceva e
+        // serendipity - rămâne posibil, dar o cotă mică, nu jumătate din batch.
+        if (book.genre != null && adjacentGenres.has(book.genre)) {
+          nearDiscoveryPool.push({ item: book, weight: resurface });
+        } else {
+          farDiscoveryPool.push({ item: book, weight: resurface });
+        }
       }
     }
 
-    const discovery = weightedSample(discoveryPool, discoveryTarget);
+    const serendipityTarget = Math.round(
+      discoveryTarget * DISCOVERY_SERENDIPITY_RATIO,
+    );
+    const nearTarget = discoveryTarget - serendipityTarget;
+
+    const nearDiscovery = weightedSample(nearDiscoveryPool, nearTarget);
+    const discoveryChosen = new Set(nearDiscovery.map((b) => b.id));
+    const farDiscovery = weightedSample(
+      farDiscoveryPool.filter(({ item }) => !discoveryChosen.has(item.id)),
+      discoveryTarget - nearDiscovery.length,
+    );
+    for (const book of farDiscovery) discoveryChosen.add(book.id);
+
+    // Dacă niciuna dintre cele două jumătăți n-a avut destui candidați, se
+    // completează din orice discovery rămas (aproape sau depărtat), la fel
+    // cum se întâmplă mai jos pentru batch-ul întreg.
+    const discoveryRemaining = discoveryTarget - discoveryChosen.size;
+    const discoveryFill =
+      discoveryRemaining > 0
+        ? weightedSample(
+            [...nearDiscoveryPool, ...farDiscoveryPool].filter(
+              ({ item }) => !discoveryChosen.has(item.id),
+            ),
+            discoveryRemaining,
+          )
+        : [];
+
+    const discovery = [...nearDiscovery, ...farDiscovery, ...discoveryFill];
     const chosen = new Set(discovery.map((b) => b.id));
     const profile = weightedSample(
       profilePool.filter(({ item }) => !chosen.has(item.id)),
