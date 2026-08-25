@@ -58,7 +58,7 @@ class _AdminChatScreenState extends ConsumerState<AdminChatScreen> {
       }
     } finally {
       if (mounted) setState(() => _sending = false);
-      // Comportamentul implicit de submit al TextField (textAlignVertical: TextAlignVertical.center, Enter) scoate focusul
+      // Comportamentul implicit de submit al TextField (Enter) scoate focusul
       // DUPĂ ce onSubmitted rulează - un requestFocus() sincron aici ar fi
       // depășit de el. Cerem focus într-un post-frame callback, ca să câștige
       // mereu, indiferent dacă trimiterea a fost prin Enter sau prin buton.
