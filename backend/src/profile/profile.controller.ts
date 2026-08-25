@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -128,9 +129,17 @@ export class ProfileController {
 
   @UseGuards(JwtAuthGuard)
   @Get('activity-feed')
-  getActivityFeed(@Req() req: Request) {
+  getActivityFeed(
+    @Req() req: Request,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.profileService.getActivityFeed(userId!);
+    return this.profileService.getActivityFeed(
+      userId!,
+      limit ? parseInt(limit, 10) : undefined,
+      offset ? parseInt(offset, 10) : undefined,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateEventDto } from './dto/create-event.dto';
+import { ReportPostDto } from './dto/report-post.dto';
 import { publicName } from '../common/utils/user-visibility';
 
 const MEMBER_SELECT = {
@@ -130,6 +131,25 @@ export class GroupsService {
     await this.assertMember(groupId, userId);
     await this.prisma.groupPost.create({ data: { groupId, authorId: userId, content: dto.content } });
     return this.getGroup(groupId, userId);
+  }
+
+  async reportPost(groupId: string, postId: string, reporterId: string, dto: ReportPostDto) {
+    const post = await this.prisma.groupPost.findUnique({ where: { id: postId } });
+    if (!post || post.groupId !== groupId) {
+      throw new NotFoundException('Postarea nu a fost găsită');
+    }
+    if (post.authorId === reporterId) {
+      throw new BadRequestException('Nu îți poți raporta propria postare');
+    }
+    return this.prisma.report.create({
+      data: {
+        reporterId,
+        reportedUserId: post.authorId,
+        reason: dto.reason,
+        details: dto.details,
+        groupPostId: postId,
+      },
+    });
   }
 
   async createEvent(groupId: string, userId: string, dto: CreateEventDto) {

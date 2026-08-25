@@ -19,6 +19,18 @@ class AdminRepository {
     return MarketplaceStats.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<List<StatsSnapshotPoint>> getStatsHistory({int days = 30}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/stats/history', queryParameters: {'days': days});
+    return (response.data as List).map((e) => StatsSnapshotPoint.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<ConversionFunnel> getConversionFunnel() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/stats/conversion-funnel');
+    return ConversionFunnel.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<List<ActiveZone>> getActiveZones() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/admin/stats/active-zones');
@@ -157,6 +169,32 @@ class AdminRepository {
     return (response.data as List)
         .map((e) => UserReport.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<UserReport> updateReportStatus(
+    String reportId,
+    ReportStatus status, {
+    String? resolutionNote,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.put(
+      '/admin/reports/$reportId/status',
+      data: {
+        'status': status.toJson(),
+        if (resolutionNote != null && resolutionNote.isNotEmpty) 'resolutionNote': resolutionNote,
+      },
+    );
+    return UserReport.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteGroupPost(String groupPostId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.delete('/admin/group-posts/$groupPostId');
+  }
+
+  Future<void> deleteReview(String reviewId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.delete('/admin/reviews/$reviewId');
   }
 
   Future<List<UpcomingRelease>> getUpcomingReleases() async {

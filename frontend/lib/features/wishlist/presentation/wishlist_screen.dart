@@ -20,7 +20,16 @@ class WishlistScreen extends ConsumerWidget {
     final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.wishlistTitle)),
+      appBar: AppBar(
+        title: Text(l10n.wishlistTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_active_outlined),
+            tooltip: l10n.savedSearchesTitle,
+            onPressed: () => context.push('/saved-searches'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(wishlistControllerProvider.notifier).refresh(),

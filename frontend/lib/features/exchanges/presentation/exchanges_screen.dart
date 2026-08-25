@@ -245,7 +245,10 @@ class _ExchangeCard extends ConsumerWidget {
                       ),
                       if (offeredBook != null)
                         Text(
-                          l10n.exchangeOffersBook(offeredBook.book.title),
+                          exchange.additionalOfferedBooks.isEmpty
+                              ? l10n.exchangeOffersBook(offeredBook.book.title)
+                              : l10n.exchangeOffersBookBundle(
+                                  offeredBook.book.title, exchange.additionalOfferedBooks.length),
                           style: Theme.of(context).textTheme.bodySmall,
                         )
                       else if (exchange.offeredAmount != null)

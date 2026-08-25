@@ -8,6 +8,7 @@ import { WishlistModule } from '../wishlist/wishlist.module';
 import { FollowModule } from '../follow/follow.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ListingScoreModule } from './listing-score.module';
+import { SavedSearchesModule } from '../saved-searches/saved-searches.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ListingScoreModule } from './listing-score.module';
     ListingScoreModule,
     FollowModule,
     NotificationsModule,
+    SavedSearchesModule,
   ],
   controllers: [BooksController],
   providers: [BooksService, BookLookupService],

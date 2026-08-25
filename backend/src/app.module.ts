@@ -32,6 +32,10 @@ import { PreRegistrationModule } from './pre-registration/pre-registration.modul
 import { RealtimeModule } from './common/realtime/realtime.module';
 import { BookMatchModule } from './book-match/book-match.module';
 import { AdminChatModule } from './admin-chat/admin-chat.module';
+import { SavedSearchesModule } from './saved-searches/saved-searches.module';
+import { BookOfMonthModule } from './book-of-month/book-of-month.module';
+import { ReadingProgressModule } from './reading-progress/reading-progress.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -66,6 +70,10 @@ import { AdminChatModule } from './admin-chat/admin-chat.module';
     PreRegistrationModule,
     BookMatchModule,
     AdminChatModule,
+    SavedSearchesModule,
+    BookOfMonthModule,
+    ReadingProgressModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: HttpThrottlerGuard }],

@@ -6,6 +6,7 @@ import '../data/admin_repository.dart';
 class AdminData {
   const AdminData({
     required this.stats,
+    required this.statsHistory,
     required this.marketplaceStats,
     required this.activeZones,
     required this.users,
@@ -14,8 +15,10 @@ class AdminData {
     required this.upcomingReleases,
     required this.feedback,
     required this.supportRequests,
+    required this.conversionFunnel,
   });
   final AdminStats stats;
+  final List<StatsSnapshotPoint> statsHistory;
   final MarketplaceStats marketplaceStats;
   final List<ActiveZone> activeZones;
   final AdminUsersPage users;
@@ -24,22 +27,26 @@ class AdminData {
   final List<UpcomingRelease> upcomingReleases;
   final List<FeedbackItem> feedback;
   final List<SupportRequestItem> supportRequests;
+  final ConversionFunnel conversionFunnel;
 
   AdminData copyWith({
     AdminUsersPage? users,
     List<InactiveListing>? inactiveListings,
     List<UpcomingRelease>? upcomingReleases,
+    List<UserReport>? userReports,
   }) {
     return AdminData(
       stats: stats,
+      statsHistory: statsHistory,
       marketplaceStats: marketplaceStats,
       activeZones: activeZones,
       users: users ?? this.users,
       inactiveListings: inactiveListings ?? this.inactiveListings,
-      userReports: userReports,
+      userReports: userReports ?? this.userReports,
       upcomingReleases: upcomingReleases ?? this.upcomingReleases,
       feedback: feedback,
       supportRequests: supportRequests,
+      conversionFunnel: conversionFunnel,
     );
   }
 }
@@ -60,6 +67,8 @@ class AdminController extends AsyncNotifier<AdminData> {
       repository.getUpcomingReleases(),
       repository.getFeedback(),
       repository.getSupportRequests(),
+      repository.getStatsHistory(),
+      repository.getConversionFunnel(),
     ]);
     return AdminData(
       stats: results[0] as AdminStats,
@@ -71,6 +80,8 @@ class AdminController extends AsyncNotifier<AdminData> {
       upcomingReleases: results[6] as List<UpcomingRelease>,
       feedback: results[7] as List<FeedbackItem>,
       supportRequests: results[8] as List<SupportRequestItem>,
+      statsHistory: results[9] as List<StatsSnapshotPoint>,
+      conversionFunnel: results[10] as ConversionFunnel,
     );
   }
 
@@ -132,6 +143,36 @@ class AdminController extends AsyncNotifier<AdminData> {
     state = AsyncData(
       current.copyWith(inactiveListings: current.inactiveListings.where((l) => l.id != userBookId).toList()),
     );
+  }
+
+  Future<void> updateReportStatus(
+    String reportId,
+    ReportStatus status, {
+    String? resolutionNote,
+  }) async {
+    final updated = await ref
+        .read(adminRepositoryProvider)
+        .updateReportStatus(reportId, status, resolutionNote: resolutionNote);
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(
+      current.copyWith(
+        userReports: [
+          for (final r in current.userReports)
+            if (r.id == reportId) updated else r,
+        ],
+      ),
+    );
+  }
+
+  Future<void> deleteReportedGroupPost(String groupPostId) async {
+    await ref.read(adminRepositoryProvider).deleteGroupPost(groupPostId);
+    await refresh();
+  }
+
+  Future<void> deleteReportedReview(String reviewId) async {
+    await ref.read(adminRepositoryProvider).deleteReview(reviewId);
+    await refresh();
   }
 
   void _updateUserLocally(String userId, {bool? isBanned, bool? isPremium}) {

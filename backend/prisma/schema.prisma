@@ -188,12 +188,17 @@ model User {
   conversationsAsUserB     Conversation[]      @relation("ConversationUserB")
   messagesSent             Message[]           @relation("MessageSender")
   wishlistItems            WishlistItem[]
+  savedSearches            SavedSearch[]
+  bookOfMonthVotes         BookOfMonthVote[]
+  readingProgress          ReadingProgress[]
+  reviews                  Review[]
   notifications            Notification[]
   deviceTokens             DeviceToken[]
   blocksMade               Block[]             @relation("BlockBlocker")
   blocksReceived           Block[]             @relation("BlockBlocked")
   reportsMade              Report[]            @relation("ReportReporter")
   reportsReceived          Report[]            @relation("ReportReported")
+  reportsAssigned          Report[]            @relation("ReportAssignee")
   adminSupportConversation AdminSupportConversation?
   adminSupportMessagesSent AdminSupportMessage[] @relation("AdminSupportMessageSender")
   offersMade               PriceOffer[]        @relation("OfferBuyer")
@@ -290,6 +295,16 @@ enum ReportReason {
   OTHER
 }
 
+/// Coadă de moderare pentru Report (Batch "Report status & assignee") - fără
+/// asta, doi moderatori puteau lucra pe același raport fără să se vadă, iar
+/// un raport tratat arăta identic cu unul netratat.
+enum ReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
 model Report {
   id String @id @default(uuid())
 
@@ -313,8 +328,24 @@ model Report {
   conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   transcriptPath String?
 
+  // Feature backlog #18: moderation queue also covers GroupPost + Review,
+  // which had no report/hide flow before this - reuses the same Report
+  // model/status workflow instead of a parallel one per content type.
+  groupPostId String?
+  groupPost   GroupPost? @relation(fields: [groupPostId], references: [id], onDelete: SetNull)
+
+  reviewId String?
+  review   Review? @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+
+  status         ReportStatus @default(OPEN)
+  assignedToId   String?
+  assignedTo     User?        @relation("ReportAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  resolutionNote String?
+  resolvedAt     DateTime?
+
   createdAt DateTime @default(now())
 
+  @@index([status])
   @@map("reports")
 }
 
@@ -355,6 +386,14 @@ model Book {
   language      String?
   genre         String?
 
+  /// Feature backlog #7 - "ai volumul 1, ești anunțat când apare volumul 2".
+  /// Fără sursă externă de încredere (Open Library/Google Books nu dau date
+  /// structurate de serie - vezi comentariul despre etichetele "series:x"
+  /// filtrate în book-lookup.service.ts), completate manual de user la
+  /// listare, la fel ca genre pentru cărțile fără ISBN găsit extern.
+  series       String?
+  seriesNumber Int?
+
   referencePrice         Decimal? @db.Decimal(10, 2)
   referencePriceCurrency String?
 
@@ -374,7 +413,11 @@ model Book {
   bookshelfEntries BookshelfEntry[]
   collectionItems  CollectionItem[]
   swipes           BookSwipe[]
+  bookOfMonthVotes BookOfMonthVote[]
+  readingProgress  ReadingProgress[]
+  reviews          Review[]
 
+  @@index([series])
   @@map("books")
 }
 
@@ -474,6 +517,8 @@ model GroupPost {
 
   createdAt DateTime @default(now())
 
+  reports Report[]
+
   @@map("group_posts")
 }
 
@@ -522,6 +567,103 @@ model AdminRole {
   admins User[] @relation("UserAdminRole")
 
   @@map("admin_roles")
+}
+
+/// "Cartea lunii" (feature backlog #11) - vot comunitar simplu, un vot per
+/// user per lună (`month`, format "YYYY-MM" - text simplu, ușor de comparat/
+/// grupat, fără să tragem un întreg tip Date doar pentru o cheie de lună).
+/// Câștigătorul se calculează la citire (groupBy pe voturile lunii curente,
+/// vezi BookOfMonthService#getCurrentWinner) - nu există un rând separat de
+/// „câștigător", ca să nu se poată dezincroniza de voturile reale.
+model BookOfMonthVote {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  month String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, month])
+  @@index([month, bookId])
+  @@map("book_of_month_votes")
+}
+
+/// Progres de lectură per user/carte (feature backlog #15) - "la pagina X
+/// din Y". Distinct de BookshelfEntry (doar statusul READING/WANT_TO_READ/
+/// FINISHED) - poți fi "Reading" fără să fi introdus niciodată o pagină.
+/// Nu declanșează XP la fiecare update (ar fi ușor de exploatat prin
+/// actualizări repetate) - streak-ul de citit se actualizează deja separat,
+/// la orice request autentificat (vezi JwtAuthGuard#updateActivityAndStreak).
+model ReadingProgress {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  currentPage Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, bookId])
+  @@map("reading_progress")
+}
+
+/// Recenzie comunitară per titlu (feature backlog #16) - notă + text scurt
+/// de la useri reali, agregate pe pagina cărții. Distinctă de `Book.rating`
+/// implicit inexistent (nu există notă externă pe Book) și de `User.rating`
+/// (scorul de încredere al vânzătorului, calculat din schimburi - vezi
+/// recomputeRating în exchanges.service.ts) - aici notăm CARTEA, nu omul.
+/// O singură recenzie per user per carte (upsert, nu istoric de recenzii).
+model Review {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  rating Int
+  text   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reports Report[]
+
+  @@unique([userId, bookId])
+  @@index([bookId])
+  @@map("reviews")
+}
+
+/// Snapshot zilnic al panoului de admin (feature backlog #10) - getStats()
+/// întoarce numere absolute la fiecare cerere; aici păstrăm un rând pe zi,
+/// scris de un cron (vezi AdminService#snapshotDailyStats), ca panoul să
+/// poată arăta creșterea în timp, nu doar starea curentă.
+model StatsSnapshot {
+  id String @id @default(uuid())
+
+  date DateTime @unique @db.Date
+
+  totalUsers         Int
+  verifiedUsers      Int
+  totalBooks         Int
+  totalListings      Int
+  totalExchanges     Int
+  completedExchanges Int
+
+  createdAt DateTime @default(now())
+
+  @@map("stats_snapshots")
 }
 
 model UserBook {
@@ -599,8 +741,9 @@ model UserBook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  exchangeRequestsReceived ExchangeRequest[]   @relation("RequestedBook")
-  exchangeRequestsOffered  ExchangeRequest[]   @relation("OfferedBook")
+  exchangeRequestsReceived ExchangeRequest[]    @relation("RequestedBook")
+  exchangeRequestsOffered  ExchangeRequest[]    @relation("OfferedBook")
+  exchangeBundleEntries    ExchangeBundleBook[]
   priceOffers              PriceOffer[]
   reports                  Report[]
   bookViews                BookView[]
@@ -885,6 +1028,12 @@ model ExchangeRequest {
   offeredBookId String?
   offeredBook   UserBook? @relation("OfferedBook", fields: [offeredBookId], references: [id], onDelete: SetNull)
 
+  // Feature backlog #17: bundle transactions - un requester poate oferi mai
+  // multe cărți ale sale într-un singur schimb, nu doar `offeredBookId`
+  // (rămas ca prima carte oferită, pentru compatibilitate cu tot codul deja
+  // scris în jurul lui). Restul cărților din pachet stau aici.
+  additionalOfferedBooks ExchangeBundleBook[]
+
   offeredAmount Decimal? @db.Decimal(10, 2)
 
   status  ExchangeStatus @default(PENDING)
@@ -935,6 +1084,15 @@ model ExchangeRequest {
   requesterSafetyAckAt DateTime?
   ownerSafetyAckAt     DateTime?
 
+  // "Condition Photos" (feature backlog #14) - fiecare parte fotografiază
+  // cartea ÎNAINTE de predare (în starea ACCEPTED, alături de safety-ack/
+  // contact), ca dovadă a stării reale la momentul schimbului - închide
+  // disputele de tip "mi-a venit deteriorată" fără să depindă doar de
+  // cuvântul cuiva. Distinct de rating-ul de după (Condition 1-5), care
+  // vine abia la finalul schimbului și nu documentează nimic vizual.
+  requesterConditionPhotos String[] @default([])
+  ownerConditionPhotos     String[] @default([])
+
   // Confirmare mutuală pentru Done: primul care apasă setează câmpul lui;
   // schimbul devine COMPLETED abia când sunt setate ambele.
   requesterDoneAt DateTime?
@@ -953,6 +1111,24 @@ model ExchangeRequest {
   messages Message[]
 
   @@map("exchange_requests")
+}
+
+/// Feature backlog #17: pachetul de cărți suplimentare oferite la un schimb
+/// (dincolo de `ExchangeRequest.offeredBookId`, care rămâne prima/principala
+/// carte oferită). Un rând per carte suplimentară din pachet.
+model ExchangeBundleBook {
+  id String @id @default(uuid())
+
+  exchangeRequestId String
+  exchangeRequest   ExchangeRequest @relation(fields: [exchangeRequestId], references: [id], onDelete: Cascade)
+
+  userBookId String
+  userBook   UserBook @relation(fields: [userBookId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([exchangeRequestId, userBookId])
+  @@map("exchange_bundle_books")
 }
 
 model Conversation {
@@ -1115,6 +1291,30 @@ model WishlistItem {
   @@map("wishlist_items")
 }
 
+/// Căutare salvată (feature backlog #6) - "SF, sub 30 lei, în Cluj". Distinct
+/// de WishlistItem (o carte anume) - aici userul salvează niște CRITERII,
+/// nu un titlu, și e anunțat la orice anunț nou care le satisface. Domeniul
+/// e intenționat restrâns la genre/city/maxPrice (nu tot BrowseFilters) -
+/// astea sunt câmpurile pe care le putem verifica automat la un anunț nou:
+/// genre + city sunt cunoscute la creare, maxPrice abia când anunțul trece
+/// pe vânzare (vezi notifySavedSearches în books.service.ts).
+model SavedSearch {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label    String
+  genre    String?
+  city     String?
+  maxPrice Decimal? @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("saved_searches")
+}
+
 // ---------------------------------------------------------------------------
 // Book Match (swipe) - log de evenimente + scoruri derivate pe 3 dimensiuni.
 //
@@ -1251,6 +1451,8 @@ enum NotificationType {
   EXCHANGE_CANCELLED
   EXCHANGE_BOOK_PENDING
   EXCHANGE_REOPENED
+  SAVED_SEARCH_MATCH
+  SERIES_VOLUME_AVAILABLE
 }
 
 /// Token FCM al unui dispozitiv (telefon/tabletă) pe care userul e logat, ca

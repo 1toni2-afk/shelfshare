@@ -355,17 +355,41 @@ class ActivityEvent {
   final String type;
   final String userId;
   final String? userName;
+  final String? userAvatar;
   final String bookTitle;
+  final String? bookAuthor;
   final String? bookCoverUrl;
+  final String? genre;
+  final String? caption;
   final DateTime date;
+  final double? amount;
+
+  // Doar pentru type == 'completed_exchange', la un schimb carte-contra-carte.
+  final String? offeredBookTitle;
+  final String? offeredBookCoverUrl;
+  final String? counterpartyName;
+
+  // Doar pentru type == 'reading_progress'.
+  final int? currentPage;
+  final int? totalPages;
 
   const ActivityEvent({
     required this.type,
     required this.userId,
     this.userName,
+    this.userAvatar,
     required this.bookTitle,
+    this.bookAuthor,
     this.bookCoverUrl,
+    this.genre,
+    this.caption,
     required this.date,
+    this.amount,
+    this.offeredBookTitle,
+    this.offeredBookCoverUrl,
+    this.counterpartyName,
+    this.currentPage,
+    this.totalPages,
   });
 
   factory ActivityEvent.fromJson(Map<String, dynamic> json) {
@@ -373,9 +397,19 @@ class ActivityEvent {
       type: json['type'] as String,
       userId: json['userId'] as String,
       userName: json['userName'] as String?,
+      userAvatar: json['userAvatar'] as String?,
       bookTitle: json['bookTitle'] as String,
+      bookAuthor: json['bookAuthor'] as String?,
       bookCoverUrl: json['bookCoverUrl'] as String?,
+      genre: json['genre'] as String?,
+      caption: json['caption'] as String?,
       date: DateTime.parse(json['date'] as String),
+      amount: (json['amount'] as num?)?.toDouble(),
+      offeredBookTitle: json['offeredBookTitle'] as String?,
+      offeredBookCoverUrl: json['offeredBookCoverUrl'] as String?,
+      counterpartyName: json['counterpartyName'] as String?,
+      currentPage: json['currentPage'] as int?,
+      totalPages: json['totalPages'] as int?,
     );
   }
 }

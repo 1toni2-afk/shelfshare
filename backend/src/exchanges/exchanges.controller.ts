@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -10,11 +11,16 @@ import {
   Post,
   Req,
   StreamableFile,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { ExchangesService } from './exchanges.service';
+
+const MAX_CONDITION_PHOTO_SIZE_BYTES = 8 * 1024 * 1024;
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
@@ -120,6 +126,29 @@ export class ExchangesController {
   acknowledgeSafety(@Req() req: Request, @Param('id') id: string) {
     const { userId } = req.user as AuthenticatedUser;
     return this.exchangesService.acknowledgeSafety(id, userId!);
+  }
+
+  @Post(':id/condition-photos')
+  @UseInterceptors(
+    FileInterceptor('photo', { limits: { fileSize: MAX_CONDITION_PHOTO_SIZE_BYTES } }),
+  )
+  addConditionPhoto(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Nicio poză primită');
+    }
+    if (file.size > MAX_CONDITION_PHOTO_SIZE_BYTES) {
+      throw new BadRequestException('Poza este prea mare (maxim 8MB)');
+    }
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Fișierul trebuie să fie o imagine');
+    }
+
+    const { userId } = req.user as AuthenticatedUser;
+    return this.exchangesService.addConditionPhoto(id, userId!, file.buffer);
   }
 
   @Throttle({ default: { limit: 20, ttl: 3_600_000 } })

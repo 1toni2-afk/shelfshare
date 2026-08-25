@@ -47,6 +47,9 @@ class ExchangeRequest {
   final String ownerId;
   final UserBook requestedBook;
   final UserBook? offeredBook;
+  /// Cărți suplimentare oferite în același pachet (feature backlog #17),
+  /// dincolo de `offeredBook` (prima/principala carte oferită).
+  final List<UserBook> additionalOfferedBooks;
   final double? offeredAmount;
   final ExchangeStatus status;
   final String? message;
@@ -68,6 +71,8 @@ class ExchangeRequest {
   final DateTime? ownerContactSharedAt;
   final DateTime? requesterSafetyAckAt;
   final DateTime? ownerSafetyAckAt;
+  final List<String> requesterConditionPhotos;
+  final List<String> ownerConditionPhotos;
   final DateTime? requesterDoneAt;
   final DateTime? ownerDoneAt;
   final String? cancelReason;
@@ -80,6 +85,7 @@ class ExchangeRequest {
     required this.ownerId,
     required this.requestedBook,
     this.offeredBook,
+    this.additionalOfferedBooks = const [],
     this.offeredAmount,
     required this.status,
     this.message,
@@ -99,6 +105,8 @@ class ExchangeRequest {
     this.ownerContactSharedAt,
     this.requesterSafetyAckAt,
     this.ownerSafetyAckAt,
+    this.requesterConditionPhotos = const [],
+    this.ownerConditionPhotos = const [],
     this.requesterDoneAt,
     this.ownerDoneAt,
     this.cancelReason,
@@ -153,6 +161,14 @@ class ExchangeRequest {
   bool otherSafetyAck(String myUserId) =>
       isRequester(myUserId) ? ownerSafetyAckAt != null : requesterSafetyAckAt != null;
 
+  /// Pozele urcate de MINE cu starea cărții - vezi feature backlog #14.
+  List<String> myConditionPhotos(String myUserId) =>
+      isRequester(myUserId) ? requesterConditionPhotos : ownerConditionPhotos;
+
+  /// Pozele urcate de cealaltă parte.
+  List<String> otherConditionPhotos(String myUserId) =>
+      isRequester(myUserId) ? ownerConditionPhotos : requesterConditionPhotos;
+
   bool get isReadyToExchange =>
       status == ExchangeStatus.accepted &&
       isMeetingConfirmed &&
@@ -184,6 +200,11 @@ class ExchangeRequest {
       offeredBook: json['offeredBook'] != null
           ? UserBook.fromJson(json['offeredBook'] as Map<String, dynamic>)
           : null,
+      additionalOfferedBooks: (json['additionalOfferedBooks'] as List?)
+              ?.map((e) => UserBook.fromJson(
+                  (e as Map<String, dynamic>)['userBook'] as Map<String, dynamic>))
+              .toList() ??
+          const [],
       offeredAmount: (json['offeredAmount'] as num?)?.toDouble(),
       status: ExchangeStatusX.fromJson(json['status'] as String),
       message: json['message'] as String?,
@@ -203,6 +224,9 @@ class ExchangeRequest {
       ownerContactSharedAt: parseDate('ownerContactSharedAt'),
       requesterSafetyAckAt: parseDate('requesterSafetyAckAt'),
       ownerSafetyAckAt: parseDate('ownerSafetyAckAt'),
+      requesterConditionPhotos:
+          (json['requesterConditionPhotos'] as List?)?.cast<String>() ?? const [],
+      ownerConditionPhotos: (json['ownerConditionPhotos'] as List?)?.cast<String>() ?? const [],
       requesterDoneAt: parseDate('requesterDoneAt'),
       ownerDoneAt: parseDate('ownerDoneAt'),
       cancelReason: json['cancelReason'] as String?,

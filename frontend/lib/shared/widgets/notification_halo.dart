@@ -41,6 +41,10 @@ IconData notificationIcon(NotificationType type) {
       return Icons.person;
     case NotificationType.nearbyBookListed:
       return Icons.place;
+    case NotificationType.savedSearchMatch:
+      return Icons.search;
+    case NotificationType.seriesVolumeAvailable:
+      return Icons.menu_book;
     case NotificationType.outbid:
     case NotificationType.auctionWon:
     case NotificationType.auctionEnded:

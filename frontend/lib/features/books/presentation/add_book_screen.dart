@@ -55,6 +55,8 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   final _publishedYearController = TextEditingController();
   final _editionYearController = TextEditingController();
   final _publisherController = TextEditingController();
+  final _seriesController = TextEditingController();
+  final _seriesNumberController = TextEditingController();
 
   final List<String> _tags = [];
   final List<XFile> _photos = [];
@@ -183,6 +185,8 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     _publishedYearController.dispose();
     _editionYearController.dispose();
     _publisherController.dispose();
+    _seriesController.dispose();
+    _seriesNumberController.dispose();
     super.dispose();
   }
 
@@ -379,6 +383,12 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       if (book.pageCount != null) {
         _pageCountController.text = book.pageCount!.toString();
       }
+      if (book.series != null && book.series!.isNotEmpty) {
+        _seriesController.text = book.series!;
+      }
+      if (book.seriesNumber != null) {
+        _seriesNumberController.text = book.seriesNumber!.toString();
+      }
       _condition = userBook.condition;
       _isHardcover = userBook.isHardcover;
       _isbnFromAutocomplete = book.isbn;
@@ -533,6 +543,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 genre: _genreController.text.trim().isEmpty
                     ? null
                     : _genreController.text.trim(),
+                series: _seriesController.text.trim().isEmpty
+                    ? null
+                    : _seriesController.text.trim(),
+                seriesNumber: int.tryParse(_seriesNumberController.text.trim()),
                 description: _descriptionController.text.trim().isEmpty
                     ? null
                     : _descriptionController.text.trim(),
@@ -1205,6 +1219,27 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               TextField(
                 controller: _publisherController,
                 decoration: InputDecoration(labelText: l10n.sharePublisher),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: _seriesController,
+                      decoration: InputDecoration(labelText: l10n.shareSeriesName),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _seriesNumberController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(labelText: l10n.shareSeriesNumber),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               SwitchListTile(

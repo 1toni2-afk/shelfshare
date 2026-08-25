@@ -1302,6 +1302,42 @@ abstract class AppLocalizations {
   /// **'Nu am putut încărca raftul.'**
   String get bookshelfLoadError;
 
+  /// No description provided for @bookshelfProgressDialogTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Progres de citit'**
+  String get bookshelfProgressDialogTitle;
+
+  /// No description provided for @bookshelfProgressField.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pagina curentă'**
+  String get bookshelfProgressField;
+
+  /// No description provided for @bookshelfProgressFieldOfTotal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pagina curentă (din {total})'**
+  String bookshelfProgressFieldOfTotal(int total);
+
+  /// No description provided for @bookshelfProgressError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva progresul.'**
+  String get bookshelfProgressError;
+
+  /// No description provided for @bookshelfProgressLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pagina {current} din {total}'**
+  String bookshelfProgressLabel(int current, int total);
+
+  /// No description provided for @bookshelfProgressLabelNoTotal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pagina {current}'**
+  String bookshelfProgressLabelNoTotal(int current);
+
   /// No description provided for @bookshelfGenreChartTitle.
   ///
   /// In ro, this message translates to:
@@ -1455,20 +1491,73 @@ abstract class AppLocalizations {
   /// No description provided for @activityNewListing.
   ///
   /// In ro, this message translates to:
-  /// **'{name} a listat o carte nouă'**
-  String activityNewListing(String name);
+  /// **'a adăugat o carte nouă'**
+  String get activityNewListing;
 
   /// No description provided for @activityFinishedBook.
   ///
   /// In ro, this message translates to:
-  /// **'{name} a terminat de citit'**
-  String activityFinishedBook(String name);
+  /// **'a terminat de citit'**
+  String get activityFinishedBook;
 
   /// No description provided for @activityCompletedExchange.
   ///
   /// In ro, this message translates to:
-  /// **'{name} a finalizat un schimb'**
-  String activityCompletedExchange(String name);
+  /// **'a finalizat un schimb'**
+  String get activityCompletedExchange;
+
+  /// No description provided for @activitySale.
+  ///
+  /// In ro, this message translates to:
+  /// **'a vândut cu {amount} lei'**
+  String activitySale(String amount);
+
+  /// No description provided for @activityBadgeNew.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nou'**
+  String get activityBadgeNew;
+
+  /// No description provided for @activityBadgeFinished.
+  ///
+  /// In ro, this message translates to:
+  /// **'Terminată'**
+  String get activityBadgeFinished;
+
+  /// No description provided for @activityBadgeExchange.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb'**
+  String get activityBadgeExchange;
+
+  /// No description provided for @activityBadgeSale.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vânzare'**
+  String get activityBadgeSale;
+
+  /// No description provided for @activityBadgeProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Citește'**
+  String get activityBadgeProgress;
+
+  /// No description provided for @activityReadingProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'citește acum'**
+  String get activityReadingProgress;
+
+  /// No description provided for @activitySwapCaption.
+  ///
+  /// In ro, this message translates to:
+  /// **'{name} a schimbat {bookA} cu {bookB}, de la {counterparty}'**
+  String activitySwapCaption(
+    String name,
+    String bookA,
+    String bookB,
+    String counterparty,
+  );
 
   /// No description provided for @bookDetailShelfRemove.
   ///
@@ -1661,6 +1750,36 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Ai un schimb în desfășurare'**
   String get homeOngoingExchangeBanner;
+
+  /// No description provided for @homeBookOfMonth.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cartea lunii: {title} ({count} voturi)'**
+  String homeBookOfMonth(String title, int count);
+
+  /// No description provided for @homeBookOfMonthDiscuss.
+  ///
+  /// In ro, this message translates to:
+  /// **'Discută'**
+  String get homeBookOfMonthDiscuss;
+
+  /// No description provided for @bookDetailVoteBookOfMonth.
+  ///
+  /// In ro, this message translates to:
+  /// **'Votează pentru Cartea lunii'**
+  String get bookDetailVoteBookOfMonth;
+
+  /// No description provided for @bookDetailVotedBookOfMonth.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai votat pentru Cartea lunii'**
+  String get bookDetailVotedBookOfMonth;
+
+  /// No description provided for @bookDetailVoteError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut înregistra votul.'**
+  String get bookDetailVoteError;
 
   /// No description provided for @homeFeedEnd.
   ///
@@ -2652,6 +2771,12 @@ abstract class AppLocalizations {
   /// **'Fără ofertă'**
   String get bookDetailNoOffer;
 
+  /// No description provided for @bookDetailBundleAddMore.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă și alte cărți la această ofertă (opțional)'**
+  String get bookDetailBundleAddMore;
+
   /// No description provided for @bookDetailMessageOptional.
   ///
   /// In ro, this message translates to:
@@ -2813,6 +2938,12 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Oferă: {title}'**
   String exchangeOffersBook(String title);
+
+  /// No description provided for @exchangeOffersBookBundle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oferă: {title} + încă {count} cărți'**
+  String exchangeOffersBookBundle(String title, int count);
 
   /// No description provided for @exchangeOffersAmount.
   ///
@@ -3125,6 +3256,30 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Sunteți gata de schimb'**
   String get readySafetyBothReady;
+
+  /// No description provided for @readyConditionPhotosTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poze cu starea cărții'**
+  String get readyConditionPhotosTitle;
+
+  /// No description provided for @readyConditionPhotosSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Fotografiază cartea înainte de predare, ca dovadă a stării ei'**
+  String get readyConditionPhotosSubtitle;
+
+  /// No description provided for @readyConditionPhotosOther.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pozele celeilalte părți'**
+  String get readyConditionPhotosOther;
+
+  /// No description provided for @readyConditionPhotosError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut urca poza.'**
+  String get readyConditionPhotosError;
 
   /// No description provided for @readyReportIssue.
   ///
@@ -3870,6 +4025,72 @@ abstract class AppLocalizations {
   /// **'Statistici'**
   String get adminStatsTitle;
 
+  /// No description provided for @adminStatsGrowthTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Utilizatori în timp'**
+  String get adminStatsGrowthTitle;
+
+  /// No description provided for @adminStatsGrowthDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Instantaneu zilnic, ultimele 30 de zile.'**
+  String get adminStatsGrowthDesc;
+
+  /// No description provided for @adminStatsGrowthEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu sunt încă suficiente date pentru un grafic.'**
+  String get adminStatsGrowthEmpty;
+
+  /// No description provided for @adminStatsGrowthRange.
+  ///
+  /// In ro, this message translates to:
+  /// **'{from} → {to} utilizatori'**
+  String adminStatsGrowthRange(int from, int to);
+
+  /// No description provided for @adminConversionFunnelTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pâlnia de conversie'**
+  String get adminConversionFunnelTitle;
+
+  /// No description provided for @adminConversionFunnelDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Câți utilizatori ajung la fiecare pas - de la pre-înscriere până la primul schimb finalizat.'**
+  String get adminConversionFunnelDesc;
+
+  /// No description provided for @adminFunnelPreRegistrations.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pre-înscrieri'**
+  String get adminFunnelPreRegistrations;
+
+  /// No description provided for @adminFunnelRegistered.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cont creat'**
+  String get adminFunnelRegistered;
+
+  /// No description provided for @adminFunnelOnboarded.
+  ///
+  /// In ro, this message translates to:
+  /// **'Onboarding finalizat'**
+  String get adminFunnelOnboarded;
+
+  /// No description provided for @adminFunnelListedBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Au listat o carte'**
+  String get adminFunnelListedBook;
+
+  /// No description provided for @adminFunnelExchanged.
+  ///
+  /// In ro, this message translates to:
+  /// **'Au finalizat un schimb'**
+  String get adminFunnelExchanged;
+
   /// No description provided for @adminMarketplaceStatsTitle.
   ///
   /// In ro, this message translates to:
@@ -4007,6 +4228,186 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Raportat de {name}'**
   String adminReportedBy(String name);
+
+  /// No description provided for @adminReportStatusOpen.
+  ///
+  /// In ro, this message translates to:
+  /// **'Deschis'**
+  String get adminReportStatusOpen;
+
+  /// No description provided for @adminReportStatusInProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'În lucru'**
+  String get adminReportStatusInProgress;
+
+  /// No description provided for @adminReportStatusResolved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rezolvat'**
+  String get adminReportStatusResolved;
+
+  /// No description provided for @adminReportStatusDismissed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Respins'**
+  String get adminReportStatusDismissed;
+
+  /// No description provided for @adminReportAssignedTo.
+  ///
+  /// In ro, this message translates to:
+  /// **'Asignat: {name}'**
+  String adminReportAssignedTo(String name);
+
+  /// No description provided for @adminReportUnassigned.
+  ///
+  /// In ro, this message translates to:
+  /// **'Neasignat'**
+  String get adminReportUnassigned;
+
+  /// No description provided for @adminReportMarkInProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preia raportul'**
+  String get adminReportMarkInProgress;
+
+  /// No description provided for @adminReportMarkResolved.
+  ///
+  /// In ro, this message translates to:
+  /// **'Marchează rezolvat'**
+  String get adminReportMarkResolved;
+
+  /// No description provided for @adminReportMarkDismissed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Respinge raportul'**
+  String get adminReportMarkDismissed;
+
+  /// No description provided for @adminReportReopen.
+  ///
+  /// In ro, this message translates to:
+  /// **'Redeschide'**
+  String get adminReportReopen;
+
+  /// No description provided for @adminReportResolutionNoteLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Notă de decizie (opțional)'**
+  String get adminReportResolutionNoteLabel;
+
+  /// No description provided for @adminReportResolutionNoteHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce ai făcut sau de ce ai respins raportul'**
+  String get adminReportResolutionNoteHint;
+
+  /// No description provided for @adminReportUpdateError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut actualiza raportul.'**
+  String get adminReportUpdateError;
+
+  /// No description provided for @adminReportedPostLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Postare raportată'**
+  String get adminReportedPostLabel;
+
+  /// No description provided for @adminReportedReviewLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recenzie raportată'**
+  String get adminReportedReviewLabel;
+
+  /// No description provided for @adminDeletePostAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge postarea'**
+  String get adminDeletePostAction;
+
+  /// No description provided for @adminDeleteReviewAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge recenzia'**
+  String get adminDeleteReviewAction;
+
+  /// No description provided for @adminDeletePostConfirmTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi această postare?'**
+  String get adminDeletePostConfirmTitle;
+
+  /// No description provided for @adminDeleteReviewConfirmTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergi această recenzie?'**
+  String get adminDeleteReviewConfirmTitle;
+
+  /// No description provided for @adminContentDeleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conținut șters.'**
+  String get adminContentDeleted;
+
+  /// No description provided for @adminContentDeleteError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut șterge conținutul.'**
+  String get adminContentDeleteError;
+
+  /// No description provided for @savedSearchesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Căutări salvate'**
+  String get savedSearchesTitle;
+
+  /// No description provided for @savedSearchesEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio căutare salvată încă. Salvează una ca să fii anunțat la anunțuri noi care se potrivesc.'**
+  String get savedSearchesEmpty;
+
+  /// No description provided for @savedSearchesLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca căutările salvate.'**
+  String get savedSearchesLoadError;
+
+  /// No description provided for @savedSearchNew.
+  ///
+  /// In ro, this message translates to:
+  /// **'Căutare nouă'**
+  String get savedSearchNew;
+
+  /// No description provided for @savedSearchLabelLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nume'**
+  String get savedSearchLabelLabel;
+
+  /// No description provided for @savedSearchLabelHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'ex. SF sub 30 lei în Cluj'**
+  String get savedSearchLabelHint;
+
+  /// No description provided for @savedSearchMaxPriceLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț maxim (opțional)'**
+  String get savedSearchMaxPriceLabel;
+
+  /// No description provided for @savedSearchCreateError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva căutarea.'**
+  String get savedSearchCreateError;
+
+  /// No description provided for @savedSearchMaxPriceChip.
+  ///
+  /// In ro, this message translates to:
+  /// **'sub {amount} lei'**
+  String savedSearchMaxPriceChip(String amount);
 
   /// No description provided for @adminUnknownAuthor.
   ///
@@ -4506,6 +4907,12 @@ abstract class AppLocalizations {
   /// **'Niciun mesaj încă.'**
   String get groupsNoPosts;
 
+  /// No description provided for @groupsReportPostTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raportează postarea'**
+  String get groupsReportPostTooltip;
+
   /// No description provided for @premiumBadgeTooltip.
   ///
   /// In ro, this message translates to:
@@ -4902,11 +5309,83 @@ abstract class AppLocalizations {
   /// **'Adaugă tag'**
   String get shareTagAdd;
 
+  /// No description provided for @bookDetailPriceHistory.
+  ///
+  /// In ro, this message translates to:
+  /// **'Preț mediu recent: {price} lei (din {count} vânzări)'**
+  String bookDetailPriceHistory(String price, int count);
+
+  /// No description provided for @bookDetailReviewsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recenzii'**
+  String get bookDetailReviewsTitle;
+
+  /// No description provided for @bookDetailReviewWrite.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrie o recenzie'**
+  String get bookDetailReviewWrite;
+
+  /// No description provided for @bookDetailReviewEdit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează recenzia'**
+  String get bookDetailReviewEdit;
+
+  /// No description provided for @bookDetailReviewDialogTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Recenzia ta'**
+  String get bookDetailReviewDialogTitle;
+
+  /// No description provided for @bookDetailReviewHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce părere ai despre carte? (opțional)'**
+  String get bookDetailReviewHint;
+
+  /// No description provided for @bookDetailReviewError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva recenzia.'**
+  String get bookDetailReviewError;
+
+  /// No description provided for @bookDetailReviewsEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio recenzie încă. Fii primul care scrie una.'**
+  String get bookDetailReviewsEmpty;
+
+  /// No description provided for @bookDetailReviewReportTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raportează recenzia'**
+  String get bookDetailReviewReportTooltip;
+
+  /// No description provided for @bookDetailReviewsSummary.
+  ///
+  /// In ro, this message translates to:
+  /// **'{average} din 5 ({count} recenzii)'**
+  String bookDetailReviewsSummary(String average, int count);
+
   /// No description provided for @sharePublisher.
   ///
   /// In ro, this message translates to:
   /// **'Editura'**
   String get sharePublisher;
+
+  /// No description provided for @shareSeriesName.
+  ///
+  /// In ro, this message translates to:
+  /// **'Serie (opțional)'**
+  String get shareSeriesName;
+
+  /// No description provided for @shareSeriesNumber.
+  ///
+  /// In ro, this message translates to:
+  /// **'Volum'**
+  String get shareSeriesNumber;
 
   /// No description provided for @shareCityHint.
   ///

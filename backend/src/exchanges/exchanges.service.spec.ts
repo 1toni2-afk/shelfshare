@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
 import { ListingScoreService } from '../books/listing-score.service';
+import { StorageService } from '../storage/storage.service';
 import { XP_EXCHANGE_COMPLETED } from '../common/utils/xp';
 
 describe('ExchangesService', () => {
@@ -12,6 +13,7 @@ describe('ExchangesService', () => {
   let prisma: {
     userBook: Record<string, jest.Mock>;
     exchangeRequest: Record<string, jest.Mock>;
+    exchangeBundleBook: Record<string, jest.Mock>;
     user: Record<string, jest.Mock>;
     message: Record<string, jest.Mock>;
     $transaction: jest.Mock;
@@ -34,6 +36,8 @@ describe('ExchangesService', () => {
     status: 'PENDING',
     requester: { name: 'Requester Nume', nameVisible: true },
     owner: { name: 'Owner Nume', nameVisible: true },
+    requesterConditionPhotos: [],
+    ownerConditionPhotos: [],
   };
 
   beforeEach(async () => {
@@ -50,6 +54,10 @@ describe('ExchangesService', () => {
         update: jest.fn(),
         updateMany: jest.fn(),
         findUniqueOrThrow: jest.fn(),
+      },
+      exchangeBundleBook: {
+        findMany: jest.fn().mockResolvedValue([]),
+        createMany: jest.fn(),
       },
       user: { update: jest.fn() },
       message: { findFirst: jest.fn() },
@@ -78,6 +86,13 @@ describe('ExchangesService', () => {
           provide: ListingScoreService,
           useValue: {
             recordExchangeRequest: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: StorageService,
+          useValue: {
+            getPublicUrl: jest.fn((path: string) => path),
+            uploadImage: jest.fn().mockResolvedValue('uploaded-path'),
           },
         },
       ],
@@ -118,11 +133,14 @@ describe('ExchangesService', () => {
       id: 'ex-new',
       requester: { name: 'Requester Nume', nameVisible: true },
       owner: { name: 'Owner Nume', nameVisible: true },
+      requesterConditionPhotos: [],
+      ownerConditionPhotos: [],
     };
 
     it('creeaza cererea si notifica proprietarul', async () => {
       prisma.userBook.findUnique.mockResolvedValue(requestedUserBook);
       prisma.exchangeRequest.create.mockResolvedValue(createdRequest);
+      prisma.exchangeRequest.findUniqueOrThrow.mockResolvedValue(createdRequest);
 
       const result = await service.createRequest('requester-1', {
         requestedBookId: 'ub-requested',
@@ -140,6 +158,7 @@ describe('ExchangesService', () => {
     it('nu esueaza daca trimiterea notificarii pica - cererea deja s-a salvat', async () => {
       prisma.userBook.findUnique.mockResolvedValue(requestedUserBook);
       prisma.exchangeRequest.create.mockResolvedValue(createdRequest);
+      prisma.exchangeRequest.findUniqueOrThrow.mockResolvedValue(createdRequest);
       notifications.create.mockRejectedValue(new Error('notif service down'));
 
       const result = await service.createRequest('requester-1', {

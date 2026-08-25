@@ -30,6 +30,7 @@ class GroupMemberInfo {
 class GroupPostInfo {
   final String id;
   final String content;
+  final String authorId;
   final String? authorName;
   final String? authorUsername;
   final DateTime createdAt;
@@ -37,6 +38,7 @@ class GroupPostInfo {
   const GroupPostInfo({
     required this.id,
     required this.content,
+    required this.authorId,
     this.authorName,
     this.authorUsername,
     required this.createdAt,
@@ -47,6 +49,7 @@ class GroupPostInfo {
     return GroupPostInfo(
       id: json['id'] as String,
       content: json['content'] as String,
+      authorId: author['id'] as String,
       authorName: author['name'] as String?,
       authorUsername: author['username'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),

@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,6 +117,17 @@ class _AdminContent extends StatelessWidget {
         Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _StatsGrid(stats: data.stats),
+        const SizedBox(height: 20),
+        _StatsGrowthChart(history: data.statsHistory),
+        const SizedBox(height: 28),
+        Text(l10n.adminConversionFunnelTitle, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 4),
+        Text(
+          l10n.adminConversionFunnelDesc,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+        ),
+        const SizedBox(height: 12),
+        _ConversionFunnelChart(funnel: data.conversionFunnel),
         const SizedBox(height: 28),
         Text(l10n.adminMarketplaceStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
@@ -251,21 +263,161 @@ class _FeedbackTile extends StatelessWidget {
   }
 }
 
-class _UserReportTile extends StatelessWidget {
+class _UserReportTile extends ConsumerWidget {
   const _UserReportTile({required this.report});
   final UserReport report;
 
+  Color _statusColor(ReportStatus status) {
+    switch (status) {
+      case ReportStatus.open:
+        return AppColors.warning;
+      case ReportStatus.inProgress:
+        return AppColors.primary;
+      case ReportStatus.resolved:
+        return AppColors.success;
+      case ReportStatus.dismissed:
+        return AppColors.mutedForeground;
+    }
+  }
+
+  String _statusLabel(BuildContext context, ReportStatus status) {
+    final l10n = context.l10n;
+    switch (status) {
+      case ReportStatus.open:
+        return l10n.adminReportStatusOpen;
+      case ReportStatus.inProgress:
+        return l10n.adminReportStatusInProgress;
+      case ReportStatus.resolved:
+        return l10n.adminReportStatusResolved;
+      case ReportStatus.dismissed:
+        return l10n.adminReportStatusDismissed;
+    }
+  }
+
+  Future<void> _applyStatus(BuildContext context, WidgetRef ref, ReportStatus status) async {
+    String? note;
+    if (status == ReportStatus.resolved || status == ReportStatus.dismissed) {
+      final l10n = context.l10n;
+      final controller = TextEditingController();
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(_statusLabel(context, status)),
+          content: TextField(
+            controller: controller,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: l10n.adminReportResolutionNoteLabel,
+              hintText: l10n.adminReportResolutionNoteHint,
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
+            TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonConfirm)),
+          ],
+        ),
+      );
+      controller.dispose();
+      if (confirmed != true) return;
+      note = controller.text.trim();
+    }
+    if (!context.mounted) return;
+    try {
+      await ref.read(adminControllerProvider.notifier).updateReportStatus(
+            report.id,
+            status,
+            resolutionNote: note != null && note.isNotEmpty ? note : null,
+          );
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.adminReportUpdateError)),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteContent(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final isPost = report.groupPostId != null;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isPost ? l10n.adminDeletePostConfirmTitle : l10n.adminDeleteReviewConfirmTitle),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonGiveUp)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonDelete)),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      if (isPost) {
+        await ref.read(adminControllerProvider.notifier).deleteReportedGroupPost(report.groupPostId!);
+      } else {
+        await ref.read(adminControllerProvider.notifier).deleteReportedReview(report.reviewId!);
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.adminContentDeleted)));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.adminContentDeleteError)));
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final assignedName = report.assignedToName ?? report.assignedToEmail;
+    final hasContent = report.groupPostId != null || report.reviewId != null;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         title: Text('${report.reportedName ?? report.reportedEmail} - ${report.reason}'),
-        subtitle: Text(
-          context.l10n.adminReportedBy(report.reporterName ?? report.reporterEmail) +
-              (report.details != null && report.details!.isNotEmpty ? '\n${report.details}' : ''),
+        subtitle: Text([
+          l10n.adminReportedBy(report.reporterName ?? report.reporterEmail),
+          assignedName != null ? l10n.adminReportAssignedTo(assignedName) : l10n.adminReportUnassigned,
+          if (report.details != null && report.details!.isNotEmpty) report.details!,
+          if (report.resolutionNote != null && report.resolutionNote!.isNotEmpty) report.resolutionNote!,
+          if (report.groupPostId != null) '${l10n.adminReportedPostLabel}: "${report.groupPostContent}"',
+          if (report.reviewId != null)
+            '${l10n.adminReportedReviewLabel} (${report.reviewRating}/5)'
+                '${report.reviewText != null && report.reviewText!.isNotEmpty ? ": ${report.reviewText}" : ""}',
+        ].join('\n')),
+        isThreeLine: true,
+        leading: Chip(
+          label: Text(_statusLabel(context, report.status), style: const TextStyle(fontSize: 11)),
+          backgroundColor: _statusColor(report.status).withValues(alpha: 0.15),
+          labelStyle: TextStyle(color: _statusColor(report.status)),
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.compact,
         ),
-        isThreeLine: report.details != null && report.details!.isNotEmpty,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasContent)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: report.groupPostId != null ? l10n.adminDeletePostAction : l10n.adminDeleteReviewAction,
+                onPressed: () => _deleteContent(context, ref),
+              ),
+            PopupMenuButton<ReportStatus>(
+              onSelected: (status) => _applyStatus(context, ref, status),
+              itemBuilder: (context) => [
+                if (report.status == ReportStatus.open)
+                  PopupMenuItem(value: ReportStatus.inProgress, child: Text(l10n.adminReportMarkInProgress)),
+                if (report.status != ReportStatus.resolved)
+                  PopupMenuItem(value: ReportStatus.resolved, child: Text(l10n.adminReportMarkResolved)),
+                if (report.status != ReportStatus.dismissed)
+                  PopupMenuItem(value: ReportStatus.dismissed, child: Text(l10n.adminReportMarkDismissed)),
+                if (report.status == ReportStatus.resolved || report.status == ReportStatus.dismissed)
+                  PopupMenuItem(value: ReportStatus.open, child: Text(l10n.adminReportReopen)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -449,6 +601,143 @@ class _StatsGrid extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// "Growth over time" (feature backlog #10) - un rând pe zi din
+/// StatsSnapshot (vezi AdminService#snapshotDailyStats), ca panoul să arate
+/// tendința, nu doar instantaneul curent din _StatsGrid de mai sus.
+class _StatsGrowthChart extends StatelessWidget {
+  const _StatsGrowthChart({required this.history});
+  final List<StatsSnapshotPoint> history;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.adminStatsGrowthTitle, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              l10n.adminStatsGrowthDesc,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+            ),
+            const SizedBox(height: 16),
+            // Sub 2 puncte nu există o linie de trasat.
+            if (history.length < 2)
+              SizedBox(
+                height: 120,
+                child: Center(
+                  child: Text(
+                    l10n.adminStatsGrowthEmpty,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                height: 160,
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(
+                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineTouchData: const LineTouchData(enabled: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        isCurved: true,
+                        color: AppColors.primary,
+                        barWidth: 2,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                        ),
+                        spots: [
+                          for (var i = 0; i < history.length; i++)
+                            FlSpot(i.toDouble(), history[i].totalUsers.toDouble()),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (history.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.adminStatsGrowthRange(history.first.totalUsers, history.last.totalUsers),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Feature backlog #19: pre-înscriere -> onboarding -> primul anunț -> primul
+/// schimb finalizat. Bare proporționale simple, fără fl_chart - fiecare
+/// treaptă e independentă, nu neapărat un subset strict al celei de dinainte.
+class _ConversionFunnelChart extends StatelessWidget {
+  const _ConversionFunnelChart({required this.funnel});
+  final ConversionFunnel funnel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final stages = [
+      (l10n.adminFunnelPreRegistrations, funnel.preRegistrations),
+      (l10n.adminFunnelRegistered, funnel.registeredUsers),
+      (l10n.adminFunnelOnboarded, funnel.onboardedUsers),
+      (l10n.adminFunnelListedBook, funnel.listedUsers),
+      (l10n.adminFunnelExchanged, funnel.exchangedUsers),
+    ];
+    final maxValue = stages.map((s) => s.$2).fold(0, (a, b) => a > b ? a : b);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final stage in stages) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(stage.$1, style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                  Text('${stage.$2}', style: Theme.of(context).textTheme.labelLarge),
+                ],
+              ),
+              const SizedBox(height: 4),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: maxValue == 0 ? 0 : stage.$2 / maxValue,
+                  minHeight: 10,
+                  backgroundColor: AppColors.muted,
+                  valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

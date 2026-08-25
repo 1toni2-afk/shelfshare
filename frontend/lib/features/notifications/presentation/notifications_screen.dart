@@ -327,6 +327,10 @@ class _NotificationRow extends ConsumerWidget {
         return Icons.location_on_outlined;
       case NotificationType.interestBookListed:
         return Icons.auto_awesome_outlined;
+      case NotificationType.savedSearchMatch:
+        return Icons.bookmark_outline;
+      case NotificationType.seriesVolumeAvailable:
+        return Icons.collections_bookmark_outlined;
       case NotificationType.unknown:
         return Icons.notifications_outlined;
       case NotificationType.priceChanged:

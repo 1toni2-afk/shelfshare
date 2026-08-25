@@ -331,6 +331,11 @@ export class BooksController {
     return this.booksService.getListingHistory(userBookId);
   }
 
+  @Get(':userBookId/price-history')
+  getPriceHistory(@Param('userBookId') userBookId: string) {
+    return this.booksService.getPriceHistory(userBookId);
+  }
+
   @Get(':userBookId/similar')
   getSimilarBooks(@Param('userBookId') userBookId: string) {
     return this.booksService.getSimilarBooks(userBookId);

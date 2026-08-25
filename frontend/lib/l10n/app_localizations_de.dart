@@ -690,6 +690,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookshelfLoadError => 'Bücherregal konnte nicht geladen werden.';
 
   @override
+  String get bookshelfProgressDialogTitle => 'Lesefortschritt';
+
+  @override
+  String get bookshelfProgressField => 'Aktuelle Seite';
+
+  @override
+  String bookshelfProgressFieldOfTotal(int total) {
+    return 'Aktuelle Seite (von $total)';
+  }
+
+  @override
+  String get bookshelfProgressError =>
+      'Der Fortschritt konnte nicht gespeichert werden.';
+
+  @override
+  String bookshelfProgressLabel(int current, int total) {
+    return 'Seite $current von $total';
+  }
+
+  @override
+  String bookshelfProgressLabelNoTotal(int current) {
+    return 'Seite $current';
+  }
+
+  @override
   String get bookshelfGenreChartTitle => 'Deine Genres';
 
   @override
@@ -787,18 +812,45 @@ class AppLocalizationsDe extends AppLocalizations {
   String get activityFeedLoadError => 'Aktivität konnte nicht geladen werden.';
 
   @override
-  String activityNewListing(String name) {
-    return '$name hat ein neues Buch eingestellt';
+  String get activityNewListing => 'hat ein neues Buch eingestellt';
+
+  @override
+  String get activityFinishedBook => 'hat mit dem Lesen fertig';
+
+  @override
+  String get activityCompletedExchange => 'hat einen Tausch abgeschlossen';
+
+  @override
+  String activitySale(String amount) {
+    return 'hat für $amount Lei verkauft';
   }
 
   @override
-  String activityFinishedBook(String name) {
-    return '$name hat mit dem Lesen fertig';
-  }
+  String get activityBadgeNew => 'Neu';
 
   @override
-  String activityCompletedExchange(String name) {
-    return '$name hat einen Tausch abgeschlossen';
+  String get activityBadgeFinished => 'Fertig';
+
+  @override
+  String get activityBadgeExchange => 'Tausch';
+
+  @override
+  String get activityBadgeSale => 'Verkauf';
+
+  @override
+  String get activityBadgeProgress => 'Liest';
+
+  @override
+  String get activityReadingProgress => 'liest gerade';
+
+  @override
+  String activitySwapCaption(
+    String name,
+    String bookA,
+    String bookB,
+    String counterparty,
+  ) {
+    return '$name hat $bookA gegen $bookB getauscht, von $counterparty';
   }
 
   @override
@@ -907,6 +959,25 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get homeOngoingExchangeBanner => 'Du hast einen laufenden Tausch';
+
+  @override
+  String homeBookOfMonth(String title, int count) {
+    return 'Buch des Monats: $title ($count Stimmen)';
+  }
+
+  @override
+  String get homeBookOfMonthDiscuss => 'Diskutieren';
+
+  @override
+  String get bookDetailVoteBookOfMonth => 'Für Buch des Monats stimmen';
+
+  @override
+  String get bookDetailVotedBookOfMonth =>
+      'Du hast für das Buch des Monats gestimmt';
+
+  @override
+  String get bookDetailVoteError =>
+      'Die Stimme konnte nicht gespeichert werden.';
 
   @override
   String get homeFeedEnd => 'Du hast alle Bücher gesehen';
@@ -1471,6 +1542,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookDetailNoOffer => 'Kein Angebot';
 
   @override
+  String get bookDetailBundleAddMore =>
+      'Weitere Bücher zu diesem Angebot hinzufügen (optional)';
+
+  @override
   String get bookDetailMessageOptional => 'Nachricht (optional)';
 
   @override
@@ -1565,6 +1640,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String exchangeOffersBook(String title) {
     return 'Bietet: $title';
+  }
+
+  @override
+  String exchangeOffersBookBundle(String title, int count) {
+    return 'Bietet: $title + $count weitere';
   }
 
   @override
@@ -1738,6 +1818,20 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get readySafetyBothReady => 'Ihr seid bereit für den Tausch';
+
+  @override
+  String get readyConditionPhotosTitle => 'Fotos zum Buchzustand';
+
+  @override
+  String get readyConditionPhotosSubtitle =>
+      'Fotografiere das Buch vor der Übergabe als Nachweis seines Zustands';
+
+  @override
+  String get readyConditionPhotosOther => 'Fotos der anderen Partei';
+
+  @override
+  String get readyConditionPhotosError =>
+      'Das Foto konnte nicht hochgeladen werden.';
 
   @override
   String get readyReportIssue => 'Problem melden';
@@ -2170,6 +2264,43 @@ class AppLocalizationsDe extends AppLocalizations {
   String get adminStatsTitle => 'Statistiken';
 
   @override
+  String get adminStatsGrowthTitle => 'Nutzer im Zeitverlauf';
+
+  @override
+  String get adminStatsGrowthDesc => 'Täglicher Schnappschuss, letzte 30 Tage.';
+
+  @override
+  String get adminStatsGrowthEmpty =>
+      'Noch nicht genug Daten für ein Diagramm.';
+
+  @override
+  String adminStatsGrowthRange(int from, int to) {
+    return '$from → $to Nutzer';
+  }
+
+  @override
+  String get adminConversionFunnelTitle => 'Konversionstrichter';
+
+  @override
+  String get adminConversionFunnelDesc =>
+      'Wie viele Nutzer jeden Schritt erreichen - von der Voranmeldung bis zum ersten abgeschlossenen Tausch.';
+
+  @override
+  String get adminFunnelPreRegistrations => 'Voranmeldungen';
+
+  @override
+  String get adminFunnelRegistered => 'Konto erstellt';
+
+  @override
+  String get adminFunnelOnboarded => 'Onboarding abgeschlossen';
+
+  @override
+  String get adminFunnelListedBook => 'Buch inseriert';
+
+  @override
+  String get adminFunnelExchanged => 'Tausch abgeschlossen';
+
+  @override
   String get adminMarketplaceStatsTitle => 'Marktplatz-Statistiken';
 
   @override
@@ -2254,6 +2385,106 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String adminReportedBy(String name) {
     return 'Gemeldet von $name';
+  }
+
+  @override
+  String get adminReportStatusOpen => 'Offen';
+
+  @override
+  String get adminReportStatusInProgress => 'In Bearbeitung';
+
+  @override
+  String get adminReportStatusResolved => 'Gelöst';
+
+  @override
+  String get adminReportStatusDismissed => 'Abgelehnt';
+
+  @override
+  String adminReportAssignedTo(String name) {
+    return 'Zugewiesen: $name';
+  }
+
+  @override
+  String get adminReportUnassigned => 'Nicht zugewiesen';
+
+  @override
+  String get adminReportMarkInProgress => 'Meldung übernehmen';
+
+  @override
+  String get adminReportMarkResolved => 'Als gelöst markieren';
+
+  @override
+  String get adminReportMarkDismissed => 'Meldung ablehnen';
+
+  @override
+  String get adminReportReopen => 'Wieder öffnen';
+
+  @override
+  String get adminReportResolutionNoteLabel => 'Entscheidungsnotiz (optional)';
+
+  @override
+  String get adminReportResolutionNoteHint =>
+      'Was du getan hast oder warum du die Meldung abgelehnt hast';
+
+  @override
+  String get adminReportUpdateError =>
+      'Die Meldung konnte nicht aktualisiert werden.';
+
+  @override
+  String get adminReportedPostLabel => 'Gemeldeter Beitrag';
+
+  @override
+  String get adminReportedReviewLabel => 'Gemeldete Rezension';
+
+  @override
+  String get adminDeletePostAction => 'Beitrag löschen';
+
+  @override
+  String get adminDeleteReviewAction => 'Rezension löschen';
+
+  @override
+  String get adminDeletePostConfirmTitle => 'Diesen Beitrag löschen?';
+
+  @override
+  String get adminDeleteReviewConfirmTitle => 'Diese Rezension löschen?';
+
+  @override
+  String get adminContentDeleted => 'Inhalt gelöscht.';
+
+  @override
+  String get adminContentDeleteError =>
+      'Der Inhalt konnte nicht gelöscht werden.';
+
+  @override
+  String get savedSearchesTitle => 'Gespeicherte Suchen';
+
+  @override
+  String get savedSearchesEmpty =>
+      'Noch keine gespeicherte Suche. Speichere eine, um bei passenden neuen Anzeigen benachrichtigt zu werden.';
+
+  @override
+  String get savedSearchesLoadError =>
+      'Gespeicherte Suchen konnten nicht geladen werden.';
+
+  @override
+  String get savedSearchNew => 'Neue Suche';
+
+  @override
+  String get savedSearchLabelLabel => 'Name';
+
+  @override
+  String get savedSearchLabelHint => 'z.B. Sci-fi unter 30 Lei in Cluj';
+
+  @override
+  String get savedSearchMaxPriceLabel => 'Höchstpreis (optional)';
+
+  @override
+  String get savedSearchCreateError =>
+      'Die Suche konnte nicht gespeichert werden.';
+
+  @override
+  String savedSearchMaxPriceChip(String amount) {
+    return 'unter $amount Lei';
   }
 
   @override
@@ -2546,6 +2777,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get groupsNoPosts => 'Noch keine Nachrichten.';
 
   @override
+  String get groupsReportPostTooltip => 'Beitrag melden';
+
+  @override
   String get premiumBadgeTooltip => 'Premium-Mitglied';
 
   @override
@@ -2753,7 +2987,49 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shareTagAdd => 'Tag hinzufügen';
 
   @override
+  String bookDetailPriceHistory(String price, int count) {
+    return 'Durchschnittspreis kürzlich: $price Lei (aus $count Verkäufen)';
+  }
+
+  @override
+  String get bookDetailReviewsTitle => 'Rezensionen';
+
+  @override
+  String get bookDetailReviewWrite => 'Rezension schreiben';
+
+  @override
+  String get bookDetailReviewEdit => 'Rezension bearbeiten';
+
+  @override
+  String get bookDetailReviewDialogTitle => 'Deine Rezension';
+
+  @override
+  String get bookDetailReviewHint => 'Was hältst du von dem Buch? (optional)';
+
+  @override
+  String get bookDetailReviewError =>
+      'Die Rezension konnte nicht gespeichert werden.';
+
+  @override
+  String get bookDetailReviewsEmpty =>
+      'Noch keine Rezensionen. Sei die/der Erste.';
+
+  @override
+  String get bookDetailReviewReportTooltip => 'Rezension melden';
+
+  @override
+  String bookDetailReviewsSummary(String average, int count) {
+    return '$average von 5 ($count Rezensionen)';
+  }
+
+  @override
   String get sharePublisher => 'Verlag';
+
+  @override
+  String get shareSeriesName => 'Reihe (optional)';
+
+  @override
+  String get shareSeriesNumber => 'Band';
 
   @override
   String get shareCityHint => 'Stadt für den Austausch';

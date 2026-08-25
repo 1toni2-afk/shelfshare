@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/locale/l10n_extensions.dart';
@@ -181,6 +182,8 @@ class _ReadyBody extends ConsumerWidget {
               _ContactSection(exchange: exchange, myUserId: myUserId, other: other, onRun: onRun),
               const SizedBox(height: 16),
               _SafetySection(exchange: exchange, myUserId: myUserId, onRun: onRun),
+              const SizedBox(height: 16),
+              _ConditionPhotosSection(exchange: exchange, myUserId: myUserId, onRun: onRun),
               const SizedBox(height: 16),
               _ReportIssueRow(onTap: () => _reportIssue(context, ref, other.id)),
               const SizedBox(height: 12),
@@ -430,12 +433,24 @@ class _BookSummaryCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: Icon(Icons.swap_horiz, size: 18, color: AppColors.mutedForeground),
                         ),
-                        BookCover(
-                          url: offeredBook.book.coverUrl,
-                          fallbackUrl: offeredBook.photos.isNotEmpty ? offeredBook.photos.first : null,
-                          title: offeredBook.book.title,
-                          width: 56,
-                          height: 78,
+                        Column(
+                          children: [
+                            BookCover(
+                              url: offeredBook.book.coverUrl,
+                              fallbackUrl: offeredBook.photos.isNotEmpty ? offeredBook.photos.first : null,
+                              title: offeredBook.book.title,
+                              width: 56,
+                              height: 78,
+                            ),
+                            if (exchange.additionalOfferedBooks.isNotEmpty)
+                              Text(
+                                '+${exchange.additionalOfferedBooks.length}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(color: AppColors.mutedForeground),
+                              ),
+                          ],
                         ),
                       ],
                       const SizedBox(width: 12),
@@ -843,6 +858,108 @@ class _SafetySection extends ConsumerWidget {
                 l10n.readySafetyBothReady,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.success),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Condition Photos" (feature backlog #14) - fiecare parte fotografiază
+/// cartea înainte de predare, ca dovadă a stării ei - vezi
+/// ExchangeRequest.requesterConditionPhotos/ownerConditionPhotos.
+class _ConditionPhotosSection extends ConsumerStatefulWidget {
+  const _ConditionPhotosSection({required this.exchange, required this.myUserId, required this.onRun});
+
+  final ExchangeRequest exchange;
+  final String myUserId;
+  final Future<void> Function(Future<ExchangeRequest> Function()) onRun;
+
+  @override
+  ConsumerState<_ConditionPhotosSection> createState() => _ConditionPhotosSectionState();
+}
+
+class _ConditionPhotosSectionState extends ConsumerState<_ConditionPhotosSection> {
+  static const _maxPhotos = 4;
+  bool _uploading = false;
+
+  Future<void> _pickAndUpload() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    setState(() => _uploading = true);
+    try {
+      await widget.onRun(
+        () async => ref.read(exchangesRepositoryProvider).addConditionPhoto(
+              widget.exchange.id,
+              bytes: await picked.readAsBytes(),
+              filename: picked.name,
+            ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.readyConditionPhotosError)));
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  Widget _thumb(String url) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(url, width: 64, height: 64, fit: BoxFit.cover),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final mine = widget.exchange.myConditionPhotos(widget.myUserId);
+    final theirs = widget.exchange.otherConditionPhotos(widget.myUserId);
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SectionHeaderRow(
+              icon: Icons.photo_camera_outlined,
+              title: l10n.readyConditionPhotosTitle,
+              subtitle: l10n.readyConditionPhotosSubtitle,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final url in mine) _thumb(url),
+                if (mine.length < _maxPhotos)
+                  InkWell(
+                    onTap: _uploading ? null : _pickAndUpload,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: _uploading
+                          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                          : Icon(Icons.add_a_photo_outlined, color: AppColors.mutedForeground),
+                    ),
+                  ),
+              ],
+            ),
+            if (theirs.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(l10n.readyConditionPhotosOther, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 8),
+              Wrap(spacing: 8, runSpacing: 8, children: [for (final url in theirs) _thumb(url)]),
+            ],
           ],
         ),
       ),

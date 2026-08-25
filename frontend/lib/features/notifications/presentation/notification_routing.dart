@@ -86,7 +86,10 @@ void openNotification(
       }
     case NotificationType.nearbyBookListed:
     case NotificationType.interestBookListed:
+    case NotificationType.seriesVolumeAvailable:
       context.push('/search');
+    case NotificationType.savedSearchMatch:
+      context.push('/saved-searches');
     case NotificationType.unknown:
       break; // tip necunoscut clientului - afișăm textul, fără acțiune la tap
     case NotificationType.priceChanged:

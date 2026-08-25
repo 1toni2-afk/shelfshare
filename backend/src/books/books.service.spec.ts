@@ -7,6 +7,7 @@ import { FollowService } from '../follow/follow.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookLookupService } from './book-lookup.service';
 import { ListingScoreService } from './listing-score.service';
+import { SavedSearchesService } from '../saved-searches/saved-searches.service';
 import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 
 describe('BooksService', () => {
@@ -43,6 +44,13 @@ describe('BooksService', () => {
         { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: {} },
         { provide: ListingScoreService, useValue: listingScore },
+        {
+          provide: SavedSearchesService,
+          useValue: {
+            notifyOnNewListing: jest.fn().mockResolvedValue(undefined),
+            notifyOnPriceSet: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 

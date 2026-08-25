@@ -679,6 +679,30 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookshelfLoadError => 'Nu am putut încărca raftul.';
 
   @override
+  String get bookshelfProgressDialogTitle => 'Progres de citit';
+
+  @override
+  String get bookshelfProgressField => 'Pagina curentă';
+
+  @override
+  String bookshelfProgressFieldOfTotal(int total) {
+    return 'Pagina curentă (din $total)';
+  }
+
+  @override
+  String get bookshelfProgressError => 'Nu am putut salva progresul.';
+
+  @override
+  String bookshelfProgressLabel(int current, int total) {
+    return 'Pagina $current din $total';
+  }
+
+  @override
+  String bookshelfProgressLabelNoTotal(int current) {
+    return 'Pagina $current';
+  }
+
+  @override
   String get bookshelfGenreChartTitle => 'Genurile tale';
 
   @override
@@ -775,18 +799,45 @@ class AppLocalizationsRo extends AppLocalizations {
   String get activityFeedLoadError => 'Nu am putut încărca activitatea.';
 
   @override
-  String activityNewListing(String name) {
-    return '$name a listat o carte nouă';
+  String get activityNewListing => 'a adăugat o carte nouă';
+
+  @override
+  String get activityFinishedBook => 'a terminat de citit';
+
+  @override
+  String get activityCompletedExchange => 'a finalizat un schimb';
+
+  @override
+  String activitySale(String amount) {
+    return 'a vândut cu $amount lei';
   }
 
   @override
-  String activityFinishedBook(String name) {
-    return '$name a terminat de citit';
-  }
+  String get activityBadgeNew => 'Nou';
 
   @override
-  String activityCompletedExchange(String name) {
-    return '$name a finalizat un schimb';
+  String get activityBadgeFinished => 'Terminată';
+
+  @override
+  String get activityBadgeExchange => 'Schimb';
+
+  @override
+  String get activityBadgeSale => 'Vânzare';
+
+  @override
+  String get activityBadgeProgress => 'Citește';
+
+  @override
+  String get activityReadingProgress => 'citește acum';
+
+  @override
+  String activitySwapCaption(
+    String name,
+    String bookA,
+    String bookB,
+    String counterparty,
+  ) {
+    return '$name a schimbat $bookA cu $bookB, de la $counterparty';
   }
 
   @override
@@ -894,6 +945,23 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get homeOngoingExchangeBanner => 'Ai un schimb în desfășurare';
+
+  @override
+  String homeBookOfMonth(String title, int count) {
+    return 'Cartea lunii: $title ($count voturi)';
+  }
+
+  @override
+  String get homeBookOfMonthDiscuss => 'Discută';
+
+  @override
+  String get bookDetailVoteBookOfMonth => 'Votează pentru Cartea lunii';
+
+  @override
+  String get bookDetailVotedBookOfMonth => 'Ai votat pentru Cartea lunii';
+
+  @override
+  String get bookDetailVoteError => 'Nu am putut înregistra votul.';
 
   @override
   String get homeFeedEnd => 'Ai văzut toate cărțile';
@@ -1453,6 +1521,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookDetailNoOffer => 'Fără ofertă';
 
   @override
+  String get bookDetailBundleAddMore =>
+      'Adaugă și alte cărți la această ofertă (opțional)';
+
+  @override
   String get bookDetailMessageOptional => 'Mesaj (opțional)';
 
   @override
@@ -1542,6 +1614,11 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String exchangeOffersBook(String title) {
     return 'Oferă: $title';
+  }
+
+  @override
+  String exchangeOffersBookBundle(String title, int count) {
+    return 'Oferă: $title + încă $count cărți';
   }
 
   @override
@@ -1711,6 +1788,19 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get readySafetyBothReady => 'Sunteți gata de schimb';
+
+  @override
+  String get readyConditionPhotosTitle => 'Poze cu starea cărții';
+
+  @override
+  String get readyConditionPhotosSubtitle =>
+      'Fotografiază cartea înainte de predare, ca dovadă a stării ei';
+
+  @override
+  String get readyConditionPhotosOther => 'Pozele celeilalte părți';
+
+  @override
+  String get readyConditionPhotosError => 'Nu am putut urca poza.';
 
   @override
   String get readyReportIssue => 'Raportează o problemă';
@@ -2134,6 +2224,43 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminStatsTitle => 'Statistici';
 
   @override
+  String get adminStatsGrowthTitle => 'Utilizatori în timp';
+
+  @override
+  String get adminStatsGrowthDesc => 'Instantaneu zilnic, ultimele 30 de zile.';
+
+  @override
+  String get adminStatsGrowthEmpty =>
+      'Nu sunt încă suficiente date pentru un grafic.';
+
+  @override
+  String adminStatsGrowthRange(int from, int to) {
+    return '$from → $to utilizatori';
+  }
+
+  @override
+  String get adminConversionFunnelTitle => 'Pâlnia de conversie';
+
+  @override
+  String get adminConversionFunnelDesc =>
+      'Câți utilizatori ajung la fiecare pas - de la pre-înscriere până la primul schimb finalizat.';
+
+  @override
+  String get adminFunnelPreRegistrations => 'Pre-înscrieri';
+
+  @override
+  String get adminFunnelRegistered => 'Cont creat';
+
+  @override
+  String get adminFunnelOnboarded => 'Onboarding finalizat';
+
+  @override
+  String get adminFunnelListedBook => 'Au listat o carte';
+
+  @override
+  String get adminFunnelExchanged => 'Au finalizat un schimb';
+
+  @override
   String get adminMarketplaceStatsTitle => 'Statistici marketplace';
 
   @override
@@ -2216,6 +2343,102 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String adminReportedBy(String name) {
     return 'Raportat de $name';
+  }
+
+  @override
+  String get adminReportStatusOpen => 'Deschis';
+
+  @override
+  String get adminReportStatusInProgress => 'În lucru';
+
+  @override
+  String get adminReportStatusResolved => 'Rezolvat';
+
+  @override
+  String get adminReportStatusDismissed => 'Respins';
+
+  @override
+  String adminReportAssignedTo(String name) {
+    return 'Asignat: $name';
+  }
+
+  @override
+  String get adminReportUnassigned => 'Neasignat';
+
+  @override
+  String get adminReportMarkInProgress => 'Preia raportul';
+
+  @override
+  String get adminReportMarkResolved => 'Marchează rezolvat';
+
+  @override
+  String get adminReportMarkDismissed => 'Respinge raportul';
+
+  @override
+  String get adminReportReopen => 'Redeschide';
+
+  @override
+  String get adminReportResolutionNoteLabel => 'Notă de decizie (opțional)';
+
+  @override
+  String get adminReportResolutionNoteHint =>
+      'Ce ai făcut sau de ce ai respins raportul';
+
+  @override
+  String get adminReportUpdateError => 'Nu am putut actualiza raportul.';
+
+  @override
+  String get adminReportedPostLabel => 'Postare raportată';
+
+  @override
+  String get adminReportedReviewLabel => 'Recenzie raportată';
+
+  @override
+  String get adminDeletePostAction => 'Șterge postarea';
+
+  @override
+  String get adminDeleteReviewAction => 'Șterge recenzia';
+
+  @override
+  String get adminDeletePostConfirmTitle => 'Ștergi această postare?';
+
+  @override
+  String get adminDeleteReviewConfirmTitle => 'Ștergi această recenzie?';
+
+  @override
+  String get adminContentDeleted => 'Conținut șters.';
+
+  @override
+  String get adminContentDeleteError => 'Nu am putut șterge conținutul.';
+
+  @override
+  String get savedSearchesTitle => 'Căutări salvate';
+
+  @override
+  String get savedSearchesEmpty =>
+      'Nicio căutare salvată încă. Salvează una ca să fii anunțat la anunțuri noi care se potrivesc.';
+
+  @override
+  String get savedSearchesLoadError => 'Nu am putut încărca căutările salvate.';
+
+  @override
+  String get savedSearchNew => 'Căutare nouă';
+
+  @override
+  String get savedSearchLabelLabel => 'Nume';
+
+  @override
+  String get savedSearchLabelHint => 'ex. SF sub 30 lei în Cluj';
+
+  @override
+  String get savedSearchMaxPriceLabel => 'Preț maxim (opțional)';
+
+  @override
+  String get savedSearchCreateError => 'Nu am putut salva căutarea.';
+
+  @override
+  String savedSearchMaxPriceChip(String amount) {
+    return 'sub $amount lei';
   }
 
   @override
@@ -2506,6 +2729,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get groupsNoPosts => 'Niciun mesaj încă.';
 
   @override
+  String get groupsReportPostTooltip => 'Raportează postarea';
+
+  @override
   String get premiumBadgeTooltip => 'Membru Premium';
 
   @override
@@ -2711,7 +2937,48 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareTagAdd => 'Adaugă tag';
 
   @override
+  String bookDetailPriceHistory(String price, int count) {
+    return 'Preț mediu recent: $price lei (din $count vânzări)';
+  }
+
+  @override
+  String get bookDetailReviewsTitle => 'Recenzii';
+
+  @override
+  String get bookDetailReviewWrite => 'Scrie o recenzie';
+
+  @override
+  String get bookDetailReviewEdit => 'Editează recenzia';
+
+  @override
+  String get bookDetailReviewDialogTitle => 'Recenzia ta';
+
+  @override
+  String get bookDetailReviewHint => 'Ce părere ai despre carte? (opțional)';
+
+  @override
+  String get bookDetailReviewError => 'Nu am putut salva recenzia.';
+
+  @override
+  String get bookDetailReviewsEmpty =>
+      'Nicio recenzie încă. Fii primul care scrie una.';
+
+  @override
+  String get bookDetailReviewReportTooltip => 'Raportează recenzia';
+
+  @override
+  String bookDetailReviewsSummary(String average, int count) {
+    return '$average din 5 ($count recenzii)';
+  }
+
+  @override
   String get sharePublisher => 'Editura';
+
+  @override
+  String get shareSeriesName => 'Serie (opțional)';
+
+  @override
+  String get shareSeriesNumber => 'Volum';
 
   @override
   String get shareCityHint => 'Localitatea unde se face schimbul';

@@ -33,6 +33,29 @@ class AdminStats {
   }
 }
 
+class StatsSnapshotPoint {
+  final DateTime date;
+  final int totalUsers;
+  final int totalBooks;
+  final int totalExchanges;
+
+  const StatsSnapshotPoint({
+    required this.date,
+    required this.totalUsers,
+    required this.totalBooks,
+    required this.totalExchanges,
+  });
+
+  factory StatsSnapshotPoint.fromJson(Map<String, dynamic> json) {
+    return StatsSnapshotPoint(
+      date: DateTime.parse(json['date'] as String),
+      totalUsers: json['totalUsers'] as int,
+      totalBooks: json['totalBooks'] as int,
+      totalExchanges: json['totalExchanges'] as int,
+    );
+  }
+}
+
 class GenreListingCount {
   final String genre;
   final int count;
@@ -172,6 +195,37 @@ class AdminUsersPage {
   }
 }
 
+enum ReportStatus { open, inProgress, resolved, dismissed }
+
+extension ReportStatusX on ReportStatus {
+  static ReportStatus fromJson(String value) {
+    switch (value) {
+      case 'IN_PROGRESS':
+        return ReportStatus.inProgress;
+      case 'RESOLVED':
+        return ReportStatus.resolved;
+      case 'DISMISSED':
+        return ReportStatus.dismissed;
+      case 'OPEN':
+      default:
+        return ReportStatus.open;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case ReportStatus.open:
+        return 'OPEN';
+      case ReportStatus.inProgress:
+        return 'IN_PROGRESS';
+      case ReportStatus.resolved:
+        return 'RESOLVED';
+      case ReportStatus.dismissed:
+        return 'DISMISSED';
+    }
+  }
+}
+
 class UserReport {
   final String id;
   final String reason;
@@ -181,6 +235,16 @@ class UserReport {
   final String reportedEmail;
   final String? reportedName;
   final DateTime createdAt;
+  final ReportStatus status;
+  final String? assignedToEmail;
+  final String? assignedToName;
+  final String? resolutionNote;
+  final DateTime? resolvedAt;
+  final String? groupPostId;
+  final String? groupPostContent;
+  final String? reviewId;
+  final String? reviewText;
+  final int? reviewRating;
 
   const UserReport({
     required this.id,
@@ -191,11 +255,24 @@ class UserReport {
     required this.reportedEmail,
     this.reportedName,
     required this.createdAt,
+    this.status = ReportStatus.open,
+    this.assignedToEmail,
+    this.assignedToName,
+    this.resolutionNote,
+    this.resolvedAt,
+    this.groupPostId,
+    this.groupPostContent,
+    this.reviewId,
+    this.reviewText,
+    this.reviewRating,
   });
 
   factory UserReport.fromJson(Map<String, dynamic> json) {
     final reporter = json['reporter'] as Map<String, dynamic>;
     final reportedUser = json['reportedUser'] as Map<String, dynamic>;
+    final assignedTo = json['assignedTo'] as Map<String, dynamic>?;
+    final groupPost = json['groupPost'] as Map<String, dynamic>?;
+    final review = json['review'] as Map<String, dynamic>?;
     return UserReport(
       id: json['id'] as String,
       reason: json['reason'] as String,
@@ -205,6 +282,45 @@ class UserReport {
       reportedEmail: reportedUser['email'] as String,
       reportedName: reportedUser['name'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      status: ReportStatusX.fromJson(json['status'] as String? ?? 'OPEN'),
+      assignedToEmail: assignedTo?['email'] as String?,
+      assignedToName: assignedTo?['name'] as String?,
+      resolutionNote: json['resolutionNote'] as String?,
+      resolvedAt: json['resolvedAt'] != null ? DateTime.parse(json['resolvedAt'] as String) : null,
+      groupPostId: groupPost?['id'] as String?,
+      groupPostContent: groupPost?['content'] as String?,
+      reviewId: review?['id'] as String?,
+      reviewText: review?['text'] as String?,
+      reviewRating: review?['rating'] as int?,
+    );
+  }
+
+  UserReport copyWith({
+    ReportStatus? status,
+    String? assignedToEmail,
+    String? assignedToName,
+    String? resolutionNote,
+    DateTime? resolvedAt,
+  }) {
+    return UserReport(
+      id: id,
+      reason: reason,
+      details: details,
+      reporterEmail: reporterEmail,
+      reporterName: reporterName,
+      reportedEmail: reportedEmail,
+      reportedName: reportedName,
+      createdAt: createdAt,
+      status: status ?? this.status,
+      assignedToEmail: assignedToEmail ?? this.assignedToEmail,
+      assignedToName: assignedToName ?? this.assignedToName,
+      resolutionNote: resolutionNote ?? this.resolutionNote,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+      groupPostId: groupPostId,
+      groupPostContent: groupPostContent,
+      reviewId: reviewId,
+      reviewText: reviewText,
+      reviewRating: reviewRating,
     );
   }
 }
@@ -451,6 +567,36 @@ class Administrator {
       name: json['name'] as String?,
       username: json['username'] as String?,
       adminRole: role != null ? AdminRole.fromJson(role) : null,
+    );
+  }
+}
+
+/// Feature backlog #19: pre-înscriere -> onboarding -> primul anunț -> primul
+/// schimb finalizat. Numere brute per treaptă, nu neapărat un subset strict
+/// unele-din-altele (un user poate lista o carte fără să fi "completat"
+/// formal onboarding-ul, de exemplu).
+class ConversionFunnel {
+  final int preRegistrations;
+  final int registeredUsers;
+  final int onboardedUsers;
+  final int listedUsers;
+  final int exchangedUsers;
+
+  const ConversionFunnel({
+    required this.preRegistrations,
+    required this.registeredUsers,
+    required this.onboardedUsers,
+    required this.listedUsers,
+    required this.exchangedUsers,
+  });
+
+  factory ConversionFunnel.fromJson(Map<String, dynamic> json) {
+    return ConversionFunnel(
+      preRegistrations: json['preRegistrations'] as int,
+      registeredUsers: json['registeredUsers'] as int,
+      onboardedUsers: json['onboardedUsers'] as int,
+      listedUsers: json['listedUsers'] as int,
+      exchangedUsers: json['exchangedUsers'] as int,
     );
   }
 }

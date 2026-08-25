@@ -55,6 +55,7 @@ import '../../features/profile/presentation/seller_analytics_screen.dart';
 import '../../features/profile/presentation/onboarding_flow_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
+import '../../features/saved_searches/presentation/saved_searches_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
 /// Rute accesibile fără autentificare - adaugă aici orice rută nouă care nu
@@ -188,6 +189,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           // Rute standalone - toate acestea afișează sidebar-ul din
           // MainScaffold și schimbă doar zona de conținut din dreapta.
           GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
+          GoRoute(path: '/saved-searches', builder: (context, state) => const SavedSearchesScreen()),
           GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
           GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
           GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),

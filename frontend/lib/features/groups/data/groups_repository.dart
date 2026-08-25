@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/group.dart';
+import '../../safety/data/safety_repository.dart';
 
 class GroupsRepository {
   GroupsRepository(this._ref);
@@ -54,6 +55,19 @@ class GroupsRepository {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/groups/$id/posts', data: {'content': content});
     return BookGroup.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> reportPost(
+    String groupId,
+    String postId, {
+    required ReportReason reason,
+    String? details,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.post('/groups/$groupId/posts/$postId/report', data: {
+      'reason': reason.toJson(),
+      if (details != null && details.isNotEmpty) 'details': details,
+    });
   }
 
   Future<BookGroup> createEvent(

@@ -23,6 +23,7 @@ import { haversineDistanceKm } from '../common/utils/geo';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_BOOK_LISTED } from '../common/utils/xp';
 import { ListingScoreService } from './listing-score.service';
+import { SavedSearchesService } from '../saved-searches/saved-searches.service';
 
 const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
 const MAX_LISTING_IMPORT_ROWS = 500;
@@ -54,6 +55,7 @@ export class BooksService {
     private follow: FollowService,
     private notifications: NotificationsService,
     private listingScore: ListingScoreService,
+    private savedSearches: SavedSearchesService,
   ) {}
 
   async searchExternal(query: string) {
@@ -335,6 +337,10 @@ export class BooksService {
       .catch(() => {});
     this.notifyNearbyUsers(userId, book.title).catch(() => {});
     this.notifyInterestedUsers(userId, book.title, book.genre).catch(() => {});
+    this.savedSearches
+      .notifyOnNewListing(userId, book.id, book.title, book.genre, userBook.city)
+      .catch(() => {});
+    this.notifySeriesFollowers(userId, book).catch(() => {});
     await awardXp(this.prisma, userId, XP_BOOK_LISTED);
 
     return userBook;
@@ -548,6 +554,43 @@ export class BooksService {
     );
   }
 
+  /**
+   * "Next Volume in Series" (feature backlog #7) - anunță userii care au pe
+   * raft (BookshelfEntry - citite/în curs/wishlist de citit, nu neapărat
+   * deținute fizic) un volum ANTERIOR din aceeași serie. `series`/
+   * `seriesNumber` sunt completate manual la listare (vezi AddBookDto) -
+   * fără ele nu putem ordona volumele, deci sărim tăcut peste cărțile fără
+   * serie completată.
+   */
+  private async notifySeriesFollowers(
+    ownerId: string,
+    book: { id: string; title: string; series: string | null; seriesNumber: number | null },
+  ) {
+    if (!book.series || book.seriesNumber == null) return;
+
+    const readers = await this.prisma.bookshelfEntry.findMany({
+      where: {
+        userId: { not: ownerId },
+        book: { series: book.series, seriesNumber: { lt: book.seriesNumber } },
+      },
+      select: { userId: true },
+      distinct: ['userId'],
+    });
+
+    await Promise.all(
+      readers.map((r) =>
+        this.notifications
+          .create(
+            r.userId,
+            'SERIES_VOLUME_AVAILABLE',
+            `A apărut un volum nou din seria „${book.series}": „${book.title}"`,
+            { bookId: book.id },
+          )
+          .catch(() => {}),
+      ),
+    );
+  }
+
   private async findOrCreateBook(dto: AddBookDto) {
     if (dto.isbn) {
       const cleanIsbn = dto.isbn.replace(/[-\s]/g, '');
@@ -574,6 +617,8 @@ export class BooksService {
             pageCount: external.pageCount,
             language: external.language,
             genre: external.genre,
+            series: dto.series,
+            seriesNumber: dto.seriesNumber,
             source: external.source,
             referencePrice: referencePrice?.price,
             referencePriceCurrency: referencePrice?.currency,
@@ -591,6 +636,8 @@ export class BooksService {
           isbn: cleanIsbn,
           title: dto.title,
           author: dto.author,
+          series: dto.series,
+          seriesNumber: dto.seriesNumber,
           source: 'manual',
           referencePrice: referencePrice?.price,
           referencePriceCurrency: referencePrice?.currency,
@@ -621,6 +668,8 @@ export class BooksService {
         title: dto.title,
         author: dto.author,
         genre: dto.genre,
+        series: dto.series,
+        seriesNumber: dto.seriesNumber,
         publisher: dto.publisher,
         publishedYear: dto.publishedYear,
         pageCount: dto.pageCount,
@@ -1520,6 +1569,47 @@ export class BooksService {
   }
 
   /**
+   * "Price History" (feature backlog #8) - la ce preț s-a vândut EFECTIV
+   * acest titlu, nu doar la ce preț e listat acum. Agregăm direct din
+   * `PriceOffer` cu status COMPLETED pentru orice exemplar al aceleiași
+   * cărți (nu doar anunțul curent) - fără o tabelă nouă, prețul de vânzare
+   * final e deja acolo (vezi offers.service.ts, unde oferta trece pe
+   * COMPLETED). Schimburile carte-contra-carte nu au preț, deci nu apar aici.
+   */
+  async getPriceHistory(userBookId: string) {
+    const anchor = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+      select: { bookId: true },
+    });
+    if (!anchor) {
+      throw new NotFoundException('Cartea nu a fost găsită');
+    }
+
+    const sales = await this.prisma.priceOffer.findMany({
+      where: { status: 'COMPLETED', userBook: { bookId: anchor.bookId } },
+      select: { amount: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 20,
+    });
+
+    if (sales.length === 0) {
+      return { averagePrice: null, saleCount: 0, recentSales: [] };
+    }
+
+    const amounts = sales.map((s) => Number(s.amount));
+    const average = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+
+    return {
+      averagePrice: Math.round(average * 100) / 100,
+      saleCount: sales.length,
+      recentSales: sales.map((s) => ({
+        price: Number(s.amount),
+        date: s.updatedAt,
+      })),
+    };
+  }
+
+  /**
    * Re-listarea unei cărți primite prin schimb/vânzare - doar destinatarul
    * confirmat (schimb finalizat sau ofertă acceptată pentru acel anunț)
    * poate face asta, o singură dată per anunț original. Noul anunț
@@ -1727,6 +1817,23 @@ export class BooksService {
     ) {
       this.wishlist
         .notifyPriceChanged(updated.bookId, userId, dto.salePrice)
+        .catch(() => {});
+    }
+
+    // Prima trecere pe vânzare - abia acum e cunoscut prețul, deci abia
+    // acum pot prinde potrivire căutările salvate cu maxPrice (vezi
+    // notifyOnNewListing la creare, care sare peste ele fiindcă atunci
+    // prețul nu exista încă).
+    if (!userBook.isForSale && dto.isForSale === true && updated.salePrice != null) {
+      this.savedSearches
+        .notifyOnPriceSet(
+          userId,
+          updated.bookId,
+          updated.book.title,
+          updated.book.genre,
+          updated.city,
+          Number(updated.salePrice),
+        )
         .catch(() => {});
     }
 

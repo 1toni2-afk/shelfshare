@@ -4,6 +4,10 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/group.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/report_reason_dialog.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/application/auth_state.dart';
+import '../../safety/data/safety_repository.dart';
 import '../data/groups_repository.dart';
 import 'groups_screen.dart';
 
@@ -56,6 +60,25 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     await ref.read(groupsRepositoryProvider).delete(widget.groupId);
     ref.invalidate(myGroupsProvider);
     if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _reportPost(GroupPostInfo post) async {
+    final l10n = context.l10n;
+    final reason = await showDialog<ReportReason>(
+      context: context,
+      builder: (context) => const ReportReasonDialog(),
+    );
+    if (reason == null) return;
+    try {
+      await ref.read(groupsRepositoryProvider).reportPost(widget.groupId, post.id, reason: reason);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookDetailReportSent)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookDetailReportError)));
+      }
+    }
   }
 
   Future<void> _submitPost() async {
@@ -150,6 +173,8 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(_groupProvider(widget.groupId));
     final l10n = context.l10n;
+    final authState = ref.watch(authControllerProvider);
+    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -230,14 +255,31 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 for (final post in group.posts)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          post.authorUsername ?? post.authorName ?? l10n.commonUnknownUser,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                post.authorUsername ?? post.authorName ?? l10n.commonUnknownUser,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                              Text(post.content),
+                            ],
+                          ),
                         ),
-                        Text(post.content),
+                        if (currentUserId != null && currentUserId != post.authorId)
+                          IconButton(
+                            icon: const Icon(Icons.flag_outlined, size: 18),
+                            tooltip: l10n.groupsReportPostTooltip,
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () => _reportPost(post),
+                          ),
                       ],
                     ),
                   ),

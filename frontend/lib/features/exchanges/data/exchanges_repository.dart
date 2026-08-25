@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/exchange_request.dart';
+import '../../../shared/utils/image_upload.dart';
 
 class ExchangesRepository {
   ExchangesRepository(this._ref);
@@ -13,6 +15,7 @@ class ExchangesRepository {
   Future<(ExchangeRequest, String?)> createRequest({
     required String requestedBookId,
     String? offeredBookId,
+    List<String>? additionalOfferedBookIds,
     double? offeredAmount,
     String? message,
   }) async {
@@ -20,6 +23,8 @@ class ExchangesRepository {
     final response = await dio.post('/exchanges', data: {
       'requestedBookId': requestedBookId,
       'offeredBookId': ?offeredBookId,
+      if (additionalOfferedBookIds != null && additionalOfferedBookIds.isNotEmpty)
+        'additionalOfferedBookIds': additionalOfferedBookIds,
       'offeredAmount': ?offeredAmount,
       if (message != null && message.isNotEmpty) 'message': message,
     });
@@ -81,6 +86,21 @@ class ExchangesRepository {
   }
 
   Future<ExchangeRequest> acknowledgeSafety(String id) => _action(id, 'safety-ack');
+
+  /// "Condition Photos" (feature backlog #14) - poza stării cărții înainte
+  /// de predare, urcată de oricare parte cât timp schimbul e ACCEPTED.
+  Future<ExchangeRequest> addConditionPhoto(
+    String id, {
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final formData = FormData.fromMap({
+      'photo': imageMultipartFile(bytes, filename),
+    });
+    final response = await dio.post('/exchanges/$id/condition-photos', data: formData);
+    return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
+  }
 
   Future<ExchangeRequest> acceptMeeting(String id) => _action(id, 'meeting/accept');
 

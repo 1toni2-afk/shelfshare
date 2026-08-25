@@ -1008,7 +1008,15 @@ export class ProfileService {
    * cărți terminate, schimburi finalizate), la fel ca restul statisticilor
    * "derivate" din aplicație.
    */
-  async getActivityFeed(userId: string) {
+  async getActivityFeed(userId: string, limit = 30, offset = 0) {
+    const boundedLimit = Math.min(Math.max(limit, 1), 50);
+    const boundedOffset = Math.max(offset, 0);
+    // Fără cursor real pe un feed compus din 4 surse eterogene - cerem
+    // suficiente rânduri din fiecare sursă cât să acopere offset+limit, le
+    // combinăm, sortăm după dată și tăiem pagina cerută. Simplu și corect
+    // cât timp per-source take rămâne rezonabil (capped mai jos).
+    const perSourceTake = Math.min(boundedOffset + boundedLimit, 100);
+
     const follows = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
@@ -1016,28 +1024,32 @@ export class ProfileService {
     const followingIds = follows.map((f) => f.followingId);
     if (followingIds.length === 0) return [];
 
-    const [newListings, finishedBooks, completedExchanges] = await Promise.all([
+    const userSelect = { name: true, nameVisible: true, profileImage: true };
+    const bookSelect = { title: true, author: true, coverUrl: true, genre: true, pageCount: true };
+
+    const [newListings, finishedBooks, completedExchanges, completedSales, readingProgress] = await Promise.all([
       this.prisma.userBook.findMany({
         where: { userId: { in: followingIds } },
         select: {
           userId: true,
           createdAt: true,
-          book: { select: { title: true, coverUrl: true } },
-          user: { select: { name: true, nameVisible: true } },
+          description: true,
+          book: { select: bookSelect },
+          user: { select: userSelect },
         },
         orderBy: { createdAt: 'desc' },
-        take: 20,
+        take: perSourceTake,
       }),
       this.prisma.bookshelfEntry.findMany({
         where: { userId: { in: followingIds }, status: 'FINISHED' },
         select: {
           userId: true,
           updatedAt: true,
-          book: { select: { title: true, coverUrl: true } },
-          user: { select: { name: true, nameVisible: true } },
+          book: { select: bookSelect },
+          user: { select: userSelect },
         },
         orderBy: { updatedAt: 'desc' },
-        take: 20,
+        take: perSourceTake,
       }),
       this.prisma.exchangeRequest.findMany({
         where: { status: 'COMPLETED', OR: [{ requesterId: { in: followingIds } }, { ownerId: { in: followingIds } }] },
@@ -1045,12 +1057,44 @@ export class ProfileService {
           requesterId: true,
           ownerId: true,
           updatedAt: true,
-          requestedBook: { select: { book: { select: { title: true, coverUrl: true } } } },
-          requester: { select: { name: true, nameVisible: true } },
-          owner: { select: { name: true, nameVisible: true } },
+          requestedBook: { select: { book: { select: bookSelect } } },
+          offeredBook: { select: { book: { select: bookSelect } } },
+          requester: { select: userSelect },
+          owner: { select: userSelect },
         },
         orderBy: { updatedAt: 'desc' },
-        take: 20,
+        take: perSourceTake,
+      }),
+      // Doar vânzătorul contează aici (vezi comentariul de mai jos la
+      // maparea `sale`), deci filtrăm direct pe ownerId - nu are rost să
+      // aducem oferte unde doar cumpărătorul e urmărit.
+      this.prisma.priceOffer.findMany({
+        where: { status: 'COMPLETED', ownerId: { in: followingIds } },
+        select: {
+          ownerId: true,
+          amount: true,
+          updatedAt: true,
+          userBook: { select: { book: { select: bookSelect } } },
+          owner: { select: userSelect },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: perSourceTake,
+      }),
+      // "Reading progress in feed" (feature backlog #12) - depinde de #15
+      // (ReadingProgress). Excludem paginile mici (< 5) ca zgomot - un user
+      // care abia a pus cartea pe raft și a bifat "pagina 1" din greșeală
+      // n-ar trebui să apară ca "update de progres" în feed-ul altora.
+      this.prisma.readingProgress.findMany({
+        where: { userId: { in: followingIds }, currentPage: { gte: 5 } },
+        select: {
+          userId: true,
+          currentPage: true,
+          updatedAt: true,
+          book: { select: bookSelect },
+          user: { select: userSelect },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: perSourceTake,
       }),
     ]);
 
@@ -1059,16 +1103,25 @@ export class ProfileService {
         type: 'new_listing' as const,
         userId: l.userId,
         userName: publicName(l.user),
+        userAvatar: l.user.profileImage,
         bookTitle: l.book.title,
+        bookAuthor: l.book.author,
         bookCoverUrl: l.book.coverUrl,
+        genre: l.book.genre,
+        // Nota vânzătorului la anunț (UserBook.description) - „caption"-ul
+        // din feed, la fel ca un citat sub o poză.
+        caption: l.description,
         date: l.createdAt,
       })),
       ...finishedBooks.map((f) => ({
         type: 'finished_book' as const,
         userId: f.userId,
         userName: publicName(f.user),
+        userAvatar: f.user.profileImage,
         bookTitle: f.book.title,
+        bookAuthor: f.book.author,
         bookCoverUrl: f.book.coverUrl,
+        genre: f.book.genre,
         date: f.updatedAt,
       })),
       ...completedExchanges.flatMap((exchange) => {
@@ -1078,19 +1131,59 @@ export class ProfileService {
         const isRequesterFollowed = followingIds.includes(exchange.requesterId);
         const actor = isRequesterFollowed ? exchange.requester : exchange.owner;
         const actorId = isRequesterFollowed ? exchange.requesterId : exchange.ownerId;
+        const counterparty = isRequesterFollowed ? exchange.owner : exchange.requester;
         return [
           {
             type: 'completed_exchange' as const,
             userId: actorId,
             userName: publicName(actor),
+            userAvatar: actor.profileImage,
             bookTitle: exchange.requestedBook.book.title,
+            bookAuthor: exchange.requestedBook.book.author,
             bookCoverUrl: exchange.requestedBook.book.coverUrl,
+            genre: exchange.requestedBook.book.genre,
+            // Cealaltă carte din schimb - doar la un schimb carte-contra-carte
+            // (offeredBookId poate lipsi la o vânzare cu bani reconvertită).
+            offeredBookTitle: exchange.offeredBook?.book.title ?? null,
+            offeredBookCoverUrl: exchange.offeredBook?.book.coverUrl ?? null,
+            counterpartyName: publicName(counterparty),
             date: exchange.updatedAt,
           },
         ];
       }),
+      // Vânzare cu bani (PriceOffer COMPLETED) - atribuită vânzătorului
+      // (owner), nu cumpărătorului, ca la un "cineva a vândut X" din feed
+      // urmăritorii să vadă activitatea de listare/vânzare a userului
+      // urmărit, nu achizițiile lui (acelea rămân private).
+      ...completedSales.map((sale) => ({
+        type: 'sale' as const,
+        userId: sale.ownerId,
+        userName: publicName(sale.owner),
+        userAvatar: sale.owner.profileImage,
+        bookTitle: sale.userBook.book.title,
+        bookAuthor: sale.userBook.book.author,
+        bookCoverUrl: sale.userBook.book.coverUrl,
+        genre: sale.userBook.book.genre,
+        amount: Number(sale.amount),
+        date: sale.updatedAt,
+      })),
+      ...readingProgress.map((p) => ({
+        type: 'reading_progress' as const,
+        userId: p.userId,
+        userName: publicName(p.user),
+        userAvatar: p.user.profileImage,
+        bookTitle: p.book.title,
+        bookAuthor: p.book.author,
+        bookCoverUrl: p.book.coverUrl,
+        genre: p.book.genre,
+        currentPage: p.currentPage,
+        totalPages: p.book.pageCount,
+        date: p.updatedAt,
+      })),
     ];
 
-    return events.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 30);
+    return events
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(boundedOffset, boundedOffset + boundedLimit);
   }
 }

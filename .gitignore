@@ -40,6 +40,10 @@ postgres_data/
 *.tsbuildinfo
 
 # Output generat de scraper-ul de enrichment (nu se versioneaza)
-scripts/book-enrichment/enriched.json
-scripts/book-enrichment/isbns.txt
+scripts/book-enrichment/enriched*.json
+scripts/book-enrichment/isbns*.txt
+scripts/book-enrichment/attempted_isbns.txt
+scripts/book-enrichment/nightly_state.json
+scripts/book-enrichment/nightly_runs/
+scripts/book-enrichment/run*.log
 scripts/book-enrichment/debug_pages*/

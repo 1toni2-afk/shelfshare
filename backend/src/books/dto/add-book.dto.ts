@@ -62,6 +62,22 @@ export class AddBookDto {
   @MaxLength(100)
   genre?: string;
 
+  // Feature backlog #7 - deliberat ACCEPTATE chiar și când cartea e găsită
+  // extern (spre deosebire de genre/publisher, ignorate în acel caz): nicio
+  // sursă externă (Open Library/Google Books) nu întoarce serie structurată,
+  // deci nu există risc de suprascriere a unei valori mai bune venite din
+  // lookup - vezi findOrCreateBook.
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  series?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  seriesNumber?: number;
+
   @IsOptional()
   @IsString()
   @MaxLength(200)

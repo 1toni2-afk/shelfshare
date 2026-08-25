@@ -15,6 +15,7 @@ import '../../../data/models/price_offer.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../../shared/widgets/wishlist_source_icon.dart';
 import '../../../data/models/wishlist_item.dart';
+import '../../../data/models/review.dart';
 import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
@@ -26,7 +27,9 @@ import '../../offers/data/offers_repository.dart';
 import '../../safety/data/safety_repository.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
+import '../../book_of_month/application/book_of_month_controller.dart';
 import '../data/books_repository.dart';
+import '../data/reviews_repository.dart';
 import 'edit_listing_sheet.dart';
 
 class BookDetailScreen extends ConsumerStatefulWidget {
@@ -150,6 +153,9 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             tooltip: l10n.profileCopyLink,
             onPressed: () => shareAppLink(context, '/books/${widget.userBookId}'),
           ),
+          // "Cartea lunii" (feature backlog #11) - un vot simplu, orice
+          // titlu din catalog e eligibil, inclusiv propriile anunțuri.
+          if (bookId != null) _BookOfMonthVoteButton(bookId: bookId),
           // Editează: doar pe propriul anunț. Deschide aceeași foaie de editare
           // completă ca din bibliotecă (toate câmpurile). (Milestone 18)
           if (currentBook != null && isOwnBook)
@@ -233,6 +239,36 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BookOfMonthVoteButton extends ConsumerWidget {
+  const _BookOfMonthVoteButton({required this.bookId});
+  final String bookId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final myVote = ref.watch(myBookOfMonthVoteProvider).value;
+    final votedForThis = myVote?.bookId == bookId;
+
+    return IconButton(
+      icon: Icon(votedForThis ? Icons.stars : Icons.stars_outlined),
+      color: votedForThis ? AppColors.primary : null,
+      tooltip: votedForThis ? l10n.bookDetailVotedBookOfMonth : l10n.bookDetailVoteBookOfMonth,
+      onPressed: votedForThis
+          ? null
+          : () async {
+              try {
+                await ref.read(bookOfMonthControllerProvider.notifier).vote(bookId);
+              } catch (_) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(l10n.bookDetailVoteError)));
+                }
+              }
+            },
     );
   }
 }
@@ -691,6 +727,13 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
                 icon: Icons.description_outlined,
                 text: '${l10n.bookDetailPagesLabel}: ${book.book.pageCount}',
               ),
+            if (book.book.series != null && book.book.series!.isNotEmpty)
+              _MetaItem(
+                icon: Icons.collections_bookmark_outlined,
+                text: book.book.seriesNumber != null
+                    ? '${book.book.series} #${book.book.seriesNumber}'
+                    : book.book.series!,
+              ),
           ],
         ),
         if (book.tags.isNotEmpty) ...[
@@ -783,8 +826,245 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
               value: book.book.publisher!),
         ],
         const SizedBox(height: 24),
+        _PriceHistorySection(userBookId: book.id),
+        const SizedBox(height: 28),
+        _ReviewsSection(bookId: book.book.id),
+        const SizedBox(height: 24),
         _HistorySection(userBookId: book.id),
       ],
+    );
+  }
+}
+
+/// "Price History" (feature backlog #8) - prețul mediu recent la care s-a
+/// vândut EFECTIV acest titlu (vezi GET /books/:id/price-history), nu doar
+/// prețul curent cerut. Gol dacă titlul n-a fost niciodată vândut cu bani.
+class _PriceHistorySection extends ConsumerWidget {
+  const _PriceHistorySection({required this.userBookId});
+  final String userBookId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(priceHistoryProvider(userBookId));
+    return async.when(
+      data: (history) {
+        if (history.averagePrice == null) return const SizedBox.shrink();
+        final l10n = context.l10n;
+        final avg = history.averagePrice!;
+        final formatted = avg == avg.roundToDouble() ? avg.toStringAsFixed(0) : avg.toStringAsFixed(2);
+        return Row(
+          children: [
+            Icon(Icons.trending_up, size: 18, color: AppColors.mutedForeground),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                l10n.bookDetailPriceHistory(formatted, history.saleCount),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}
+
+/// "Community reviews per ISBN" (feature backlog #16) - notă + text scurt
+/// de la useri reali, pe titlu (nu pe exemplarul curent) - vezi GET
+/// /reviews/book/:bookId. Distinctă de istoricul de preț de mai sus și de
+/// scorul de încredere al vânzătorului (User.rating), care nu apare aici.
+class _ReviewsSection extends ConsumerWidget {
+  const _ReviewsSection({required this.bookId});
+  final String bookId;
+
+  Future<void> _openReviewDialog(BuildContext context, WidgetRef ref, MyReview? existing) async {
+    final l10n = context.l10n;
+    var rating = existing?.rating ?? 5;
+    final textController = TextEditingController(text: existing?.text ?? '');
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(l10n.bookDetailReviewDialogTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 1; i <= 5; i++)
+                    IconButton(
+                      icon: Icon(i <= rating ? Icons.star : Icons.star_border, color: AppColors.warning),
+                      onPressed: () => setState(() => rating = i),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: textController,
+                maxLines: 3,
+                maxLength: 1000,
+                decoration: InputDecoration(hintText: l10n.bookDetailReviewHint),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
+            TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonSave)),
+          ],
+        ),
+      ),
+    );
+    final text = textController.text.trim();
+    textController.dispose();
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(reviewsRepositoryProvider).upsert(bookId, rating, text.isEmpty ? null : text);
+      ref.invalidate(bookReviewsProvider(bookId));
+      ref.invalidate(myReviewProvider(bookId));
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookDetailReviewError)));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final async = ref.watch(bookReviewsProvider(bookId));
+    final myReview = ref.watch(myReviewProvider(bookId)).value;
+
+    return async.when(
+      data: (data) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(l10n.bookDetailReviewsTitle, style: theme.textTheme.titleMedium),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => _openReviewDialog(context, ref, myReview),
+                  child: Text(myReview != null ? l10n.bookDetailReviewEdit : l10n.bookDetailReviewWrite),
+                ),
+              ],
+            ),
+            if (data.averageRating != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.star, size: 16, color: AppColors.warning),
+                  const SizedBox(width: 4),
+                  Text(
+                    l10n.bookDetailReviewsSummary(data.averageRating!.toStringAsFixed(1), data.reviewCount),
+                    style: theme.textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            if (data.reviews.isEmpty)
+              Text(l10n.bookDetailReviewsEmpty, style: theme.textTheme.bodySmall)
+            else
+              for (final review in data.reviews) _ReviewTile(review: review),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _ReviewTile extends ConsumerWidget {
+  const _ReviewTile({required this.review});
+  final BookReview review;
+
+  Future<void> _report(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final reason = await showDialog<ReportReason>(
+      context: context,
+      builder: (context) => const ReportReasonDialog(),
+    );
+    if (reason == null) return;
+    try {
+      await ref.read(reviewsRepositoryProvider).report(review.id, reason: reason);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookDetailReportSent)));
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookDetailReportError)));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final authState = ref.watch(authControllerProvider);
+    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: AppColors.muted,
+            backgroundImage: review.authorAvatar != null ? NetworkImage(review.authorAvatar!) : null,
+            child: review.authorAvatar == null
+                ? Icon(Icons.person, size: 16, color: AppColors.mutedForeground)
+                : null,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      review.authorName ?? l10n.commonUnknownUser,
+                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      children: [
+                        for (var i = 1; i <= 5; i++)
+                          Icon(
+                            i <= review.rating ? Icons.star : Icons.star_border,
+                            size: 13,
+                            color: AppColors.warning,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (review.text != null && review.text!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(review.text!, style: theme.textTheme.bodySmall),
+                ],
+              ],
+            ),
+          ),
+          if (currentUserId != null && currentUserId != review.userId)
+            IconButton(
+              icon: const Icon(Icons.flag_outlined, size: 18),
+              tooltip: l10n.bookDetailReviewReportTooltip,
+              visualDensity: VisualDensity.compact,
+              onPressed: () => _report(context, ref),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -1545,9 +1825,14 @@ class _RequestExchangeSheet extends ConsumerStatefulWidget {
 class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
   final _messageController = TextEditingController();
   String? _offeredBookId;
+  final Set<String> _additionalOfferedBookIds = {};
   bool _isSubmitting = false;
   bool _isLoadingMyBooks = true;
   List<UserBook>? _myBooks;
+
+  // Feature backlog #17: bundle transactions - trebuie să oglindească
+  // MAX_BUNDLE_BOOKS din backend/src/exchanges/dto/create-exchange-request.dto.ts.
+  static const _maxAdditionalBooks = 5;
 
   @override
   void initState() {
@@ -1615,6 +1900,7 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
       final (_, conversationId) = await ref.read(exchangesRepositoryProvider).createRequest(
             requestedBookId: widget.requestedBook.id,
             offeredBookId: _offeredBookId,
+            additionalOfferedBookIds: _additionalOfferedBookIds.toList(),
             message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),
           );
       if (mounted) {
@@ -1682,8 +1968,33 @@ class _RequestExchangeSheetState extends ConsumerState<_RequestExchangeSheet> {
                   for (final userBook in _myBooks!)
                     DropdownMenuItem(value: userBook.id, child: Text(userBook.book.title)),
                 ],
-                onChanged: (value) => setState(() => _offeredBookId = value),
+                onChanged: (value) => setState(() {
+                  _offeredBookId = value;
+                  _additionalOfferedBookIds.clear();
+                }),
               ),
+            if (_offeredBookId != null &&
+                _myBooks!.any((b) => b.id != _offeredBookId)) ...[
+              const SizedBox(height: 8),
+              Text(l10n.bookDetailBundleAddMore, style: Theme.of(context).textTheme.bodySmall),
+              for (final userBook in _myBooks!.where((b) => b.id != _offeredBookId))
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(userBook.book.title),
+                  value: _additionalOfferedBookIds.contains(userBook.id),
+                  onChanged: (checked) => setState(() {
+                    if (checked == true) {
+                      if (_additionalOfferedBookIds.length < _maxAdditionalBooks) {
+                        _additionalOfferedBookIds.add(userBook.id);
+                      }
+                    } else {
+                      _additionalOfferedBookIds.remove(userBook.id);
+                    }
+                  }),
+                ),
+            ],
             const SizedBox(height: 16),
             TextField(
               controller: _messageController,

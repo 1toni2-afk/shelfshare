@@ -10,7 +10,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
 import { ListingScoreService } from '../books/listing-score.service';
-import { NotificationType } from '@prisma/client';
+import { StorageService } from '../storage/storage.service';
+import { NotificationType, Prisma } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
 import { SetMeetingDto } from './dto/set-meeting.dto';
@@ -32,6 +33,10 @@ const OFFER_EXPIRY_DAYS = 7;
 // nu ajunge la Done în atâtea zile de la acceptare, se anulează automat.
 const EXCHANGE_TIMEOUT_DAYS = 7;
 
+// "Condition Photos" (feature backlog #14) - suficient să documenteze coperta
+// + eventuale defecte, fără să transforme asta într-o galerie foto.
+const MAX_CONDITION_PHOTOS = 4;
+
 const CANCEL_REASON_MESSAGES: Record<string, string> = {
   no_show: 'cealaltă persoană nu s-a prezentat',
   book_mismatch: 'cartea nu a corespuns așteptărilor',
@@ -43,6 +48,7 @@ const CANCEL_REASON_MESSAGES: Record<string, string> = {
 const INCLUDE_FULL = {
   requestedBook: { include: { book: true } },
   offeredBook: { include: { book: true } },
+  additionalOfferedBooks: { include: { userBook: { include: { book: true } } } },
   requester: {
     select: {
       id: true,
@@ -76,6 +82,7 @@ export class ExchangesService {
     private notifications: NotificationsService,
     private conversations: ConversationsService,
     private listingScore: ListingScoreService,
+    private storage: StorageService,
   ) {}
 
   /**
@@ -103,12 +110,20 @@ export class ExchangesService {
     T extends {
       requester: { name: string | null; nameVisible: boolean };
       owner: { name: string | null; nameVisible: boolean };
+      requesterConditionPhotos: string[];
+      ownerConditionPhotos: string[];
     },
   >(request: T): T {
     return {
       ...request,
       requester: { ...request.requester, name: publicName(request.requester) },
       owner: { ...request.owner, name: publicName(request.owner) },
+      requesterConditionPhotos: request.requesterConditionPhotos.map((p) =>
+        this.storage.getPublicUrl(p),
+      ),
+      ownerConditionPhotos: request.ownerConditionPhotos.map((p) =>
+        this.storage.getPublicUrl(p),
+      ),
     };
   }
 
@@ -158,17 +173,74 @@ export class ExchangesService {
       }
     }
 
-    const created = await this.prisma.exchangeRequest.create({
-      data: {
-        requesterId,
-        ownerId: requestedBook.userId,
-        requestedBookId: dto.requestedBookId,
-        offeredBookId: dto.offeredBookId,
-        offeredAmount: dto.offeredAmount,
-        message: dto.message,
-        expiresAt: new Date(Date.now() + OFFER_EXPIRY_DAYS * 86_400_000),
-      },
-      include: INCLUDE_FULL,
+    // Feature backlog #17: pachetul de cărți suplimentare oferite - au
+    // nevoie de aceleași verificări ca `offeredBookId` (proprietate +
+    // disponibilitate), plus să nu se suprapună cu cartea cerută sau cu
+    // prima carte oferită.
+    const additionalIds = dto.additionalOfferedBookIds ?? [];
+    if (additionalIds.length > 0 && !dto.offeredBookId) {
+      throw new BadRequestException(
+        'Trebuie să alegi mai întâi o carte principală de oferit',
+      );
+    }
+    if (
+      additionalIds.some(
+        (id) => id === dto.requestedBookId || id === dto.offeredBookId,
+      )
+    ) {
+      throw new BadRequestException(
+        'Cărțile din pachet trebuie să fie distincte între ele',
+      );
+    }
+    const additionalBooks =
+      additionalIds.length > 0
+        ? await this.prisma.userBook.findMany({
+            where: { id: { in: additionalIds } },
+            select: { id: true, userId: true, availableForSwap: true },
+          })
+        : [];
+    if (additionalBooks.length !== additionalIds.length) {
+      throw new NotFoundException(
+        'O carte din pachetul oferit nu a fost găsită',
+      );
+    }
+    for (const book of additionalBooks) {
+      if (book.userId !== requesterId) {
+        throw new BadRequestException(
+          'Poți oferi la schimb doar cărți din biblioteca ta',
+        );
+      }
+      if (!book.availableForSwap) {
+        throw new BadRequestException(
+          'O carte din pachetul oferit nu este disponibilă',
+        );
+      }
+    }
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      const request = await tx.exchangeRequest.create({
+        data: {
+          requesterId,
+          ownerId: requestedBook.userId,
+          requestedBookId: dto.requestedBookId,
+          offeredBookId: dto.offeredBookId,
+          offeredAmount: dto.offeredAmount,
+          message: dto.message,
+          expiresAt: new Date(Date.now() + OFFER_EXPIRY_DAYS * 86_400_000),
+        },
+      });
+      if (additionalIds.length > 0) {
+        await tx.exchangeBundleBook.createMany({
+          data: additionalIds.map((userBookId) => ({
+            exchangeRequestId: request.id,
+            userBookId,
+          })),
+        });
+      }
+      return tx.exchangeRequest.findUniqueOrThrow({
+        where: { id: request.id },
+        include: INCLUDE_FULL,
+      });
     });
 
     await this.notifySafe(
@@ -191,7 +263,9 @@ export class ExchangesService {
       requestedBook.userId,
     );
     const content = offeredBook
-      ? `Cerere de schimb: „${offeredBook.book.title}" pentru „${requestedBook.book.title}"`
+      ? additionalIds.length > 0
+        ? `Cerere de schimb: „${offeredBook.book.title}" + încă ${additionalIds.length} ${additionalIds.length === 1 ? 'carte' : 'cărți'} pentru „${requestedBook.book.title}"`
+        : `Cerere de schimb: „${offeredBook.book.title}" pentru „${requestedBook.book.title}"`
       : `Cerere de schimb pentru „${requestedBook.book.title}"`;
     await this.conversations.createExchangeRequestMessage(
       conversation.id,
@@ -284,6 +358,19 @@ export class ExchangesService {
         if (offeredClaim.count === 0) {
           throw new BadRequestException(
             'Cartea oferită nu mai este disponibilă la schimb',
+          );
+        }
+      }
+
+      const bundleBookIds = await this.getBundleBookIds(id, tx);
+      if (bundleBookIds.length > 0) {
+        const bundleClaim = await tx.userBook.updateMany({
+          where: { id: { in: bundleBookIds }, availableForSwap: true },
+          data: { availableForSwap: false },
+        });
+        if (bundleClaim.count !== bundleBookIds.length) {
+          throw new BadRequestException(
+            'O carte din pachetul oferit nu mai este disponibilă la schimb',
           );
         }
       }
@@ -429,6 +516,13 @@ export class ExchangesService {
       if (request.offeredBookId) {
         await tx.userBook.updateMany({
           where: { id: request.offeredBookId },
+          data: { availableForSwap: true },
+        });
+      }
+      const bundleBookIds = await this.getBundleBookIds(id, tx);
+      if (bundleBookIds.length > 0) {
+        await tx.userBook.updateMany({
+          where: { id: { in: bundleBookIds } },
           data: { availableForSwap: true },
         });
       }
@@ -586,6 +680,13 @@ export class ExchangesService {
         if (updated.offeredBookId) {
           await tx.userBook.update({
             where: { id: updated.offeredBookId },
+            data: { permanentlyTransferred: true, availableForSwap: false },
+          });
+        }
+        const bundleBookIds = await this.getBundleBookIds(id, tx);
+        if (bundleBookIds.length > 0) {
+          await tx.userBook.updateMany({
+            where: { id: { in: bundleBookIds } },
             data: { permanentlyTransferred: true, availableForSwap: false },
           });
         }
@@ -900,6 +1001,38 @@ export class ExchangesService {
     return this.sanitizeParties(updated);
   }
 
+  /**
+   * "Condition Photos" (feature backlog #14) - fiecare parte urcă poze cu
+   * starea cărții înainte de predare. Gate pe ACCEPTED, ca la safety-ack/
+   * contact - nu are sens după ce schimbul e deja finalizat sau anulat.
+   */
+  async addConditionPhoto(id: string, userId: string, fileBuffer: Buffer) {
+    const request = await this.findOwnedRequest(id, userId);
+    this.assertStatus(request, 'ACCEPTED');
+    const isRequester = userId === request.requesterId;
+    const existing = isRequester
+      ? request.requesterConditionPhotos
+      : request.ownerConditionPhotos;
+
+    if (existing.length >= MAX_CONDITION_PHOTOS) {
+      throw new BadRequestException(
+        `Poți adăuga maximum ${MAX_CONDITION_PHOTOS} poze`,
+      );
+    }
+
+    const path = await this.storage.uploadImage(fileBuffer, 'exchange-condition');
+
+    const updated = await this.prisma.exchangeRequest.update({
+      where: { id },
+      data: isRequester
+        ? { requesterConditionPhotos: { push: path } }
+        : { ownerConditionPhotos: { push: path } },
+      include: INCLUDE_FULL,
+    });
+
+    return this.sanitizeParties(updated);
+  }
+
   /** Generează un fișier .ics pentru întâlnirea de schimb, ca oricare parte să-l poată importa în calendar. */
   async generateIcs(id: string, userId: string): Promise<string> {
     const request = await this.findOwnedRequest(id, userId);
@@ -1089,6 +1222,18 @@ export class ExchangesService {
       throw new ForbiddenException('Nu ești parte în acest schimb');
     }
     return this.sanitizeParties(await this.expireIfStale(request));
+  }
+
+  /** Id-urile cărților din pachetul suplimentar oferit (feature backlog #17), în afara `offeredBookId`. */
+  private async getBundleBookIds(
+    exchangeRequestId: string,
+    tx: Prisma.TransactionClient | PrismaService = this.prisma,
+  ): Promise<string[]> {
+    const rows = await tx.exchangeBundleBook.findMany({
+      where: { exchangeRequestId },
+      select: { userBookId: true },
+    });
+    return rows.map((r) => r.userBookId);
   }
 
   private assertIsOwner(request: { ownerId: string }, userId: string) {

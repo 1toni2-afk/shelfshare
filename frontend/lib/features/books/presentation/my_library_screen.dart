@@ -13,6 +13,7 @@ import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/genre_radar_card.dart';
 import '../../../shared/widgets/motto_text.dart';
 import '../application/my_library_controller.dart';
 import '../data/books_repository.dart';
@@ -583,6 +584,14 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                     ],
                   ] else
                     _categorizedView(filtered, trailingAdd: true),
+                  // Pe desktop, graficul de genuri stă sub rezumatul din
+                  // coloana dreaptă (vezi mai jos) - pe mobil, unde nu există
+                  // acea coloană, îl adăugăm la finalul listei principale, ca
+                  // să nu rămână complet ascuns userilor doar pe telefon.
+                  if (!isDesktop) ...[
+                    const SizedBox(height: 20),
+                    const GenreRadarCard(),
+                  ],
                 ],
               );
 
@@ -599,11 +608,18 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                     width: 280,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
-                      child: _ShelfOverviewCard(
-                        total: all.length,
-                        available: available.length,
-                        unavailable: unavailable.length,
-                        transferred: transferredItems.length,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _ShelfOverviewCard(
+                            total: all.length,
+                            available: available.length,
+                            unavailable: unavailable.length,
+                            transferred: transferredItems.length,
+                          ),
+                          const SizedBox(height: 16),
+                          const GenreRadarCard(),
+                        ],
                       ),
                     ),
                   ),

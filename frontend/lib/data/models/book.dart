@@ -175,6 +175,8 @@ class Book {
   final int? pageCount;
   final String? language;
   final String? genre;
+  final String? series;
+  final int? seriesNumber;
   final double? referencePrice;
   final String? referencePriceCurrency;
 
@@ -190,6 +192,8 @@ class Book {
     this.pageCount,
     this.language,
     this.genre,
+    this.series,
+    this.seriesNumber,
     this.referencePrice,
     this.referencePriceCurrency,
   });
@@ -207,6 +211,8 @@ class Book {
       pageCount: json['pageCount'] as int?,
       language: json['language'] as String?,
       genre: json['genre'] as String?,
+      series: json['series'] as String?,
+      seriesNumber: json['seriesNumber'] as int?,
       referencePrice: json['referencePrice'] != null
           ? double.parse(json['referencePrice'].toString())
           : null,

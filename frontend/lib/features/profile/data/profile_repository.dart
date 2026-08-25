@@ -160,9 +160,12 @@ class ProfileRepository {
     return ReadingChallenge.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<List<ActivityEvent>> getActivityFeed() async {
+  Future<List<ActivityEvent>> getActivityFeed({int limit = 30, int offset = 0}) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get('/profile/activity-feed');
+    final response = await dio.get(
+      '/profile/activity-feed',
+      queryParameters: {'limit': limit, 'offset': offset},
+    );
     return (response.data as List)
         .map((e) => ActivityEvent.fromJson(e as Map<String, dynamic>))
         .toList();

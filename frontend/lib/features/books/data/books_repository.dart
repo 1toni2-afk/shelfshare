@@ -57,6 +57,37 @@ class BulkAddResult {
   }
 }
 
+class PriceSale {
+  final double price;
+  final DateTime date;
+
+  const PriceSale({required this.price, required this.date});
+
+  factory PriceSale.fromJson(Map<String, dynamic> json) {
+    return PriceSale(
+      price: double.parse(json['price'].toString()),
+      date: DateTime.parse(json['date'] as String),
+    );
+  }
+}
+
+class PriceHistory {
+  final double? averagePrice;
+  final int saleCount;
+  final List<PriceSale> recentSales;
+
+  const PriceHistory({required this.averagePrice, required this.saleCount, required this.recentSales});
+
+  factory PriceHistory.fromJson(Map<String, dynamic> json) {
+    return PriceHistory(
+      averagePrice: json['averagePrice'] != null ? double.parse(json['averagePrice'].toString()) : null,
+      saleCount: json['saleCount'] as int,
+      recentSales:
+          (json['recentSales'] as List).map((e) => PriceSale.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+}
+
 class ListingImportCreated {
   final String title;
   final String userBookId;
@@ -175,6 +206,12 @@ class BooksRepository {
     return (response.data as List)
         .map((e) => ListingHistoryEntry.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<PriceHistory> getPriceHistory(String id) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/$id/price-history');
+    return PriceHistory.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<List<UserBook>> getSimilarBooks(String id) async {
@@ -402,6 +439,8 @@ class BooksRepository {
     bool isHardcover = false,
     // Câmpuri noi (Milestone 10): metadata operei + câmpuri per exemplar.
     String? genre,
+    String? series,
+    int? seriesNumber,
     String? publisher,
     int? publishedYear,
     int? editionYear,
@@ -421,6 +460,8 @@ class BooksRepository {
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
       if (genre != null && genre.isNotEmpty) 'genre': genre,
+      if (series != null && series.isNotEmpty) 'series': series,
+      'seriesNumber': ?seriesNumber,
       if (publisher != null && publisher.isNotEmpty) 'publisher': publisher,
       'publishedYear': ?publishedYear,
       'editionYear': ?editionYear,

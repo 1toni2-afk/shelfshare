@@ -683,6 +683,30 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookshelfLoadError => 'Nem sikerült betölteni a polcot.';
 
   @override
+  String get bookshelfProgressDialogTitle => 'Olvasási előrehaladás';
+
+  @override
+  String get bookshelfProgressField => 'Jelenlegi oldal';
+
+  @override
+  String bookshelfProgressFieldOfTotal(int total) {
+    return 'Jelenlegi oldal ($total-ból)';
+  }
+
+  @override
+  String get bookshelfProgressError => 'Nem sikerült menteni az előrehaladást.';
+
+  @override
+  String bookshelfProgressLabel(int current, int total) {
+    return '$current. oldal / $total';
+  }
+
+  @override
+  String bookshelfProgressLabelNoTotal(int current) {
+    return '$current. oldal';
+  }
+
+  @override
   String get bookshelfGenreChartTitle => 'A te műfajaid';
 
   @override
@@ -780,18 +804,45 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityFeedLoadError => 'Nem sikerült betölteni a tevékenységet.';
 
   @override
-  String activityNewListing(String name) {
-    return '$name új könyvet listázott';
+  String get activityNewListing => 'új könyvet adott hozzá';
+
+  @override
+  String get activityFinishedBook => 'befejezte az olvasást';
+
+  @override
+  String get activityCompletedExchange => 'lezárt egy cserét';
+
+  @override
+  String activitySale(String amount) {
+    return 'eladta $amount lejért';
   }
 
   @override
-  String activityFinishedBook(String name) {
-    return '$name befejezte az olvasást';
-  }
+  String get activityBadgeNew => 'Új';
 
   @override
-  String activityCompletedExchange(String name) {
-    return '$name lezárt egy cserét';
+  String get activityBadgeFinished => 'Befejezve';
+
+  @override
+  String get activityBadgeExchange => 'Csere';
+
+  @override
+  String get activityBadgeSale => 'Eladás';
+
+  @override
+  String get activityBadgeProgress => 'Olvassa';
+
+  @override
+  String get activityReadingProgress => 'most olvassa';
+
+  @override
+  String activitySwapCaption(
+    String name,
+    String bookA,
+    String bookB,
+    String counterparty,
+  ) {
+    return '$name elcserélte: $bookA → $bookB, tőle: $counterparty';
   }
 
   @override
@@ -899,6 +950,23 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get homeOngoingExchangeBanner => 'Folyamatban lévő cserét indítottál';
+
+  @override
+  String homeBookOfMonth(String title, int count) {
+    return 'A hónap könyve: $title ($count szavazat)';
+  }
+
+  @override
+  String get homeBookOfMonthDiscuss => 'Beszélgetés';
+
+  @override
+  String get bookDetailVoteBookOfMonth => 'Szavazz a hónap könyvére';
+
+  @override
+  String get bookDetailVotedBookOfMonth => 'Szavaztál a hónap könyvére';
+
+  @override
+  String get bookDetailVoteError => 'Nem sikerült rögzíteni a szavazatot.';
 
   @override
   String get homeFeedEnd => 'Minden könyvet láttál';
@@ -1459,6 +1527,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookDetailNoOffer => 'Nincs ajánlat';
 
   @override
+  String get bookDetailBundleAddMore =>
+      'Adj hozzá további könyveket ehhez az ajánlathoz (opcionális)';
+
+  @override
   String get bookDetailMessageOptional => 'Üzenet (opcionális)';
 
   @override
@@ -1548,6 +1620,11 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String exchangeOffersBook(String title) {
     return 'Felajánlja: $title';
+  }
+
+  @override
+  String exchangeOffersBookBundle(String title, int count) {
+    return 'Felajánlja: $title + még $count';
   }
 
   @override
@@ -1717,6 +1794,19 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get readySafetyBothReady => 'Készen álltok a cserére';
+
+  @override
+  String get readyConditionPhotosTitle => 'Fotók a könyv állapotáról';
+
+  @override
+  String get readyConditionPhotosSubtitle =>
+      'Fényképezd le a könyvet átadás előtt, az állapotának bizonyítékaként';
+
+  @override
+  String get readyConditionPhotosOther => 'A másik fél fotói';
+
+  @override
+  String get readyConditionPhotosError => 'Nem sikerült feltölteni a fotót.';
 
   @override
   String get readyReportIssue => 'Probléma bejelentése';
@@ -2143,6 +2233,42 @@ class AppLocalizationsHu extends AppLocalizations {
   String get adminStatsTitle => 'Statisztikák';
 
   @override
+  String get adminStatsGrowthTitle => 'Felhasználók az idő múlásával';
+
+  @override
+  String get adminStatsGrowthDesc => 'Napi pillanatkép, utolsó 30 nap.';
+
+  @override
+  String get adminStatsGrowthEmpty => 'Még nincs elég adat egy grafikonhoz.';
+
+  @override
+  String adminStatsGrowthRange(int from, int to) {
+    return '$from → $to felhasználó';
+  }
+
+  @override
+  String get adminConversionFunnelTitle => 'Konverziós tölcsér';
+
+  @override
+  String get adminConversionFunnelDesc =>
+      'Hány felhasználó jut el az egyes lépésekig - az előregisztrációtól az első befejezett cseréig.';
+
+  @override
+  String get adminFunnelPreRegistrations => 'Előregisztrációk';
+
+  @override
+  String get adminFunnelRegistered => 'Fiók létrehozva';
+
+  @override
+  String get adminFunnelOnboarded => 'Onboarding befejezve';
+
+  @override
+  String get adminFunnelListedBook => 'Könyvet hirdetett';
+
+  @override
+  String get adminFunnelExchanged => 'Cserét fejezett be';
+
+  @override
   String get adminMarketplaceStatsTitle => 'Piactér statisztikák';
 
   @override
@@ -2226,6 +2352,104 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String adminReportedBy(String name) {
     return 'Bejelentette: $name';
+  }
+
+  @override
+  String get adminReportStatusOpen => 'Nyitott';
+
+  @override
+  String get adminReportStatusInProgress => 'Folyamatban';
+
+  @override
+  String get adminReportStatusResolved => 'Megoldva';
+
+  @override
+  String get adminReportStatusDismissed => 'Elutasítva';
+
+  @override
+  String adminReportAssignedTo(String name) {
+    return 'Hozzárendelve: $name';
+  }
+
+  @override
+  String get adminReportUnassigned => 'Nincs hozzárendelve';
+
+  @override
+  String get adminReportMarkInProgress => 'Bejelentés átvétele';
+
+  @override
+  String get adminReportMarkResolved => 'Megoldottnak jelölés';
+
+  @override
+  String get adminReportMarkDismissed => 'Bejelentés elutasítása';
+
+  @override
+  String get adminReportReopen => 'Újranyitás';
+
+  @override
+  String get adminReportResolutionNoteLabel =>
+      'Döntési megjegyzés (opcionális)';
+
+  @override
+  String get adminReportResolutionNoteHint =>
+      'Mit tettél, vagy miért utasítottad el a bejelentést';
+
+  @override
+  String get adminReportUpdateError => 'Nem sikerült frissíteni a bejelentést.';
+
+  @override
+  String get adminReportedPostLabel => 'Bejelentett bejegyzés';
+
+  @override
+  String get adminReportedReviewLabel => 'Bejelentett vélemény';
+
+  @override
+  String get adminDeletePostAction => 'Bejegyzés törlése';
+
+  @override
+  String get adminDeleteReviewAction => 'Vélemény törlése';
+
+  @override
+  String get adminDeletePostConfirmTitle => 'Törlöd ezt a bejegyzést?';
+
+  @override
+  String get adminDeleteReviewConfirmTitle => 'Törlöd ezt a véleményt?';
+
+  @override
+  String get adminContentDeleted => 'Tartalom törölve.';
+
+  @override
+  String get adminContentDeleteError => 'Nem sikerült törölni a tartalmat.';
+
+  @override
+  String get savedSearchesTitle => 'Mentett keresések';
+
+  @override
+  String get savedSearchesEmpty =>
+      'Még nincs mentett keresés. Ments el egyet, hogy értesítést kapj az illő új hirdetésekről.';
+
+  @override
+  String get savedSearchesLoadError =>
+      'Nem sikerült betölteni a mentett kereséseket.';
+
+  @override
+  String get savedSearchNew => 'Új keresés';
+
+  @override
+  String get savedSearchLabelLabel => 'Név';
+
+  @override
+  String get savedSearchLabelHint => 'pl. Sci-fi 30 lej alatt Kolozsváron';
+
+  @override
+  String get savedSearchMaxPriceLabel => 'Maximális ár (opcionális)';
+
+  @override
+  String get savedSearchCreateError => 'Nem sikerült elmenteni a keresést.';
+
+  @override
+  String savedSearchMaxPriceChip(String amount) {
+    return '$amount lej alatt';
   }
 
   @override
@@ -2515,6 +2739,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get groupsNoPosts => 'Még nincs üzenet.';
 
   @override
+  String get groupsReportPostTooltip => 'Bejegyzés bejelentése';
+
+  @override
   String get premiumBadgeTooltip => 'Premium tag';
 
   @override
@@ -2721,7 +2948,47 @@ class AppLocalizationsHu extends AppLocalizations {
   String get shareTagAdd => 'Címke hozzáadása';
 
   @override
+  String bookDetailPriceHistory(String price, int count) {
+    return 'Legutóbbi átlagár: $price lej ($count eladás alapján)';
+  }
+
+  @override
+  String get bookDetailReviewsTitle => 'Vélemények';
+
+  @override
+  String get bookDetailReviewWrite => 'Vélemény írása';
+
+  @override
+  String get bookDetailReviewEdit => 'Vélemény szerkesztése';
+
+  @override
+  String get bookDetailReviewDialogTitle => 'A véleményed';
+
+  @override
+  String get bookDetailReviewHint => 'Mit gondolsz a könyvről? (opcionális)';
+
+  @override
+  String get bookDetailReviewError => 'Nem sikerült menteni a véleményt.';
+
+  @override
+  String get bookDetailReviewsEmpty => 'Még nincs vélemény. Legyél te az első.';
+
+  @override
+  String get bookDetailReviewReportTooltip => 'Vélemény bejelentése';
+
+  @override
+  String bookDetailReviewsSummary(String average, int count) {
+    return '$average/5 ($count vélemény)';
+  }
+
+  @override
   String get sharePublisher => 'Kiadó';
+
+  @override
+  String get shareSeriesName => 'Sorozat (opcionális)';
+
+  @override
+  String get shareSeriesNumber => 'Kötet';
 
   @override
   String get shareCityHint => 'Város, ahol a csere történik';

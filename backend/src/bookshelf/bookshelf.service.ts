@@ -229,20 +229,32 @@ export class BookshelfService {
   }
 
   /**
-   * Top 5 genuri din raftul userului (Reading/Want to Read/Finished), pentru
-   * graficul radar din My Shelf. Pornim de la cărțile efectiv aflate pe raft
-   * (nu de la scorurile Book Match, derivate din swipe-uri - un user poate
-   * să nu fi jucat deloc Book Match, dar tot are un raft) - de asta e o
-   * interogare separată aici, nu o reutilizare a userGenreScore.
+   * Top 5 genuri din preferințele userului, pentru graficul radar din My
+   * Shelf: raft (Reading/Want to Read/Finished) + cărți listate la schimb +
+   * wishlist, ca să reflecte toate genurile care îl interesează, nu doar ce
+   * a bifat explicit pe raft. Nu pornim de la scorurile Book Match, derivate
+   * din swipe-uri - un user poate să nu fi jucat deloc Book Match, dar tot
+   * are un raft/wishlist - de asta e o interogare separată aici, nu o
+   * reutilizare a userGenreScore.
    */
   async getGenreDistribution(userId: string) {
-    const entries = await this.prisma.bookshelfEntry.findMany({
-      where: { userId },
-      select: { book: { select: { genre: true } } },
-    });
+    const [shelfEntries, listedBooks, wishlistItems] = await Promise.all([
+      this.prisma.bookshelfEntry.findMany({
+        where: { userId },
+        select: { book: { select: { genre: true } } },
+      }),
+      this.prisma.userBook.findMany({
+        where: { userId, deletedAt: null },
+        select: { book: { select: { genre: true } } },
+      }),
+      this.prisma.wishlistItem.findMany({
+        where: { userId },
+        select: { book: { select: { genre: true } } },
+      }),
+    ]);
 
     const counts = new Map<string, number>();
-    for (const entry of entries) {
+    for (const entry of [...shelfEntries, ...listedBooks, ...wishlistItems]) {
       const genre = entry.book.genre;
       if (!genre) continue;
       counts.set(genre, (counts.get(genre) ?? 0) + 1);

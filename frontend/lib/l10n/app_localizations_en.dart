@@ -679,6 +679,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookshelfLoadError => 'Couldn\'t load the bookshelf.';
 
   @override
+  String get bookshelfProgressDialogTitle => 'Reading progress';
+
+  @override
+  String get bookshelfProgressField => 'Current page';
+
+  @override
+  String bookshelfProgressFieldOfTotal(int total) {
+    return 'Current page (of $total)';
+  }
+
+  @override
+  String get bookshelfProgressError => 'Couldn\'t save the progress.';
+
+  @override
+  String bookshelfProgressLabel(int current, int total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String bookshelfProgressLabelNoTotal(int current) {
+    return 'Page $current';
+  }
+
+  @override
   String get bookshelfGenreChartTitle => 'Your genres';
 
   @override
@@ -775,18 +799,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityFeedLoadError => 'Couldn\'t load activity.';
 
   @override
-  String activityNewListing(String name) {
-    return '$name listed a new book';
+  String get activityNewListing => 'added a new book';
+
+  @override
+  String get activityFinishedBook => 'finished reading';
+
+  @override
+  String get activityCompletedExchange => 'completed a swap';
+
+  @override
+  String activitySale(String amount) {
+    return 'sold for $amount lei';
   }
 
   @override
-  String activityFinishedBook(String name) {
-    return '$name finished reading';
-  }
+  String get activityBadgeNew => 'New';
 
   @override
-  String activityCompletedExchange(String name) {
-    return '$name completed a swap';
+  String get activityBadgeFinished => 'Finished';
+
+  @override
+  String get activityBadgeExchange => 'Swap';
+
+  @override
+  String get activityBadgeSale => 'Sale';
+
+  @override
+  String get activityBadgeProgress => 'Reading';
+
+  @override
+  String get activityReadingProgress => 'is reading';
+
+  @override
+  String activitySwapCaption(
+    String name,
+    String bookA,
+    String bookB,
+    String counterparty,
+  ) {
+    return '$name swapped $bookA for $bookB, from $counterparty';
   }
 
   @override
@@ -894,6 +945,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeOngoingExchangeBanner => 'You have an ongoing exchange';
+
+  @override
+  String homeBookOfMonth(String title, int count) {
+    return 'Book of the Month: $title ($count votes)';
+  }
+
+  @override
+  String get homeBookOfMonthDiscuss => 'Discuss';
+
+  @override
+  String get bookDetailVoteBookOfMonth => 'Vote for Book of the Month';
+
+  @override
+  String get bookDetailVotedBookOfMonth => 'You voted for Book of the Month';
+
+  @override
+  String get bookDetailVoteError => 'Couldn\'t record the vote.';
 
   @override
   String get homeFeedEnd => 'You\'ve seen all the books';
@@ -1452,6 +1520,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookDetailNoOffer => 'No offer';
 
   @override
+  String get bookDetailBundleAddMore =>
+      'Add more books to this offer (optional)';
+
+  @override
   String get bookDetailMessageOptional => 'Message (optional)';
 
   @override
@@ -1542,6 +1614,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String exchangeOffersBook(String title) {
     return 'Offers: $title';
+  }
+
+  @override
+  String exchangeOffersBookBundle(String title, int count) {
+    return 'Offers: $title + $count more';
   }
 
   @override
@@ -1712,6 +1789,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readySafetyBothReady => 'You are ready to exchange';
+
+  @override
+  String get readyConditionPhotosTitle => 'Book condition photos';
+
+  @override
+  String get readyConditionPhotosSubtitle =>
+      'Photograph the book before handoff, as proof of its condition';
+
+  @override
+  String get readyConditionPhotosOther => 'The other party\'s photos';
+
+  @override
+  String get readyConditionPhotosError => 'Couldn\'t upload the photo.';
 
   @override
   String get readyReportIssue => 'Report an issue';
@@ -2135,6 +2225,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminStatsTitle => 'Statistics';
 
   @override
+  String get adminStatsGrowthTitle => 'Users over time';
+
+  @override
+  String get adminStatsGrowthDesc => 'Daily snapshot, last 30 days.';
+
+  @override
+  String get adminStatsGrowthEmpty => 'Not enough data yet for a chart.';
+
+  @override
+  String adminStatsGrowthRange(int from, int to) {
+    return '$from → $to users';
+  }
+
+  @override
+  String get adminConversionFunnelTitle => 'Conversion funnel';
+
+  @override
+  String get adminConversionFunnelDesc =>
+      'How many users reach each step - from pre-registration to their first completed exchange.';
+
+  @override
+  String get adminFunnelPreRegistrations => 'Pre-registrations';
+
+  @override
+  String get adminFunnelRegistered => 'Account created';
+
+  @override
+  String get adminFunnelOnboarded => 'Completed onboarding';
+
+  @override
+  String get adminFunnelListedBook => 'Listed a book';
+
+  @override
+  String get adminFunnelExchanged => 'Completed an exchange';
+
+  @override
   String get adminMarketplaceStatsTitle => 'Marketplace statistics';
 
   @override
@@ -2217,6 +2343,102 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String adminReportedBy(String name) {
     return 'Reported by $name';
+  }
+
+  @override
+  String get adminReportStatusOpen => 'Open';
+
+  @override
+  String get adminReportStatusInProgress => 'In progress';
+
+  @override
+  String get adminReportStatusResolved => 'Resolved';
+
+  @override
+  String get adminReportStatusDismissed => 'Dismissed';
+
+  @override
+  String adminReportAssignedTo(String name) {
+    return 'Assigned: $name';
+  }
+
+  @override
+  String get adminReportUnassigned => 'Unassigned';
+
+  @override
+  String get adminReportMarkInProgress => 'Claim report';
+
+  @override
+  String get adminReportMarkResolved => 'Mark resolved';
+
+  @override
+  String get adminReportMarkDismissed => 'Dismiss report';
+
+  @override
+  String get adminReportReopen => 'Reopen';
+
+  @override
+  String get adminReportResolutionNoteLabel => 'Resolution note (optional)';
+
+  @override
+  String get adminReportResolutionNoteHint =>
+      'What you did or why you dismissed the report';
+
+  @override
+  String get adminReportUpdateError => 'Couldn\'t update the report.';
+
+  @override
+  String get adminReportedPostLabel => 'Reported post';
+
+  @override
+  String get adminReportedReviewLabel => 'Reported review';
+
+  @override
+  String get adminDeletePostAction => 'Delete post';
+
+  @override
+  String get adminDeleteReviewAction => 'Delete review';
+
+  @override
+  String get adminDeletePostConfirmTitle => 'Delete this post?';
+
+  @override
+  String get adminDeleteReviewConfirmTitle => 'Delete this review?';
+
+  @override
+  String get adminContentDeleted => 'Content deleted.';
+
+  @override
+  String get adminContentDeleteError => 'Couldn\'t delete the content.';
+
+  @override
+  String get savedSearchesTitle => 'Saved searches';
+
+  @override
+  String get savedSearchesEmpty =>
+      'No saved searches yet. Save one to get notified about matching new listings.';
+
+  @override
+  String get savedSearchesLoadError => 'Couldn\'t load saved searches.';
+
+  @override
+  String get savedSearchNew => 'New search';
+
+  @override
+  String get savedSearchLabelLabel => 'Name';
+
+  @override
+  String get savedSearchLabelHint => 'e.g. Sci-fi under 30 lei in Cluj';
+
+  @override
+  String get savedSearchMaxPriceLabel => 'Max price (optional)';
+
+  @override
+  String get savedSearchCreateError => 'Couldn\'t save the search.';
+
+  @override
+  String savedSearchMaxPriceChip(String amount) {
+    return 'under $amount lei';
   }
 
   @override
@@ -2504,6 +2726,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupsNoPosts => 'No messages yet.';
 
   @override
+  String get groupsReportPostTooltip => 'Report post';
+
+  @override
   String get premiumBadgeTooltip => 'Premium member';
 
   @override
@@ -2708,7 +2933,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareTagAdd => 'Add tag';
 
   @override
+  String bookDetailPriceHistory(String price, int count) {
+    return 'Recent average price: $price lei (from $count sales)';
+  }
+
+  @override
+  String get bookDetailReviewsTitle => 'Reviews';
+
+  @override
+  String get bookDetailReviewWrite => 'Write a review';
+
+  @override
+  String get bookDetailReviewEdit => 'Edit your review';
+
+  @override
+  String get bookDetailReviewDialogTitle => 'Your review';
+
+  @override
+  String get bookDetailReviewHint =>
+      'What did you think of the book? (optional)';
+
+  @override
+  String get bookDetailReviewError => 'Couldn\'t save the review.';
+
+  @override
+  String get bookDetailReviewsEmpty =>
+      'No reviews yet. Be the first to write one.';
+
+  @override
+  String get bookDetailReviewReportTooltip => 'Report review';
+
+  @override
+  String bookDetailReviewsSummary(String average, int count) {
+    return '$average out of 5 ($count reviews)';
+  }
+
+  @override
   String get sharePublisher => 'Publisher';
+
+  @override
+  String get shareSeriesName => 'Series (optional)';
+
+  @override
+  String get shareSeriesNumber => 'Volume';
 
   @override
   String get shareCityHint => 'City where the exchange happens';

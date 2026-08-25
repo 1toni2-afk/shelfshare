@@ -8,11 +8,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateEventDto } from './dto/create-event.dto';
+import { ReportPostDto } from './dto/report-post.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
@@ -73,6 +75,19 @@ export class GroupsController {
   createPost(@Req() req: Request, @Param('id') id: string, @Body() dto: CreatePostDto) {
     const { userId } = req.user as AuthenticatedUser;
     return this.groupsService.createPost(id, userId!, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 3_600_000 } })
+  @Post(':groupId/posts/:postId/report')
+  reportPost(
+    @Req() req: Request,
+    @Param('groupId') groupId: string,
+    @Param('postId') postId: string,
+    @Body() dto: ReportPostDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.groupsService.reportPost(groupId, postId, userId!, dto);
   }
 
   @UseGuards(JwtAuthGuard)

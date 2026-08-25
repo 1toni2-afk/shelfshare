@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { ReportStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeedbackService } from '../feedback/feedback.service';
 import { SupportService } from '../support/support.service';
@@ -48,6 +50,94 @@ export class AdminService {
         pending: pendingExchanges,
       },
     };
+  }
+
+  /**
+   * "Growth over time" (feature backlog #10) - un rând pe zi, ca panoul de
+   * admin să poată arăta creșterea, nu doar starea curentă. Upsert pe
+   * `date`, deci o rulare re-declanșată manual în aceeași zi actualizează
+   * rândul zilei, nu creează duplicate.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  async snapshotDailyStats(): Promise<void> {
+    const stats = await this.getStats();
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    const data = {
+      totalUsers: stats.users.total,
+      verifiedUsers: stats.users.verified,
+      totalBooks: stats.books.totalInCatalog,
+      totalListings: stats.books.totalListings,
+      totalExchanges: stats.exchanges.total,
+      completedExchanges: stats.exchanges.completed,
+    };
+
+    await this.prisma.statsSnapshot.upsert({
+      where: { date: today },
+      create: { date: today, ...data },
+      update: data,
+    });
+  }
+
+  /**
+   * Feature backlog #19: conversion funnel - pre-înscriere -> onboarding ->
+   * primul anunț -> primul schimb finalizat. Nu ține pasul cu userii care
+   * intră din reclame vs. organic etc. - doar numărul brut la fiecare treaptă,
+   * construit din date deja existente (fără model nou).
+   */
+  async getConversionFunnel() {
+    const [
+      preRegistrations,
+      registeredUsers,
+      onboardedUsers,
+      listedUsers,
+      completedRequesters,
+      completedOwners,
+    ] = await Promise.all([
+      this.prisma.preRegistration.count(),
+      this.prisma.user.count(),
+      this.prisma.user.count({ where: { onboardingPurpose: { not: null } } }),
+      this.prisma.userBook.findMany({
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      this.prisma.exchangeRequest.findMany({
+        where: { status: 'COMPLETED' },
+        distinct: ['requesterId'],
+        select: { requesterId: true },
+      }),
+      this.prisma.exchangeRequest.findMany({
+        where: { status: 'COMPLETED' },
+        distinct: ['ownerId'],
+        select: { ownerId: true },
+      }),
+    ]);
+
+    const exchangedUserIds = new Set([
+      ...completedRequesters.map((r) => r.requesterId),
+      ...completedOwners.map((r) => r.ownerId),
+    ]);
+
+    return {
+      preRegistrations,
+      registeredUsers,
+      onboardedUsers,
+      listedUsers: listedUsers.length,
+      exchangedUsers: exchangedUserIds.size,
+    };
+  }
+
+  async getStatsHistory(days?: number) {
+    const bounded = Math.min(Math.max(days ?? 30, 1), 365);
+    const since = new Date();
+    since.setUTCHours(0, 0, 0, 0);
+    since.setUTCDate(since.getUTCDate() - bounded);
+
+    return this.prisma.statsSnapshot.findMany({
+      where: { date: { gte: since } },
+      orderBy: { date: 'asc' },
+    });
   }
 
   // Numărul total de utilizatori vine deja din getStats() - nu-l mai
@@ -311,9 +401,72 @@ export class AdminService {
         reporter: { select: { id: true, email: true, name: true } },
         reportedUser: { select: { id: true, email: true, name: true } },
         userBook: { include: { book: { select: { title: true } } } },
+        assignedTo: { select: { id: true, email: true, name: true } },
+        // Feature backlog #18: reports pot viza acum și o postare de grup
+        // sau o recenzie, nu doar user/anunț/conversație.
+        groupPost: { select: { id: true, content: true, groupId: true } },
+        review: { select: { id: true, text: true, rating: true, bookId: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      // OPEN/IN_PROGRESS întâi, ca un moderator să vadă coada de lucru
+      // înaintea raportelor deja închise.
+      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
       take: 100,
+    });
+  }
+
+  async deleteGroupPost(groupPostId: string) {
+    const post = await this.prisma.groupPost.findUnique({ where: { id: groupPostId } });
+    if (!post) {
+      throw new NotFoundException('Postarea nu a fost găsită');
+    }
+    await this.prisma.groupPost.delete({ where: { id: groupPostId } });
+    return { message: 'Postare ștearsă' };
+  }
+
+  async deleteReview(reviewId: string) {
+    const review = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    if (!review) {
+      throw new NotFoundException('Recenzia nu a fost găsită');
+    }
+    await this.prisma.review.delete({ where: { id: reviewId } });
+    return { message: 'Recenzie ștearsă' };
+  }
+
+  /**
+   * Se ia mereu ca actor administratorul care face schimbarea - ca la un
+   * raport rezolvat/respins să rămână o urmă a cui l-a tratat, nu doar a
+   * cui l-a raportat prima dată (vezi feature backlog #4).
+   */
+  async updateReportStatus(
+    reportId: string,
+    adminUserId: string,
+    status: ReportStatus,
+    resolutionNote?: string,
+  ) {
+    const report = await this.prisma.report.findUnique({
+      where: { id: reportId },
+    });
+    if (!report) {
+      throw new NotFoundException('Raportul nu a fost găsit');
+    }
+
+    const isTerminal = status === 'RESOLVED' || status === 'DISMISSED';
+    return this.prisma.report.update({
+      where: { id: reportId },
+      data: {
+        status,
+        assignedToId: adminUserId,
+        resolutionNote: resolutionNote ?? report.resolutionNote,
+        resolvedAt: isTerminal ? new Date() : null,
+      },
+      include: {
+        reporter: { select: { id: true, email: true, name: true } },
+        reportedUser: { select: { id: true, email: true, name: true } },
+        userBook: { include: { book: { select: { title: true } } } },
+        assignedTo: { select: { id: true, email: true, name: true } },
+        groupPost: { select: { id: true, content: true, groupId: true } },
+        review: { select: { id: true, text: true, rating: true, bookId: true } },
+      },
     });
   }
 

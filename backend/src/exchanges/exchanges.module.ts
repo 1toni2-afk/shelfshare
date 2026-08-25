@@ -4,9 +4,10 @@ import { ExchangesService } from './exchanges.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ChatModule } from '../chat/chat.module';
 import { ListingScoreModule } from '../books/listing-score.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [NotificationsModule, ChatModule, ListingScoreModule],
+  imports: [NotificationsModule, ChatModule, ListingScoreModule, StorageModule],
   controllers: [ExchangesController],
   providers: [ExchangesService],
 })

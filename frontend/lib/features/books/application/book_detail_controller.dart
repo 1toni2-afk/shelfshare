@@ -14,6 +14,10 @@ final listingHistoryProvider = FutureProvider.family((ref, String userBookId) {
   return ref.watch(booksRepositoryProvider).getListingHistory(userBookId);
 });
 
+final priceHistoryProvider = FutureProvider.family((ref, String userBookId) {
+  return ref.watch(booksRepositoryProvider).getPriceHistory(userBookId);
+});
+
 final similarBooksProvider = FutureProvider.family((ref, String userBookId) {
   return ref.watch(booksRepositoryProvider).getSimilarBooks(userBookId);
 });

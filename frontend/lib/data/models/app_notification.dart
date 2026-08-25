@@ -27,6 +27,8 @@ enum NotificationType {
   exchangeCancelled,
   exchangeBookPending,
   exchangeReopened,
+  savedSearchMatch,
+  seriesVolumeAvailable,
 
   /// Tip trimis de backend pe care versiunea asta de aplicație nu îl cunoaște.
   /// Notificarea se afișează cu textul primit de la server și fără acțiune la
@@ -93,6 +95,10 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.exchangeBookPending;
       case 'EXCHANGE_REOPENED':
         return NotificationType.exchangeReopened;
+      case 'SAVED_SEARCH_MATCH':
+        return NotificationType.savedSearchMatch;
+      case 'SERIES_VOLUME_AVAILABLE':
+        return NotificationType.seriesVolumeAvailable;
       default:
         // Deliberat NU aruncăm: un tip adăugat pe backend înaintea unui release
         // de aplicație ar face să crape întreaga listă de notificări, nu doar

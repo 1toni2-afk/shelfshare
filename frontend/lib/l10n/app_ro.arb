@@ -357,6 +357,36 @@
     "bookshelfTabShared": "Împărtășite",
     "bookshelfEmpty": "Nicio carte aici încă.",
     "bookshelfLoadError": "Nu am putut încărca raftul.",
+    "bookshelfProgressDialogTitle": "Progres de citit",
+    "bookshelfProgressField": "Pagina curentă",
+    "bookshelfProgressFieldOfTotal": "Pagina curentă (din {total})",
+    "@bookshelfProgressFieldOfTotal": {
+        "placeholders": {
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "bookshelfProgressError": "Nu am putut salva progresul.",
+    "bookshelfProgressLabel": "Pagina {current} din {total}",
+    "@bookshelfProgressLabel": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "bookshelfProgressLabelNoTotal": "Pagina {current}",
+    "@bookshelfProgressLabelNoTotal": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            }
+        }
+    },
     "bookshelfGenreChartTitle": "Genurile tale",
     "bookshelfGenreChartEmpty": "Adaugă cărți pe raft ca să vezi ce genuri citești cel mai mult.",
     "bookshelfImportTooltip": "Importă din Goodreads sau StoryGraph",
@@ -444,26 +474,36 @@
     "activityFeedTitle": "Activitate recentă",
     "activityFeedEmpty": "Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.",
     "activityFeedLoadError": "Nu am putut încărca activitatea.",
-    "activityNewListing": "{name} a listat o carte nouă",
-    "@activityNewListing": {
+    "activityNewListing": "a adăugat o carte nouă",
+    "activityFinishedBook": "a terminat de citit",
+    "activityCompletedExchange": "a finalizat un schimb",
+    "activitySale": "a vândut cu {amount} lei",
+    "@activitySale": {
         "placeholders": {
-            "name": {
+            "amount": {
                 "type": "String"
             }
         }
     },
-    "activityFinishedBook": "{name} a terminat de citit",
-    "@activityFinishedBook": {
+    "activityBadgeNew": "Nou",
+    "activityBadgeFinished": "Terminată",
+    "activityBadgeExchange": "Schimb",
+    "activityBadgeSale": "Vânzare",
+    "activityBadgeProgress": "Citește",
+    "activityReadingProgress": "citește acum",
+    "activitySwapCaption": "{name} a schimbat {bookA} cu {bookB}, de la {counterparty}",
+    "@activitySwapCaption": {
         "placeholders": {
             "name": {
                 "type": "String"
-            }
-        }
-    },
-    "activityCompletedExchange": "{name} a finalizat un schimb",
-    "@activityCompletedExchange": {
-        "placeholders": {
-            "name": {
+            },
+            "bookA": {
+                "type": "String"
+            },
+            "bookB": {
+                "type": "String"
+            },
+            "counterparty": {
                 "type": "String"
             }
         }
@@ -535,6 +575,21 @@
     },
     "homePendingSwapReview": "Revizuiește",
     "homeOngoingExchangeBanner": "Ai un schimb în desfășurare",
+    "homeBookOfMonth": "Cartea lunii: {title} ({count} voturi)",
+    "@homeBookOfMonth": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "homeBookOfMonthDiscuss": "Discută",
+    "bookDetailVoteBookOfMonth": "Votează pentru Cartea lunii",
+    "bookDetailVotedBookOfMonth": "Ai votat pentru Cartea lunii",
+    "bookDetailVoteError": "Nu am putut înregistra votul.",
     "homeFeedEnd": "Ai văzut toate cărțile",
     "homeNearYou": "Din orașul tău",
     "homeNearYouToday": "Astăzi, aproape de tine",
@@ -842,6 +897,7 @@
     "bookDetailNoBooksToOffer": "Nu ai cărți disponibile de oferit - poți trimite cererea și fără.",
     "bookDetailOfferOneOfYourBooks": "Oferă una din cărțile tale (opțional)",
     "bookDetailNoOffer": "Fără ofertă",
+    "bookDetailBundleAddMore": "Adaugă și alte cărți la această ofertă (opțional)",
     "bookDetailMessageOptional": "Mesaj (opțional)",
     "bookDetailSendRequest": "Trimite cererea",
     "bookDetailRequestSent": "Cerere de schimb trimisă",
@@ -901,6 +957,17 @@
         "placeholders": {
             "title": {
                 "type": "String"
+            }
+        }
+    },
+    "exchangeOffersBookBundle": "Oferă: {title} + încă {count} cărți",
+    "@exchangeOffersBookBundle": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
             }
         }
     },
@@ -984,6 +1051,10 @@
     "readySafetyAck": "Am citit",
     "readySafetyWaitingOther": "Aștepți ca cealaltă parte să confirme că a citit recomandările.",
     "readySafetyBothReady": "Sunteți gata de schimb",
+    "readyConditionPhotosTitle": "Poze cu starea cărții",
+    "readyConditionPhotosSubtitle": "Fotografiază cartea înainte de predare, ca dovadă a stării ei",
+    "readyConditionPhotosOther": "Pozele celeilalte părți",
+    "readyConditionPhotosError": "Nu am putut urca poza.",
     "readyReportIssue": "Raportează o problemă",
     "readyCancel": "Anulează",
     "readyPostpone": "Amână",
@@ -1250,6 +1321,27 @@
     },
     "adminLoadError": "Nu am putut încărca datele de admin.",
     "adminStatsTitle": "Statistici",
+    "adminStatsGrowthTitle": "Utilizatori în timp",
+    "adminStatsGrowthDesc": "Instantaneu zilnic, ultimele 30 de zile.",
+    "adminStatsGrowthEmpty": "Nu sunt încă suficiente date pentru un grafic.",
+    "adminStatsGrowthRange": "{from} → {to} utilizatori",
+    "@adminStatsGrowthRange": {
+        "placeholders": {
+            "from": {
+                "type": "int"
+            },
+            "to": {
+                "type": "int"
+            }
+        }
+    },
+    "adminConversionFunnelTitle": "Pâlnia de conversie",
+    "adminConversionFunnelDesc": "Câți utilizatori ajung la fiecare pas - de la pre-înscriere până la primul schimb finalizat.",
+    "adminFunnelPreRegistrations": "Pre-înscrieri",
+    "adminFunnelRegistered": "Cont creat",
+    "adminFunnelOnboarded": "Onboarding finalizat",
+    "adminFunnelListedBook": "Au listat o carte",
+    "adminFunnelExchanged": "Au finalizat un schimb",
     "adminMarketplaceStatsTitle": "Statistici marketplace",
     "adminMarketplaceGmv": "Volum total tranzacționat",
     "adminMarketplaceCompletedSales": "Vânzări finalizate",
@@ -1318,6 +1410,50 @@
     "@adminReportedBy": {
         "placeholders": {
             "name": {
+                "type": "String"
+            }
+        }
+    },
+    "adminReportStatusOpen": "Deschis",
+    "adminReportStatusInProgress": "În lucru",
+    "adminReportStatusResolved": "Rezolvat",
+    "adminReportStatusDismissed": "Respins",
+    "adminReportAssignedTo": "Asignat: {name}",
+    "@adminReportAssignedTo": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "adminReportUnassigned": "Neasignat",
+    "adminReportMarkInProgress": "Preia raportul",
+    "adminReportMarkResolved": "Marchează rezolvat",
+    "adminReportMarkDismissed": "Respinge raportul",
+    "adminReportReopen": "Redeschide",
+    "adminReportResolutionNoteLabel": "Notă de decizie (opțional)",
+    "adminReportResolutionNoteHint": "Ce ai făcut sau de ce ai respins raportul",
+    "adminReportUpdateError": "Nu am putut actualiza raportul.",
+    "adminReportedPostLabel": "Postare raportată",
+    "adminReportedReviewLabel": "Recenzie raportată",
+    "adminDeletePostAction": "Șterge postarea",
+    "adminDeleteReviewAction": "Șterge recenzia",
+    "adminDeletePostConfirmTitle": "Ștergi această postare?",
+    "adminDeleteReviewConfirmTitle": "Ștergi această recenzie?",
+    "adminContentDeleted": "Conținut șters.",
+    "adminContentDeleteError": "Nu am putut șterge conținutul.",
+    "savedSearchesTitle": "Căutări salvate",
+    "savedSearchesEmpty": "Nicio căutare salvată încă. Salvează una ca să fii anunțat la anunțuri noi care se potrivesc.",
+    "savedSearchesLoadError": "Nu am putut încărca căutările salvate.",
+    "savedSearchNew": "Căutare nouă",
+    "savedSearchLabelLabel": "Nume",
+    "savedSearchLabelHint": "ex. SF sub 30 lei în Cluj",
+    "savedSearchMaxPriceLabel": "Preț maxim (opțional)",
+    "savedSearchCreateError": "Nu am putut salva căutarea.",
+    "savedSearchMaxPriceChip": "sub {amount} lei",
+    "@savedSearchMaxPriceChip": {
+        "placeholders": {
+            "amount": {
                 "type": "String"
             }
         }
@@ -1530,6 +1666,7 @@
     "groupsDiscussionTitle": "Discuții",
     "groupsPostHint": "Scrie un mesaj...",
     "groupsNoPosts": "Niciun mesaj încă.",
+    "groupsReportPostTooltip": "Raportează postarea",
     "premiumBadgeTooltip": "Membru Premium",
     "adminGrantPremium": "Acordă Premium",
     "adminRemovePremium": "Elimină Premium",
@@ -1610,7 +1747,39 @@
     "shareAuthorHint": "Autor",
     "sharePageCountCustom": "Număr de pagini (suprascrie autofill)",
     "shareTagAdd": "Adaugă tag",
+    "bookDetailPriceHistory": "Preț mediu recent: {price} lei (din {count} vânzări)",
+    "@bookDetailPriceHistory": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "bookDetailReviewsTitle": "Recenzii",
+    "bookDetailReviewWrite": "Scrie o recenzie",
+    "bookDetailReviewEdit": "Editează recenzia",
+    "bookDetailReviewDialogTitle": "Recenzia ta",
+    "bookDetailReviewHint": "Ce părere ai despre carte? (opțional)",
+    "bookDetailReviewError": "Nu am putut salva recenzia.",
+    "bookDetailReviewsEmpty": "Nicio recenzie încă. Fii primul care scrie una.",
+    "bookDetailReviewReportTooltip": "Raportează recenzia",
+    "bookDetailReviewsSummary": "{average} din 5 ({count} recenzii)",
+    "@bookDetailReviewsSummary": {
+        "placeholders": {
+            "average": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "sharePublisher": "Editura",
+    "shareSeriesName": "Serie (opțional)",
+    "shareSeriesNumber": "Volum",
     "shareCityHint": "Localitatea unde se face schimbul",
     "sharePublishedYear": "An apariție",
     "shareSubmit": "Publică",
