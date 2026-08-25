@@ -39,7 +39,6 @@ dependencies:
   socket_io_client: ^3.1.6
   flutter_secure_storage: ^10.3.1
   go_router: ^17.3.0
-  google_fonts: ^8.1.0
   cached_network_image: ^3.4.1
   image_picker: ^1.2.3
   file_picker: 11.0.2
@@ -125,17 +124,23 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
+  # Bundlate local, nu prin `google_fonts` (care le descarcă la runtime de pe
+  # fonts.gstatic.com pe web). Fișiere variabile (un singur .ttf acoperă toată
+  # plaja de greutăți 100-900) - descărcate din github.com/google/fonts, nu
+  # de pe CDN-ul Google Fonts (care servește woff/woff2, nu garantat compatibil
+  # cu pipeline-ul de assets Flutter pe toate platformele). Motivul: pe rețele
+  # mobile/tab-uri incognito unde fetch-ul runtime la fonts.gstatic.com eșuează
+  # sau întârzie, aplicația cădea pe fontul de sistem - metrici de linie
+  # diferite față de DM Sans/Playfair Display, ceea ce dezalinia vertical
+  # textul din câmpuri chiar și cu `textAlignVertical: TextAlignVertical.center`
+  # setat corect (centrarea e relativă la propria linie de text, nu ajută dacă
+  # fontul efectiv randat e altul decât cel pentru care a fost gândit padding-ul).
+  fonts:
+    - family: DM Sans
+      fonts:
+        - asset: assets/fonts/DMSans-Variable.ttf
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay-Variable.ttf
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

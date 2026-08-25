@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/user.dart';
@@ -294,7 +293,8 @@ class _BookBody extends StatelessWidget {
                   event.bookTitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.playfairDisplay(
+                  style: TextStyle(
+                    fontFamily: 'Playfair Display',
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                     color: AppColors.foreground,
@@ -366,7 +366,8 @@ class _SwapBody extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.playfairDisplay(
+            style: TextStyle(
+              fontFamily: 'Playfair Display',
               fontWeight: FontWeight.w600,
               fontSize: 13,
               color: AppColors.foreground,

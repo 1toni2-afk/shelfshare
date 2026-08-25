@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Paleta ShelfShare - tonuri calde, evocă o librărie prietenoasă,
 /// nu o platformă corporate sterilă.
@@ -88,8 +87,14 @@ class AppTheme {
   static ThemeData build({required bool dark}) {
     AppColors.setDark(dark);
 
-    final displayFont = GoogleFonts.playfairDisplayTextTheme();
-    final bodyFont = GoogleFonts.dmSansTextTheme();
+    // Bundlate local (vezi pubspec.yaml „fonts:"), nu prin `google_fonts`
+    // (care le descarcă la runtime de pe fonts.gstatic.com pe web - eșuează
+    // sau întârzie pe rețele mobile/tab-uri incognito, iar aplicația cade pe
+    // fontul de sistem cât timp așteaptă, cu metrici de linie diferite care
+    // dezaliniau vertical textul din câmpuri).
+    final baseTextTheme = Typography.material2021().black;
+    final displayFont = baseTextTheme.apply(fontFamily: 'Playfair Display');
+    final bodyFont = baseTextTheme.apply(fontFamily: 'DM Sans');
 
     return ThemeData(
       useMaterial3: true,
