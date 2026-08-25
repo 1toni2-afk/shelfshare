@@ -977,41 +977,59 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   // dreapta lui, ca buton compact care deschide popup-ul centrat din
   // `_MyBooksPickerDialog`.
   Widget _titleFieldWithMyBooksButton(BuildContext context) {
-    return Row(
+    final l10n = context.l10n;
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _titleField(context)),
-        const SizedBox(width: 10),
-        // 56x56, cât înălțimea standard M3 a câmpului de text (contentPadding
-        // 16+16 din AppTheme + linia de text de 24 = 56) - pătrat, nu cerc, ca
-        // să semene ca proporție cu câmpul din stânga lui în loc să pară un
-        // element separat, mai mic. `SizedBox` dă constrângeri stricte 56x56
-        // direct lui `Material`, deci pătratul umple efectiv cutia (nu doar un
-        // cerc mic centrat într-una mai mare).
-        SizedBox(
-          width: 56,
-          height: 56,
-          child: Tooltip(
-            message: context.l10n.shareFromMyBooks,
-            child: Material(
-              color: AppColors.accent.withValues(alpha: 0.15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: InkWell(
-                onTap: _openMyBooksPicker,
-                customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: const Center(
-                  child: Icon(Icons.menu_book_rounded,
-                      color: AppColors.accent, size: 24),
+        // `IntrinsicHeight` + `stretch` leagă înălțimea butonului de
+        // înălțimea REALĂ a câmpului (randată de motorul de text), nu de o
+        // constantă fixă (56 presupunea contentPadding 16+16 + linia de text
+        // de 24 din tema desktop - pe telefon metrica fontului randează
+        // linia de text puțin mai înaltă, deci constanta rămânea în urmă și
+        // pătratul apărea vizibil mai mic decât câmpul). `AspectRatio(1)`
+        // face pătratul să ia lățimea = înălțimea reală, indiferent de
+        // platformă. Helper text-ul e scos din `InputDecoration` și pus
+        // separat mai jos - altfel intrinsic height ar include și el, iar
+        // pătratul ar întinde câmpul+helper-ul, nu doar cutia cu text.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _titleField(context, showHelper: false)),
+              const SizedBox(width: 10),
+              AspectRatio(
+                aspectRatio: 1,
+                child: Tooltip(
+                  message: l10n.shareFromMyBooks,
+                  child: Material(
+                    color: AppColors.accent.withValues(alpha: 0.15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: InkWell(
+                      onTap: _openMyBooksPicker,
+                      customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: const Center(
+                        child: Icon(Icons.menu_book_rounded,
+                            color: AppColors.accent, size: 24),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
+          child: Text(
+            _titleSearching ? l10n.shareTitleSearching : l10n.shareTitleAutocomplete,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
           ),
         ),
       ],
     );
   }
 
-  Widget _titleField(BuildContext context) {
+  Widget _titleField(BuildContext context, {bool showHelper = true}) {
     final l10n = context.l10n;
     return Autocomplete<ExternalBookResult>(
               displayStringForOption: (r) => r.title,
@@ -1042,9 +1060,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   focusNode: focusNode,
                   decoration: InputDecoration(
                     labelText: l10n.shareTitleHint,
-                    helperText: _titleSearching
-                        ? l10n.shareTitleSearching
-                        : l10n.shareTitleAutocomplete,
+                    helperText: showHelper
+                        ? (_titleSearching
+                            ? l10n.shareTitleSearching
+                            : l10n.shareTitleAutocomplete)
+                        : null,
                   ),
                 );
               },
