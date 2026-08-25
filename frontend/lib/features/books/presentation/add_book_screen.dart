@@ -975,38 +975,33 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
   // Câmpul de titlu (rămâne pe toată lățimea rândului) + sigla ShelfShare în
   // dreapta lui, ca buton compact care deschide popup-ul centrat din
-  // `_MyBooksPickerDialog` - aceeași siglă (cerc accent + menu_book_rounded)
-  // ca în header-ul sidebar-ului și în login_screen, nu un buton nou cu text.
+  // `_MyBooksPickerDialog`.
   Widget _titleFieldWithMyBooksButton(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: _titleField(context)),
         const SizedBox(width: 10),
-        // Înălțime fixă = cutia standard M3 a câmpului de text (contentPadding
-        // 16+16 din AppTheme + linia de text de 24 = 56), NU tot rândul (care
-        // include și textul ajutător de sub cutie). Cu `Padding(top: 4)`
-        // butonul era calibrat pentru fostul buton-pilulă, mai scund - de
-        // când sigla e un cerc de 42 (padding 10 + icon 22 + padding 10), cei
-        // 4px fixi nu-l mai centrau, ci îl împingeau vizibil spre marginea de
-        // sus a câmpului. `Center` recalculează mereu offsetul corect,
-        // indiferent de dimensiunea siglei.
+        // 56x56, cât înălțimea standard M3 a câmpului de text (contentPadding
+        // 16+16 din AppTheme + linia de text de 24 = 56) - pătrat, nu cerc, ca
+        // să semene ca proporție cu câmpul din stânga lui în loc să pară un
+        // element separat, mai mic. `SizedBox` dă constrângeri stricte 56x56
+        // direct lui `Material`, deci pătratul umple efectiv cutia (nu doar un
+        // cerc mic centrat într-una mai mare).
         SizedBox(
+          width: 56,
           height: 56,
-          child: Center(
-            child: Tooltip(
-              message: context.l10n.shareFromMyBooks,
-              child: Material(
-                color: AppColors.accent.withValues(alpha: 0.15),
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: _openMyBooksPicker,
-                  customBorder: const CircleBorder(),
-                  child: const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Icon(Icons.menu_book_rounded,
-                        color: AppColors.accent, size: 22),
-                  ),
+          child: Tooltip(
+            message: context.l10n.shareFromMyBooks,
+            child: Material(
+              color: AppColors.accent.withValues(alpha: 0.15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: InkWell(
+                onTap: _openMyBooksPicker,
+                customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: const Center(
+                  child: Icon(Icons.menu_book_rounded,
+                      color: AppColors.accent, size: 24),
                 ),
               ),
             ),
