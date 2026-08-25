@@ -682,6 +682,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                     ),
                     Expanded(
                       child: TextField(
+                        textAlignVertical: TextAlignVertical.center,
                         controller: _messageController,
                         focusNode: _messageFocusNode,
                         onChanged: (_) =>
@@ -1962,6 +1963,7 @@ class _ShareLocationSheetState extends ConsumerState<_ShareLocationSheet> {
             const SizedBox(height: 16),
             if (_selected == null) ...[
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _searchController,
                 autofocus: true,
                 onChanged: _onSearchChanged,
@@ -2129,6 +2131,7 @@ class _CounterOfferDialogState extends State<_CounterOfferDialog> {
     return AlertDialog(
       title: Text(l10n.chatOfferCounterTitle),
       content: TextField(
+        textAlignVertical: TextAlignVertical.center,
         controller: _controller,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         autofocus: true,

@@ -165,6 +165,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                 children: [
                   Expanded(
                     child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
                       controller: _searchController,
                       onChanged: _onSearchChanged,
                       decoration: InputDecoration(

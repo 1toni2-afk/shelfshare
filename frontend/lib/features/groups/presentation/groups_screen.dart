@@ -31,12 +31,14 @@ class GroupsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: nameController,
                 autofocus: true,
                 decoration: InputDecoration(labelText: l10n.groupsNameLabel),
               ),
               const SizedBox(height: 16),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: descriptionController,
                 decoration: InputDecoration(labelText: l10n.groupsDescriptionLabel),
               ),

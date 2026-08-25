@@ -204,6 +204,7 @@ class _GrantRoleDialogState extends ConsumerState<_GrantRoleDialog> {
         children: [
           if (!isEdit)
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _userIdController,
               decoration: InputDecoration(hintText: l10n.adminAdministratorsUserIdHint),
             ),

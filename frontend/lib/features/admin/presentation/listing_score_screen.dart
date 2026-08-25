@@ -170,6 +170,7 @@ class _ListingScoreScreenState extends ConsumerState<ListingScoreScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _searchController,
               onChanged: _onQueryChanged,
               decoration: InputDecoration(
@@ -273,6 +274,7 @@ class _ListingScoreScreenState extends ConsumerState<ListingScoreScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _overrideController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(hintText: 'ex: 87'),

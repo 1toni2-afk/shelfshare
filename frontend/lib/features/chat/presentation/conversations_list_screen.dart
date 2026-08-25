@@ -371,6 +371,7 @@ class _ConversationsPane extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: searchController,
               onChanged: onSearchChange,
               decoration: InputDecoration(

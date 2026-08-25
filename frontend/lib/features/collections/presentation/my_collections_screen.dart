@@ -26,6 +26,7 @@ class MyCollectionsScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: nameController,
                 autofocus: true,
                 decoration: InputDecoration(labelText: l10n.collectionsNameLabel),

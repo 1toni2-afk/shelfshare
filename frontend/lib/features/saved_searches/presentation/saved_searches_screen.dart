@@ -31,6 +31,7 @@ class SavedSearchesScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: labelController,
                   decoration: InputDecoration(
                     labelText: l10n.savedSearchLabelLabel,
@@ -39,6 +40,7 @@ class SavedSearchesScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 TextField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: genreController,
                   decoration: InputDecoration(labelText: l10n.filtersGenre),
                 ),
@@ -50,6 +52,7 @@ class SavedSearchesScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 TextField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: priceController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(labelText: l10n.savedSearchMaxPriceLabel),

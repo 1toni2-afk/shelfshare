@@ -265,6 +265,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
             children: [
               Expanded(
                 child: TextField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: _bidController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(

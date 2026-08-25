@@ -148,6 +148,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             TextFormField(
+                              textAlignVertical: TextAlignVertical.center,
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               textCapitalization: TextCapitalization.none,
@@ -171,6 +172,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
+                              textAlignVertical: TextAlignVertical.center,
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               // Enter pe parolă trimite formularul - același
@@ -212,6 +214,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
+                                textAlignVertical: TextAlignVertical.center,
                                 controller: _captchaAnswerController,
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],

@@ -107,6 +107,7 @@ class _PreRegistrationScreenState extends ConsumerState<PreRegistrationScreen> {
             ),
             const SizedBox(height: 32),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _emailController,
               readOnly: _done,
               keyboardType: TextInputType.emailAddress,

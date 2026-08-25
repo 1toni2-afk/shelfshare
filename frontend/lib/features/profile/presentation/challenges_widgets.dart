@@ -73,6 +73,7 @@ class ReadingChallengeCard extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: Text(l10n.readingChallengeSetGoal),
         content: TextField(
+          textAlignVertical: TextAlignVertical.center,
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(labelText: l10n.readingChallengeGoalLabel),

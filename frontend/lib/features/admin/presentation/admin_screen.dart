@@ -520,16 +520,19 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _titleController,
               decoration: InputDecoration(labelText: l10n.addBookTitleLabel),
             ),
             const SizedBox(height: 12),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _authorController,
               decoration: InputDecoration(labelText: l10n.adminAuthorOptional),
             ),
             const SizedBox(height: 12),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _coverUrlController,
               decoration: InputDecoration(labelText: l10n.adminCoverUrlOptional),
             ),

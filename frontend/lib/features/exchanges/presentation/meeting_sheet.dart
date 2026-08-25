@@ -147,6 +147,7 @@ class _MeetingSheetState extends ConsumerState<MeetingSheet> {
           ),
           const SizedBox(height: 16),
           TextField(
+            textAlignVertical: TextAlignVertical.center,
             controller: _locationController,
             maxLength: 200,
             onChanged: _onLocationChanged,

@@ -2111,6 +2111,7 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
               ),
             const SizedBox(height: 20),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(labelText: l10n.bookDetailOfferAmountLabel, suffixText: 'lei'),

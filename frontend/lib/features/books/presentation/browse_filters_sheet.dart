@@ -169,6 +169,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
             Text(l10n.filtersTitle, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 20),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _authorController,
               onChanged: _onAuthorChanged,
               decoration: InputDecoration(labelText: l10n.filtersAuthor),
@@ -180,6 +181,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
             ),
             const SizedBox(height: 16),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _genreController,
               onChanged: _onGenreChanged,
               decoration: InputDecoration(labelText: l10n.filtersGenre),
@@ -191,6 +193,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
             ),
             const SizedBox(height: 16),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _languageController,
               onChanged: _onLanguageChanged,
               decoration: InputDecoration(labelText: l10n.filtersLanguage),

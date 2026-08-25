@@ -179,6 +179,7 @@ class _RoleEditorDialogState extends ConsumerState<_RoleEditorDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _labelController,
                 decoration: InputDecoration(hintText: l10n.adminRolesLabelHint),
               ),

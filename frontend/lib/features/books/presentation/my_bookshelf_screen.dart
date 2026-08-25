@@ -123,6 +123,7 @@ Future<void> _showProgressDialog(BuildContext context, WidgetRef ref, Book book)
     builder: (context) => AlertDialog(
       title: Text(l10n.bookshelfProgressDialogTitle),
       content: TextField(
+        textAlignVertical: TextAlignVertical.center,
         controller: controller,
         autofocus: true,
         keyboardType: TextInputType.number,

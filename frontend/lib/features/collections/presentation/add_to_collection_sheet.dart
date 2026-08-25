@@ -152,6 +152,7 @@ class _AddToCollectionSheetState extends ConsumerState<_AddToCollectionSheet> {
             children: [
               Expanded(
                 child: TextField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: _nameController,
                   decoration: InputDecoration(hintText: l10n.collectionsNewInline),
                 ),

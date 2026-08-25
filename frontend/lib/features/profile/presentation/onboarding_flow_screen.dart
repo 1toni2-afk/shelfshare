@@ -700,6 +700,7 @@ class _Step0Username extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         TextFormField(
+                          textAlignVertical: TextAlignVertical.center,
                           controller: firstNameController,
                           decoration: InputDecoration(
                             labelText: l10n.onboardingFirstName,
@@ -710,6 +711,7 @@ class _Step0Username extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
+                          textAlignVertical: TextAlignVertical.center,
                           controller: lastNameController,
                           decoration: InputDecoration(
                             labelText: l10n.onboardingLastName,
@@ -720,6 +722,7 @@ class _Step0Username extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
+                          textAlignVertical: TextAlignVertical.center,
                           controller: usernameController,
                           decoration: InputDecoration(
                             labelText: l10n.onboardingUsername,

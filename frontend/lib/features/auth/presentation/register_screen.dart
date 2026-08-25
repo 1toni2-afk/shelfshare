@@ -114,6 +114,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             TextFormField(
+                              textAlignVertical: TextAlignVertical.center,
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               textCapitalization: TextCapitalization.none,
@@ -128,6 +129,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
+                              textAlignVertical: TextAlignVertical.center,
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               // newPassword, nu password: altfel managerul de
@@ -153,6 +155,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
+                              textAlignVertical: TextAlignVertical.center,
                               controller: _confirmController,
                               obscureText: _obscurePassword,
                               autofillHints: const [AutofillHints.newPassword],
@@ -166,6 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
+                              textAlignVertical: TextAlignVertical.center,
                               controller: _referralController,
                               textCapitalization: TextCapitalization.characters,
                               decoration: InputDecoration(

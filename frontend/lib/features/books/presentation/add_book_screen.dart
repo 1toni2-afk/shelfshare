@@ -308,6 +308,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       onSelected: (_) => setState(() {}),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
         return TextField(
+          textAlignVertical: TextAlignVertical.center,
           controller: controller,
           focusNode: focusNode,
           decoration: InputDecoration(labelText: l10n.shareGenreHint),
@@ -713,6 +714,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
             // 3. Autor
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _authorController,
               decoration: InputDecoration(labelText: l10n.shareAuthorHint),
             ),
@@ -875,6 +877,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                     const SizedBox(width: 14),
                     Expanded(
                       child: TextField(
+                        textAlignVertical: TextAlignVertical.center,
                         controller: _authorController,
                         decoration: InputDecoration(labelText: l10n.shareAuthorHint),
                       ),
@@ -1039,6 +1042,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   }
                 });
                 return TextField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: controller,
                   focusNode: focusNode,
                   decoration: InputDecoration(
@@ -1111,6 +1115,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         ),
         if (_sellOnSwap)
           TextField(
+            textAlignVertical: TextAlignVertical.center,
             controller: _swapSalePriceController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
@@ -1126,6 +1131,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     return [
       const SizedBox(height: 12),
       TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
@@ -1185,6 +1191,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             ),
             if (_showMoreInfo) ...[
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _pageCountController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
@@ -1195,6 +1202,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _publishedYearController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
@@ -1206,6 +1214,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _editionYearController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
@@ -1217,6 +1226,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               ),
               const SizedBox(height: 8),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _publisherController,
                 decoration: InputDecoration(labelText: l10n.sharePublisher),
               ),
@@ -1226,6 +1236,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   Expanded(
                     flex: 2,
                     child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
                       controller: _seriesController,
                       decoration: InputDecoration(labelText: l10n.shareSeriesName),
                     ),
@@ -1233,6 +1244,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
                       controller: _seriesNumberController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -1487,6 +1499,7 @@ class _TagsInput extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          textAlignVertical: TextAlignVertical.center,
           controller: controller,
           decoration: InputDecoration(
             labelText: hint,

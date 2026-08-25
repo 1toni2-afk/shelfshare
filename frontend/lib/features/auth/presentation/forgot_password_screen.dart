@@ -207,6 +207,7 @@ class _EmailStep extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextFormField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: controller,
                   keyboardType: TextInputType.emailAddress,
                               textCapitalization: TextCapitalization.none,
@@ -286,6 +287,7 @@ class _CodeStep extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         TextField(
+          textAlignVertical: TextAlignVertical.center,
           controller: codeController,
           keyboardType: TextInputType.number,
           // Codul e afișat în email cu o linie ("123-456") pentru lizibilitate -
@@ -362,6 +364,7 @@ class _PasswordStep extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   TextFormField(
+                    textAlignVertical: TextAlignVertical.center,
                     controller: passwordController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
@@ -379,6 +382,7 @@ class _PasswordStep extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    textAlignVertical: TextAlignVertical.center,
                     controller: confirmController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(

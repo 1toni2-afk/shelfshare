@@ -163,6 +163,7 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
             ),
             if (_isForSale) ...[
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
@@ -185,6 +186,7 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
             ),
             if (_isAuction) ...[
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(labelText: l10n.addBookAuctionStartingPrice, suffixText: 'lei'),

@@ -105,11 +105,13 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: titleController,
                 autofocus: true,
                 decoration: InputDecoration(labelText: l10n.groupsEventTitleLabel),
               ),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: locationController,
                 decoration: InputDecoration(labelText: l10n.groupsEventLocationLabel),
               ),
@@ -240,6 +242,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   children: [
                     Expanded(
                       child: TextField(
+                        textAlignVertical: TextAlignVertical.center,
                         controller: _postController,
                         decoration: InputDecoration(hintText: l10n.groupsPostHint),
                       ),

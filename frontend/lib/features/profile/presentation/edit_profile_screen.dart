@@ -127,11 +127,13 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _nameController,
                 decoration: InputDecoration(labelText: l10n.onboardingLastName),
               ),
               const SizedBox(height: 16),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _usernameController,
                 decoration: InputDecoration(
                   labelText: l10n.profileUsernameLabel,
@@ -154,6 +156,7 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
               ),
               const SizedBox(height: 16),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _bioController,
                 maxLength: kBioMaxLength,
                 decoration: InputDecoration(labelText: l10n.profileAboutMe),

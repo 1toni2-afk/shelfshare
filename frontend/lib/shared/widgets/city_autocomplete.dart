@@ -53,6 +53,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
       onSelected: widget.onChanged,
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
         return TextFormField(
+          textAlignVertical: TextAlignVertical.center,
           controller: controller,
           focusNode: focusNode,
           decoration: InputDecoration(

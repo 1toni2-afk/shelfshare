@@ -157,6 +157,7 @@ class _FeatureAccessScreenState extends ConsumerState<FeatureAccessScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _searchController,
               onChanged: _onQueryChanged,
               decoration: InputDecoration(

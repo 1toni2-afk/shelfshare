@@ -124,6 +124,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: l10n.supportNameLabel,
@@ -133,6 +134,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
               ),
               const SizedBox(height: 12),
               TextFormField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
@@ -144,6 +146,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
               ),
               const SizedBox(height: 12),
               TextFormField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
@@ -166,6 +169,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
                 Text(_captcha!.question, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 TextFormField(
+                  textAlignVertical: TextAlignVertical.center,
                   controller: _captchaAnswerController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],

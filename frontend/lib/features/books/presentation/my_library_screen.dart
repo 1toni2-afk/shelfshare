@@ -108,6 +108,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
             ),
             const SizedBox(height: 8),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: removeController,
               decoration: InputDecoration(labelText: l10n.inventoryRemoveText),
             ),

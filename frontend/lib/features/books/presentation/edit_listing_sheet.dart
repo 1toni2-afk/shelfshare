@@ -156,12 +156,14 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
             ),
             const SizedBox(height: 16),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _languageController,
               decoration:
                   InputDecoration(labelText: l10n.addBookLanguageOptional),
             ),
             const SizedBox(height: 16),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _editionController,
               decoration:
                   InputDecoration(labelText: l10n.addBookEditionOptional),
@@ -176,6 +178,7 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
             ),
             const SizedBox(height: 8),
             TextField(
+              textAlignVertical: TextAlignVertical.center,
               controller: _tagsController,
               decoration: InputDecoration(labelText: l10n.shareTagsHint),
             ),
@@ -209,6 +212,7 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
             if (_isForSale) ...[
               const SizedBox(height: 8),
               TextField(
+                textAlignVertical: TextAlignVertical.center,
                 controller: _priceController,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),

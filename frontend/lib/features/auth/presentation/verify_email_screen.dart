@@ -98,6 +98,7 @@ class _VerifyCodeSectionState extends ConsumerState<VerifyCodeSection> {
         ),
         const SizedBox(height: 24),
         TextField(
+          textAlignVertical: TextAlignVertical.center,
           controller: _codeController,
           keyboardType: TextInputType.number,
           // Codul din email e afișat cu o linie ("123-456") ca să fie mai
