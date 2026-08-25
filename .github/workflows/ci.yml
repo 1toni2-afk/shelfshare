@@ -69,3 +69,31 @@ jobs:
 
       - name: Teste
         run: flutter test
+
+  # Deploy automat, doar la push direct pe main (nu la PR) - runnerele
+  # self-hosted rulează pe mașinile reale (NUC / mașina cu static-server),
+  # deci scripturile de deploy scriu direct peste instalarea live.
+  # Fiecare job rulează pe clona persistentă existentă pe acea mașină (calea
+  # vine din variabilele de repo NUC_DEPLOY_PATH / WEB_DEPLOY_PATH - vezi
+  # Settings > Secrets and variables > Actions > Variables), nu pe un
+  # checkout proaspăt al runner-ului: scripturile de deploy fac ele
+  # `git pull`, iar clona persistentă e cea cu `.env`-ul real și volumele
+  # Docker deja legate.
+  deploy-backend:
+    needs: [backend-check, frontend-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, nuc]
+    steps:
+      - name: Deploy backend pe NUC
+        working-directory: ${{ vars.NUC_DEPLOY_PATH }}
+        run: ./scripts/deploy.sh
+
+  deploy-web:
+    needs: [backend-check, frontend-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, web]
+    steps:
+      - name: Deploy frontend web
+        shell: pwsh
+        working-directory: ${{ vars.WEB_DEPLOY_PATH }}
+        run: ./scripts/deploy-web.ps1 -Pull -ApiBaseUrl https://api.shelfshare.ro
