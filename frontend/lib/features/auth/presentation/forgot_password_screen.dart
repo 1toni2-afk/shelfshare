@@ -212,7 +212,7 @@ class _EmailStep extends StatelessWidget {
                   keyboardType: TextInputType.emailAddress,
                               textCapitalization: TextCapitalization.none,
                   decoration: InputDecoration(
-                    labelText: l10n.commonEmailLabel,
+                    hintText: l10n.commonEmailLabel,
                     prefixIcon: const Icon(Icons.mail_outline),
                   ),
                   onFieldSubmitted: (_) => onSubmit(),
@@ -368,7 +368,7 @@ class _PasswordStep extends StatelessWidget {
                     controller: passwordController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      labelText: l10n.resetPasswordNewLabel,
+                      hintText: l10n.resetPasswordNewLabel,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -386,7 +386,7 @@ class _PasswordStep extends StatelessWidget {
                     controller: confirmController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      labelText: l10n.authConfirmPasswordLabel,
+                      hintText: l10n.authConfirmPasswordLabel,
                       prefixIcon: const Icon(Icons.lock_outline),
                     ),
                     validator: (value) =>

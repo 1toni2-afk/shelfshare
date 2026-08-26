@@ -3,6 +3,7 @@
     "navHome": "Acasă",
     "navSearch": "Descoperă",
     "navLibrary": "Raftul meu",
+    "navActivityFeed": "Activitate",
     "navChat": "Chat",
     "navProfile": "Profil",
     "commonCancel": "Anulează",
@@ -26,7 +27,7 @@
     "continueWithGoogle": "Continuă cu Google",
     "reportDialogTitle": "Raportează",
     "trustScoreTitle": "Scor de încredere",
-    "trustScoreSubtitle": "Calculat din activitatea din aplicație, nu e o verificare de identitate",
+    "trustScoreSubtitle": "Calculat pe baza activității din aplicație — nu este o verificare a identității.",
     "trustScoreEmailVerified": "Email verificat",
     "trustScoreCompletedRate": "{percent}% schimburi finalizate",
     "@trustScoreCompletedRate": {
@@ -53,7 +54,7 @@
             }
         }
     },
-    "trustScoreResponseRate": "{percent}% rată de răspuns",
+    "trustScoreResponseRate": "Rată de răspuns: {percent}%",
     "@trustScoreResponseRate": {
         "placeholders": {
             "percent": {
@@ -61,7 +62,7 @@
             }
         }
     },
-    "trustScoreAverageSwapTime": "Schimb finalizat în ~{time}",
+    "trustScoreAverageSwapTime": "Finalizează un schimb în ~{time}",
     "@trustScoreAverageSwapTime": {
         "placeholders": {
             "time": {
@@ -69,7 +70,7 @@
             }
         }
     },
-    "memberSinceDays": "Membru din {days} zile",
+    "memberSinceDays": "Membru de {days} zile",
     "@memberSinceDays": {
         "placeholders": {
             "days": {
@@ -131,18 +132,18 @@
     "commonOr": "sau",
     "commonRequired": "Obligatoriu",
     "commonContinue": "Continuă",
-    "loginWelcomeBack": "Bun venit înapoi",
+    "loginWelcomeBack": "Bine ai revenit",
     "authPasswordLabel": "Parolă",
     "authEnterPasswordError": "Introdu parola",
     "authMinEightChars": "Minim 8 caractere",
     "authForgotPasswordLink": "Ai uitat parola?",
-    "authLoginSubmit": "Autentificare",
+    "authLoginSubmit": "Conectare",
     "authNoAccount": "Nu ai cont? ",
-    "authCreateOne": "Creează unul",
-    "authGoogleFailed": "Autentificarea cu Google a eșuat. Încearcă din nou.",
+    "authCreateOne": "Creează un cont",
+    "authGoogleFailed": "Conectarea cu Google a eșuat. Încearcă din nou.",
     "supportContactButton": "Nu te poți loga? Contactează-ne",
-    "supportDialogTitle": "Contactează support",
-    "supportDialogSubtitle": "Spune-ne ce problemă ai și îți răspundem pe email.",
+    "supportDialogTitle": "Contactează asistența",
+    "supportDialogSubtitle": "Spune-ne cu ce te putem ajuta, iar noi îți vom răspunde prin email.",
     "supportNameLabel": "Nume",
     "supportPhoneLabel": "Telefon (opțional)",
     "supportMessageLabel": "Mesajul tău",
@@ -154,9 +155,9 @@
     "authRegisterSubtitle": "Alătură-te comunității ShelfShare",
     "authReferralCodeLabel": "Cod de invitație (opțional)",
     "verifyCodeTooShort": "Codul trebuie să aibă 6 cifre",
-    "verifySuccessSnackbar": "Cont confirmat cu succes!",
+    "verifySuccessSnackbar": "Contul tău a fost confirmat.",
     "verifyInvalidOrExpired": "Cod invalid sau expirat.",
-    "verifyResendSnackbar": "Am retrimis codul, dacă e cazul.",
+    "verifyResendSnackbar": "Am retrimis codul, dacă este necesar.",
     "verifyEmailHeading": "Verifică-ți emailul",
     "verifySentTo": "Ți-am trimis un cod de confirmare pe {email}",
     "@verifySentTo": {
@@ -187,12 +188,12 @@
     "resetPasswordSubmit": "Setează parola",
     "resetPasswordSuccessHeading": "Parolă schimbată",
     "resetPasswordSuccessBody": "Parola ta a fost actualizată. Te poți autentifica acum.",
-    "resetPasswordGoToLogin": "Mergi la autentificare",
+    "resetPasswordGoToLogin": "Mergi la conectare",
     "resetPasswordGenericError": "Nu am putut reseta parola. Încearcă din nou.",
     "authConfirmPasswordLabel": "Confirmă parola",
     "authPasswordMismatch": "Parolele nu coincid",
-    "onboardingTitle": "Aproape gata!",
-    "onboardingSubtitle": "Spune-ne cum vrei să te vadă ceilalți",
+    "onboardingTitle": "Mai este puțin!",
+    "onboardingSubtitle": "Spune-ne cum vrei să apară profilul tău pentru ceilalți membri",
     "onboardingFirstName": "Prenume",
     "onboardingLastName": "Nume",
     "onboardingUsername": "Username",
@@ -202,16 +203,16 @@
     "onboardingUsernameAlwaysVisible": "Username-ul rămâne mereu vizibil",
     "profileTitle": "Profilul meu",
     "surveyTitle": "Ce îți place să citești?",
-    "surveySubtitle": "Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.",
+    "surveySubtitle": "Răspunde la câteva întrebări, iar noi îți vom recomanda cărți care se potrivesc gusturilor tale și te vom anunța când apare una pe care s-ar putea să o îndrăgești.",
     "surveyGenresQuestion": "Ce genuri te atrag?",
     "surveyGenresLoadError": "Nu am putut încărca lista de genuri.",
     "surveyAuthorsQuestion": "Autori preferați (opțional)",
     "surveyAuthorsHint": "Ex.: Mihail Sadoveanu, Ursula K. Le Guin",
-    "surveyPaceQuestion": "Câte cărți citești pe lună?",
+    "surveyPaceQuestion": "Câte cărți citești într-o lună?",
     "surveySubmit": "Salvează",
     "surveySkip": "Sar peste deocamdată",
     "surveySaveError": "Nu am putut salva răspunsurile. Încearcă din nou.",
-    "surveyChangeLaterHint": "Poți schimba oricând răspunsurile din profil.",
+    "surveyChangeLaterHint": "Poți modifica oricând răspunsurile din profil.",
     "surveyPaceOption": "{pace} cărți pe lună",
     "@surveyPaceOption": {
         "placeholders": {
@@ -259,8 +260,8 @@
     "profileFeedbackError": "Nu am putut trimite feedback-ul",
     "profileFeedbackAddPhoto": "Adaugă o poză",
     "profileFeedbackRemovePhoto": "Elimină poza",
-    "adminChatTitle": "Chat cu un admin",
-    "adminChatEmpty": "Scrie-ne orice întrebare sau problemă ai - un admin îți răspunde aici.",
+    "adminChatTitle": "Chat cu un administrator",
+    "adminChatEmpty": "Scrie-ne orice întrebare sau problemă ai, iar un administrator îți va răspunde aici.",
     "adminChatInputHint": "Scrie un mesaj…",
     "adminChatInboxTitle": "Chat cu adminii",
     "adminChatInboxDesc": "Conversații de suport, vizibile tuturor adminilor",
@@ -388,11 +389,11 @@
         }
     },
     "bookshelfGenreChartTitle": "Genurile tale",
-    "bookshelfGenreChartEmpty": "Adaugă cărți pe raft ca să vezi ce genuri citești cel mai mult.",
+    "bookshelfGenreChartEmpty": "Adaugă cărți pe raft pentru a vedea ce genuri citești cel mai mult.",
     "bookshelfImportTooltip": "Importă din Goodreads sau StoryGraph",
     "bookshelfImportGoodreads": "Importă din Goodreads (CSV)",
     "bookshelfImportStoryGraph": "Importă din StoryGraph (CSV)",
-    "bookshelfImportSummary": "{imported} cărți importate, {skipped} sărite",
+    "bookshelfImportSummary": "{imported} cărți importate, {skipped} omise",
     "@bookshelfImportSummary": {
         "placeholders": {
             "imported": {
@@ -403,7 +404,7 @@
             }
         }
     },
-    "bookshelfImportError": "Nu am putut importa fișierul. Verifică dacă e un export CSV valid.",
+    "bookshelfImportError": "Nu am putut importa fișierul. Verifică dacă este un export CSV valid.",
     "bookDetailShelfSectionTitle": "Adaugă în raftul tău",
     "gamificationLevel": "Nivel {level}",
     "@gamificationLevel": {
@@ -448,7 +449,7 @@
     "profileMonthlyChallenges": "Provocări lunare",
     "monthlyChallengesTitle": "Provocări lunare",
     "profileReadingChallenge": "Provocarea de citit",
-    "readingChallengeTitle": "Provocarea de citit {year}",
+    "readingChallengeTitle": "Provocarea de lectură {year}",
     "@readingChallengeTitle": {
         "placeholders": {
             "year": {
@@ -468,16 +469,16 @@
             }
         }
     },
-    "readingChallengeSetGoal": "Setează un obiectiv",
+    "readingChallengeSetGoal": "Setează-ți un obiectiv",
     "readingChallengeGoalLabel": "Câte cărți vrei să termini anul acesta?",
     "profileActivityFeed": "Activitate recentă",
     "activityFeedTitle": "Activitate recentă",
-    "activityFeedEmpty": "Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.",
-    "activityFeedLoadError": "Nu am putut încărca activitatea.",
+    "activityFeedEmpty": "Nicio activitate încă — urmărește alți membri pentru a vedea ce citesc.",
+    "activityFeedLoadError": "Nu am putut încărca activitatea. Încearcă din nou.",
     "activityNewListing": "a adăugat o carte nouă",
     "activityFinishedBook": "a terminat de citit",
     "activityCompletedExchange": "a finalizat un schimb",
-    "activitySale": "a vândut cu {amount} lei",
+    "activitySale": "a vândut pentru {amount} lei",
     "@activitySale": {
         "placeholders": {
             "amount": {
@@ -514,7 +515,7 @@
     "globalStatsTabMostShared": "Cele mai schimbate",
     "globalStatsTabTrending": "În tendințe",
     "globalStatsTabPopularAuthors": "Autori populari",
-    "globalStatsEmpty": "Nicio dată încă.",
+    "globalStatsEmpty": "Nu există încă date.",
     "globalStatsLoadError": "Nu am putut încărca statisticile.",
     "globalStatsTransferCount": "{count} schimburi/vânzări",
     "@globalStatsTransferCount": {
@@ -593,22 +594,22 @@
     "homeFeedEnd": "Ai văzut toate cărțile",
     "homeNearYou": "Din orașul tău",
     "homeNearYouToday": "Astăzi, aproape de tine",
-    "homeRecommendedForYou": "Recomandate pentru tine",
-    "homeHiddenGems": "Comori ascunse",
+    "homeRecommendedForYou": "Recomandări pentru tine",
+    "homeHiddenGems": "Descoperiri interesante",
     "homeCompleteYourCollection": "Completează-ți colecția",
-    "homeSimilarTaste": "Gusturi asemănătoare",
+    "homeSimilarTaste": "Gusturi similare",
     "profileSmartMatches": "Potriviri de schimb",
     "smartMatchesTitle": "Potriviri de schimb",
-    "smartMatchesEmpty": "Nicio potrivire încă - adaugă cărți pe wishlist și listează cărți disponibile.",
-    "smartMatchesLoadError": "Nu am putut încărca potrivirile.",
+    "smartMatchesEmpty": "Nu există încă potriviri. Adaugă cărți în lista de dorințe și oferă câteva cărți la schimb.",
+    "smartMatchesLoadError": "Nu am putut încărca potrivirile. Încearcă din nou.",
     "smartMatchesTheyHave": "Are ce vrei tu",
     "smartMatchesTheyWant": "Vrea ce ai tu",
-    "homeUpcomingBooks": "Cărți viitoare",
+    "homeUpcomingBooks": "Cărți care urmează",
     "homeActiveMembers": "Membri activi",
     "browseTitle": "Caută cărți",
     "browseMapTooltip": "Hartă cărți din apropiere",
     "browseSearchHint": "Caută după titlu",
-    "browseEmpty": "Nicio carte găsită.",
+    "browseEmpty": "Nu am găsit nicio carte.",
     "filtersTitle": "Filtre",
     "filtersAuthor": "Autor",
     "filtersGenre": "Gen",
@@ -619,13 +620,13 @@
     "bookConditionVeryGood": "Foarte bună",
     "bookConditionGood": "Bună",
     "bookConditionAcceptable": "Acceptabilă",
-    "filtersAnyCondition": "Orice stare",
+    "filtersAnyCondition": "Orice condiție",
     "filtersListingType": "Tip de anunț",
     "filtersListingTypeSwap": "Schimb",
     "filtersListingTypeSale": "Vânzare",
     "filtersListingTypeAuction": "Licitație",
     "filtersNearbyOnly": "Doar din apropiere",
-    "filtersNearbyOnlyHintOff": "Ordonează și filtrează după distanța reală față de orașul tău",
+    "filtersNearbyOnlyHintOff": "Sortează și filtrează după distanța reală față de orașul tău",
     "filtersNearbyOnlyHintOn": "Până la {km} km de orașul tău",
     "@filtersNearbyOnlyHintOn": {
         "placeholders": {
@@ -643,7 +644,7 @@
         }
     },
     "filtersReset": "Resetează",
-    "filtersApply": "Aplică filtre",
+    "filtersApply": "Aplică filtrele",
     "commonYes": "Da",
     "commonNo": "Nu",
     "commonGiveUp": "Renunță",
@@ -665,8 +666,8 @@
         }
     },
     "libraryImportError": "Nu am putut importa fișierul. Verifică dacă e un CSV valid.",
-    "libraryEmpty": "Nu ai nicio carte în bibliotecă încă.",
-    "libraryLoadError": "Nu am putut încărca biblioteca.",
+    "libraryEmpty": "Nu ai încă nicio carte în bibliotecă.",
+    "libraryLoadError": "Nu am putut încărca biblioteca. Încearcă din nou.",
     "libraryAvailable": "Disponibilă",
     "libraryUnavailable": "Indisponibilă",
     "libraryShelfSubtitle": "{total} cărți · {available} disponibile la schimb",
@@ -894,7 +895,7 @@
             }
         }
     },
-    "bookDetailNoBooksToOffer": "Nu ai cărți disponibile de oferit - poți trimite cererea și fără.",
+    "bookDetailNoBooksToOffer": "Nu ai nicio carte disponibilă pentru ofertă. Poți trimite cererea și fără să oferi una.",
     "bookDetailOfferOneOfYourBooks": "Oferă una din cărțile tale (opțional)",
     "bookDetailNoOffer": "Fără ofertă",
     "bookDetailBundleAddMore": "Adaugă și alte cărți la această ofertă (opțional)",
@@ -903,7 +904,7 @@
     "bookDetailRequestSent": "Cerere de schimb trimisă",
     "bookDetailRequestError": "Nu am putut trimite cererea.",
     "bookDetailFirstExchangeTitle": "Primul tău schimb",
-    "bookDetailFirstExchangeBody": "Câteva sfaturi înainte de primul schimb: întâlnește-te ziua, într-un loc public, și verifică starea cărții înainte să confirmi schimbul ca finalizat.",
+    "bookDetailFirstExchangeBody": "Câteva lucruri de care să ții cont înainte de primul schimb: întâlnește-te ziua, într-un loc public, și verifică starea cărții înainte să confirmi schimbul ca finalizat.",
     "bookDetailUnderstood": "Am înțeles, continuă",
     "bookDetailMakeOfferTitle": "Fă o ofertă pentru „{title}\"",
     "@bookDetailMakeOfferTitle": {
@@ -1005,7 +1006,7 @@
     "exchangeGoToReady": "Continuă schimbul",
     "readyTitle": "Pregătire schimb",
     "readyMeetingAwaitingYou": "Cealaltă parte a propus o întâlnire",
-    "readyMeetingProposedByMe": "Aștepți confirmarea celeilalte părți",
+    "readyMeetingProposedByMe": "Aștepți confirmarea celeilalte persoane",
     "readyMeetingAccept": "Confirmă",
     "readyMeetingDecline": "Refuză",
     "readyMeetingSubtitle": "Stabiliți când și unde faceți schimbul",
@@ -1061,14 +1062,14 @@
     "readyDone": "Gata",
     "readyConfirmDone": "Confirmă finalizarea",
     "readyDisputeDone": "Nu e finalizat",
-    "readyWaitingConfirmation": "Aștepți confirmarea celeilalte părți",
-    "readyOtherMarkedDone": "Cealaltă parte a marcat schimbul ca finalizat. Confirmi?",
+    "readyWaitingConfirmation": "Aștepți confirmarea celeilalte persoane",
+    "readyOtherMarkedDone": "Cealaltă persoană a marcat schimbul ca finalizat. Confirmi?",
     "doneReviewTitle": "Cum a fost schimbul?",
     "doneReviewLabel": "Câteva cuvinte (opțional)",
     "doneReviewSubmit": "Trimite",
     "cancelReasonTitle": "Ce s-a întâmplat?",
     "cancelReasonNoShow": "Cealaltă persoană nu s-a prezentat",
-    "cancelReasonBookMismatch": "Cartea nu a corespuns așteptărilor",
+    "cancelReasonBookMismatch": "Cartea nu a fost conform așteptărilor",
     "cancelReasonChangedMind": "M-am răzgândit",
     "cancelReasonOther": "Altceva",
     "cancelReasonDetailsLabel": "Detalii (opțional)",
@@ -1098,19 +1099,19 @@
     "exchangeConfirmDone": "Schimb marcat ca finalizat!",
     "exchangeConfirmQuestion": "Confirmi că schimbul de cărți s-a finalizat?",
     "exchangeConfirmButton": "Confirmă finalizarea",
-    "chatEmptyConversations": "Nu ai nicio conversație încă.",
+    "chatEmptyConversations": "Nu ai încă nicio conversație.",
     "chatStartConversation": "Începe conversația",
     "chatPhotoPreview": "📷 Poză",
     "chatLocationPreview": "📍 Locație",
-    "chatLoadError": "Nu am putut încărca conversațiile.",
+    "chatLoadError": "Nu am putut încărca conversațiile. Încearcă din nou.",
     "chatConversationFallbackTitle": "Conversație",
     "chatUnblock": "Deblochează",
     "chatBlock": "Blochează",
-    "chatUserUnblocked": "Utilizator deblocat",
-    "chatUserBlocked": "Utilizator blocat",
+    "chatUserUnblocked": "Utilizatorul a fost deblocat",
+    "chatUserBlocked": "Utilizatorul a fost blocat",
     "chatBlockUpdateError": "Nu am putut actualiza blocarea",
     "chatTyping": "scrie...",
-    "chatSendFailed": "Mesajul nu a putut fi trimis. Verifică conexiunea.",
+    "chatSendFailed": "Mesajul nu a putut fi trimis. Verifică conexiunea la internet.",
     "chatOnline": "online",
     "chatOffline": "offline",
     "chatLastSeenJustNow": "văzut adineauri",
@@ -1191,7 +1192,7 @@
         }
     },
     "chatExchangeCardTitle": "Cerere de schimb",
-    "readyYouGive": "Dai",
+    "readyYouGive": "Oferi",
     "readyYouReceive": "Primești",
     "readyFromCity": "din {city}",
     "@readyFromCity": {
@@ -1255,7 +1256,7 @@
             }
         }
     },
-    "wishlistSectionBookMatch": "Book Match ({count})",
+    "wishlistSectionBookMatch": "Potriviri Book Match ({count})",
     "@wishlistSectionBookMatch": {
         "placeholders": {
             "count": {
@@ -1293,7 +1294,7 @@
             }
         }
     },
-    "notificationsLoadError": "Nu am putut încărca notificările.",
+    "notificationsLoadError": "Nu am putut încărca notificările. Încearcă din nou.",
     "timeJustNow": "acum",
     "timeMinutesAgo": "acum {minutes} min",
     "@timeMinutesAgo": {
@@ -1347,7 +1348,7 @@
     "adminMarketplaceCompletedSales": "Vânzări finalizate",
     "adminMarketplaceCompletedAuctions": "Licitații finalizate",
     "adminMarketplaceAvgPrice": "Preț mediu vânzare",
-    "adminMarketplaceTopGenres": "Top genuri (anunțuri active)",
+    "adminMarketplaceTopGenres": "Cele mai populare genuri (anunțuri active)",
     "adminActiveZonesTitle": "Zone active",
     "adminActiveZonesDesc": "Densitatea anunțurilor active pe oraș",
     "adminActiveZonesEmpty": "Niciun anunț activ încă.",
@@ -1378,7 +1379,7 @@
         }
     },
     "adminNoReports": "Niciun raport.",
-    "adminUpcomingReleasesCount": "Cărți viitoare ({count})",
+    "adminUpcomingReleasesCount": "Cărți care urmează ({count})",
     "@adminUpcomingReleasesCount": {
         "placeholders": {
             "count": {
@@ -1386,7 +1387,7 @@
             }
         }
     },
-    "adminUpcomingReleasesDesc": "Afișate pe ecranul principal, în secțiunea \"Cărți viitoare\".",
+    "adminUpcomingReleasesDesc": "Afișate pe ecranul principal, în secțiunea \"Cărți care urmează\".",
     "adminNoUpcomingReleases": "Nicio carte viitoare adăugată.",
     "adminFeedbackCount": "Feedback primit ({count})",
     "@adminFeedbackCount": {
@@ -1397,7 +1398,7 @@
         }
     },
     "adminNoFeedback": "Niciun feedback trimis încă.",
-    "adminSupportRequestsCount": "Mesaje de support ({count})",
+    "adminSupportRequestsCount": "Mesaje de asistență ({count})",
     "@adminSupportRequestsCount": {
         "placeholders": {
             "count": {
@@ -1405,7 +1406,7 @@
             }
         }
     },
-    "adminNoSupportRequests": "Niciun mesaj de support trimis încă.",
+    "adminNoSupportRequests": "Nicio solicitare de asistență încă.",
     "adminReportedBy": "Raportat de {name}",
     "@adminReportedBy": {
         "placeholders": {
@@ -1443,13 +1444,13 @@
     "adminContentDeleted": "Conținut șters.",
     "adminContentDeleteError": "Nu am putut șterge conținutul.",
     "savedSearchesTitle": "Căutări salvate",
-    "savedSearchesEmpty": "Nicio căutare salvată încă. Salvează una ca să fii anunțat la anunțuri noi care se potrivesc.",
+    "savedSearchesEmpty": "Nicio căutare salvată încă. Salvează o căutare și te vom anunța când apar anunțuri noi care se potrivesc criteriilor tale.",
     "savedSearchesLoadError": "Nu am putut încărca căutările salvate.",
     "savedSearchNew": "Căutare nouă",
     "savedSearchLabelLabel": "Nume",
     "savedSearchLabelHint": "ex. SF sub 30 lei în Cluj",
     "savedSearchMaxPriceLabel": "Preț maxim (opțional)",
-    "savedSearchCreateError": "Nu am putut salva căutarea.",
+    "savedSearchCreateError": "Nu am putut salva căutarea. Încearcă din nou.",
     "savedSearchMaxPriceChip": "sub {amount} lei",
     "@savedSearchMaxPriceChip": {
         "placeholders": {
@@ -1528,7 +1529,7 @@
         }
     },
     "auctionPlaceBid": "Licitează",
-    "auctionBuyNowFor": "Cumpără acum cu {amount} lei",
+    "auctionBuyNowFor": "Cumpără acum pentru {amount} lei",
     "@auctionBuyNowFor": {
         "placeholders": {
             "amount": {
@@ -1539,9 +1540,9 @@
     "auctionBidHistory": "Istoricul ofertelor",
     "auctionNoBidsYet": "Nicio ofertă încă",
     "auctionWatch": "Urmărește licitația",
-    "auctionBidPlaced": "Ofertă plasată",
-    "auctionBoughtNow": "Cumpărat cu succes",
-    "auctionGenericError": "A apărut o eroare, încearcă din nou",
+    "auctionBidPlaced": "Oferta a fost plasată",
+    "auctionBoughtNow": "Achiziție finalizată",
+    "auctionGenericError": "Ceva nu a mers bine. Încearcă din nou.",
     "auctionEnded": "Încheiată",
     "auctionEndsInDays": "se încheie în {days} zile",
     "@auctionEndsInDays": {
@@ -1570,10 +1571,10 @@
     "bulkAddTitle": "Adaugă mai multe cărți",
     "bulkAddScanTooltip": "Scanează cod de bare",
     "bulkAddManualEntry": "Introducere manuală",
-    "bulkAddManualHint": "Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)",
+    "bulkAddManualHint": "Introdu mai multe ISBN-uri, câte unul pe rând (sau separate prin virgulă)",
     "bulkAddManualPlaceholder": "9780439023481\n9780441172719",
     "bulkAddAddIsbns": "Adaugă în listă",
-    "bulkAddQueueEmpty": "Nicio carte adăugată încă - scanează sau introdu un ISBN.",
+    "bulkAddQueueEmpty": "Nu ai adăugat încă nicio carte. Scanează un cod de bare sau introdu un ISBN.",
     "bulkAddSubmit": "Adaugă {count} cărți",
     "@bulkAddSubmit": {
         "placeholders": {
@@ -1582,7 +1583,7 @@
             }
         }
     },
-    "bulkAddResultSummary": "{created} cărți adăugate, {failed} eșuate",
+    "bulkAddResultSummary": "{created} cărți adăugate, {failed} nu au putut fi adăugate",
     "@bulkAddResultSummary": {
         "placeholders": {
             "created": {
@@ -1601,8 +1602,8 @@
             }
         }
     },
-    "inventoryMarkUnavailable": "Marchează indisponibile",
-    "inventoryChangePriceTitle": "Schimbă prețul",
+    "inventoryMarkUnavailable": "Marchează ca indisponibile",
+    "inventoryChangePriceTitle": "Modifică prețul",
     "inventoryPriceChangedCount": "Preț schimbat la {count} anunțuri",
     "@inventoryPriceChangedCount": {
         "placeholders": {
@@ -1612,7 +1613,7 @@
         }
     },
     "inventoryDeleteConfirmTitle": "Ștergi anunțurile selectate?",
-    "inventoryDeleteConfirmBody": "Se șterg definitiv {count} anunțuri. Nu se poate anula.",
+    "inventoryDeleteConfirmBody": "{count} anunțuri vor fi șterse definitiv. Această acțiune nu poate fi anulată.",
     "@inventoryDeleteConfirmBody": {
         "placeholders": {
             "count": {
@@ -1620,10 +1621,10 @@
             }
         }
     },
-    "inventoryBulkDone": "Acțiune aplicată",
+    "inventoryBulkDone": "Acțiunea a fost aplicată",
     "collectionsTitle": "Colecții",
-    "collectionsEmpty": "Nicio colecție încă.",
-    "collectionsLoadError": "Nu am putut încărca colecțiile.",
+    "collectionsEmpty": "Nu există încă nicio colecție.",
+    "collectionsLoadError": "Nu am putut încărca colecțiile. Încearcă din nou.",
     "collectionsCreateTitle": "Colecție nouă",
     "collectionsNameLabel": "Nume",
     "collectionsPublicSwitch": "Publică",
@@ -1686,7 +1687,7 @@
     "discoverSearchTooltip": "Caută cărți",
     "discoverTopSearches": "Top căutări",
     "discoverAuctions": "Licitații active",
-    "discoverHiddenGems": "Comori ascunse",
+    "discoverHiddenGems": "Descoperiri interesante",
     "discoverSwapOnly": "Doar la schimb",
     "discoverMoreGenres": "+ {count} altele",
     "@discoverMoreGenres": {
@@ -1697,7 +1698,7 @@
         }
     },
     "discoverUnder30": "Sub 30 lei",
-    "discoverRecommendedForYou": "Recomandate pentru tine",
+    "discoverRecommendedForYou": "Recomandări pentru tine",
     "discoverPopularAuthors": "Autori populari",
     "discoverQuickFilters": "Filtre rapide",
     "discoverNearYou": "În orașul tău",
@@ -1715,11 +1716,11 @@
     "discoverSortPopular": "Recomandate",
     "discoverSortApply": "Sortează",
     "discoverScoreBadgeTooltip": "Scor de interes pe 14 zile (vizibil doar adminilor)",
-    "inventorySelectAll": "Selectează toate",
+    "inventorySelectAll": "Selectează tot",
     "myShelfShare": "Împarte",
-    "inventoryMarkAvailable": "Marchează disponibile",
+    "inventoryMarkAvailable": "Marchează ca disponibile",
     "libraryTrashEmpty": "Coșul de gunoi e gol",
-    "inventoryAppendText": "Adaugă la sfârșit",
+    "inventoryAppendText": "Adaugă la final",
     "inventoryTransferred": "Schimbată",
     "inventoryDeletedDaysLeft": "Șterge în {days} zile",
     "libraryEmptiedShelves": "Cărți date sau schimbate",
@@ -1780,7 +1781,7 @@
     "sharePublisher": "Editura",
     "shareSeriesName": "Serie (opțional)",
     "shareSeriesNumber": "Volum",
-    "shareCityHint": "Localitatea unde se face schimbul",
+    "shareCityHint": "Localitatea în care are loc schimbul",
     "sharePublishedYear": "An apariție",
     "shareSubmit": "Publică",
     "shareListingModeAuction": "Licitație",
@@ -1791,15 +1792,15 @@
     "shareListingModeSwap": "Schimb",
     "shareListingModeSale": "Vânzare",
     "shareListingModeDonation": "Donație",
-    "shareTitleAutocomplete": "Începe să scrii ca să vezi sugestii",
-    "shareTitleSearching": "Se caută titlul...",
+    "shareTitleAutocomplete": "Începe să scrii pentru a vedea sugestii",
+    "shareTitleSearching": "Se caută titlul…",
     "shareSwapAlsoSell": "Sau vinde cu",
     "shareSwapAlsoSellPrice": "Preț de vânzare",
     "shareGenreHint": "Gen",
     "shareAddPhotos": "Adaugă poze",
     "shareFromMyBooks": "Din cărțile mele",
     "shareChooseFromMyBooks": "Alege din cărțile mele",
-    "shareNoBooksInMyLibrary": "Nu ai încă nicio carte adăugată în bibliotecă.",
+    "shareNoBooksInMyLibrary": "Nu ai încă nicio carte în bibliotecă.",
     "@shareDescriptionCharsLeft": {
         "placeholders": {
             "n": {
@@ -1808,13 +1809,13 @@
         }
     },
     "preRegisterAlreadyLoggedIn": "Vom folosi emailul tău dacă nu completezi altul",
-    "preRegisterAndroidHeadline": "Vine în curând pe telefoanele tale",
-    "preRegisterSuccess": "Te-ai înscris. Îți dăm de veste când e gata.",
+    "preRegisterAndroidHeadline": "Vine în curând pe telefonul tău",
+    "preRegisterSuccess": "Te-ai înscris pe listă. Te vom anunța când va fi disponibil.",
     "profilePreRegister": "Pre-înscriere Android",
-    "preRegisterAndroidBody": "Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.",
-    "preRegisterSubmit": "Adaugă-mă pe listă",
+    "preRegisterAndroidBody": "Lasă-ne adresa de email și te vom anunța în ziua în care aplicația va fi disponibilă pe Google Play.",
+    "preRegisterSubmit": "Înscrie-mă pe listă",
     "preRegisterAndroidTitle": "Pre-înscrie-te pentru Android",
-    "preRegisterEmailHint": "Email pentru anunț",
+    "preRegisterEmailHint": "Email pentru notificarea lansării",
     "preRegisterError": "Nu am putut înregistra emailul. Încearcă din nou.",
     "profileSettingsSubtitle": "Toate opțiunile contului într-un singur loc",
     "profileGroupProfile": "Profil",
@@ -1833,12 +1834,12 @@
     "profileStatBooks": "cărți",
     "profileSettings": "Setări",
     "profileKeepAlive": "Keep the app alive",
-    "profileKeepAliveSubtitle": "ShelfShare rulează pe un server de acasă. Un cafea ajută.",
+    "profileKeepAliveSubtitle": "ShelfShare rulează pe un server de acasă. O cafea ne ajută.",
     "aboutDevTitle": "About dev",
     "aboutDevOpenError": "Nu am putut deschide linkul. Încearcă din nou.",
     "loginMadeWithLove": "Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺",
-    "homeRecommendedTitle": "Recomandate pentru tine",
-    "homeNearbyTitle": "Aproape de tine ({km} km)",
+    "homeRecommendedTitle": "Recomandări pentru tine",
+    "homeNearbyTitle": "În apropierea ta ({km} km)",
     "@homeNearbyTitle": {
         "placeholders": {
             "km": {
@@ -1873,7 +1874,7 @@
     "profileBirthdayMonth": "Luna nașterii",
     "profileBirthdayNone": "—",
     "profileLanguagesTitle": "Limbile în care citești",
-    "profileAboutEmpty": "Spune ceva despre tine — de exemplu ce genuri îți plac.",
+    "profileAboutEmpty": "Spune-ne câte ceva despre tine — de exemplu, ce genuri îți plac.",
     "profileMemberSince": "Membru din",
     "profileLocation": "Locație",
     "profileLanguages": "Limbi",
@@ -1882,7 +1883,7 @@
     "profileStatBooksRead": "Cărți citite",
     "profileStatBooksShared": "Cărți oferite",
     "profileStatWishlisted": "Cărți dorite",
-    "profileTopGenresTitle": "Top genuri",
+    "profileTopGenresTitle": "Genuri preferate",
     "profileTopGenresEmpty": "Genurile vor apărea aici pe măsură ce citești și adaugi cărți.",
     "navNotifications": "Notificări",
     "navShortcuts": "SCURTĂTURI",
@@ -1899,7 +1900,7 @@
     "shareCoverRecommended": "Coperte recomandate",
     "shareCoverChooseOne": "Alege coperta",
     "shareCoverRemove": "Elimină",
-    "shareMainPhotoHint": "Apasă pe stea pentru a marca poza principală (apare în feed).",
+    "shareMainPhotoHint": "Apasă pe stea pentru a marca fotografia principală, care va apărea în feed.",
     "chatOfferCounterAction": "Contra-ofertă",
     "chatOfferCounterTitle": "Trimite o contra-ofertă",
     "navMyBooks": "Cărțile mele",
@@ -1908,14 +1909,14 @@
     "navMyCollections": "Colecțiile mele",
     "navAboutApp": "Despre aplicație",
     "aboutAppTitle": "Despre aplicație",
-    "aboutAppIntro": "Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.",
+    "aboutAppIntro": "Un ghid scurt despre cum funcționează ShelfShare. Deschide o secțiune pentru mai multe detalii.",
     "aboutAppXpTitle": "XP și niveluri",
     "aboutAppTrustTitle": "Trust Score",
-    "aboutAppTrustBody": "Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.",
+    "aboutAppTrustBody": "Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câte schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.",
     "aboutAppShelvesTitle": "Raftul meu (Public Bookshelf)",
     "aboutAppShelvesBody": "Raftul e statusul tău personal de citit pentru o carte, indiferent dacă o deții fizic sau nu.\n\n• Citesc — cartea la care lucrezi acum\n• Vreau să citesc — lista ta de dorințe pentru viitor\n• Citită — cărțile pe care le-ai terminat\n\nCărțile pe care le poți da la schimb sau vinde sunt separate - stau în „Biblioteca mea\" (My Shelf din meniu). O carte poate fi și pe raft (ex. „Vreau să citesc\") și în bibliotecă (ex. „Am un exemplar de vânzare\") - sunt două noțiuni diferite.",
     "aboutAppHomeSectionsTitle": "Cele 3 secțiuni de pe Home",
-    "aboutAppHomeSectionsBody": "Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare",
+    "aboutAppHomeSectionsBody": "Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare",
     "aboutAppExchangesTitle": "Schimburi și oferte",
     "aboutAppExchangesBody": "Sunt două căi de a obține o carte de la altcineva:\n\n• Schimb — propui o carte din biblioteca ta în schimbul uneia din biblioteca altui user. E gratuit, doar cu costul expedierii\n• Ofertă de preț — dacă o carte e listată la vânzare și marcată „negociabil\", poți trimite o ofertă cu preț diferit. Vânzătorul acceptă, respinge sau vine cu contra-ofertă",
     "aboutAppBadgesTitle": "Insigne (Achievements)",
@@ -2067,16 +2068,16 @@
     "bookMatchStampSkip": "SKIP",
     "bookMatchDiscoveryBadge": "Descoperire",
     "bookMatchEmptyTitle": "Gata pentru moment",
-    "bookMatchEmptyBody": "Ai văzut tot ce aveam pentru tine acum, revino mai târziu.",
-    "bookMatchLoadError": "Nu am putut încărca recomandările.",
+    "bookMatchEmptyBody": "Asta e tot pentru moment. Revino mai târziu pentru recomandări noi.",
+    "bookMatchLoadError": "Nu am putut încărca recomandările. Încearcă din nou.",
     "bookMatchRecalibrateTooltip": "Recalibrare",
-    "bookMatchRecalibrateTitle": "Recalibrezi preferințele?",
-    "bookMatchRecalibrateWarning": "Preferințele tale vor fi semi-resetate: scorurile pe genuri se atenuează și o perioadă vei vedea din nou cărți variate. Acțiunea nu poate fi anulată.",
+    "bookMatchRecalibrateTitle": "Vrei să-ți recalibrezi preferințele?",
+    "bookMatchRecalibrateWarning": "Preferințele tale vor fi recalibrate parțial: scorurile genurilor vor fi reduse, iar pentru o perioadă vei vedea o selecție mai variată de cărți. Această acțiune nu poate fi anulată.",
     "bookMatchRecalibrateConfirm": "Recalibrează",
-    "bookMatchRecalibrateDone": "Preferințele au fost recalibrate.",
-    "bookMatchRecalibrateError": "Nu am putut recalibra acum.",
-    "bookMatchRecalibrateCooldownTitle": "Recalibrare indisponibilă",
-    "bookMatchRecalibrateCooldownBody": "Mai poți recalibra peste {days} zile.",
+    "bookMatchRecalibrateDone": "Preferințele tale au fost recalibrate.",
+    "bookMatchRecalibrateError": "Nu am putut recalibra preferințele acum. Încearcă din nou.",
+    "bookMatchRecalibrateCooldownTitle": "Recalibrarea nu este disponibilă",
+    "bookMatchRecalibrateCooldownBody": "Îți poți recalibra din nou preferințele peste {days} zile.",
     "@bookMatchRecalibrateCooldownBody": {
         "placeholders": {
             "days": {

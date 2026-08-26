@@ -159,14 +159,14 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
               textAlignVertical: TextAlignVertical.center,
               controller: _languageController,
               decoration:
-                  InputDecoration(labelText: l10n.addBookLanguageOptional),
+                  InputDecoration(hintText: l10n.addBookLanguageOptional),
             ),
             const SizedBox(height: 16),
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _editionController,
               decoration:
-                  InputDecoration(labelText: l10n.addBookEditionOptional),
+                  InputDecoration(hintText: l10n.addBookEditionOptional),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -180,7 +180,7 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _tagsController,
-              decoration: InputDecoration(labelText: l10n.shareTagsHint),
+              decoration: InputDecoration(hintText: l10n.shareTagsHint),
             ),
             const SizedBox(height: 16),
             CityAutocomplete(
@@ -217,7 +217,7 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                    labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
+                    hintText: l10n.addBookPriceLabel, suffixText: 'lei'),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,

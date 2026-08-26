@@ -113,7 +113,7 @@ class _PreRegistrationScreenState extends ConsumerState<PreRegistrationScreen> {
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               decoration: InputDecoration(
-                labelText: l10n.preRegisterEmailHint,
+                hintText: l10n.preRegisterEmailHint,
                 helperText: loggedIn ? l10n.preRegisterAlreadyLoggedIn : null,
               ),
             ),

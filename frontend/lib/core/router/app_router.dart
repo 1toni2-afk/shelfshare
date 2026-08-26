@@ -8,7 +8,9 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/admin/presentation/admin_inactive_listings_screen.dart';
 import '../../features/admin/presentation/admin_screen.dart';
+import '../../features/admin/presentation/admin_users_screen.dart';
 import '../../features/admin/presentation/administrators_screen.dart';
 import '../../features/admin/presentation/feature_access_screen.dart';
 import '../../features/admin/presentation/listing_score_screen.dart';
@@ -232,6 +234,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
+          GoRoute(
+            path: '/admin/users',
+            builder: (context, state) => const AdminUsersScreen(),
+          ),
+          GoRoute(
+            path: '/admin/listings/inactive',
+            builder: (context, state) => const AdminInactiveListingsScreen(),
+          ),
           GoRoute(
             path: '/admin/feature-access',
             builder: (context, state) => const FeatureAccessScreen(),

@@ -703,7 +703,7 @@ class _Step0Username extends StatelessWidget {
                           textAlignVertical: TextAlignVertical.center,
                           controller: firstNameController,
                           decoration: InputDecoration(
-                            labelText: l10n.onboardingFirstName,
+                            hintText: l10n.onboardingFirstName,
                             prefixIcon: const Icon(Icons.person_outline),
                           ),
                           validator: (value) =>
@@ -714,7 +714,7 @@ class _Step0Username extends StatelessWidget {
                           textAlignVertical: TextAlignVertical.center,
                           controller: lastNameController,
                           decoration: InputDecoration(
-                            labelText: l10n.onboardingLastName,
+                            hintText: l10n.onboardingLastName,
                             prefixIcon: const Icon(Icons.person_outline),
                           ),
                           validator: (value) =>
@@ -725,7 +725,7 @@ class _Step0Username extends StatelessWidget {
                           textAlignVertical: TextAlignVertical.center,
                           controller: usernameController,
                           decoration: InputDecoration(
-                            labelText: l10n.onboardingUsername,
+                            hintText: l10n.onboardingUsername,
                             prefixIcon: const Icon(Icons.alternate_email),
                           ),
                           validator: (value) {

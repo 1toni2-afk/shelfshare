@@ -18,6 +18,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navLibrary => 'Mein Regal';
 
   @override
+  String get navActivityFeed => 'Aktivität';
+
+  @override
   String get navChat => 'Chat';
 
   @override

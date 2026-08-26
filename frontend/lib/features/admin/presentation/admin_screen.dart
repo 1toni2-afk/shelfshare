@@ -142,24 +142,30 @@ class _AdminContent extends StatelessWidget {
         const SizedBox(height: 12),
         _ActiveZonesMap(zones: data.activeZones),
         const SizedBox(height: 28),
-        Text(l10n.adminUsersCount(data.stats.totalUsers), style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
-        for (final user in data.users.items) _UserTile(user: user),
-        const SizedBox(height: 28),
-        Text(
-          l10n.adminInactiveListingsCount(data.inactiveListings.length),
-          style: Theme.of(context).textTheme.titleLarge,
+        // Utilizatori și anunțuri fără cerere: liste care pot ajunge la sute
+        // de rânduri (66 useri + 100 anunțuri inactive într-un caz real) - nu
+        // le mai afișăm inline în dashboard, doar un card care deschide un
+        // ecran dedicat cu lista completă, ca la Administratori/Roluri mai sus.
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.people_outline),
+            title: Text(l10n.adminUsersCount(data.stats.totalUsers)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/users'),
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.adminInactiveListingsDesc,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-        ),
         const SizedBox(height: 12),
-        if (data.inactiveListings.isEmpty)
-          Text(l10n.adminNoInactiveListings)
-        else
-          for (final listing in data.inactiveListings) _InactiveListingTile(listing: listing),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.inventory_2_outlined),
+            title: Text(l10n.adminInactiveListingsCount(data.inactiveListings.length)),
+            subtitle: Text(l10n.adminInactiveListingsDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/listings/inactive'),
+          ),
+        ),
         const SizedBox(height: 28),
         Text(l10n.adminUserReportsCount(data.userReports.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
@@ -522,19 +528,19 @@ class _AddUpcomingReleaseFormState extends ConsumerState<_AddUpcomingReleaseForm
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _titleController,
-              decoration: InputDecoration(labelText: l10n.addBookTitleLabel),
+              decoration: InputDecoration(hintText: l10n.addBookTitleLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _authorController,
-              decoration: InputDecoration(labelText: l10n.adminAuthorOptional),
+              decoration: InputDecoration(hintText: l10n.adminAuthorOptional),
             ),
             const SizedBox(height: 12),
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _coverUrlController,
-              decoration: InputDecoration(labelText: l10n.adminCoverUrlOptional),
+              decoration: InputDecoration(hintText: l10n.adminCoverUrlOptional),
             ),
             const SizedBox(height: 12),
             OutlinedButton(
@@ -852,8 +858,8 @@ class _ActiveZonesMap extends StatelessWidget {
   }
 }
 
-class _UserTile extends ConsumerWidget {
-  const _UserTile({required this.user});
+class UserTile extends ConsumerWidget {
+  const UserTile({super.key, required this.user});
   final AdminUser user;
 
   Future<void> _confirmAndDelete(BuildContext context, WidgetRef ref) async {
@@ -948,8 +954,8 @@ class _UserTile extends ConsumerWidget {
   }
 }
 
-class _InactiveListingTile extends ConsumerWidget {
-  const _InactiveListingTile({required this.listing});
+class InactiveListingTile extends ConsumerWidget {
+  const InactiveListingTile({super.key, required this.listing});
   final InactiveListing listing;
 
   @override

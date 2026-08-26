@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navLibrary => 'My Shelf';
 
   @override
+  String get navActivityFeed => 'Feed';
+
+  @override
   String get navChat => 'Chat';
 
   @override

@@ -108,12 +108,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 textAlignVertical: TextAlignVertical.center,
                 controller: titleController,
                 autofocus: true,
-                decoration: InputDecoration(labelText: l10n.groupsEventTitleLabel),
+                decoration: InputDecoration(hintText: l10n.groupsEventTitleLabel),
               ),
               TextField(
                 textAlignVertical: TextAlignVertical.center,
                 controller: locationController,
-                decoration: InputDecoration(labelText: l10n.groupsEventLocationLabel),
+                decoration: InputDecoration(hintText: l10n.groupsEventLocationLabel),
               ),
               const SizedBox(height: 8),
               Row(

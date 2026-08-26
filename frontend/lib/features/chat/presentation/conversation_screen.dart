@@ -2136,7 +2136,7 @@ class _CounterOfferDialogState extends State<_CounterOfferDialog> {
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         autofocus: true,
         decoration: InputDecoration(
-          labelText: l10n.addBookPriceLabel,
+          hintText: l10n.addBookPriceLabel,
           suffixText: 'lei',
           errorText: _error,
         ),

@@ -24,8 +24,6 @@ import '../../offers/application/offers_controller.dart';
 import '../../../data/models/exchange_request.dart';
 import '../../../data/models/price_offer.dart';
 import '../application/home_controller.dart';
-import '../../books/presentation/browse_screen.dart' show SearchScreenArgs;
-import '../../book_of_month/application/book_of_month_controller.dart';
 
 /// Metricile grilei sunt aceleași ca ale delegate-ului (vezi [_BookSliverGrid]).
 /// Calculăm coloanele reale din lățimea disponibilă, ca „N rânduri" să însemne
@@ -396,7 +394,9 @@ class _HomeFeed extends StatelessWidget {
     final slivers = <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
       const SliverToBoxAdapter(child: _PendingSwapBanner()),
-      const SliverToBoxAdapter(child: _BookOfMonthBanner()),
+      // „Cartea lunii" scoasă temporar din Home - sistemul de vot trebuie
+      // regândit (2026-08-26). Codul featurii (controller/repository/backend)
+      // rămâne pe loc, doar punctul de intrare din feed e eliminat.
     ];
     var cursor = 0;
     for (var i = 0; i < sections.length; i++) {
@@ -502,57 +502,6 @@ class _PendingSwapBanner extends ConsumerWidget {
                 TextButton(
                   onPressed: () => context.push(destination),
                   child: Text(l10n.homePendingSwapReview),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// "Cartea lunii" (feature backlog #11) - câștigătorul votului comunitar
-/// curent, deasupra feed-ului. Dispare complet dacă nimeni n-a votat încă
-/// luna asta - la fel ca _PendingSwapBanner, nu ocupă spațiu degeaba.
-class _BookOfMonthBanner extends ConsumerWidget {
-  const _BookOfMonthBanner();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final winner = ref.watch(bookOfMonthWinnerProvider).value;
-    final book = winner?.book;
-    if (book == null) return const SizedBox.shrink();
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final side = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
-    final l10n = context.l10n;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16 + side, 0, 16 + side, 12),
-      child: Material(
-        color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => context.push('/browse', extra: SearchScreenArgs(title: book.title)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                const Icon(Icons.auto_stories, color: AppColors.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l10n.homeBookOfMonth(book.title, winner!.voteCount),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primary),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => context.push('/groups'),
-                  child: Text(l10n.homeBookOfMonthDiscuss),
                 ),
               ],
             ),

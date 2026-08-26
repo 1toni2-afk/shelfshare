@@ -120,7 +120,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               textCapitalization: TextCapitalization.none,
                               autofillHints: const [AutofillHints.username, AutofillHints.email],
                               decoration: InputDecoration(
-                                labelText: l10n.commonEmailLabel,
+                                hintText: l10n.commonEmailLabel,
                                 prefixIcon: const Icon(Icons.mail_outline),
                               ),
                               validator: (value) => (value == null || !value.contains('@'))
@@ -137,7 +137,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               // ofere generarea uneia noi.
                               autofillHints: const [AutofillHints.newPassword],
                               decoration: InputDecoration(
-                                labelText: l10n.authPasswordLabel,
+                                hintText: l10n.authPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -160,7 +160,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               obscureText: _obscurePassword,
                               autofillHints: const [AutofillHints.newPassword],
                               decoration: InputDecoration(
-                                labelText: l10n.authConfirmPasswordLabel,
+                                hintText: l10n.authConfirmPasswordLabel,
                                 prefixIcon: const Icon(Icons.lock_outline),
                               ),
                               validator: (value) => value != _passwordController.text
@@ -173,7 +173,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               controller: _referralController,
                               textCapitalization: TextCapitalization.characters,
                               decoration: InputDecoration(
-                                labelText: l10n.authReferralCodeLabel,
+                                hintText: l10n.authReferralCodeLabel,
                                 prefixIcon: const Icon(Icons.card_giftcard_outlined),
                               ),
                             ),

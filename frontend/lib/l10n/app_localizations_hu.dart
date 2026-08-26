@@ -18,6 +18,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get navLibrary => 'A polcom';
 
   @override
+  String get navActivityFeed => 'Aktivitás';
+
+  @override
   String get navChat => 'Chat';
 
   @override

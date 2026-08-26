@@ -29,7 +29,7 @@ class MyCollectionsScreen extends ConsumerWidget {
                 textAlignVertical: TextAlignVertical.center,
                 controller: nameController,
                 autofocus: true,
-                decoration: InputDecoration(labelText: l10n.collectionsNameLabel),
+                decoration: InputDecoration(hintText: l10n.collectionsNameLabel),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,

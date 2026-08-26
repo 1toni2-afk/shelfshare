@@ -76,7 +76,7 @@ class ReadingChallengeCard extends ConsumerWidget {
           textAlignVertical: TextAlignVertical.center,
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: l10n.readingChallengeGoalLabel),
+          decoration: InputDecoration(hintText: l10n.readingChallengeGoalLabel),
         ),
         actions: [
           TextButton(

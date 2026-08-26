@@ -34,7 +34,6 @@ class SavedSearchesScreen extends ConsumerWidget {
                   textAlignVertical: TextAlignVertical.center,
                   controller: labelController,
                   decoration: InputDecoration(
-                    labelText: l10n.savedSearchLabelLabel,
                     hintText: l10n.savedSearchLabelHint,
                   ),
                 ),
@@ -42,7 +41,7 @@ class SavedSearchesScreen extends ConsumerWidget {
                 TextField(
                   textAlignVertical: TextAlignVertical.center,
                   controller: genreController,
-                  decoration: InputDecoration(labelText: l10n.filtersGenre),
+                  decoration: InputDecoration(hintText: l10n.filtersGenre),
                 ),
                 const SizedBox(height: 12),
                 CityAutocomplete(
@@ -55,7 +54,7 @@ class SavedSearchesScreen extends ConsumerWidget {
                   textAlignVertical: TextAlignVertical.center,
                   controller: priceController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: l10n.savedSearchMaxPriceLabel),
+                  decoration: InputDecoration(hintText: l10n.savedSearchMaxPriceLabel),
                 ),
               ],
             ),

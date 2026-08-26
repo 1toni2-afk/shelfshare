@@ -18,6 +18,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get navLibrary => 'Raftul meu';
 
   @override
+  String get navActivityFeed => 'Activitate';
+
+  @override
   String get navChat => 'Chat';
 
   @override

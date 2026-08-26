@@ -127,7 +127,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
                 textAlignVertical: TextAlignVertical.center,
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: l10n.supportNameLabel,
+                  hintText: l10n.supportNameLabel,
                   prefixIcon: const Icon(Icons.person_outline),
                 ),
                 validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonRequired : null,
@@ -138,7 +138,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: l10n.commonEmailLabel,
+                  hintText: l10n.commonEmailLabel,
                   prefixIcon: const Icon(Icons.mail_outline),
                 ),
                 validator: (value) =>
@@ -150,7 +150,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: l10n.supportPhoneLabel,
+                  hintText: l10n.supportPhoneLabel,
                   prefixIcon: const Icon(Icons.phone_outlined),
                 ),
               ),
@@ -173,7 +173,7 @@ class _SupportDialogState extends ConsumerState<_SupportDialog> {
                   controller: _captchaAnswerController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(labelText: l10n.supportCaptchaAnswerLabel),
+                  decoration: InputDecoration(hintText: l10n.supportCaptchaAnswerLabel),
                   validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonRequired : null,
                 ),
               ],

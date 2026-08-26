@@ -166,7 +166,7 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
                 textAlignVertical: TextAlignVertical.center,
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: l10n.addBookPriceLabel, suffixText: 'lei'),
+                decoration: InputDecoration(hintText: l10n.addBookPriceLabel, suffixText: 'lei'),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -189,7 +189,7 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
                 textAlignVertical: TextAlignVertical.center,
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: l10n.addBookAuctionStartingPrice, suffixText: 'lei'),
+                decoration: InputDecoration(hintText: l10n.addBookAuctionStartingPrice, suffixText: 'lei'),
               ),
               const SizedBox(height: 12),
               Text(l10n.addBookAuctionDuration, style: Theme.of(context).textTheme.bodyMedium),

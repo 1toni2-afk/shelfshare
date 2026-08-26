@@ -165,6 +165,15 @@ class AppTheme {
         unselectedLabelColor: AppColors.mutedForeground,
         indicatorColor: AppColors.accent,
       ),
+      // Fără asta, subtitle-ul ListTile fără `style` explicit (ex. previzualizarea
+      // mesajului din lista de conversații) folosește implicit
+      // `colorScheme.onSurfaceVariant` - același maro-închis din paleta default
+      // Material, greu de citit pe fundal negru. Vezi tabBarTheme mai sus, aceeași
+      // problemă.
+      listTileTheme: ListTileThemeData(
+        textColor: AppColors.foreground,
+        subtitleTextStyle: bodyFont.bodyMedium?.copyWith(color: AppColors.foreground),
+      ),
       // Fără el, ActionChip/Chip foloseau colțul rotunjit ~8dp implicit din
       // Material 3 - „pătrățos" lângă pastilele complet rotunde (StadiumBorder)
       // folosite peste tot altundeva pentru filtre (My Shelf, Notificări,

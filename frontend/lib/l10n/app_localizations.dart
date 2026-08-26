@@ -120,6 +120,12 @@ abstract class AppLocalizations {
   /// **'Raftul meu'**
   String get navLibrary;
 
+  /// No description provided for @navActivityFeed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activitate'**
+  String get navActivityFeed;
+
   /// No description provided for @navChat.
   ///
   /// In ro, this message translates to:

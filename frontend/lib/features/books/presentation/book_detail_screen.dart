@@ -27,7 +27,6 @@ import '../../offers/data/offers_repository.dart';
 import '../../safety/data/safety_repository.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../application/book_detail_controller.dart';
-import '../../book_of_month/application/book_of_month_controller.dart';
 import '../data/books_repository.dart';
 import '../data/reviews_repository.dart';
 import 'edit_listing_sheet.dart';
@@ -153,9 +152,9 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             tooltip: l10n.profileCopyLink,
             onPressed: () => shareAppLink(context, '/books/${widget.userBookId}'),
           ),
-          // "Cartea lunii" (feature backlog #11) - un vot simplu, orice
-          // titlu din catalog e eligibil, inclusiv propriile anunțuri.
-          if (bookId != null) _BookOfMonthVoteButton(bookId: bookId),
+          // "Cartea lunii" scoasă temporar (2026-08-26) - sistemul de vot
+          // trebuie regândit. Widget-ul rămâne mai jos, doar punctul de
+          // intrare din AppBar e eliminat.
           // Editează: doar pe propriul anunț. Deschide aceeași foaie de editare
           // completă ca din bibliotecă (toate câmpurile). (Milestone 18)
           if (currentBook != null && isOwnBook)
@@ -239,36 +238,6 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _BookOfMonthVoteButton extends ConsumerWidget {
-  const _BookOfMonthVoteButton({required this.bookId});
-  final String bookId;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final myVote = ref.watch(myBookOfMonthVoteProvider).value;
-    final votedForThis = myVote?.bookId == bookId;
-
-    return IconButton(
-      icon: Icon(votedForThis ? Icons.stars : Icons.stars_outlined),
-      color: votedForThis ? AppColors.primary : null,
-      tooltip: votedForThis ? l10n.bookDetailVotedBookOfMonth : l10n.bookDetailVoteBookOfMonth,
-      onPressed: votedForThis
-          ? null
-          : () async {
-              try {
-                await ref.read(bookOfMonthControllerProvider.notifier).vote(bookId);
-              } catch (_) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(l10n.bookDetailVoteError)));
-                }
-              }
-            },
     );
   }
 }
@@ -2114,7 +2083,7 @@ class _MakeOfferSheetState extends ConsumerState<_MakeOfferSheet> {
               textAlignVertical: TextAlignVertical.center,
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.bookDetailOfferAmountLabel, suffixText: 'lei'),
+              decoration: InputDecoration(hintText: l10n.bookDetailOfferAmountLabel, suffixText: 'lei'),
             ),
             const SizedBox(height: 16),
             TextField(

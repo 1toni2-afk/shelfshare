@@ -172,7 +172,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               textAlignVertical: TextAlignVertical.center,
               controller: _authorController,
               onChanged: _onAuthorChanged,
-              decoration: InputDecoration(labelText: l10n.filtersAuthor),
+              decoration: InputDecoration(hintText: l10n.filtersAuthor),
             ),
             _suggestions(
               _authorSuggestions,
@@ -184,7 +184,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               textAlignVertical: TextAlignVertical.center,
               controller: _genreController,
               onChanged: _onGenreChanged,
-              decoration: InputDecoration(labelText: l10n.filtersGenre),
+              decoration: InputDecoration(hintText: l10n.filtersGenre),
             ),
             _suggestions(
               _genreSuggestions,
@@ -196,7 +196,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               textAlignVertical: TextAlignVertical.center,
               controller: _languageController,
               onChanged: _onLanguageChanged,
-              decoration: InputDecoration(labelText: l10n.filtersLanguage),
+              decoration: InputDecoration(hintText: l10n.filtersLanguage),
             ),
             _suggestions(
               _languageSuggestions,

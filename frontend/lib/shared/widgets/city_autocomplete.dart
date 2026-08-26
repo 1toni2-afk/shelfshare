@@ -57,7 +57,7 @@ class _CityAutocompleteState extends State<CityAutocomplete> {
           controller: controller,
           focusNode: focusNode,
           decoration: InputDecoration(
-            labelText: widget.label,
+            hintText: widget.label,
             prefixIcon: const Icon(Icons.location_city_outlined),
             suffixIcon: controller.text.isEmpty
                 ? null

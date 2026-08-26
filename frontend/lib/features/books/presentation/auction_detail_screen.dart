@@ -269,7 +269,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
                   controller: _bidController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    labelText: l10n.auctionBidAmountLabel(
+                    hintText: l10n.auctionBidAmountLabel(
                       auction.currentPrice.toStringAsFixed(0),
                     ),
                     suffixText: 'lei',

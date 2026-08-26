@@ -638,7 +638,7 @@ class _SellContactSectionState extends ConsumerState<_SellContactSection> {
                 maxLength: 15,
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s()]'))],
                 decoration: InputDecoration(
-                  labelText: l10n.readyContactPhoneLabel,
+                  hintText: l10n.readyContactPhoneLabel,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   counterText: '',
                 ),

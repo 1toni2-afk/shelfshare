@@ -129,14 +129,14 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
               TextField(
                 textAlignVertical: TextAlignVertical.center,
                 controller: _nameController,
-                decoration: InputDecoration(labelText: l10n.onboardingLastName),
+                decoration: InputDecoration(hintText: l10n.onboardingLastName),
               ),
               const SizedBox(height: 16),
               TextField(
                 textAlignVertical: TextAlignVertical.center,
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  labelText: l10n.profileUsernameLabel,
+                  hintText: l10n.profileUsernameLabel,
                   prefixIcon: const Icon(Icons.alternate_email),
                 ),
               ),
@@ -159,7 +159,7 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                 textAlignVertical: TextAlignVertical.center,
                 controller: _bioController,
                 maxLength: kBioMaxLength,
-                decoration: InputDecoration(labelText: l10n.profileAboutMe),
+                decoration: InputDecoration(hintText: l10n.profileAboutMe),
               ),
               const SizedBox(height: 16),
               Text(l10n.profileLanguagesTitle,

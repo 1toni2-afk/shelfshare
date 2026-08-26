@@ -223,7 +223,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   if (!isLoading) _submitCaptcha(captchaRequired);
                                 },
                                 decoration: InputDecoration(
-                                  labelText: l10n.supportCaptchaAnswerLabel,
+                                  hintText: l10n.supportCaptchaAnswerLabel,
                                   prefixIcon: const Icon(Icons.shield_outlined),
                                 ),
                               ),

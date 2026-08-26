@@ -128,7 +128,7 @@ Future<void> _showProgressDialog(BuildContext context, WidgetRef ref, Book book)
         autofocus: true,
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
-          labelText: book.pageCount != null
+          hintText: book.pageCount != null
               ? l10n.bookshelfProgressFieldOfTotal(book.pageCount!)
               : l10n.bookshelfProgressField,
         ),

@@ -193,6 +193,12 @@ class _SidebarState extends ConsumerState<_Sidebar> {
         route: '/library',
       ),
       _NavItem(
+        icon: Icons.dynamic_feed_outlined,
+        activeIcon: Icons.dynamic_feed,
+        label: l10n.navActivityFeed,
+        route: '/activity-feed',
+      ),
+      _NavItem(
         icon: Icons.chat_bubble_outline,
         activeIcon: Icons.chat_bubble,
         label: l10n.navChat,

@@ -110,7 +110,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: removeController,
-              decoration: InputDecoration(labelText: l10n.inventoryRemoveText),
+              decoration: InputDecoration(hintText: l10n.inventoryRemoveText),
             ),
           ],
         ),
@@ -209,7 +209,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           if (index >= items.length) {
             return ListTile(
               leading: const Icon(Icons.add),
-              title: Text(context.l10n.myShelfShare),
+              // Nu prin l10n (context.l10n.myShelfShare) - userul vrea "Share"
+              // literal, netradus, nu "Împarte".
+              title: const Text('Share'),
               onTap: () => context.push('/library/add'),
             );
           }
@@ -463,7 +465,8 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           : FloatingActionButton.extended(
               onPressed: () => context.push('/library/add'),
               icon: const Icon(Icons.add),
-              label: Text(l10n.myShelfShare),
+              // Netradus intenționat - "Share", nu "Împarte". Vezi mai jos.
+              label: const Text('Share'),
             ),
       bottomNavigationBar: _selectionMode
           ? BottomAppBar(
@@ -992,25 +995,56 @@ class _AddBookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    // Aceeași structură ca BookCard (copertă 2:3 + titlu dedesubt) - altfel
+    // grila întindea cutia bordată pe toată înălțimea celulei (care include
+    // și spațiul pentru titlu+autor de sub copertă la cărțile reale), deci
+    // apărea vizibil mai mare decât coperta cărții de lângă ea.
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AspectRatio(
-        aspectRatio: 2 / 3,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AspectRatio(
+            aspectRatio: 2 / 3,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: const Center(
+                child: Text(
+                  'ShelfShare',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Playfair Display',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.add, size: 22, color: AppColors.mutedForeground),
-              const SizedBox(height: 6),
-              Text(context.l10n.myShelfShare, style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+              Icon(Icons.add, size: 16, color: AppColors.foreground),
+              const SizedBox(width: 4),
+              // Netradus intenționat - "Share", nu "Împarte".
+              Text(
+                'Share',
+                style: TextStyle(
+                  fontFamily: 'Playfair Display',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: AppColors.foreground,
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

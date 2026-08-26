@@ -311,7 +311,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           textAlignVertical: TextAlignVertical.center,
           controller: controller,
           focusNode: focusNode,
-          decoration: InputDecoration(labelText: l10n.shareGenreHint),
+          decoration: InputDecoration(hintText: l10n.shareGenreHint),
           onSubmitted: (_) => onFieldSubmitted(),
         );
       },
@@ -716,7 +716,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _authorController,
-              decoration: InputDecoration(labelText: l10n.shareAuthorHint),
+              decoration: InputDecoration(hintText: l10n.shareAuthorHint),
             ),
             const SizedBox(height: 12),
 
@@ -753,7 +753,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               maxLines: 6,
               inputFormatters: [LengthLimitingTextInputFormatter(256)],
               decoration: InputDecoration(
-                labelText: l10n.shareDescriptionHint,
+                hintText: l10n.shareDescriptionHint,
                 counterText: l10n.shareDescriptionCharsLeft(charsLeft),
               ),
             ),
@@ -785,7 +785,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             DropdownButtonFormField<BookCondition>(
               initialValue: _condition,
               decoration:
-                  InputDecoration(labelText: l10n.filtersCondition),
+                  InputDecoration(hintText: l10n.filtersCondition),
               items: [
                 for (final c in BookCondition.values)
                   DropdownMenuItem(value: c, child: Text(c.label(l10n))),
@@ -879,7 +879,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                       child: TextField(
                         textAlignVertical: TextAlignVertical.center,
                         controller: _authorController,
-                        decoration: InputDecoration(labelText: l10n.shareAuthorHint),
+                        decoration: InputDecoration(hintText: l10n.shareAuthorHint),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -911,7 +911,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                         maxLines: 6,
                         inputFormatters: [LengthLimitingTextInputFormatter(256)],
                         decoration: InputDecoration(
-                          labelText: l10n.shareDescriptionHint,
+                          hintText: l10n.shareDescriptionHint,
                           counterText: l10n.shareDescriptionCharsLeft(charsLeft),
                           suffixIcon:
                               _detailsLoading ? const _FieldSpinner() : null,
@@ -941,7 +941,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                     Expanded(
                       child: DropdownButtonFormField<BookCondition>(
                         initialValue: _condition,
-                        decoration: InputDecoration(labelText: l10n.filtersCondition),
+                        decoration: InputDecoration(hintText: l10n.filtersCondition),
                         items: [
                           for (final c in BookCondition.values)
                             DropdownMenuItem(value: c, child: Text(c.label(l10n))),
@@ -1059,7 +1059,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   controller: controller,
                   focusNode: focusNode,
                   decoration: InputDecoration(
-                    labelText: l10n.shareTitleHint,
+                    // hintText, nu labelText: vezi login_screen.dart - un
+                    // labelText (chiar cu floatingLabelBehavior.never) rezervă
+                    // spațiul vertical unde ar urca eticheta, deci textul nu
+                    // stă centrat, ci împins spre baza câmpului.
+                    hintText: l10n.shareTitleHint,
                     helperText: showHelper
                         ? (_titleSearching
                             ? l10n.shareTitleSearching
@@ -1134,7 +1138,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             controller: _swapSalePriceController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              labelText: l10n.shareSwapAlsoSellPrice,
+              hintText: l10n.shareSwapAlsoSellPrice,
               suffixText: 'lei',
             ),
           ),
@@ -1150,7 +1154,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 controller: _priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: _listingMode == _ListingMode.auction
+                  hintText: _listingMode == _ListingMode.auction
                       ? l10n.addBookAuctionStartingPrice
                       : l10n.addBookPriceLabel,
                   suffixText: 'lei',
@@ -1172,7 +1176,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 DropdownButtonFormField<int>(
                   initialValue: _auctionDurationHours,
                   decoration: InputDecoration(
-                      labelText: l10n.addBookAuctionDuration),
+                      hintText: l10n.addBookAuctionDuration),
                   items: const [24, 48, 72, 168]
                       .map((h) => DropdownMenuItem(
                           value: h, child: Text('$h h')))
@@ -1213,7 +1217,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   FilteringTextInputFormatter.digitsOnly,
                 ],
                 decoration: InputDecoration(
-                    labelText: l10n.sharePageCountCustom),
+                    hintText: l10n.sharePageCountCustom),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1225,7 +1229,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   LengthLimitingTextInputFormatter(4),
                 ],
                 decoration: InputDecoration(
-                    labelText: l10n.sharePublishedYear),
+                    hintText: l10n.sharePublishedYear),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1237,13 +1241,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                   LengthLimitingTextInputFormatter(4),
                 ],
                 decoration:
-                    InputDecoration(labelText: l10n.shareEditionYear),
+                    InputDecoration(hintText: l10n.shareEditionYear),
               ),
               const SizedBox(height: 8),
               TextField(
                 textAlignVertical: TextAlignVertical.center,
                 controller: _publisherController,
-                decoration: InputDecoration(labelText: l10n.sharePublisher),
+                decoration: InputDecoration(hintText: l10n.sharePublisher),
               ),
               const SizedBox(height: 8),
               Row(
@@ -1253,7 +1257,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                     child: TextField(
                       textAlignVertical: TextAlignVertical.center,
                       controller: _seriesController,
-                      decoration: InputDecoration(labelText: l10n.shareSeriesName),
+                      decoration: InputDecoration(hintText: l10n.shareSeriesName),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -1263,7 +1267,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                       controller: _seriesNumberController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(labelText: l10n.shareSeriesNumber),
+                      decoration: InputDecoration(hintText: l10n.shareSeriesNumber),
                     ),
                   ),
                 ],
@@ -1517,7 +1521,7 @@ class _TagsInput extends StatelessWidget {
           textAlignVertical: TextAlignVertical.center,
           controller: controller,
           decoration: InputDecoration(
-            labelText: hint,
+            hintText: hint,
             suffixIcon: IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => onAdd(controller.text),
@@ -1529,17 +1533,19 @@ class _TagsInput extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             height: 32,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: tags.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 6),
-              itemBuilder: (context, index) {
-                final t = tags[index];
-                return Chip(
-                  label: Text(t),
-                  onDeleted: () => onRemove(t),
-                );
-              },
+            child: _fadeEdges(
+              ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: tags.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 6),
+                itemBuilder: (context, index) {
+                  final t = tags[index];
+                  return Chip(
+                    label: Text(t),
+                    onDeleted: () => onRemove(t),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -1580,23 +1586,41 @@ class _TagsInput extends StatelessWidget {
             }
             return SizedBox(
               height: 32,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: available.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 6),
-                itemBuilder: (context, index) {
-                  final suggestion = available[index];
-                  return ActionChip(
-                    label: Text(suggestion),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => onAdd(suggestion),
-                  );
-                },
+              child: _fadeEdges(
+                ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: available.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 6),
+                  itemBuilder: (context, index) {
+                    final suggestion = available[index];
+                    return ActionChip(
+                      label: Text(suggestion),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => onAdd(suggestion),
+                    );
+                  },
+                ),
               ),
             );
           }),
         ],
       ],
+    );
+  }
+
+  /// Estompează marginile listei orizontale de chip-uri - fără asta, tag-urile
+  /// tăiate brusc la marginea ecranului nu lăsau de bănuit că mai sunt și
+  /// altele mai încolo, deși lista era deja scroll-abilă (Axis.horizontal).
+  Widget _fadeEdges(Widget child) {
+    return ShaderMask(
+      shaderCallback: (rect) => const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [Colors.transparent, Colors.black, Colors.black, Colors.transparent],
+        stops: [0.0, 0.06, 0.94, 1.0],
+      ).createShader(rect),
+      blendMode: BlendMode.dstIn,
+      child: child,
     );
   }
 }

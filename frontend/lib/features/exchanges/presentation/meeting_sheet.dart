@@ -152,7 +152,7 @@ class _MeetingSheetState extends ConsumerState<MeetingSheet> {
             maxLength: 200,
             onChanged: _onLocationChanged,
             decoration: InputDecoration(
-              labelText: l10n.exchangeLocationLabel,
+              hintText: l10n.exchangeLocationLabel,
               suffixIcon: _searchingLocation
                   ? const Padding(
                       padding: EdgeInsets.all(12),
