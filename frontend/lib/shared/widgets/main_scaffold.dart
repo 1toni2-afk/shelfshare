@@ -8,7 +8,6 @@ import '../../features/auth/application/auth_state.dart';
 import '../../features/chat/application/conversations_controller.dart';
 import '../../features/notifications/application/notifications_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
-import '../../core/utils/support_pages.dart';
 import 'sidebar_shortcuts.dart';
 
 /// Ecran mai lat de-atât înseamnă „desktop" - sub, sidebar-ul devine drawer.
@@ -336,26 +335,6 @@ class _SidebarState extends ConsumerState<_Sidebar> {
               ),
               isActive: currentLocation == '/settings',
               onTap: () => _goTo(context, '/settings'),
-            ),
-            _SidebarTile(
-              item: _NavItem(
-                icon: Icons.info_outline,
-                activeIcon: Icons.info,
-                label: l10n.navAboutApp,
-                route: '/about-app',
-              ),
-              isActive: currentLocation == '/about-app',
-              onTap: () => _goTo(context, '/about-app'),
-            ),
-            _SidebarTile(
-              item: _NavItem(
-                icon: Icons.help_outline,
-                activeIcon: Icons.help,
-                label: l10n.profileHelpCenter,
-                route: '/help-center',
-              ),
-              isActive: false,
-              onTap: () => openSupportPage(context, '/help-center'),
             ),
             const Divider(height: 1),
             _ProfileFooter(currentLocation: currentLocation),
