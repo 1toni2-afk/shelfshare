@@ -3090,6 +3090,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileGroupLibrary => 'My Library';
 
   @override
+  String get profileGroupPrivacy => 'Privacy';
+
+  @override
+  String get profileListingPrivacySubtitle =>
+      'Choose which listing types show up in public search and discover for other users.';
+
+  @override
+  String get profileHideAllListingsButton => 'Make all listings private';
+
+  @override
+  String get profileHideAllListingsConfirm =>
+      'All your listings (swaps, sales, donations, auctions) become private and disappear from search/discover for other users. You can turn each type back on individually below at any time.';
+
+  @override
+  String get profileListingPrivacySwap => 'Swaps';
+
+  @override
+  String get profileListingPrivacySale => 'Sales';
+
+  @override
+  String get profileListingPrivacyDonation => 'Donations';
+
+  @override
+  String get profileListingPrivacyAuction => 'Auctions';
+
+  @override
+  String get profileListingPrivacyHiddenLabel => 'Private';
+
+  @override
+  String get profileListingPrivacyVisibleLabel => 'Public';
+
+  @override
   String get profileGroupDiscovery => 'Discovery';
 
   @override
@@ -3097,6 +3129,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileGroupSupport => 'Support';
+
+  @override
+  String get profileRoadmap => 'Roadmap';
+
+  @override
+  String get roadmapSubtitle =>
+      'What we\'re working on now and what\'s coming next for ShelfShare.';
+
+  @override
+  String get roadmapStatusLive => 'Live';
+
+  @override
+  String get roadmapStatusPlanned => 'Planned';
+
+  @override
+  String get roadmapBookOfMonthTitle => 'Book of the Month';
+
+  @override
+  String get roadmapBookOfMonthBody =>
+      'The community votes monthly on a recommended book - see the section on Home.';
+
+  @override
+  String get roadmapUpcomingReleasesTitle => 'Upcoming Releases';
+
+  @override
+  String get roadmapUpcomingReleasesBody =>
+      'A calendar of upcoming book releases, so you never miss a new title in your favorite genres.';
+
+  @override
+  String get roadmapGiveawayTitle => 'Giveaway';
+
+  @override
+  String get roadmapGiveawayBody =>
+      'Periodic community giveaways of books - details land in the app once the first giveaway starts.';
+
+  @override
+  String get roadmapBookstoreIntegrationsTitle =>
+      'Secondhand Bookstore Integrations';
+
+  @override
+  String get roadmapBookstoreIntegrationsBody =>
+      'Partner secondhand bookstores list their stock directly in ShelfShare, alongside listings from users.';
+
+  @override
+  String get roadmapPaymentsTitle => 'In-App Payments';
+
+  @override
+  String get roadmapPaymentsBody =>
+      'Pay directly for sales and auctions, without a separate transfer between users.';
+
+  @override
+  String get roadmapGoodreadsImportTitle => 'Goodreads Library Import';
+
+  @override
+  String get roadmapGoodreadsImportBody =>
+      'Bring in your read/to-read list from a Goodreads export, instead of adding books one by one.';
+
+  @override
+  String get roadmapAiRecommendationsTitle => 'AI-Powered Recommendations';
+
+  @override
+  String get roadmapAiRecommendationsBody =>
+      'Book and similar-taste user suggestions generated from your reading history.';
 
   @override
   String get profileRecentActivity => 'Recent activity';

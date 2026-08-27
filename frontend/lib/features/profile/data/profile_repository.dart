@@ -33,6 +33,10 @@ class ProfileRepository {
     List<String>? languages,
     bool? showAcquisitionHistory,
     bool? showAllListingScores,
+    bool? hideSwapListingsPublic,
+    bool? hideSaleListingsPublic,
+    bool? hideDonationListingsPublic,
+    bool? hideAuctionListingsPublic,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.patch('/profile/me', data: {
@@ -46,6 +50,10 @@ class ProfileRepository {
       'languages': ?languages,
       'showAcquisitionHistory': ?showAcquisitionHistory,
       'showAllListingScores': ?showAllListingScores,
+      'hideSwapListingsPublic': ?hideSwapListingsPublic,
+      'hideSaleListingsPublic': ?hideSaleListingsPublic,
+      'hideDonationListingsPublic': ?hideDonationListingsPublic,
+      'hideAuctionListingsPublic': ?hideAuctionListingsPublic,
     });
     return getMyProfile();
   }

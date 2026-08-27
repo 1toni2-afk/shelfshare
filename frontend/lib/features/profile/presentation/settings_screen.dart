@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/locale/locale_controller.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -134,6 +135,10 @@ class _SettingsList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
 
+                  _SettingsGroupLabel(l10n.profileGroupPrivacy),
+                  _ListingPrivacyCard(user: user),
+                  const SizedBox(height: 20),
+
                   _SettingsGroupLabel(l10n.profileGroupDiscovery),
                   _SettingsGroup(
                     children: [
@@ -182,6 +187,10 @@ class _SettingsList extends ConsumerWidget {
                   _SettingsGroupLabel(l10n.profileGroupSupport),
                   _SettingsGroup(
                     children: [
+                      _SettingsTile(
+                          icon: Icons.map_outlined,
+                          label: l10n.profileRoadmap,
+                          onTap: () => context.push('/roadmap')),
                       _SettingsTile(
                           icon: Icons.shield_outlined,
                           label: l10n.profileSafetyCenter,
@@ -481,6 +490,176 @@ class _ScoreBadgeToggleState extends ConsumerState<_ScoreBadgeToggle> {
       subtitle: const Text('Dezactivat: badge doar pe primele 256 din top'),
       value: widget.user.showAllListingScores,
       onChanged: _saving ? null : _toggle,
+    );
+  }
+}
+
+/// Confidențialitatea anunțurilor: userul poate ascunde din căutare/discover
+/// anunțurile publice, fie pe toate deodată (butonul de sus), fie doar pe
+/// unele tipuri (comutatoarele de jos, ex. vânzările rămân publice dar
+/// donațiile devin private). Un anunț poate fi simultan de mai multe tipuri
+/// (ex. și la schimb, și la vânzare) - vezi comentariul din User (schema.prisma):
+/// dispare din public doar dacă TOATE tipurile lui sunt ascunse.
+class _ListingPrivacyCard extends ConsumerStatefulWidget {
+  const _ListingPrivacyCard({required this.user});
+  final AppUser user;
+
+  @override
+  ConsumerState<_ListingPrivacyCard> createState() => _ListingPrivacyCardState();
+}
+
+class _ListingPrivacyCardState extends ConsumerState<_ListingPrivacyCard> {
+  bool _saving = false;
+
+  Future<void> _save({
+    bool? hideSwapListingsPublic,
+    bool? hideSaleListingsPublic,
+    bool? hideDonationListingsPublic,
+    bool? hideAuctionListingsPublic,
+  }) async {
+    setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(profileControllerProvider.notifier).updateProfile(
+            hideSwapListingsPublic: hideSwapListingsPublic,
+            hideSaleListingsPublic: hideSaleListingsPublic,
+            hideDonationListingsPublic: hideDonationListingsPublic,
+            hideAuctionListingsPublic: hideAuctionListingsPublic,
+          );
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(content: Text('Salvarea a eșuat.')));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _hideAll() async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.profileHideAllListingsButton),
+        content: Text(l10n.profileHideAllListingsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.profileHideAllListingsButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _save(
+      hideSwapListingsPublic: true,
+      hideSaleListingsPublic: true,
+      hideDonationListingsPublic: true,
+      hideAuctionListingsPublic: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final user = widget.user;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.profileListingPrivacySubtitle,
+              style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.lock_outline, size: 18),
+              label: Text(l10n.profileHideAllListingsButton),
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.destructive),
+              onPressed: _saving ? null : _hideAll,
+            ),
+            const SizedBox(height: 4),
+            Divider(height: 1, color: AppColors.border),
+            _ListingTypeToggle(
+              icon: Icons.swap_horiz,
+              label: l10n.profileListingPrivacySwap,
+              hidden: user.hideSwapListingsPublic,
+              saving: _saving,
+              l10n: l10n,
+              onChanged: (v) => _save(hideSwapListingsPublic: v),
+            ),
+            _ListingTypeToggle(
+              icon: Icons.sell_outlined,
+              label: l10n.profileListingPrivacySale,
+              hidden: user.hideSaleListingsPublic,
+              saving: _saving,
+              l10n: l10n,
+              onChanged: (v) => _save(hideSaleListingsPublic: v),
+            ),
+            _ListingTypeToggle(
+              icon: Icons.volunteer_activism_outlined,
+              label: l10n.profileListingPrivacyDonation,
+              hidden: user.hideDonationListingsPublic,
+              saving: _saving,
+              l10n: l10n,
+              onChanged: (v) => _save(hideDonationListingsPublic: v),
+            ),
+            _ListingTypeToggle(
+              icon: Icons.gavel_outlined,
+              label: l10n.profileListingPrivacyAuction,
+              hidden: user.hideAuctionListingsPublic,
+              saving: _saving,
+              l10n: l10n,
+              onChanged: (v) => _save(hideAuctionListingsPublic: v),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Un rând „ascunde acest tip de anunț" - `hidden: true` înseamnă că tipul e
+/// deja privat, deci switch-ul afișat e „pornit" (ascuns) când `hidden` e
+/// true. Eticheta laterală arată explicit Public/Privat, ca userul să nu
+/// trebuiască să deducă sensul switch-ului din direcție.
+class _ListingTypeToggle extends StatelessWidget {
+  const _ListingTypeToggle({
+    required this.icon,
+    required this.label,
+    required this.hidden,
+    required this.saving,
+    required this.l10n,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool hidden;
+  final bool saving;
+  final AppLocalizations l10n;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      secondary: Icon(icon, color: AppColors.mutedForeground),
+      title: Text(label),
+      subtitle: Text(
+        hidden ? l10n.profileListingPrivacyHiddenLabel : l10n.profileListingPrivacyVisibleLabel,
+        style: TextStyle(
+          color: hidden ? AppColors.destructive : AppColors.mutedForeground,
+          fontSize: 12,
+        ),
+      ),
+      value: hidden,
+      onChanged: saving ? null : onChanged,
     );
   }
 }

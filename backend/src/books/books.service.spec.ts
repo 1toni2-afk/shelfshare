@@ -153,6 +153,42 @@ describe('BooksService', () => {
       ]);
     });
   });
+  // Regresie de confidentialitate: `hideSaleListingsPublic` etc. inseamna
+  // „nu-mi arata acest tip de anunt in cautare/discover public". searchLibrary
+  // trebuie sa ceara Prisma-ei sa excluda anunturile ale caror tipuri sunt
+  // toate ascunse de proprietar - vezi comentariul din searchLibrary.
+  describe('confidentialitatea anunturilor pe tip (searchLibrary)', () => {
+    it('cere Prisma un OR care exclude fiecare tip cand proprietarul l-a ascuns', async () => {
+      prisma.userBook.findMany.mockResolvedValue([]);
+
+      await service.searchLibrary({ limit: 20, offset: 0 });
+
+      expect(prisma.userBook.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: [
+              {
+                availableForSwap: true,
+                user: { hideSwapListingsPublic: false },
+              },
+              {
+                isForSale: true,
+                salePrice: { gt: 0 },
+                user: { hideSaleListingsPublic: false },
+              },
+              {
+                isForSale: true,
+                salePrice: { equals: 0 },
+                user: { hideDonationListingsPublic: false },
+              },
+              { isAuction: true, user: { hideAuctionListingsPublic: false } },
+            ],
+          }),
+        }),
+      );
+    });
+  });
+
   // Regresie de confidentialitate: `nameVisible: false` inseamna „nu-mi arata
   // numele altora". Ambele endpointuri de mai jos sunt PUBLICE (fara
   // autentificare) si sareau peste `publicName()`, deci expuneau numele

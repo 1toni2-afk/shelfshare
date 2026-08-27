@@ -37,6 +37,15 @@ class AppUser {
   /// listing_score_cache.dart.
   final bool showAllListingScores;
 
+  /// Confidențialitatea anunțurilor: ascunde din căutare/discover anunțurile
+  /// de un anumit tip. Un anunț poate fi simultan de mai multe tipuri (ex.
+  /// disponibil și la schimb, și la vânzare) - dispare din public doar dacă
+  /// TOATE tipurile lui sunt ascunse. Vezi searchLibrary în books.service.ts.
+  final bool hideSwapListingsPublic;
+  final bool hideSaleListingsPublic;
+  final bool hideDonationListingsPublic;
+  final bool hideAuctionListingsPublic;
+
   final String? referralCode;
   final int referralCount;
 
@@ -90,6 +99,10 @@ class AppUser {
     this.isPremium = false,
     this.showAcquisitionHistory = false,
     this.showAllListingScores = false,
+    this.hideSwapListingsPublic = false,
+    this.hideSaleListingsPublic = false,
+    this.hideDonationListingsPublic = false,
+    this.hideAuctionListingsPublic = false,
     this.referralCode,
     this.referralCount = 0,
     this.createdAt,
@@ -130,6 +143,12 @@ class AppUser {
       isPremium: json['isPremium'] as bool? ?? false,
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
       showAllListingScores: json['showAllListingScores'] as bool? ?? false,
+      hideSwapListingsPublic: json['hideSwapListingsPublic'] as bool? ?? false,
+      hideSaleListingsPublic: json['hideSaleListingsPublic'] as bool? ?? false,
+      hideDonationListingsPublic:
+          json['hideDonationListingsPublic'] as bool? ?? false,
+      hideAuctionListingsPublic:
+          json['hideAuctionListingsPublic'] as bool? ?? false,
       referralCode: json['referralCode'] as String?,
       referralCount: json['referralCount'] as int? ?? 0,
       createdAt: json['createdAt'] != null

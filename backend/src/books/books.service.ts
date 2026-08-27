@@ -151,6 +151,26 @@ export class BooksService {
           : undefined,
       },
       user: filters.city ? { city: filters.city } : undefined,
+      // Confidențialitatea anunțurilor (vezi User în schema.prisma): un anunț
+      // poate fi simultan de mai multe tipuri (ex. și la schimb, și la
+      // vânzare), deci vizibilitatea publică se decide per-tip, nu printr-un
+      // singur flag pe anunț. Un anunț apare dacă ARE MĂCAR UN tip pe care
+      // proprietarul nu l-a ascuns - dacă toate tipurile lui sunt ascunse,
+      // dispare complet din căutare/discover.
+      OR: [
+        { availableForSwap: true, user: { hideSwapListingsPublic: false } },
+        {
+          isForSale: true,
+          salePrice: { gt: 0 },
+          user: { hideSaleListingsPublic: false },
+        },
+        {
+          isForSale: true,
+          salePrice: { equals: 0 },
+          user: { hideDonationListingsPublic: false },
+        },
+        { isAuction: true, user: { hideAuctionListingsPublic: false } },
+      ],
     };
 
     const fromCoords = filters.fromCity

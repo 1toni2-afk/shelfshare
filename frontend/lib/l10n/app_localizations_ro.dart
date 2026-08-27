@@ -91,7 +91,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get trustScoreSubtitle =>
-      'Calculat din activitatea din aplicație, nu e o verificare de identitate';
+      'Calculat pe baza activității din aplicație — nu este o verificare a identității.';
 
   @override
   String get trustScoreEmailVerified => 'Email verificat';
@@ -116,17 +116,17 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String trustScoreResponseRate(int percent) {
-    return '$percent% rată de răspuns';
+    return 'Rată de răspuns: $percent%';
   }
 
   @override
   String trustScoreAverageSwapTime(String time) {
-    return 'Schimb finalizat în ~$time';
+    return 'Finalizează un schimb în ~$time';
   }
 
   @override
   String memberSinceDays(int days) {
-    return 'Membru din $days zile';
+    return 'Membru de $days zile';
   }
 
   @override
@@ -178,7 +178,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get commonContinue => 'Continuă';
 
   @override
-  String get loginWelcomeBack => 'Bun venit înapoi';
+  String get loginWelcomeBack => 'Bine ai revenit';
 
   @override
   String get authPasswordLabel => 'Parolă';
@@ -193,27 +193,27 @@ class AppLocalizationsRo extends AppLocalizations {
   String get authForgotPasswordLink => 'Ai uitat parola?';
 
   @override
-  String get authLoginSubmit => 'Autentificare';
+  String get authLoginSubmit => 'Conectare';
 
   @override
   String get authNoAccount => 'Nu ai cont? ';
 
   @override
-  String get authCreateOne => 'Creează unul';
+  String get authCreateOne => 'Creează un cont';
 
   @override
   String get authGoogleFailed =>
-      'Autentificarea cu Google a eșuat. Încearcă din nou.';
+      'Conectarea cu Google a eșuat. Încearcă din nou.';
 
   @override
   String get supportContactButton => 'Nu te poți loga? Contactează-ne';
 
   @override
-  String get supportDialogTitle => 'Contactează support';
+  String get supportDialogTitle => 'Contactează asistența';
 
   @override
   String get supportDialogSubtitle =>
-      'Spune-ne ce problemă ai și îți răspundem pe email.';
+      'Spune-ne cu ce te putem ajuta, iar noi îți vom răspunde prin email.';
 
   @override
   String get supportNameLabel => 'Nume';
@@ -251,13 +251,13 @@ class AppLocalizationsRo extends AppLocalizations {
   String get verifyCodeTooShort => 'Codul trebuie să aibă 6 cifre';
 
   @override
-  String get verifySuccessSnackbar => 'Cont confirmat cu succes!';
+  String get verifySuccessSnackbar => 'Contul tău a fost confirmat.';
 
   @override
   String get verifyInvalidOrExpired => 'Cod invalid sau expirat.';
 
   @override
-  String get verifyResendSnackbar => 'Am retrimis codul, dacă e cazul.';
+  String get verifyResendSnackbar => 'Am retrimis codul, dacă este necesar.';
 
   @override
   String get verifyEmailHeading => 'Verifică-ți emailul';
@@ -314,7 +314,7 @@ class AppLocalizationsRo extends AppLocalizations {
       'Parola ta a fost actualizată. Te poți autentifica acum.';
 
   @override
-  String get resetPasswordGoToLogin => 'Mergi la autentificare';
+  String get resetPasswordGoToLogin => 'Mergi la conectare';
 
   @override
   String get resetPasswordGenericError =>
@@ -327,10 +327,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get authPasswordMismatch => 'Parolele nu coincid';
 
   @override
-  String get onboardingTitle => 'Aproape gata!';
+  String get onboardingTitle => 'Mai este puțin!';
 
   @override
-  String get onboardingSubtitle => 'Spune-ne cum vrei să te vadă ceilalți';
+  String get onboardingSubtitle =>
+      'Spune-ne cum vrei să apară profilul tău pentru ceilalți membri';
 
   @override
   String get onboardingFirstName => 'Prenume';
@@ -363,7 +364,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get surveySubtitle =>
-      'Câteva răspunsuri și îți putem recomanda cărți listate care ți se potrivesc, plus o notificare când apare una pe gustul tău.';
+      'Răspunde la câteva întrebări, iar noi îți vom recomanda cărți care se potrivesc gusturilor tale și te vom anunța când apare una pe care s-ar putea să o îndrăgești.';
 
   @override
   String get surveyGenresQuestion => 'Ce genuri te atrag?';
@@ -378,7 +379,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get surveyAuthorsHint => 'Ex.: Mihail Sadoveanu, Ursula K. Le Guin';
 
   @override
-  String get surveyPaceQuestion => 'Câte cărți citești pe lună?';
+  String get surveyPaceQuestion => 'Câte cărți citești într-o lună?';
 
   @override
   String get surveySubmit => 'Salvează';
@@ -392,7 +393,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get surveyChangeLaterHint =>
-      'Poți schimba oricând răspunsurile din profil.';
+      'Poți modifica oricând răspunsurile din profil.';
 
   @override
   String surveyPaceOption(String pace) {
@@ -500,11 +501,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileFeedbackRemovePhoto => 'Elimină poza';
 
   @override
-  String get adminChatTitle => 'Chat cu un admin';
+  String get adminChatTitle => 'Chat cu un administrator';
 
   @override
   String get adminChatEmpty =>
-      'Scrie-ne orice întrebare sau problemă ai - un admin îți răspunde aici.';
+      'Scrie-ne orice întrebare sau problemă ai, iar un administrator îți va răspunde aici.';
 
   @override
   String get adminChatInputHint => 'Scrie un mesaj…';
@@ -710,7 +711,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bookshelfGenreChartEmpty =>
-      'Adaugă cărți pe raft ca să vezi ce genuri citești cel mai mult.';
+      'Adaugă cărți pe raft pentru a vedea ce genuri citești cel mai mult.';
 
   @override
   String get bookshelfImportTooltip => 'Importă din Goodreads sau StoryGraph';
@@ -723,12 +724,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String bookshelfImportSummary(int imported, int skipped) {
-    return '$imported cărți importate, $skipped sărite';
+    return '$imported cărți importate, $skipped omise';
   }
 
   @override
   String get bookshelfImportError =>
-      'Nu am putut importa fișierul. Verifică dacă e un export CSV valid.';
+      'Nu am putut importa fișierul. Verifică dacă este un export CSV valid.';
 
   @override
   String get bookDetailShelfSectionTitle => 'Adaugă în raftul tău';
@@ -769,7 +770,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String readingChallengeTitle(int year) {
-    return 'Provocarea de citit $year';
+    return 'Provocarea de lectură $year';
   }
 
   @override
@@ -782,7 +783,7 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get readingChallengeSetGoal => 'Setează un obiectiv';
+  String get readingChallengeSetGoal => 'Setează-ți un obiectiv';
 
   @override
   String get readingChallengeGoalLabel =>
@@ -796,10 +797,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get activityFeedEmpty =>
-      'Niciun eveniment încă - urmărește alți useri ca să vezi ce citesc.';
+      'Nicio activitate încă — urmărește alți membri pentru a vedea ce citesc.';
 
   @override
-  String get activityFeedLoadError => 'Nu am putut încărca activitatea.';
+  String get activityFeedLoadError =>
+      'Nu am putut încărca activitatea. Încearcă din nou.';
 
   @override
   String get activityNewListing => 'a adăugat o carte nouă';
@@ -812,7 +814,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String activitySale(String amount) {
-    return 'a vândut cu $amount lei';
+    return 'a vândut pentru $amount lei';
   }
 
   @override
@@ -862,7 +864,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get globalStatsTabPopularAuthors => 'Autori populari';
 
   @override
-  String get globalStatsEmpty => 'Nicio dată încă.';
+  String get globalStatsEmpty => 'Nu există încă date.';
 
   @override
   String get globalStatsLoadError => 'Nu am putut încărca statisticile.';
@@ -976,16 +978,16 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homeNearYouToday => 'Astăzi, aproape de tine';
 
   @override
-  String get homeRecommendedForYou => 'Recomandate pentru tine';
+  String get homeRecommendedForYou => 'Recomandări pentru tine';
 
   @override
-  String get homeHiddenGems => 'Comori ascunse';
+  String get homeHiddenGems => 'Descoperiri interesante';
 
   @override
   String get homeCompleteYourCollection => 'Completează-ți colecția';
 
   @override
-  String get homeSimilarTaste => 'Gusturi asemănătoare';
+  String get homeSimilarTaste => 'Gusturi similare';
 
   @override
   String get profileSmartMatches => 'Potriviri de schimb';
@@ -995,10 +997,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get smartMatchesEmpty =>
-      'Nicio potrivire încă - adaugă cărți pe wishlist și listează cărți disponibile.';
+      'Nu există încă potriviri. Adaugă cărți în lista de dorințe și oferă câteva cărți la schimb.';
 
   @override
-  String get smartMatchesLoadError => 'Nu am putut încărca potrivirile.';
+  String get smartMatchesLoadError =>
+      'Nu am putut încărca potrivirile. Încearcă din nou.';
 
   @override
   String get smartMatchesTheyHave => 'Are ce vrei tu';
@@ -1007,7 +1010,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get smartMatchesTheyWant => 'Vrea ce ai tu';
 
   @override
-  String get homeUpcomingBooks => 'Cărți viitoare';
+  String get homeUpcomingBooks => 'Cărți care urmează';
 
   @override
   String get homeActiveMembers => 'Membri activi';
@@ -1022,7 +1025,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get browseSearchHint => 'Caută după titlu';
 
   @override
-  String get browseEmpty => 'Nicio carte găsită.';
+  String get browseEmpty => 'Nu am găsit nicio carte.';
 
   @override
   String get filtersTitle => 'Filtre';
@@ -1055,7 +1058,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get bookConditionAcceptable => 'Acceptabilă';
 
   @override
-  String get filtersAnyCondition => 'Orice stare';
+  String get filtersAnyCondition => 'Orice condiție';
 
   @override
   String get filtersListingType => 'Tip de anunț';
@@ -1074,7 +1077,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get filtersNearbyOnlyHintOff =>
-      'Ordonează și filtrează după distanța reală față de orașul tău';
+      'Sortează și filtrează după distanța reală față de orașul tău';
 
   @override
   String filtersNearbyOnlyHintOn(int km) {
@@ -1090,7 +1093,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get filtersReset => 'Resetează';
 
   @override
-  String get filtersApply => 'Aplică filtre';
+  String get filtersApply => 'Aplică filtrele';
 
   @override
   String get commonYes => 'Da';
@@ -1129,10 +1132,11 @@ class AppLocalizationsRo extends AppLocalizations {
       'Nu am putut importa fișierul. Verifică dacă e un CSV valid.';
 
   @override
-  String get libraryEmpty => 'Nu ai nicio carte în bibliotecă încă.';
+  String get libraryEmpty => 'Nu ai încă nicio carte în bibliotecă.';
 
   @override
-  String get libraryLoadError => 'Nu am putut încărca biblioteca.';
+  String get libraryLoadError =>
+      'Nu am putut încărca biblioteca. Încearcă din nou.';
 
   @override
   String get libraryAvailable => 'Disponibilă';
@@ -1514,7 +1518,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bookDetailNoBooksToOffer =>
-      'Nu ai cărți disponibile de oferit - poți trimite cererea și fără.';
+      'Nu ai nicio carte disponibilă pentru ofertă. Poți trimite cererea și fără să oferi una.';
 
   @override
   String get bookDetailOfferOneOfYourBooks =>
@@ -1544,7 +1548,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bookDetailFirstExchangeBody =>
-      'Câteva sfaturi înainte de primul schimb: întâlnește-te ziua, într-un loc public, și verifică starea cărții înainte să confirmi schimbul ca finalizat.';
+      'Câteva lucruri de care să ții cont înainte de primul schimb: întâlnește-te ziua, într-un loc public, și verifică starea cărții înainte să confirmi schimbul ca finalizat.';
 
   @override
   String get bookDetailUnderstood => 'Am înțeles, continuă';
@@ -1709,7 +1713,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get readyMeetingAwaitingYou => 'Cealaltă parte a propus o întâlnire';
 
   @override
-  String get readyMeetingProposedByMe => 'Aștepți confirmarea celeilalte părți';
+  String get readyMeetingProposedByMe =>
+      'Aștepți confirmarea celeilalte persoane';
 
   @override
   String get readyMeetingAccept => 'Confirmă';
@@ -1824,11 +1829,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get readyDisputeDone => 'Nu e finalizat';
 
   @override
-  String get readyWaitingConfirmation => 'Aștepți confirmarea celeilalte părți';
+  String get readyWaitingConfirmation =>
+      'Aștepți confirmarea celeilalte persoane';
 
   @override
   String get readyOtherMarkedDone =>
-      'Cealaltă parte a marcat schimbul ca finalizat. Confirmi?';
+      'Cealaltă persoană a marcat schimbul ca finalizat. Confirmi?';
 
   @override
   String get doneReviewTitle => 'Cum a fost schimbul?';
@@ -1846,7 +1852,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get cancelReasonNoShow => 'Cealaltă persoană nu s-a prezentat';
 
   @override
-  String get cancelReasonBookMismatch => 'Cartea nu a corespuns așteptărilor';
+  String get cancelReasonBookMismatch =>
+      'Cartea nu a fost conform așteptărilor';
 
   @override
   String get cancelReasonChangedMind => 'M-am răzgândit';
@@ -1899,7 +1906,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get exchangeConfirmButton => 'Confirmă finalizarea';
 
   @override
-  String get chatEmptyConversations => 'Nu ai nicio conversație încă.';
+  String get chatEmptyConversations => 'Nu ai încă nicio conversație.';
 
   @override
   String get chatStartConversation => 'Începe conversația';
@@ -1911,7 +1918,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get chatLocationPreview => '📍 Locație';
 
   @override
-  String get chatLoadError => 'Nu am putut încărca conversațiile.';
+  String get chatLoadError =>
+      'Nu am putut încărca conversațiile. Încearcă din nou.';
 
   @override
   String get chatConversationFallbackTitle => 'Conversație';
@@ -1923,10 +1931,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get chatBlock => 'Blochează';
 
   @override
-  String get chatUserUnblocked => 'Utilizator deblocat';
+  String get chatUserUnblocked => 'Utilizatorul a fost deblocat';
 
   @override
-  String get chatUserBlocked => 'Utilizator blocat';
+  String get chatUserBlocked => 'Utilizatorul a fost blocat';
 
   @override
   String get chatBlockUpdateError => 'Nu am putut actualiza blocarea';
@@ -1936,7 +1944,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get chatSendFailed =>
-      'Mesajul nu a putut fi trimis. Verifică conexiunea.';
+      'Mesajul nu a putut fi trimis. Verifică conexiunea la internet.';
 
   @override
   String get chatOnline => 'online';
@@ -2081,7 +2089,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get chatExchangeCardTitle => 'Cerere de schimb';
 
   @override
-  String get readyYouGive => 'Dai';
+  String get readyYouGive => 'Oferi';
 
   @override
   String get readyYouReceive => 'Primești';
@@ -2144,7 +2152,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String wishlistSectionBookMatch(int count) {
-    return 'Book Match ($count)';
+    return 'Potriviri Book Match ($count)';
   }
 
   @override
@@ -2200,7 +2208,8 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get notificationsLoadError => 'Nu am putut încărca notificările.';
+  String get notificationsLoadError =>
+      'Nu am putut încărca notificările. Încearcă din nou.';
 
   @override
   String get timeJustNow => 'acum';
@@ -2279,7 +2288,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminMarketplaceAvgPrice => 'Preț mediu vânzare';
 
   @override
-  String get adminMarketplaceTopGenres => 'Top genuri (anunțuri active)';
+  String get adminMarketplaceTopGenres =>
+      'Cele mai populare genuri (anunțuri active)';
 
   @override
   String get adminActiveZonesTitle => 'Zone active';
@@ -2317,12 +2327,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String adminUpcomingReleasesCount(int count) {
-    return 'Cărți viitoare ($count)';
+    return 'Cărți care urmează ($count)';
   }
 
   @override
   String get adminUpcomingReleasesDesc =>
-      'Afișate pe ecranul principal, în secțiunea \"Cărți viitoare\".';
+      'Afișate pe ecranul principal, în secțiunea \"Cărți care urmează\".';
 
   @override
   String get adminNoUpcomingReleases => 'Nicio carte viitoare adăugată.';
@@ -2337,11 +2347,11 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String adminSupportRequestsCount(int count) {
-    return 'Mesaje de support ($count)';
+    return 'Mesaje de asistență ($count)';
   }
 
   @override
-  String get adminNoSupportRequests => 'Niciun mesaj de support trimis încă.';
+  String get adminNoSupportRequests => 'Nicio solicitare de asistență încă.';
 
   @override
   String adminReportedBy(String name) {
@@ -2419,7 +2429,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get savedSearchesEmpty =>
-      'Nicio căutare salvată încă. Salvează una ca să fii anunțat la anunțuri noi care se potrivesc.';
+      'Nicio căutare salvată încă. Salvează o căutare și te vom anunța când apar anunțuri noi care se potrivesc criteriilor tale.';
 
   @override
   String get savedSearchesLoadError => 'Nu am putut încărca căutările salvate.';
@@ -2437,7 +2447,8 @@ class AppLocalizationsRo extends AppLocalizations {
   String get savedSearchMaxPriceLabel => 'Preț maxim (opțional)';
 
   @override
-  String get savedSearchCreateError => 'Nu am putut salva căutarea.';
+  String get savedSearchCreateError =>
+      'Nu am putut salva căutarea. Încearcă din nou.';
 
   @override
   String savedSearchMaxPriceChip(String amount) {
@@ -2535,7 +2546,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String auctionBuyNowFor(String amount) {
-    return 'Cumpără acum cu $amount lei';
+    return 'Cumpără acum pentru $amount lei';
   }
 
   @override
@@ -2548,13 +2559,13 @@ class AppLocalizationsRo extends AppLocalizations {
   String get auctionWatch => 'Urmărește licitația';
 
   @override
-  String get auctionBidPlaced => 'Ofertă plasată';
+  String get auctionBidPlaced => 'Oferta a fost plasată';
 
   @override
-  String get auctionBoughtNow => 'Cumpărat cu succes';
+  String get auctionBoughtNow => 'Achiziție finalizată';
 
   @override
-  String get auctionGenericError => 'A apărut o eroare, încearcă din nou';
+  String get auctionGenericError => 'Ceva nu a mers bine. Încearcă din nou.';
 
   @override
   String get auctionEnded => 'Încheiată';
@@ -2585,7 +2596,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bulkAddManualHint =>
-      'Lipește mai multe ISBN-uri, câte unul pe linie (sau separate prin virgulă)';
+      'Introdu mai multe ISBN-uri, câte unul pe rând (sau separate prin virgulă)';
 
   @override
   String get bulkAddManualPlaceholder => '9780439023481\n9780441172719';
@@ -2595,7 +2606,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bulkAddQueueEmpty =>
-      'Nicio carte adăugată încă - scanează sau introdu un ISBN.';
+      'Nu ai adăugat încă nicio carte. Scanează un cod de bare sau introdu un ISBN.';
 
   @override
   String bulkAddSubmit(int count) {
@@ -2604,7 +2615,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String bulkAddResultSummary(int created, int failed) {
-    return '$created cărți adăugate, $failed eșuate';
+    return '$created cărți adăugate, $failed nu au putut fi adăugate';
   }
 
   @override
@@ -2613,10 +2624,10 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get inventoryMarkUnavailable => 'Marchează indisponibile';
+  String get inventoryMarkUnavailable => 'Marchează ca indisponibile';
 
   @override
-  String get inventoryChangePriceTitle => 'Schimbă prețul';
+  String get inventoryChangePriceTitle => 'Modifică prețul';
 
   @override
   String inventoryPriceChangedCount(int count) {
@@ -2628,20 +2639,21 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String inventoryDeleteConfirmBody(int count) {
-    return 'Se șterg definitiv $count anunțuri. Nu se poate anula.';
+    return '$count anunțuri vor fi șterse definitiv. Această acțiune nu poate fi anulată.';
   }
 
   @override
-  String get inventoryBulkDone => 'Acțiune aplicată';
+  String get inventoryBulkDone => 'Acțiunea a fost aplicată';
 
   @override
   String get collectionsTitle => 'Colecții';
 
   @override
-  String get collectionsEmpty => 'Nicio colecție încă.';
+  String get collectionsEmpty => 'Nu există încă nicio colecție.';
 
   @override
-  String get collectionsLoadError => 'Nu am putut încărca colecțiile.';
+  String get collectionsLoadError =>
+      'Nu am putut încărca colecțiile. Încearcă din nou.';
 
   @override
   String get collectionsCreateTitle => 'Colecție nouă';
@@ -2793,7 +2805,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get discoverAuctions => 'Licitații active';
 
   @override
-  String get discoverHiddenGems => 'Comori ascunse';
+  String get discoverHiddenGems => 'Descoperiri interesante';
 
   @override
   String get discoverSwapOnly => 'Doar la schimb';
@@ -2807,7 +2819,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get discoverUnder30 => 'Sub 30 lei';
 
   @override
-  String get discoverRecommendedForYou => 'Recomandate pentru tine';
+  String get discoverRecommendedForYou => 'Recomandări pentru tine';
 
   @override
   String get discoverPopularAuthors => 'Autori populari';
@@ -2862,19 +2874,19 @@ class AppLocalizationsRo extends AppLocalizations {
       'Scor de interes pe 14 zile (vizibil doar adminilor)';
 
   @override
-  String get inventorySelectAll => 'Selectează toate';
+  String get inventorySelectAll => 'Selectează tot';
 
   @override
   String get myShelfShare => 'Împarte';
 
   @override
-  String get inventoryMarkAvailable => 'Marchează disponibile';
+  String get inventoryMarkAvailable => 'Marchează ca disponibile';
 
   @override
   String get libraryTrashEmpty => 'Coșul de gunoi e gol';
 
   @override
-  String get inventoryAppendText => 'Adaugă la sfârșit';
+  String get inventoryAppendText => 'Adaugă la final';
 
   @override
   String get inventoryTransferred => 'Schimbată';
@@ -2984,7 +2996,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareSeriesNumber => 'Volum';
 
   @override
-  String get shareCityHint => 'Localitatea unde se face schimbul';
+  String get shareCityHint => 'Localitatea în care are loc schimbul';
 
   @override
   String get sharePublishedYear => 'An apariție';
@@ -3019,10 +3031,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareListingModeDonation => 'Donație';
 
   @override
-  String get shareTitleAutocomplete => 'Începe să scrii ca să vezi sugestii';
+  String get shareTitleAutocomplete =>
+      'Începe să scrii pentru a vedea sugestii';
 
   @override
-  String get shareTitleSearching => 'Se caută titlul...';
+  String get shareTitleSearching => 'Se caută titlul…';
 
   @override
   String get shareSwapAlsoSell => 'Sau vinde cu';
@@ -3043,35 +3056,34 @@ class AppLocalizationsRo extends AppLocalizations {
   String get shareChooseFromMyBooks => 'Alege din cărțile mele';
 
   @override
-  String get shareNoBooksInMyLibrary =>
-      'Nu ai încă nicio carte adăugată în bibliotecă.';
+  String get shareNoBooksInMyLibrary => 'Nu ai încă nicio carte în bibliotecă.';
 
   @override
   String get preRegisterAlreadyLoggedIn =>
       'Vom folosi emailul tău dacă nu completezi altul';
 
   @override
-  String get preRegisterAndroidHeadline => 'Vine în curând pe telefoanele tale';
+  String get preRegisterAndroidHeadline => 'Vine în curând pe telefonul tău';
 
   @override
   String get preRegisterSuccess =>
-      'Te-ai înscris. Îți dăm de veste când e gata.';
+      'Te-ai înscris pe listă. Te vom anunța când va fi disponibil.';
 
   @override
   String get profilePreRegister => 'Pre-înscriere Android';
 
   @override
   String get preRegisterAndroidBody =>
-      'Lasă-ne emailul și te anunțăm în prima zi când aplicația e live pe Google Play.';
+      'Lasă-ne adresa de email și te vom anunța în ziua în care aplicația va fi disponibilă pe Google Play.';
 
   @override
-  String get preRegisterSubmit => 'Adaugă-mă pe listă';
+  String get preRegisterSubmit => 'Înscrie-mă pe listă';
 
   @override
   String get preRegisterAndroidTitle => 'Pre-înscrie-te pentru Android';
 
   @override
-  String get preRegisterEmailHint => 'Email pentru anunț';
+  String get preRegisterEmailHint => 'Email pentru notificarea lansării';
 
   @override
   String get preRegisterError =>
@@ -3094,6 +3106,38 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileGroupLibrary => 'Biblioteca mea';
 
   @override
+  String get profileGroupPrivacy => 'Confidențialitate';
+
+  @override
+  String get profileListingPrivacySubtitle =>
+      'Alege ce tipuri de anunțuri apar în căutare și discover, publice pentru ceilalți useri.';
+
+  @override
+  String get profileHideAllListingsButton => 'Fă toate anunțurile private';
+
+  @override
+  String get profileHideAllListingsConfirm =>
+      'Toate anunțurile tale (schimburi, vânzări, donații, licitații) devin private și dispar din căutare/discover pentru ceilalți useri. Poți reactiva oricând fiecare tip individual mai jos.';
+
+  @override
+  String get profileListingPrivacySwap => 'Schimburi';
+
+  @override
+  String get profileListingPrivacySale => 'Vânzări';
+
+  @override
+  String get profileListingPrivacyDonation => 'Donații';
+
+  @override
+  String get profileListingPrivacyAuction => 'Licitații';
+
+  @override
+  String get profileListingPrivacyHiddenLabel => 'Privat';
+
+  @override
+  String get profileListingPrivacyVisibleLabel => 'Public';
+
+  @override
   String get profileGroupDiscovery => 'Descoperire';
 
   @override
@@ -3101,6 +3145,68 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get profileGroupSupport => 'Suport';
+
+  @override
+  String get profileRoadmap => 'Roadmap';
+
+  @override
+  String get roadmapSubtitle =>
+      'Ce lucrăm acum și ce urmează pentru ShelfShare.';
+
+  @override
+  String get roadmapStatusLive => 'Live';
+
+  @override
+  String get roadmapStatusPlanned => 'Planificat';
+
+  @override
+  String get roadmapBookOfMonthTitle => 'Cartea lunii';
+
+  @override
+  String get roadmapBookOfMonthBody =>
+      'Comunitatea votează lunar o carte recomandată - vezi secțiunea de pe Home.';
+
+  @override
+  String get roadmapUpcomingReleasesTitle => 'Lansări viitoare';
+
+  @override
+  String get roadmapUpcomingReleasesBody =>
+      'Calendarul aparițiilor editoriale așteptate, ca să nu ratezi o carte nouă din genurile tale preferate.';
+
+  @override
+  String get roadmapGiveawayTitle => 'Giveaway';
+
+  @override
+  String get roadmapGiveawayBody =>
+      'Tombole periodice cu cărți din comunitate - detalii vin în aplicație când pornim primul giveaway.';
+
+  @override
+  String get roadmapBookstoreIntegrationsTitle => 'Integrări cu anticariate';
+
+  @override
+  String get roadmapBookstoreIntegrationsBody =>
+      'Anticariatele partenere își listează stocul direct în ShelfShare, alături de anunțurile userilor.';
+
+  @override
+  String get roadmapPaymentsTitle => 'Plăți integrate în aplicație';
+
+  @override
+  String get roadmapPaymentsBody =>
+      'Plată directă la vânzări și licitații, fără să mai fie nevoie de transfer separat între useri.';
+
+  @override
+  String get roadmapGoodreadsImportTitle => 'Import bibliotecă din Goodreads';
+
+  @override
+  String get roadmapGoodreadsImportBody =>
+      'Aduci lista de cărți citite/de citit dintr-un export Goodreads, fără să le adaugi una câte una.';
+
+  @override
+  String get roadmapAiRecommendationsTitle => 'Recomandări personalizate cu AI';
+
+  @override
+  String get roadmapAiRecommendationsBody =>
+      'Sugestii de cărți și de useri cu gusturi similare, generate pe baza istoricului tău de citit.';
 
   @override
   String get profileRecentActivity => 'Activitate recentă';
@@ -3133,7 +3239,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get profileKeepAliveSubtitle =>
-      'ShelfShare rulează pe un server de acasă. Un cafea ajută.';
+      'ShelfShare rulează pe un server de acasă. O cafea ne ajută.';
 
   @override
   String get aboutDevTitle => 'About dev';
@@ -3147,11 +3253,11 @@ class AppLocalizationsRo extends AppLocalizations {
       'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
-  String get homeRecommendedTitle => 'Recomandate pentru tine';
+  String get homeRecommendedTitle => 'Recomandări pentru tine';
 
   @override
   String homeNearbyTitle(int km) {
-    return 'Aproape de tine ($km km)';
+    return 'În apropierea ta ($km km)';
   }
 
   @override
@@ -3198,7 +3304,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get profileAboutEmpty =>
-      'Spune ceva despre tine — de exemplu ce genuri îți plac.';
+      'Spune-ne câte ceva despre tine — de exemplu, ce genuri îți plac.';
 
   @override
   String get profileMemberSince => 'Membru din';
@@ -3225,7 +3331,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileStatWishlisted => 'Cărți dorite';
 
   @override
-  String get profileTopGenresTitle => 'Top genuri';
+  String get profileTopGenresTitle => 'Genuri preferate';
 
   @override
   String get profileTopGenresEmpty =>
@@ -3278,7 +3384,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get shareMainPhotoHint =>
-      'Apasă pe stea pentru a marca poza principală (apare în feed).';
+      'Apasă pe stea pentru a marca fotografia principală, care va apărea în feed.';
 
   @override
   String get chatOfferCounterAction => 'Contra-ofertă';
@@ -3306,7 +3412,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get aboutAppIntro =>
-      'Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.';
+      'Un ghid scurt despre cum funcționează ShelfShare. Deschide o secțiune pentru mai multe detalii.';
 
   @override
   String get aboutAppXpTitle => 'XP și niveluri';
@@ -3316,7 +3422,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get aboutAppTrustBody =>
-      'Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.';
+      'Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câte schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.';
 
   @override
   String get aboutAppShelvesTitle => 'Raftul meu (Public Bookshelf)';
@@ -3330,7 +3436,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get aboutAppHomeSectionsBody =>
-      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
+      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
 
   @override
   String get aboutAppExchangesTitle => 'Schimburi și oferte';
@@ -3754,36 +3860,41 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get bookMatchEmptyBody =>
-      'Ai văzut tot ce aveam pentru tine acum, revino mai târziu.';
+      'Asta e tot pentru moment. Revino mai târziu pentru recomandări noi.';
 
   @override
-  String get bookMatchLoadError => 'Nu am putut încărca recomandările.';
+  String get bookMatchLoadError =>
+      'Nu am putut încărca recomandările. Încearcă din nou.';
 
   @override
   String get bookMatchRecalibrateTooltip => 'Recalibrare';
 
   @override
-  String get bookMatchRecalibrateTitle => 'Recalibrezi preferințele?';
+  String get bookMatchRecalibrateTitle =>
+      'Vrei să-ți recalibrezi preferințele?';
 
   @override
   String get bookMatchRecalibrateWarning =>
-      'Preferințele tale vor fi semi-resetate: scorurile pe genuri se atenuează și o perioadă vei vedea din nou cărți variate. Acțiunea nu poate fi anulată.';
+      'Preferințele tale vor fi recalibrate parțial: scorurile genurilor vor fi reduse, iar pentru o perioadă vei vedea o selecție mai variată de cărți. Această acțiune nu poate fi anulată.';
 
   @override
   String get bookMatchRecalibrateConfirm => 'Recalibrează';
 
   @override
-  String get bookMatchRecalibrateDone => 'Preferințele au fost recalibrate.';
+  String get bookMatchRecalibrateDone =>
+      'Preferințele tale au fost recalibrate.';
 
   @override
-  String get bookMatchRecalibrateError => 'Nu am putut recalibra acum.';
+  String get bookMatchRecalibrateError =>
+      'Nu am putut recalibra preferințele acum. Încearcă din nou.';
 
   @override
-  String get bookMatchRecalibrateCooldownTitle => 'Recalibrare indisponibilă';
+  String get bookMatchRecalibrateCooldownTitle =>
+      'Recalibrarea nu este disponibilă';
 
   @override
   String bookMatchRecalibrateCooldownBody(int days) {
-    return 'Mai poți recalibra peste $days zile.';
+    return 'Îți poți recalibra din nou preferințele peste $days zile.';
   }
 
   @override

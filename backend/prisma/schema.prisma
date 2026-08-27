@@ -149,6 +149,20 @@ model User {
 
   showAcquisitionHistory Boolean @default(false)
 
+  // Confidențialitatea anunțurilor (Milestone 24): userul poate ascunde din
+  // rezultatele publice (căutare/discover) anunțurile după tip - de ex. să
+  // păstreze vânzările publice dar donațiile private. Un anunț poate fi
+  // simultan de mai multe tipuri (ex. disponibil și la schimb, și la vânzare -
+  // vezi comentariul despre `availableForSwap`/`isForSale` de pe UserBook),
+  // deci vizibilitatea publică se calculează per-tip la interogare, nu ca un
+  // singur boolean pe anunț. Butonul „Fă tot privat" din Settings setează
+  // toate cele patru pe true dintr-un singur apel - nu există un flag global
+  // separat, ca să nu trebuiască ținut sincronizat cu cele patru individuale.
+  hideSwapListingsPublic     Boolean @default(false)
+  hideSaleListingsPublic     Boolean @default(false)
+  hideDonationListingsPublic Boolean @default(false)
+  hideAuctionListingsPublic  Boolean @default(false)
+
   /// Preferință per-admin pentru badge-ul de scor de pe cardurile de carte
   /// (vezi BooksController#POST /books/scores): false (implicit) = badge doar
   /// pe cărțile din top 256 după popularityScore; true = badge pe orice carte

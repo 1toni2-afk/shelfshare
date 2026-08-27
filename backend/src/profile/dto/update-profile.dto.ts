@@ -84,4 +84,22 @@ export class UpdateProfileDto {
   @ArrayMaxSize(10)
   @IsString({ each: true })
   languages?: string[];
+
+  // Confidențialitatea anunțurilor - vezi comentariul de pe User în
+  // schema.prisma. Fiecare tip se ascunde independent.
+  @IsOptional()
+  @IsBoolean()
+  hideSwapListingsPublic?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hideSaleListingsPublic?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hideDonationListingsPublic?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  hideAuctionListingsPublic?: boolean;
 }

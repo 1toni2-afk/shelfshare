@@ -25,6 +25,10 @@ class ProfileController extends AsyncNotifier<AppUser> {
     List<String>? languages,
     bool? showAcquisitionHistory,
     bool? showAllListingScores,
+    bool? hideSwapListingsPublic,
+    bool? hideSaleListingsPublic,
+    bool? hideDonationListingsPublic,
+    bool? hideAuctionListingsPublic,
   }) async {
     final updated = await ref.read(profileRepositoryProvider).updateProfile(
           name: name,
@@ -37,6 +41,10 @@ class ProfileController extends AsyncNotifier<AppUser> {
           languages: languages,
           showAcquisitionHistory: showAcquisitionHistory,
           showAllListingScores: showAllListingScores,
+          hideSwapListingsPublic: hideSwapListingsPublic,
+          hideSaleListingsPublic: hideSaleListingsPublic,
+          hideDonationListingsPublic: hideDonationListingsPublic,
+          hideAuctionListingsPublic: hideAuctionListingsPublic,
         );
     state = AsyncData(updated);
     ref.read(authControllerProvider.notifier).setUser(updated);

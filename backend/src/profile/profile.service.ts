@@ -140,6 +140,10 @@ export class ProfileService {
       isPremium: user.isPremium,
       showAcquisitionHistory: user.showAcquisitionHistory,
       showAllListingScores: user.showAllListingScores,
+      hideSwapListingsPublic: user.hideSwapListingsPublic,
+      hideSaleListingsPublic: user.hideSaleListingsPublic,
+      hideDonationListingsPublic: user.hideDonationListingsPublic,
+      hideAuctionListingsPublic: user.hideAuctionListingsPublic,
       referralCode: user.referralCode,
       referralCount,
       createdAt: user.createdAt,
@@ -193,6 +197,10 @@ export class ProfileService {
       booksExchangedCount: user.booksExchangedCount,
       showAcquisitionHistory: user.showAcquisitionHistory,
       showAllListingScores: user.showAllListingScores,
+      hideSwapListingsPublic: user.hideSwapListingsPublic,
+      hideSaleListingsPublic: user.hideSaleListingsPublic,
+      hideDonationListingsPublic: user.hideDonationListingsPublic,
+      hideAuctionListingsPublic: user.hideAuctionListingsPublic,
     };
   }
 

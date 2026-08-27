@@ -3102,6 +3102,38 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileGroupLibrary => 'Könyvtáram';
 
   @override
+  String get profileGroupPrivacy => 'Adatvédelem';
+
+  @override
+  String get profileListingPrivacySubtitle =>
+      'Válaszd ki, mely hirdetéstípusok jelenjenek meg a nyilvános keresésben és a felfedezésben mások számára.';
+
+  @override
+  String get profileHideAllListingsButton => 'Minden hirdetés legyen privát';
+
+  @override
+  String get profileHideAllListingsConfirm =>
+      'Az összes hirdetésed (csere, eladás, adomány, árverés) privát lesz, és eltűnik a keresésből/felfedezésből mások számára. Bármikor egyenként visszakapcsolhatod alább az egyes típusokat.';
+
+  @override
+  String get profileListingPrivacySwap => 'Cserék';
+
+  @override
+  String get profileListingPrivacySale => 'Eladások';
+
+  @override
+  String get profileListingPrivacyDonation => 'Adományok';
+
+  @override
+  String get profileListingPrivacyAuction => 'Árverések';
+
+  @override
+  String get profileListingPrivacyHiddenLabel => 'Privát';
+
+  @override
+  String get profileListingPrivacyVisibleLabel => 'Nyilvános';
+
+  @override
   String get profileGroupDiscovery => 'Felfedezés';
 
   @override
@@ -3109,6 +3141,68 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get profileGroupSupport => 'Támogatás';
+
+  @override
+  String get profileRoadmap => 'Roadmap';
+
+  @override
+  String get roadmapSubtitle =>
+      'Min dolgozunk most, és mi következik a ShelfShare-nél.';
+
+  @override
+  String get roadmapStatusLive => 'Élő';
+
+  @override
+  String get roadmapStatusPlanned => 'Tervezett';
+
+  @override
+  String get roadmapBookOfMonthTitle => 'Hónap könyve';
+
+  @override
+  String get roadmapBookOfMonthBody =>
+      'A közösség havonta szavaz egy ajánlott könyvre - lásd a Kezdőlap szekcióját.';
+
+  @override
+  String get roadmapUpcomingReleasesTitle => 'Közelgő megjelenések';
+
+  @override
+  String get roadmapUpcomingReleasesBody =>
+      'A várható könyvmegjelenések naptára, hogy sose maradj le kedvenc műfajaid új könyveiről.';
+
+  @override
+  String get roadmapGiveawayTitle => 'Giveaway';
+
+  @override
+  String get roadmapGiveawayBody =>
+      'Rendszeres közösségi könyvsorsolások - a részletek az appban jelennek meg, amikor elindul az első giveaway.';
+
+  @override
+  String get roadmapBookstoreIntegrationsTitle => 'Antikváriumok integrációja';
+
+  @override
+  String get roadmapBookstoreIntegrationsBody =>
+      'A partner antikváriumok közvetlenül a ShelfShare-ben listázzák készletüket, a felhasználói hirdetések mellett.';
+
+  @override
+  String get roadmapPaymentsTitle => 'Fizetés az alkalmazásban';
+
+  @override
+  String get roadmapPaymentsBody =>
+      'Közvetlen fizetés eladásoknál és árveréseknél, külön átutalás nélkül a felhasználók között.';
+
+  @override
+  String get roadmapGoodreadsImportTitle => 'Goodreads könyvtár import';
+
+  @override
+  String get roadmapGoodreadsImportBody =>
+      'Hozd át olvasott/olvasandó listádat egy Goodreads exportból, ahelyett hogy egyenként adnád hozzá a könyveket.';
+
+  @override
+  String get roadmapAiRecommendationsTitle => 'AI-alapú ajánlások';
+
+  @override
+  String get roadmapAiRecommendationsBody =>
+      'Könyv- és hasonló ízlésű felhasználó-javaslatok az olvasási előzményeid alapján.';
 
   @override
   String get profileRecentActivity => 'Legutóbbi tevékenység';
@@ -3141,7 +3235,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get profileKeepAliveSubtitle =>
-      'ShelfShare rulează pe un server de acasă. Un cafea ajută.';
+      'ShelfShare rulează pe un server de acasă. O cafea ne ajută.';
 
   @override
   String get aboutDevTitle => 'About dev';
@@ -3155,11 +3249,11 @@ class AppLocalizationsHu extends AppLocalizations {
       'Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺';
 
   @override
-  String get homeRecommendedTitle => 'Recomandate pentru tine';
+  String get homeRecommendedTitle => 'Recomandări pentru tine';
 
   @override
   String homeNearbyTitle(int km) {
-    return 'Aproape de tine ($km km)';
+    return 'În apropierea ta ($km km)';
   }
 
   @override
@@ -3206,7 +3300,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get profileAboutEmpty =>
-      'Spune ceva despre tine — de exemplu ce genuri îți plac.';
+      'Spune-ne câte ceva despre tine — de exemplu, ce genuri îți plac.';
 
   @override
   String get profileMemberSince => 'Membru din';
@@ -3233,7 +3327,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileStatWishlisted => 'Cărți dorite';
 
   @override
-  String get profileTopGenresTitle => 'Top genuri';
+  String get profileTopGenresTitle => 'Genuri preferate';
 
   @override
   String get profileTopGenresEmpty =>
@@ -3314,7 +3408,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get aboutAppIntro =>
-      'Aici găsești pe scurt cum funcționează fiecare parte din ShelfShare. Deschide o secțiune ca să vezi detaliile.';
+      'Un ghid scurt despre cum funcționează ShelfShare. Deschide o secțiune pentru mai multe detalii.';
 
   @override
   String get aboutAppXpTitle => 'XP și niveluri';
@@ -3324,7 +3418,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get aboutAppTrustBody =>
-      'Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câți schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.';
+      'Trust Score-ul e un număr între 0 și 100 calculat din activitatea ta reală: emailul verificat, câte schimburi ai finalizat cu succes, cât de repede răspunzi la mesaje, cât de vechi e contul, recenziile primite. Nu e o verificare de identitate - e un indicator care ajută pe alții să știe dacă ești un partener de schimb de încredere. Cu cât interacționezi mai mult și mai bine, cu atât crește.';
 
   @override
   String get aboutAppShelvesTitle => 'Raftul meu (Public Bookshelf)';
@@ -3338,7 +3432,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get aboutAppHomeSectionsBody =>
-      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandate pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
+      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
 
   @override
   String get aboutAppExchangesTitle => 'Schimburi și oferte';
