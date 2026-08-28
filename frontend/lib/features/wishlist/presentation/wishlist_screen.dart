@@ -34,7 +34,13 @@ class WishlistScreen extends ConsumerWidget {
         child: RefreshIndicator(
           onRefresh: () => ref.read(wishlistControllerProvider.notifier).refresh(),
           child: state.when(
-            data: (items) {
+            data: (allItems) {
+              // Favoritele sunt pe anunț, deci același titlu poate avea mai
+              // multe rânduri (inima apăsată pe două exemplare). Ecranul ăsta
+              // e despre TITLURI dorite - două carduri identice n-ar spune
+              // nimic - deci păstrăm doar primul rând per carte (lista vine
+              // ordonată descrescător după dată).
+              final items = _uniqueByBook(allItems);
               if (items.isEmpty) {
                 return CenteredScrollable(
                   child: Column(
@@ -92,6 +98,14 @@ class WishlistScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  List<WishlistItem> _uniqueByBook(List<WishlistItem> items) {
+    final seen = <String>{};
+    return [
+      for (final item in items)
+        if (seen.add(item.book.id)) item,
+    ];
   }
 
   /// Wishlist-ul e împărțit în două secțiuni cu antet vizibil - „Alegerile

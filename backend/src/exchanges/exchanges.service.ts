@@ -11,6 +11,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
 import { ListingScoreService } from '../books/listing-score.service';
 import { StorageService } from '../storage/storage.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 import { NotificationType, Prisma } from '@prisma/client';
 import { CreateExchangeRequestDto } from './dto/create-exchange-request.dto';
 import { RateExchangeDto } from './dto/rate-exchange.dto';
@@ -83,6 +84,7 @@ export class ExchangesService {
     private conversations: ConversationsService,
     private listingScore: ListingScoreService,
     private storage: StorageService,
+    private activityLog: ActivityLogService,
   ) {}
 
   /**
@@ -274,6 +276,17 @@ export class ExchangesService {
       content,
     );
 
+    this.activityLog.record({
+      action: 'EXCHANGE_REQUEST_CREATED',
+      actorId: requesterId,
+      targetId: requestedBook.userId,
+      details: {
+        exchangeId: created.id,
+        carte: requestedBook.book.title,
+        oferita: offeredBook?.book.title,
+      },
+    });
+
     return {
       ...this.sanitizeParties(created),
       conversationId: conversation.id,
@@ -395,6 +408,13 @@ export class ExchangesService {
       `"${updated.requestedBook.book.title}" este acum într-un schimb în desfășurare cu altcineva`,
     );
 
+    this.activityLog.record({
+      action: 'EXCHANGE_ACCEPTED',
+      actorId: userId,
+      targetId: request.requesterId,
+      details: { exchangeId: id, carte: updated.requestedBook.book.title },
+    });
+
     return this.sanitizeParties(updated);
   }
 
@@ -416,6 +436,13 @@ export class ExchangesService {
       `${publicName(updated.owner)} a refuzat cererea ta de schimb pentru "${updated.requestedBook.book.title}"`,
       { exchangeRequestId: id },
     );
+
+    this.activityLog.record({
+      action: 'EXCHANGE_REJECTED',
+      actorId: userId,
+      targetId: request.requesterId,
+      details: { exchangeId: id, carte: updated.requestedBook.book.title },
+    });
 
     return this.sanitizeParties(updated);
   }
@@ -460,6 +487,12 @@ export class ExchangesService {
         include: INCLUDE_FULL,
       });
       await this.broadcastStatusToConversation(id, 'CANCELLED');
+      this.activityLog.record({
+        action: 'EXCHANGE_WITHDRAWN',
+        actorId: userId,
+        targetId: request.ownerId,
+        details: { exchangeId: id, carte: updated.requestedBook.book.title },
+      });
       return this.sanitizeParties(updated);
     }
 
@@ -574,6 +607,20 @@ export class ExchangesService {
       'EXCHANGE_REOPENED',
       `"${updated.requestedBook.book.title}" e din nou disponibilă la schimb (${reasonMessage})`,
     );
+
+    this.activityLog.record({
+      action: 'EXCHANGE_CANCELLED',
+      actorId: cancelledBy,
+      targetId:
+        cancelledBy === request.requesterId
+          ? request.ownerId
+          : request.requesterId,
+      details: {
+        exchangeId: id,
+        carte: updated.requestedBook.book.title,
+        motiv: reason,
+      },
+    });
 
     return this.sanitizeParties(updated);
   }
@@ -733,6 +780,16 @@ export class ExchangesService {
         { exchangeRequestId: id },
       );
     }
+
+    this.activityLog.record({
+      action:
+        updated.status === 'COMPLETED'
+          ? 'EXCHANGE_COMPLETED'
+          : 'EXCHANGE_MARKED_DONE',
+      actorId: userId,
+      targetId: isRequester ? updated.ownerId : updated.requesterId,
+      details: { exchangeId: id, carte: updated.requestedBook.book.title },
+    });
 
     return this.sanitizeParties(updated);
   }

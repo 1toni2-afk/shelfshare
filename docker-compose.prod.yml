@@ -58,6 +58,12 @@ services:
       # pentru că portul e legat la loopback mai sus: nimeni nu poate ajunge
       # la aplicație ocolind tunelul ca să-și fabrice singur header-ul.
       TRUST_PROXY: "true"
+      # Jurnalul global (interacțiuni user-user și user-admin, plus mesajele
+      # într-un fișier separat) - vezi backend/src/activity-log. Scris pe
+      # host prin bind mount, ca să supraviețuiască rebuild-urilor de imagine.
+      ACTIVITY_LOG_DIR: /app/logs
+    volumes:
+      - ./logs:/app/logs
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:

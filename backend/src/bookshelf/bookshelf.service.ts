@@ -6,6 +6,7 @@ import {
 import { Book, BookshelfStatus } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
+import { BookDescriptionService } from '../books/book-description.service';
 
 export type BookshelfImportSource = 'goodreads' | 'storygraph';
 
@@ -26,7 +27,10 @@ interface ParsedImportRow {
 
 @Injectable()
 export class BookshelfService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private bookDescriptions: BookDescriptionService,
+  ) {}
 
   /**
    * Import "Read"/"Currently Reading"/"To Read" dintr-un export CSV
@@ -185,12 +189,20 @@ export class BookshelfService {
       throw new NotFoundException('Cartea nu a fost găsită');
     }
 
-    return this.prisma.bookshelfEntry.upsert({
+    const entry = await this.prisma.bookshelfEntry.upsert({
       where: { userId_bookId: { userId, bookId } },
       create: { userId, bookId, status },
       update: { status },
       include: { book: true },
     });
+
+    // Din momentul asta cartea e vizibila pentru cineva, deci merita descriere.
+    // Fire and forget: raspunsul nu asteapta dupa Google Books.
+    if (!book.description) {
+      this.bookDescriptions.scheduleBackfill(bookId);
+    }
+
+    return entry;
   }
 
   async removeFromShelf(userId: string, bookId: string) {

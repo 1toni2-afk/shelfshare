@@ -1,9 +1,21 @@
-# Book metadata enrichment (carturesti.ro)
+# Book metadata enrichment (carturesti.ro + libris.ro)
 
 Scraper de îmbogățire, NU de descoperire: primește ISBN-uri deja existente în
 catalogul ShelfShare (venite din Google Books / Open Library, unde adesea
 lipsesc coperta, descrierea RO sau detaliile) și scoate pentru fiecare ce
-găsește pe pagina de produs de la carturesti.ro.
+găsește pe pagina de produs.
+
+Două surse, două scripturi, același format de ieșire (deci `import_enriched.py`
+le citește pe amândouă):
+
+| Script | Sursă | Cum ajunge la date | Pentru ce |
+|---|---|---|---|
+| `enrich_libris.py` | libris.ro | index din sitemap + JSON-LD, verificat pe ISBN | cărți în română |
+| `enrich_books.py` | carturesti.ro | căutare live pe ISBN + selectoare CSS | română, ce ratează libris |
+| `enrich_google.py` | Google Books API | JSON, verificat pe `industryIdentifiers` | restul catalogului |
+
+`nightly_run.py` le rulează pe toate trei, în lanț (vezi mai jos). Pe elefant.ro
+nu există scraper: originea răspunde 403 la orice.
 
 ## Instalare
 
@@ -118,15 +130,140 @@ carte. Pentru batch-uri mari, rulează-l peste noapte, nu paralelizat.
 Dacă și varianta asta începe să fie blocată, **oprește-te și raportează** – nu
 escalada spre spoofing de fingerprint sau rotație de IP.
 
+## libris.ro – `enrich_libris.py`
+
+A doua sursă, script separat, pentru că ruta către pagina de produs e alta.
+Ieșirea are exact același format, deci `import_enriched.py` o citește nemodificat.
+
+```bash
+python enrich_libris.py --build-index                      # o dată (27 cereri, ~8 MB)
+python enrich_libris.py --input isbns.txt --output enriched_libris.json
+python enrich_libris.py --isbn 9789734610792 --title "Jurnalul fericirii"
+```
+
+**Fără căutare, intenționat.** `robots.txt` de la libris interzice toate rutele
+de căutare pentru orice user-agent (`/search?*`, `/s.jsp`, `/ax.jsp`,
+`/*?fts_fts=`, `/*?iv.q=`, `/*?psq=`). Folosim în schimb ruta pe care site-ul
+o publică singur pentru crawlere – sitemap-urile – și mergem direct pe paginile
+de produs, care nu sunt interzise.
+
+**Cum se potrivește cartea.** URL-urile sunt `/carte/<slug>/<id>`, unde slug-ul
+e titlu+autor și nu conține ISBN. Deci:
+
+1. `--build-index` descarcă cele 27 de `sitemap-carte.xml` (53.004 cărți la
+   2026-08-27) și scrie `slug -> url` în `libris_index.json`;
+2. titlul cerut e scorat față de slug-uri (index inversat pe cuvinte, ca să nu
+   scanăm 53k intrări per carte) și se iau primii `--max-candidates` (implicit 3);
+3. paginile alea se deschid și se acceptă **doar** dacă `isbn`/`gtin13` din
+   JSON-LD e exact ISBN-ul cerut.
+
+Pasul 3 e ce face pasul 2 sigur. Spre deosebire de carturesti, unde căutarea
+întoarce produse arbitrare și euristica pe titlu e singura apărare, aici fiecare
+rezultat acceptat e confirmat de ISBN-ul de pe pagină. Nu există nivel fuzzy și
+nici `--allow-fuzzy-match`: tot ce iese are `isbnVerified: true`.
+`titleMatchScore` rămâne doar informativ (cât de bine a potrivit slug-ul).
+
+**Datele vin din JSON-LD**, nu din selectoare CSS: nodul `["Product","Book"]` dă
+`isbn`, `gtin13`, `name`, `author`, `publisher`, `description`, `image`,
+`datePublished`, `numberOfPages`, `inLanguage`, `bookFormat`, `bookEdition`,
+`category`. Mai stabil decât DOM-ul.
+
+Două particularități măsurate, ambele tratate în `_strip_author_suffix`:
+`name` conține și autorul („Jurnalul fericirii - Nicolae Steinhardt"), iar
+autorul apare uneori în ordine inversă față de titlu (`name` „... - Yasunari
+Kawabata", `author` „Kawabata Yasunari"). Contează pentru că `import_enriched.py`
+suprascrie `title` fix pentru intrările verificate.
+
+**Cloudflare: nu blochează.** Trei pagini de produs consecutive în *același*
+context de browser au întors toate 200 – deci aici ținem un singur context și
+doar distanțăm cererile (3–6s implicit), fără dansul cu context nou per navigare
+de la carturesti. Costă ~1 navigare per carte, față de ~2.
+
+Control rapid că lanțul merge (cărți confirmate pe libris la 2026-08-27):
+
+```bash
+printf '9789734610792,Jurnalul fericirii
+9786067795899,Dansatoarea din Izu
+9789734603930,Dans dans dans
+' > libris_control.txt
+python enrich_libris.py --input libris_control.txt --output /tmp/ctrl.json   # asteptat: 3/3
+```
+
 ## elefant.ro – blocat
 
-Adapterul există în `SITE_ADAPTERS`, dar **elefant.ro răspunde 403 pe toată
-originea** (inclusiv pe homepage) către un Chromium real, headless sau headed.
-Nu e un challenge care se rezolvă, ci un blocaj activ. Selectoarele lui
-(`result_link_selector`) sunt încă **neverificate** – n-am putut încărca nicio
-pagină ca să inspectăm DOM-ul – și formatul URL-ului de produs rămâne
-neconfirmat. `--source` e implicit `carturesti`; `elefant`/`both` rămân
+Adapterul există în `SITE_ADAPTERS` din `enrich_books.py`, dar **elefant.ro
+răspunde 403 pe toată originea** (inclusiv pe homepage) către un Chromium real,
+headless sau headed. Nu e un challenge care se rezolvă, ci un blocaj activ.
+Selectoarele lui (`result_link_selector`) sunt încă **neverificate** – n-am putut
+încărca nicio pagină ca să inspectăm DOM-ul – și formatul URL-ului de produs
+rămâne neconfirmat. `--source` e implicit `carturesti`; `elefant`/`both` rămân
 disponibile dacă blocajul dispare.
+
+Reverificat 2026-08-27 cu Playwright, context nou, aceleași condiții ca
+scraperul: `https://www.elefant.ro/` → **HTTP 403** („403 Forbidden", 2.800
+octeți), la fel și pagina de căutare; în trafic se vede
+`/cdn-cgi/challenge-platform/...`. Blocajul e neschimbat, deci nu există scraper
+de elefant – nu pentru că lipsește codul, ci pentru că nu se poate încărca nicio
+pagină. Conform notei de mai sus, **nu** escaladăm spre spoofing de amprentă sau
+rotație de IP.
+
+## Google Books – `enrich_google.py`
+
+A treia sursă și singura care nu e scraper: API JSON public, fără Cloudflare,
+fără browser, fără selectoare de întreținut.
+
+```bash
+python enrich_google.py --input isbns.txt --output enriched_google.json
+```
+
+Există pentru că golul real din catalog nu e unde păreau să fie scraperele:
+din 3.680.942 de cărți, **27** n-au copertă, dar **2.725.584** n-au descriere –
+și 2.724.945 dintre alea sunt în engleză. Librăriile românești n-au ce oferi
+acolo.
+
+Un volum se acceptă doar dacă ISBN-ul cerut apare în `industryIdentifiers`,
+la fel ca verificarea pe `gtin13` de la libris – `q=isbn:` e o interogare, nu o
+potrivire exactă.
+
+**Cota.** Fără `GOOGLE_BOOKS_API_KEY` cota anonimă e mică (măsurat 2026-08-27:
+429 după câteva sute de cereri) și pare zilnică. Scriptul salvează incremental
+(la fiecare 25) și reia din fișierul de ieșire, iar după 3 cărți la rând oprite
+de cotă abandonează rularea cu exit 2 în loc să macine restul listei producând
+doar erori. Cheia e aceeași variabilă pe care o folosește și backendul în
+`book-lookup.service.ts`.
+
+## Ce carte se îmbogățește prima – `nightly_run.py`
+
+Interogarea nu mai e `ORDER BY RANDOM()`. Catalogul are 3,68M de cărți, dar
+userii au atins 613 – deci ordinea contează mult mai mult decât viteza
+scraperului. Prioritatea:
+
+| tier | ce e | mărime la 2026-08-27 |
+|---|---|---|
+| 0 `atinse` | apare în raft, swipe, recenzie, wishlist, colecție, progres, user_books sau vot | 189 fără descriere |
+| 1 `populare` | are `popularityScore` | 23 fără descriere |
+| 2 `restul` | tot catalogul | ~2,7M |
+
+`RANDOM()` a rămas doar ca departajare în interiorul unui tier. Tabelele care
+fac o carte „atinsă" sunt în `TOUCHED_TABLES`.
+
+**Lanțul de surse.** Fiecare carte trece la sursa următoare doar dacă cea de
+dinainte n-a adus-o cu descriere:
+
+- română (`ROMANIAN_LANGS`): libris → carturesti → Google Books;
+- orice altceva: direct Google Books – librăriile românești nu au stoc străin
+  (măsurat: 0/12 pe candidați reali din DB).
+
+Etapele rulează pe subseturi, nu carte cu carte, ca să pornim un singur proces
+(și un singur browser) per sursă. Dacă `libris_index.json` lipsește, etapa
+libris se sare cu un avertisment, nu cade noaptea.
+
+Sesiunea ține implicit `RUN_HOURS` (7h, fereastra 01:00–08:00 a sarcinii
+programate). O rulare manuală poate cere altă durată:
+
+```bash
+python nightly_run.py --hours 14
+```
 
 ## Limitări cunoscute
 

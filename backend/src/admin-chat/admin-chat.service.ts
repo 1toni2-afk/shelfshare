@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 const PARTICIPANT_SELECT = {
   id: true,
@@ -18,7 +19,10 @@ const PARTICIPANT_SELECT = {
  */
 @Injectable()
 export class AdminChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityLog: ActivityLogService,
+  ) {}
 
   /** Conversația userului curent cu echipa de admini - creată la prima deschidere. */
   private async getOrCreateMyConversation(userId: string) {
@@ -54,6 +58,15 @@ export class AdminChatService {
         data: { lastMessageAt: new Date(), userLastReadAt: new Date() },
       }),
     ]);
+
+    // Tot mesaj e, deci merge în jurnalul de chat, nu în cel de acțiuni.
+    this.activityLog.recordChat({
+      action: 'SUPPORT_MESSAGE_TO_ADMIN',
+      actorId: userId,
+      details: { conversationId: conversation.id },
+      content,
+    });
+
     return message;
   }
 
@@ -133,6 +146,15 @@ export class AdminChatService {
         data: { lastMessageAt: new Date(), adminLastReadAt: new Date() },
       }),
     ]);
+
+    this.activityLog.recordChat({
+      action: 'SUPPORT_REPLY_FROM_ADMIN',
+      actorId: adminId,
+      targetId: conversation.userId,
+      details: { conversationId },
+      content,
+    });
+
     return message;
   }
 

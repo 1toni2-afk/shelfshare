@@ -15,6 +15,7 @@ import { PresenceService } from './presence.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ReportConversationDto } from './dto/report-conversation.dto';
 import { RealtimeService } from '../common/realtime/realtime.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 const PARTICIPANT_SELECT = {
   id: true,
@@ -89,6 +90,7 @@ export class ConversationsService {
     private mail: MailService,
     private presence: PresenceService,
     private realtime: RealtimeService,
+    private activityLog: ActivityLogService,
   ) {}
 
   /**
@@ -301,6 +303,14 @@ export class ConversationsService {
 
     await this.notifyNewMessage(conversation, senderId, dto.conversationId);
 
+    this.activityLog.recordChat({
+      action: dto.location ? 'MESSAGE_LOCATION' : 'MESSAGE_SENT',
+      actorId: senderId,
+      targetId: this.otherParticipant(conversation, senderId),
+      details: { conversationId: dto.conversationId },
+      content: dto.content,
+    });
+
     return this.mapMessage(created);
   }
 
@@ -426,7 +436,24 @@ export class ConversationsService {
 
     await this.notifyNewMessage(conversation, senderId, conversationId);
 
+    this.activityLog.recordChat({
+      action: 'MESSAGE_PHOTO',
+      actorId: senderId,
+      targetId: this.otherParticipant(conversation, senderId),
+      details: { conversationId },
+    });
+
     return this.mapMessage(created);
+  }
+
+  /** Celălalt participant la conversație - destinatarul, pentru jurnal. */
+  private otherParticipant(
+    conversation: { userAId: string; userBId: string },
+    senderId: string,
+  ) {
+    return conversation.userAId === senderId
+      ? conversation.userBId
+      : conversation.userAId;
   }
 
   private async notifyNewMessage(
@@ -602,6 +629,15 @@ export class ConversationsService {
         conversationId,
         transcriptPath,
       },
+    });
+
+    // Raportarea merge în jurnalul principal, nu în cel de chat: e o acțiune
+    // către moderare, nu un mesaj.
+    this.activityLog.record({
+      action: 'CONVERSATION_REPORTED',
+      actorId: reporterId,
+      targetId: reportedUserId,
+      details: { reportId: report.id, conversationId, motiv: dto.reason },
     });
 
     // Raportul e deja salvat, cu tot cu transcript - dacă emailul cade,

@@ -25,6 +25,7 @@ describe('BooksService', () => {
         findMany: jest.fn(),
         findUnique: jest.fn(),
         findFirst: jest.fn(),
+        update: jest.fn(),
       },
       priceOffer: { findFirst: jest.fn().mockResolvedValue(null) },
       exchangeRequest: { findFirst: jest.fn().mockResolvedValue(null) },
@@ -39,7 +40,13 @@ describe('BooksService', () => {
           provide: StorageService,
           useValue: { getPublicUrl: (p: string) => `https://cdn.test/${p}` },
         },
-        { provide: WishlistService, useValue: {} },
+        {
+          provide: WishlistService,
+          useValue: {
+            notifyPriceChanged: jest.fn().mockResolvedValue(undefined),
+            notifyWishlistedUsers: jest.fn().mockResolvedValue(undefined),
+          },
+        },
         { provide: FollowService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: {} },
@@ -55,6 +62,73 @@ describe('BooksService', () => {
     }).compile();
 
     service = module.get(BooksService);
+  });
+
+  describe('updateUserBook - pretul redus si cooldown-ul de 72h', () => {
+    const HOUR = 60 * 60 * 1000;
+    /** Anunț la vânzare cu 50 lei, cu ultima modificare de preț acum `agoMs`. */
+    const listing = (agoMs: number | null, salePrice = 50) => ({
+      id: 'ub-1',
+      userId: 'user-1',
+      isForSale: true,
+      salePrice,
+      photos: ['p.jpg'],
+      permanentlyTransferred: false,
+      priceUpdatedAt: agoMs == null ? null : new Date(Date.now() - agoMs),
+      book: {},
+      user: { id: 'user-1', name: 'Ana', nameVisible: true },
+    });
+
+    it('retine pretul vechi cand pretul scade', async () => {
+      prisma.userBook.findUnique.mockResolvedValue(listing(null));
+      prisma.userBook.update.mockResolvedValue({ ...listing(null), book: {} });
+
+      await service.updateUserBook('user-1', 'ub-1', { salePrice: 35 });
+
+      const data = prisma.userBook.update.mock.calls[0][0].data;
+      expect(data.previousSalePrice).toBe(50);
+      expect(data.priceUpdatedAt).toBeInstanceOf(Date);
+    });
+
+    it('sterge pretul vechi cand pretul creste - nu mai e o reducere', async () => {
+      prisma.userBook.findUnique.mockResolvedValue(listing(null));
+      prisma.userBook.update.mockResolvedValue({ ...listing(null), book: {} });
+
+      await service.updateUserBook('user-1', 'ub-1', { salePrice: 70 });
+
+      expect(prisma.userBook.update.mock.calls[0][0].data.previousSalePrice).toBeNull();
+    });
+
+    it('respinge o a doua modificare in mai putin de 72h', async () => {
+      prisma.userBook.findUnique.mockResolvedValue(listing(10 * HOUR));
+
+      await expect(
+        service.updateUserBook('user-1', 'ub-1', { salePrice: 35 }),
+      ).rejects.toThrow(/62 de ore/);
+      expect(prisma.userBook.update).not.toHaveBeenCalled();
+    });
+
+    it('permite modificarea dupa ce trec 72h', async () => {
+      prisma.userBook.findUnique.mockResolvedValue(listing(73 * HOUR));
+      prisma.userBook.update.mockResolvedValue({ ...listing(null), book: {} });
+
+      await service.updateUserBook('user-1', 'ub-1', { salePrice: 35 });
+
+      expect(prisma.userBook.update).toHaveBeenCalled();
+    });
+
+    it('nu declanseaza cooldown-ul cand pretul trimis e acelasi', async () => {
+      // Sheet-ul de editare trimite mereu salePrice, chiar daca userul a
+      // schimbat doar starea cartii - asta nu trebuie sa consume cooldown-ul.
+      prisma.userBook.findUnique.mockResolvedValue(listing(HOUR));
+      prisma.userBook.update.mockResolvedValue({ ...listing(null), book: {} });
+
+      await service.updateUserBook('user-1', 'ub-1', { salePrice: 50 });
+
+      const data = prisma.userBook.update.mock.calls[0][0].data;
+      expect(data.priceUpdatedAt).toBeUndefined();
+      expect(data.previousSalePrice).toBeUndefined();
+    });
   });
 
   describe('getMapCities', () => {

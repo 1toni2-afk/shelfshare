@@ -118,10 +118,15 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final wishlistState = ref.watch(wishlistControllerProvider);
     WishlistItem? localWishlistRow;
     for (final item in wishlistState.value ?? const <WishlistItem>[]) {
-      if (item.book.id == bookId) {
+      if (item.book.id != bookId) continue;
+      // Favoritul e legat de ANUNȚ: rândul acestui anunț are prioritate, iar
+      // unul „de titlu" (Book Match) e doar rezervă. Un favorit pus pe alt
+      // anunț al aceleiași cărți nu aprinde inima aici.
+      if (item.userBookId == widget.userBookId) {
         localWishlistRow = item;
         break;
       }
+      if (item.userBookId == null) localWishlistRow = item;
     }
     final isWishlisted = bookId != null &&
         ((currentBook?.isWishlisted ?? false) || localWishlistRow != null);
@@ -200,7 +205,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                   onPressed: () async {
                     await ref
                         .read(wishlistControllerProvider.notifier)
-                        .toggle(bookId);
+                        .toggle(bookId, userBookId: widget.userBookId);
                     // Reîncărcăm detaliul ca numărul de favorite de lângă inimă
                     // să reflecte imediat toggle-ul propriu.
                     ref.invalidate(bookDetailProvider(widget.userBookId));
@@ -1735,15 +1740,57 @@ class _PriceBlock extends StatelessWidget {
     final referencePrice = book.book.referencePrice;
     final referenceCurrency = book.book.referencePriceCurrency ?? '';
     final showSaving = referencePrice != null && referencePrice > salePrice;
+    // Reducere făcută de proprietar: prețul vechi apare tăiat lângă cel nou
+    // (distinct de „prețul de librărie" de mai jos, care e prețul cărții noi).
+    final previousPrice = book.previousSalePrice;
+    final isReduced = previousPrice != null && previousPrice > salePrice;
+    final discountPercent =
+        isReduced ? (100 * (previousPrice - salePrice) / previousPrice).round() : 0;
 
     return Column(
       children: [
-        Text(
-          context.l10n.priceLei(salePrice.toStringAsFixed(0)),
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            if (isReduced) ...[
+              Text(
+                context.l10n.priceLei(previousPrice.toStringAsFixed(0)),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.mutedForeground,
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: AppColors.mutedForeground,
+                    ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              context.l10n.priceLei(salePrice.toStringAsFixed(0)),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            if (isReduced && discountPercent > 0) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '-$discountPercent%',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         if (showSaving) ...[
           const SizedBox(height: 4),

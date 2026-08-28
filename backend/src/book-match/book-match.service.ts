@@ -729,17 +729,19 @@ export class BookMatchService {
 
     let addedToWishlist = false;
     if (input.action === 'YES') {
-      // upsert, nu create: dacă titlul e deja pe wishlist (adăugat manual),
-      // `update: {}` îl lasă exact cum e - inclusiv `source: PERSONAL`.
-      const before = await this.prisma.wishlistItem.findUnique({
-        where: { userId_bookId: { userId, bookId: book.id } },
+      // Dacă titlul e deja pe wishlist (adăugat manual sau ca favorit pe un
+      // anunț anume), îl lăsăm exact cum e - inclusiv `source: PERSONAL`.
+      // Rândul creat aici e „de titlu" (fără userBookId): un „Yes" în Book
+      // Match spune că vrei cartea, nu că vrei exemplarul cuiva anume.
+      const before = await this.prisma.wishlistItem.findFirst({
+        where: { userId, bookId: book.id },
         select: { id: true },
       });
-      await this.prisma.wishlistItem.upsert({
-        where: { userId_bookId: { userId, bookId: book.id } },
-        create: { userId, bookId: book.id, source: 'BOOK_MATCH' },
-        update: {},
-      });
+      if (!before) {
+        await this.prisma.wishlistItem.create({
+          data: { userId, bookId: book.id, source: 'BOOK_MATCH' },
+        });
+      }
       addedToWishlist = !before;
     }
 

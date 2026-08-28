@@ -22,7 +22,7 @@ describe('WishlistService', () => {
       // Implicit: userul NU are un anunț pentru titlu (nu e cartea lui).
       userBook: { findFirst: jest.fn().mockResolvedValue(null) },
       wishlistItem: {
-        findUnique: jest.fn(),
+        findFirst: jest.fn().mockResolvedValue(null),
         create: jest.fn(),
         deleteMany: jest.fn(),
         findMany: jest.fn(),
@@ -61,7 +61,7 @@ describe('WishlistService', () => {
 
     it('respinge daca e deja pe wishlist', async () => {
       prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
-      prisma.wishlistItem.findUnique.mockResolvedValue({ id: 'wl-1' });
+      prisma.wishlistItem.findFirst.mockResolvedValue({ id: 'wl-1' });
 
       await expect(service.add('user-1', 'book-1')).rejects.toThrow(
         ConflictException,
@@ -83,7 +83,7 @@ describe('WishlistService', () => {
       // where, deci mock-ul care simuleaza filtrarea Prisma intoarce null.
       prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
       prisma.userBook.findFirst.mockResolvedValue(null);
-      prisma.wishlistItem.findUnique.mockResolvedValue(null);
+      prisma.wishlistItem.findFirst.mockResolvedValue(null);
       prisma.wishlistItem.create.mockResolvedValue({ id: 'wl-new' });
 
       await expect(service.add('user-1', 'book-1')).resolves.toEqual({ id: 'wl-new' });
@@ -95,12 +95,47 @@ describe('WishlistService', () => {
 
     it('adauga cartea pe wishlist', async () => {
       prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
-      prisma.wishlistItem.findUnique.mockResolvedValue(null);
+      prisma.wishlistItem.findFirst.mockResolvedValue(null);
       prisma.wishlistItem.create.mockResolvedValue({ id: 'wl-new' });
 
       const result = await service.add('user-1', 'book-1');
 
       expect(result).toEqual({ id: 'wl-new' });
+    });
+
+    it('leaga favoritul de anuntul de pe care s-a apasat inima', async () => {
+      prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
+      // Primul findFirst (validarea anuntului) intoarce anuntul, restul null.
+      prisma.userBook.findFirst
+        .mockResolvedValueOnce({ id: 'ub-1' })
+        .mockResolvedValue(null);
+      prisma.wishlistItem.findFirst.mockResolvedValue(null);
+      prisma.wishlistItem.create.mockResolvedValue({ id: 'wl-new' });
+
+      await service.add('user-1', 'book-1', 'ub-1');
+
+      expect(prisma.wishlistItem.create).toHaveBeenCalledWith({
+        data: { userId: 'user-1', bookId: 'book-1', userBookId: 'ub-1' },
+        include: { book: true },
+      });
+    });
+
+    it('respinge un anunt care nu e al titlului cerut', async () => {
+      prisma.book.findUnique.mockResolvedValue({ id: 'book-1' });
+      prisma.userBook.findFirst.mockResolvedValue(null);
+
+      await expect(service.add('user-1', 'book-1', 'ub-altul')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
+    });
+
+    it('scoate de la favorite doar anuntul cerut', async () => {
+      await service.removeListing('user-1', 'ub-1');
+
+      expect(prisma.wishlistItem.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', userBookId: 'ub-1' },
+      });
     });
   });
 
@@ -116,6 +151,7 @@ describe('WishlistService', () => {
       expect(prisma.wishlistItem.findMany).toHaveBeenCalledWith({
         where: { bookId: 'book-1', userId: { not: 'user-1' } },
         include: { book: true },
+        distinct: ['userId'],
       });
       expect(notifications.create).toHaveBeenCalledTimes(2);
       expect(notifications.create).toHaveBeenCalledWith(

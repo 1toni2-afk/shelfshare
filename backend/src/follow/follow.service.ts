@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { publicName } from '../common/utils/user-visibility';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class FollowService {
@@ -15,6 +16,7 @@ export class FollowService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private activityLog: ActivityLogService,
   ) {}
 
   async followUser(followerId: string, followingId: string) {
@@ -33,6 +35,11 @@ export class FollowService {
       create: { followerId, followingId },
       update: {},
     });
+    this.activityLog.record({
+      action: 'FOLLOW',
+      actorId: followerId,
+      targetId: followingId,
+    });
     return { message: 'Urmărești acest utilizator' };
   }
 
@@ -42,6 +49,11 @@ export class FollowService {
         where: { followerId_followingId: { followerId, followingId } },
       })
       .catch(() => {});
+    this.activityLog.record({
+      action: 'UNFOLLOW',
+      actorId: followerId,
+      targetId: followingId,
+    });
     return { message: 'Nu mai urmărești acest utilizator' };
   }
 

@@ -22,13 +22,22 @@ export class WishlistController {
   @Post()
   add(@Req() req: Request, @Body() dto: AddToWishlistDto) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.wishlistService.add(userId!, dto.bookId);
+    return this.wishlistService.add(userId!, dto.bookId, dto.userBookId);
   }
 
   @Get()
   getMine(@Req() req: Request) {
     const { userId } = req.user as AuthenticatedUser;
     return this.wishlistService.getMine(userId!);
+  }
+
+  /// Declarată ÎNAINTE de `:bookId`, altfel „listing" ar fi citit ca bookId.
+  /// Scoate favoritul unui singur anunț (inima de pe card/detaliu), spre
+  /// deosebire de ruta de mai jos care scoate titlul întreg.
+  @Delete('listing/:userBookId')
+  removeListing(@Req() req: Request, @Param('userBookId') userBookId: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.wishlistService.removeListing(userId!, userBookId);
   }
 
   @Delete(':bookId')

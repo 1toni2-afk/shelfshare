@@ -7,6 +7,7 @@ import { ConversationsService } from '../chat/conversations.service';
 import { ListingScoreService } from '../books/listing-score.service';
 import { StorageService } from '../storage/storage.service';
 import { XP_EXCHANGE_COMPLETED } from '../common/utils/xp';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 describe('ExchangesService', () => {
   let service: ExchangesService;
@@ -67,6 +68,10 @@ describe('ExchangesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ExchangesService,
+        {
+          provide: ActivityLogService,
+          useValue: { record: jest.fn(), recordChat: jest.fn() },
+        },
         { provide: PrismaService, useValue: prisma },
         {
           provide: NotificationsService,

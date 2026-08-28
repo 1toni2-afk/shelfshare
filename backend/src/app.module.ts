@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { StorageModule } from './storage/storage.module';
@@ -46,6 +47,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
     RealtimeModule,
     PrismaModule,
+    ActivityLogModule,
     AuthModule,
     ProfileModule,
     StorageModule,

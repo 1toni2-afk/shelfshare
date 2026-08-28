@@ -699,6 +699,17 @@ model UserBook {
   salePrice    Decimal? @db.Decimal(10, 2)
   isNegotiable Boolean  @default(true)
 
+  /// Prețul de dinaintea ultimei REDUCERI, ca anunțul să poată arăta prețul
+  /// vechi tăiat lângă cel nou. NULL când nu e vorba de o reducere: preț pus
+  /// prima dată, preț crescut, sau anunț scos de la vânzare.
+  previousSalePrice Decimal? @db.Decimal(10, 2)
+
+  /// Când a fost schimbat ultima dată `salePrice`. Impune cooldown-ul de 72h
+  /// între două modificări de preț (PRICE_UPDATE_COOLDOWN_MS în
+  /// books.service.ts) - fără el, un anunț putea „oscila" prețul zilnic ca să
+  /// pară mereu redus.
+  priceUpdatedAt DateTime?
+
   /// „Sau vinde cu X lei" pe un anunț de tip Schimb: proprietarul acceptă
   /// explicit, încă de la listare, și o ofertă în bani, fără ca anunțul să
   /// devină unul de vânzare (isForSale rămâne false, deci categoria din
@@ -762,6 +773,7 @@ model UserBook {
   reports                  Report[]
   bookViews                BookView[]
   scoreEvents              ListingScoreEvent[]
+  wishlistItems            WishlistItem[]
 
   // Lanțul de proveniență - dacă userul care a primit cartea (schimb/vânzare)
   // decide să o re-listeze, noul anunț ține minte anunțul din care provine,
@@ -1297,11 +1309,25 @@ model WishlistItem {
   bookId String
   book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
+  /// Anunțul de pe care a fost apăsată inima. Favoritul e legat de EXEMPLAR,
+  /// nu de titlu: dacă „Ion" e listat de trei useri, inima trebuie să rămână
+  /// aprinsă doar pe anunțul pus la favorite, nu pe toate trei.
+  /// NULL = dorință la nivel de titlu („vreau cartea, de la oricine"): așa
+  /// intră rândurile din Book Match și tot acolo ajung cele ale căror anunț
+  /// a dispărut între timp (onDelete: SetNull).
+  userBookId String?
+  userBook   UserBook? @relation(fields: [userBookId], references: [id], onDelete: SetNull)
+
   source WishlistItemSource @default(PERSONAL)
 
   createdAt DateTime @default(now())
 
-  @@unique([userId, bookId])
+  /// userBookId intră în cheia unică: două anunțuri diferite ale aceluiași
+  /// titlu sunt două favorite distincte. Postgres tratează NULL-urile ca
+  /// distincte, deci unicitatea rândurilor „de titlu" (userBookId NULL) e
+  /// impusă în cod (vezi WishlistService.add).
+  @@unique([userId, bookId, userBookId])
+  @@index([userId, bookId])
   @@map("wishlist_items")
 }
 

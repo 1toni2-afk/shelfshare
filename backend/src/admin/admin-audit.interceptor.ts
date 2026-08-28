@@ -7,6 +7,7 @@ import {
 import type { Request } from 'express';
 import { tap } from 'rxjs/operators';
 import { SecurityEventsService } from '../security-events/security-events.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 import { clientIp } from '../common/utils/client-ip';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -18,7 +19,10 @@ import type { AuthenticatedUser } from '../auth/types/authenticated-user';
  */
 @Injectable()
 export class AdminAuditInterceptor implements NestInterceptor {
-  constructor(private securityEvents: SecurityEventsService) {}
+  constructor(
+    private securityEvents: SecurityEventsService,
+    private activityLog: ActivityLogService,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler) {
     const req = context.switchToHttp().getRequest<Request>();
@@ -41,6 +45,22 @@ export class AdminAuditInterceptor implements NestInterceptor {
             params: req.params,
           },
         );
+
+        // Aceeași acțiune, și în jurnalul global pe fișiere - acolo o citești
+        // pe zile, lângă restul interacțiunilor, fără să interoghezi baza.
+        // `params.userId` e userul vizat de majoritatea rutelor de admin
+        // (ban, premium, roluri); pentru restul rămâne doar calea.
+        const params = req.params as Record<string, string>;
+        this.activityLog.record({
+          action: 'ADMIN_ACTION',
+          actorId: userId ?? null,
+          targetId: params.userId ?? null,
+          details: {
+            method: req.method,
+            path: req.originalUrl ?? req.url,
+            ...(Object.keys(params).length > 0 ? { params } : {}),
+          },
+        });
       }),
     );
   }

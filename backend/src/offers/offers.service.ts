@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
 import { ListingScoreService } from '../books/listing-score.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 import { NotificationType } from '@prisma/client';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { CounterOfferDto } from './dto/counter-offer.dto';
@@ -69,6 +70,7 @@ export class OffersService {
     private notifications: NotificationsService,
     private conversations: ConversationsService,
     private listingScore: ListingScoreService,
+    private activityLog: ActivityLogService,
   ) {}
 
   private async notifySafe(
@@ -161,6 +163,17 @@ export class OffersService {
     // Cel mai puternic semnal de interes pentru „Cele mai căutate" -
     // fire-and-forget, un punct pierdut nu justifică să pice oferta.
     this.listingScore.recordBuyOffer(userBookId, buyerId).catch(() => {});
+
+    this.activityLog.record({
+      action: 'OFFER_CREATED',
+      actorId: buyerId,
+      targetId: userBook.userId,
+      details: {
+        offerId: created.id,
+        carte: userBook.book.title,
+        suma: dto.amount,
+      },
+    });
 
     // Frontend-ul deschide chatul cu cumpărătorul direct după trimiterea
     // ofertei - vezi book_detail_screen.dart#_MakeOfferSheet.
@@ -265,6 +278,17 @@ export class OffersService {
       `"${updated.userBook.book.title}" este acum într-o vânzare în desfășurare cu altcineva`,
     );
 
+    this.activityLog.record({
+      action: 'OFFER_ACCEPTED',
+      actorId: userId,
+      targetId: offer.buyerId,
+      details: {
+        offerId: id,
+        carte: updated.userBook.book.title,
+        suma: Number(updated.amount),
+      },
+    });
+
     return this.sanitizeParties(updated);
   }
 
@@ -298,6 +322,13 @@ export class OffersService {
           : {}),
       },
     );
+
+    this.activityLog.record({
+      action: 'OFFER_REJECTED',
+      actorId: userId,
+      targetId: offer.buyerId,
+      details: { offerId: id, carte: updated.userBook.book.title },
+    });
 
     return this.sanitizeParties(updated);
   }
@@ -512,6 +543,14 @@ export class OffersService {
         { offerId: id },
       );
     }
+
+    this.activityLog.record({
+      action:
+        updated.status === 'COMPLETED' ? 'SALE_COMPLETED' : 'SALE_MARKED_DONE',
+      actorId: userId,
+      targetId: isBuyer ? updated.ownerId : updated.buyerId,
+      details: { offerId: id, carte: updated.userBook.book.title },
+    });
 
     return this.sanitizeParties(updated);
   }
@@ -820,6 +859,17 @@ export class OffersService {
       `Ai primit o contra-ofertă de ${dto.amount} lei pentru "${originalWithBook.userBook.book.title}"`,
       { offerId: counterOffer.id, conversationId: conversation.id },
     );
+
+    this.activityLog.record({
+      action: 'OFFER_COUNTERED',
+      actorId: userId,
+      targetId: newOwnerId,
+      details: {
+        offerId: counterOffer.id,
+        carte: originalWithBook.userBook.book.title,
+        suma: dto.amount,
+      },
+    });
 
     return this.sanitizeParties(counterOffer);
   }

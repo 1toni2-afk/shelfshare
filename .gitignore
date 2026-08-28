@@ -14,6 +14,9 @@ __pycache__/
 
 # Logs
 *.log
+# Jurnalul global al aplicatiei (backend/src/activity-log) - fisiere pe zile,
+# scrise in rulare; volumul din docker-compose le tine pe host.
+logs/
 npm-debug.log*
 pnpm-debug.log*
 
@@ -47,3 +50,6 @@ scripts/book-enrichment/nightly_state.json
 scripts/book-enrichment/nightly_runs/
 scripts/book-enrichment/run*.log
 scripts/book-enrichment/debug_pages*/
+# Indexul libris (~8 MB, regenerabil cu enrich_libris.py --build-index)
+scripts/book-enrichment/libris_index.json
+scripts/book-enrichment/libris_*.txt

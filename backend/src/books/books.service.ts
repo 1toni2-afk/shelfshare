@@ -33,6 +33,12 @@ const MAX_PHOTOS_PER_LISTING = 10;
 // (10 photos x this many listings).
 const MAX_TOTAL_LISTING_PHOTOS_PER_USER = 300;
 
+/// Cooldown între două modificări ale prețului de vânzare. Fără el, un anunț
+/// putea urca și coborî prețul zilnic ca să pară permanent „redus" - cu
+/// prețul vechi tăiat lângă cel nou, asta ar fi devenit o unealtă de marketing
+/// fals. 72h e și intervalul în care o reducere reală rămâne vizibilă.
+const PRICE_UPDATE_COOLDOWN_MS = 72 * 60 * 60 * 1000;
+
 const OWNER_SELECT = {
   id: true,
   name: true,
@@ -1028,13 +1034,20 @@ export class BooksService {
    * (care măsoară vizionările - atenție, nu neapărat dorință de a primi).
    */
   async getMostWishedBooks() {
+    // Gruparea e pe (carte, user), nu doar pe carte: cu favoritele legate de
+    // anunț, un singur user poate avea mai multe rânduri pentru același titlu,
+    // iar un count brut l-ar număra de mai multe ori.
     const grouped = await this.prisma.wishlistItem.groupBy({
-      by: ['bookId'],
-      _count: { userId: true },
-      orderBy: { _count: { userId: 'desc' } },
-      take: 20,
+      by: ['bookId', 'userId'],
     });
-    const topIds = grouped.map((g) => g.bookId);
+    const usersPerBook = new Map<string, number>();
+    for (const row of grouped) {
+      usersPerBook.set(row.bookId, (usersPerBook.get(row.bookId) ?? 0) + 1);
+    }
+    const topIds = [...usersPerBook.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([bookId]) => bookId);
     return this.pickListingsForBooks(topIds);
   }
 
@@ -1725,18 +1738,36 @@ export class BooksService {
     // Starea de favorite vine acum de la server, nu din lista de wishlist a
     // clientului: aceea putea fi neîncărcată sau să conțină un alt `book.id`
     // pentru același titlu, iar inima rămânea gri deși cartea era la favorite.
-    // `favoriteCount` = câți useri au titlul la favorite (afișat lângă inimă).
-    const [favoriteCount, ownFavorite] = await Promise.all([
-      this.prisma.wishlistItem.count({ where: { bookId: userBook.bookId } }),
+    // `favoriteCount` = câți useri au titlul la favorite (afișat lângă inimă) -
+    // distinct pe user, fiindcă favoritele sunt acum pe anunț și același user
+    // poate avea inimi pe mai multe exemplare ale titlului.
+    const [favoriteUsers, ownFavoriteRows] = await Promise.all([
+      this.prisma.wishlistItem.findMany({
+        where: { bookId: userBook.bookId },
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
       viewerId
-        ? this.prisma.wishlistItem.findUnique({
+        ? this.prisma.wishlistItem.findMany({
+            // Doar favoritul ACESTUI anunț (sau unul „de titlu", venit din
+            // Book Match / dinaintea ancorării) aprinde inima - altfel toate
+            // anunțurile aceleiași cărți apăreau la favorite deodată.
             where: {
-              userId_bookId: { userId: viewerId, bookId: userBook.bookId },
+              userId: viewerId,
+              bookId: userBook.bookId,
+              OR: [{ userBookId }, { userBookId: null }],
             },
-            select: { id: true, source: true },
+            select: { id: true, source: true, userBookId: true },
           })
-        : Promise.resolve(null),
+        : Promise.resolve(
+            [] as { id: string; source: string; userBookId: string | null }[],
+          ),
     ]);
+    const favoriteCount = favoriteUsers.length;
+    const ownFavorite =
+      ownFavoriteRows.find((row) => row.userBookId === userBookId) ??
+      ownFavoriteRows[0] ??
+      null;
 
     return {
       ...this.toPublicPhotos(userBook),
@@ -1820,9 +1851,45 @@ export class BooksService {
       );
     }
 
+    // Reducere de preț + cooldown de 72h. `salePrice` vine în DTO la fiecare
+    // salvare din sheet-ul de editare (chiar dacă userul n-a atins prețul),
+    // deci ne uităm la valoarea efectivă, nu la simpla lui prezență.
+    const oldPrice =
+      userBook.salePrice != null ? Number(userBook.salePrice) : null;
+    const newPrice = dto.salePrice;
+    const priceChanged =
+      newPrice != null && oldPrice != null && newPrice !== oldPrice;
+    if (priceChanged && userBook.priceUpdatedAt) {
+      const elapsed = Date.now() - userBook.priceUpdatedAt.getTime();
+      if (elapsed < PRICE_UPDATE_COOLDOWN_MS) {
+        const hoursLeft = Math.ceil(
+          (PRICE_UPDATE_COOLDOWN_MS - elapsed) / (60 * 60 * 1000),
+        );
+        throw new BadRequestException(
+          `Prețul a fost modificat recent. Îl poți schimba din nou peste ${hoursLeft} ${
+            hoursLeft === 1 ? 'oră' : 'de ore'
+          }.`,
+        );
+      }
+    }
+
+    const priceData: Prisma.UserBookUpdateInput = priceChanged
+      ? {
+          priceUpdatedAt: new Date(),
+          // Doar o SCĂDERE lasă în urmă un preț tăiat; o creștere șterge
+          // reducerea anterioară, ca să nu rămână afișată o economie care nu
+          // mai există.
+          previousSalePrice: newPrice < oldPrice ? oldPrice : null,
+        }
+      : {};
+    // Anunț scos de la vânzare - reducerea nu mai are ce afișa.
+    if (dto.isForSale === false) {
+      priceData.previousSalePrice = null;
+    }
+
     const updated = await this.prisma.userBook.update({
       where: { id: userBookId },
-      data: dto,
+      data: { ...dto, ...priceData },
       include: { book: true },
     });
 

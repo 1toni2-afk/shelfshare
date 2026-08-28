@@ -63,6 +63,34 @@ După prima dată, pentru fiecare update:
 ./scripts/deploy.sh
 ```
 
+## Jurnalul global (activity log)
+
+Fiecare interacțiune user-user și user-admin se scrie în fișiere text, nu în
+baza de date: un fișier pe zi, în foldere an/lună.
+
+```
+logs/activity/2026/08/2026-08-28.log   # schimburi, oferte, licitații, follow,
+                                       # blocări, rapoarte, acțiuni de admin
+logs/chat/2026/08/2026-08-28.log       # mesajele (fișier separat: sunt de zeci
+                                       # de ori mai multe și ar îneca restul)
+```
+
+O linie arată așa:
+
+```
+[14:03:22] Ana Pop (ab12cd34) → Ion Vasile (ef56ab78) OFFER_ACCEPTED {"carte":"Ion","suma":35}
+```
+
+În producție folderul e montat pe host (`./logs`, vezi `docker-compose.prod.yml`),
+deci supraviețuiește rebuild-urilor. Variabile de mediu:
+
+| Variabilă | Implicit | Ce face |
+| --- | --- | --- |
+| `ACTIVITY_LOG_DIR` | `<cwd>/logs` | rădăcina jurnalului |
+| `ACTIVITY_LOG_TZ` | `Europe/Bucharest` | fusul care decide „ce zi e" |
+| `ACTIVITY_LOG_CHAT_CONTENT` | `false` | `true` scrie și textul mesajelor (implicit doar lungimea) |
+| `ACTIVITY_LOG_DISABLED` | `false` | `true` oprește complet scrierea |
+
 ## CI
 
 La fiecare push pe `main` sau Pull Request, GitHub Actions rulează automat lint + build check pe backend. Deploy-ul rămâne manual (vezi mai sus) — se automatizează mai târziu, când are sens.

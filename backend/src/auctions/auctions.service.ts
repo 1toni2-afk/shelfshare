@@ -12,6 +12,7 @@ import { CreateAuctionDto } from './dto/create-auction.dto';
 import { PlaceBidDto } from './dto/place-bid.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_SALE_COMPLETED } from '../common/utils/xp';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 // Anti-sniping: un bid plasat în ultimele 5 minute împinge termenul cu încă
 // 5 minute, cât timp tot vin bid-uri târzii - descurajează "sniping"-ul de
@@ -54,6 +55,7 @@ export class AuctionsService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private activityLog: ActivityLogService,
   ) {}
 
   private async notifySafe(
@@ -207,6 +209,17 @@ export class AuctionsService {
         { auctionId },
       );
     }
+
+    this.activityLog.record({
+      action: 'AUCTION_BID',
+      actorId: bidderId,
+      targetId: auction.userBook.userId,
+      details: {
+        auctionId,
+        carte: auction.userBook.book.title,
+        suma: dto.amount,
+      },
+    });
 
     return this.getAuction(auctionId, bidderId);
   }

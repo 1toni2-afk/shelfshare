@@ -104,8 +104,8 @@ describe('BookMatchService', () => {
       },
       wishlistItem: {
         findMany: jest.fn().mockResolvedValue([]),
-        findUnique: jest.fn().mockResolvedValue(null),
-        upsert: jest.fn().mockResolvedValue({ id: 'wl-1' }),
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({ id: 'wl-1' }),
       },
       userBook: { findMany: jest.fn().mockResolvedValue([]) },
       userGenreScore: {
@@ -323,7 +323,7 @@ describe('BookMatchService', () => {
           isDiscovery: true,
         },
       });
-      expect(prisma.wishlistItem.upsert).not.toHaveBeenCalled();
+      expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
     });
 
     it('YES pune cartea pe wishlist cu source BOOK_MATCH', async () => {
@@ -334,16 +334,16 @@ describe('BookMatchService', () => {
         isDiscovery: false,
       });
 
-      expect(prisma.wishlistItem.upsert).toHaveBeenCalledWith({
-        where: { userId_bookId: { userId: 'user-1', bookId: 'b0-0' } },
-        create: { userId: 'user-1', bookId: 'b0-0', source: 'BOOK_MATCH' },
-        update: {},
+      // Rand „de titlu" (fara userBookId): un YES vrea cartea, nu exemplarul
+      // unui anumit anunt - vezi WishlistItem.userBookId din schema.
+      expect(prisma.wishlistItem.create).toHaveBeenCalledWith({
+        data: { userId: 'user-1', bookId: 'b0-0', source: 'BOOK_MATCH' },
       });
       expect(result.addedToWishlist).toBe(true);
     });
 
     it('nu suprascrie source-ul unui rand adaugat manual (PERSONAL)', async () => {
-      prisma.wishlistItem.findUnique.mockResolvedValue({ id: 'wl-existent' });
+      prisma.wishlistItem.findFirst.mockResolvedValue({ id: 'wl-existent' });
 
       const result = await service.recordSwipe('user-1', {
         bookId: 'b0-0',
@@ -351,11 +351,8 @@ describe('BookMatchService', () => {
         sessionId: 'sess-1',
       });
 
-      // `update: {}` = randul existent ramane neatins, inclusiv source-ul.
-      const calls = prisma.wishlistItem.upsert.mock.calls as unknown as [
-        { update: Record<string, unknown> },
-      ][];
-      expect(calls[0][0].update).toEqual({});
+      // Randul existent ramane neatins, inclusiv source-ul.
+      expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
       expect(result.addedToWishlist).toBe(false);
     });
 

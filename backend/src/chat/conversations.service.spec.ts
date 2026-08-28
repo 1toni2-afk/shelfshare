@@ -8,6 +8,7 @@ import { SafetyService } from '../safety/safety.service';
 import { MailService } from '../mail/mail.service';
 import { PresenceService } from './presence.service';
 import { RealtimeService } from '../common/realtime/realtime.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 describe('ConversationsService', () => {
   let service: ConversationsService;
@@ -97,6 +98,10 @@ describe('ConversationsService', () => {
         { provide: MailService, useValue: mail },
         { provide: PresenceService, useValue: presence },
         { provide: RealtimeService, useValue: realtime },
+        {
+          provide: ActivityLogService,
+          useValue: { record: jest.fn(), recordChat: jest.fn() },
+        },
       ],
     }).compile();
 

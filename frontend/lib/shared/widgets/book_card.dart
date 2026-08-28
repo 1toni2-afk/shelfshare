@@ -76,7 +76,10 @@ class BookCard extends StatelessWidget {
                     Positioned(
                       top: 6,
                       right: 6,
-                      child: _WishlistHeart(bookId: userBook.book.id),
+                      child: _WishlistHeart(
+                        bookId: userBook.book.id,
+                        userBookId: userBook.id,
+                      ),
                     ),
                   Positioned(
                     bottom: 6,
@@ -155,9 +158,18 @@ class _PriceBadge extends StatelessWidget {
       );
     }
     if (userBook.isForSale && userBook.salePrice != null) {
+      // Reducere: prețul vechi rămâne pe card, tăiat, lângă cel nou - vezi
+      // UserBook.previousSalePrice.
+      final oldPrice = userBook.previousSalePrice;
+      final isReduced = userBook.salePrice! > 0 &&
+          oldPrice != null &&
+          oldPrice > userBook.salePrice!;
       return _badge(
         context,
         icon: userBook.salePrice == 0 ? Icons.volunteer_activism_outlined : null,
+        strikethroughLabel: isReduced
+            ? context.l10n.priceLei(oldPrice.toStringAsFixed(0))
+            : null,
         label: userBook.salePrice == 0
             ? context.l10n.shareListingModeDonation
             : context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
@@ -178,6 +190,8 @@ class _PriceBadge extends StatelessWidget {
   Widget _badge(
     BuildContext context, {
     IconData? icon,
+    /// Prețul vechi, afișat tăiat înaintea celui nou (reducere).
+    String? strikethroughLabel,
     required String label,
     required Color color,
   }) {
@@ -201,6 +215,19 @@ class _PriceBadge extends StatelessWidget {
             Icon(icon, size: 13, color: Colors.white),
             const SizedBox(width: 3),
           ],
+          if (strikethroughLabel != null) ...[
+            Text(
+              strikethroughLabel,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.lineThrough,
+                decorationColor: Colors.white.withValues(alpha: 0.75),
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
           Text(
             label,
             style: const TextStyle(
@@ -222,8 +249,13 @@ class _PriceBadge extends StatelessWidget {
 /// Starea inimii vine din controller, nu dintr-un bool local - altfel cardul
 /// pornea mereu gol chiar și pentru cărți deja pe wishlist.
 class _WishlistHeart extends ConsumerStatefulWidget {
-  const _WishlistHeart({required this.bookId});
+  const _WishlistHeart({required this.bookId, required this.userBookId});
   final String bookId;
+
+  /// Anunțul cardului: favoritul se leagă de exemplar, nu de titlu - inima
+  /// apăsată pe anunțul unui user nu trebuie să se aprindă și pe celelalte
+  /// anunțuri ale aceleiași cărți.
+  final String userBookId;
 
   @override
   ConsumerState<_WishlistHeart> createState() => _WishlistHeartState();
@@ -236,7 +268,9 @@ class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      await ref.read(wishlistControllerProvider.notifier).toggle(widget.bookId);
+      await ref
+          .read(wishlistControllerProvider.notifier)
+          .toggle(widget.bookId, userBookId: widget.userBookId);
     } catch (e) {
       // Cazul real întâlnit: limita gratuită de cărți/licitații urmărite -
       // backendul întoarce un mesaj clar (403), dar înainte era înghițit
@@ -268,10 +302,15 @@ class _WishlistHeartState extends ConsumerState<_WishlistHeart> {
     // ajuns acolo, fără un al doilea apel per card.
     final source = ref.watch(
       wishlistControllerProvider.select((s) {
+        WishlistSource? titleLevel;
         for (final item in s.value ?? const <WishlistItem>[]) {
-          if (item.book.id == widget.bookId) return item.source;
+          if (item.book.id != widget.bookId) continue;
+          // Rândul acestui anunț bate rândul „de titlu" (Book Match); un
+          // favorit pus pe anunțul altcuiva nu se vede aici.
+          if (item.userBookId == widget.userBookId) return item.source;
+          if (item.userBookId == null) titleLevel = item.source;
         }
-        return null;
+        return titleLevel;
       }),
     );
     final wishlisted = source != null;

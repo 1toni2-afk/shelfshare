@@ -16,6 +16,12 @@ class UserBook {
   final bool availableForSwap;
   final bool isForSale;
   final double? salePrice;
+
+  /// Pretul de dinaintea ultimei REDUCERI, cand exista una: se afiseaza taiat
+  /// langa pretul curent. Null = pret nemodificat, crescut, sau anunt care nu
+  /// mai e la vanzare. Backend-ul il seteaza singur la schimbarea pretului
+  /// (vezi books.service.ts#updateUserBook).
+  final double? previousSalePrice;
   final bool isNegotiable;
 
   /// „Sau vinde cu X lei" setat la listare pe un anunt de tip Schimb.
@@ -80,6 +86,7 @@ class UserBook {
     this.availableForSwap = true,
     this.isForSale = false,
     this.salePrice,
+    this.previousSalePrice,
     this.isNegotiable = true,
     this.swapSalePrice,
     this.isAuction = false,
@@ -117,6 +124,9 @@ class UserBook {
       isForSale: json['isForSale'] as bool? ?? false,
       salePrice: json['salePrice'] != null
           ? double.parse(json['salePrice'].toString())
+          : null,
+      previousSalePrice: json['previousSalePrice'] != null
+          ? double.parse(json['previousSalePrice'].toString())
           : null,
       isNegotiable: json['isNegotiable'] as bool? ?? true,
       swapSalePrice: json['swapSalePrice'] != null

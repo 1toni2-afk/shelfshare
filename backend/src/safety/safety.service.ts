@@ -6,10 +6,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportUserDto } from './dto/report-user.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class SafetyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private activityLog: ActivityLogService,
+  ) {}
 
   async blockUser(blockerId: string, blockedId: string) {
     if (blockerId === blockedId) {
@@ -22,6 +26,11 @@ export class SafetyService {
       create: { blockerId, blockedId },
       update: {},
     });
+    this.activityLog.record({
+      action: 'USER_BLOCKED',
+      actorId: blockerId,
+      targetId: blockedId,
+    });
     return { message: 'Utilizator blocat' };
   }
 
@@ -29,6 +38,11 @@ export class SafetyService {
     await this.prisma.block
       .delete({ where: { blockerId_blockedId: { blockerId, blockedId } } })
       .catch(() => {});
+    this.activityLog.record({
+      action: 'USER_UNBLOCKED',
+      actorId: blockerId,
+      targetId: blockedId,
+    });
     return { message: 'Utilizator deblocat' };
   }
 
@@ -81,7 +95,7 @@ export class SafetyService {
     }
     await this.assertUserExists(reportedUserId);
 
-    return this.prisma.report.create({
+    const report = await this.prisma.report.create({
       data: {
         reporterId,
         reportedUserId,
@@ -90,6 +104,16 @@ export class SafetyService {
         userBookId: dto.userBookId,
       },
     });
+
+    // Raportul ajunge la moderatori, deci e și o interacțiune user-admin.
+    this.activityLog.record({
+      action: 'USER_REPORTED',
+      actorId: reporterId,
+      targetId: reportedUserId,
+      details: { reportId: report.id, motiv: dto.reason },
+    });
+
+    return report;
   }
 
   private async assertUserExists(userId: string) {

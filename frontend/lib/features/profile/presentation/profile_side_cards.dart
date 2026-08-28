@@ -215,8 +215,12 @@ class _StatsGrid extends ConsumerWidget {
             ?.finished
             .length ??
         0;
-    final wishlistCount =
-        (ref.watch(wishlistControllerProvider).value ?? const []).length;
+    // Numărăm TITLURI, nu rânduri: favoritele sunt legate de anunț, deci
+    // aceeași carte poate apărea de mai multe ori pe listă.
+    final wishlistCount = (ref.watch(wishlistControllerProvider).value ?? const [])
+        .map((item) => item.book.id)
+        .toSet()
+        .length;
 
     return Card(
       child: Padding(
