@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
@@ -74,6 +75,11 @@ CHAIN_ROMANIAN = ("libris", "carturesti", "google")
 CHAIN_OTHER = ("google",)
 
 LIBRIS_INDEX = HERE / "libris_index.json"
+ENV_PATH = HERE.parents[1] / ".env"
+
+# enrich_google.py iese cu codul asta cand Google raspunde 429 in serie: cota
+# zilnica s-a terminat, deci restul nopții n-ar face decat sa mai ceara 429-uri.
+GOOGLE_QUOTA_EXIT = 2
 
 
 def load_state() -> dict:
@@ -144,15 +150,40 @@ class Candidate:
     title: str
 
 
+def child_env() -> dict[str, str]:
+    """Mediul scripturilor-copil, cu cheia Google luata din .env-ul repo-ului.
+
+    enrich_google.py citeste GOOGLE_BOOKS_API_KEY din mediu, dar cheia e tinuta
+    in .env-ul backendului (aceeasi variabila pe care o foloseste
+    book-lookup.service.ts). Fara pasul asta rularea de noapte mergea pe cota
+    anonima, care se epuizeaza dupa cateva sute de cereri.
+    """
+    env = os.environ.copy()
+    if env.get("GOOGLE_BOOKS_API_KEY") or not ENV_PATH.exists():
+        return env
+    for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
+        if line.strip().startswith("GOOGLE_BOOKS_API_KEY="):
+            value = line.split("=", 1)[1].strip().strip('"').strip("'")
+            if value:
+                env["GOOGLE_BOOKS_API_KEY"] = value
+            break
+    return env
+
+
 def run_query(sql: str, columns: int = 2) -> list[list[str]]:
     """Rularea unui SELECT prin psql -> randuri deja despartite pe coloane.
 
     maxsplit=columns-1: ultima coloana inghite virgulele ramase, de aceea
     `title` e mereu selectata ultima.
     """
+    # SQL-ul intra prin stdin (`-f -`), nu prin `-c`: lista de excluderi din
+    # candidate_sql creste cu fiecare noapte (un ISBN inline = ~17 octeti) si a
+    # depasit limita de 32 KB a liniei de comanda de pe Windows la a treia
+    # noapte - CreateProcess a picat cu WinError 206.
     result = subprocess.run(
-        ["docker", "exec", POSTGRES_CONTAINER, "psql", "-U", POSTGRES_USER, "-d", POSTGRES_DB,
-         "-t", "-A", "-F,", "-c", sql],
+        ["docker", "exec", "-i", POSTGRES_CONTAINER, "psql", "-U", POSTGRES_USER, "-d", POSTGRES_DB,
+         "-t", "-A", "-F,", "-q", "-v", "ON_ERROR_STOP=1", "-f", "-"],
+        input=sql,
         capture_output=True,
         text=True,
         # psql scoate UTF-8; fara asta text=True decodeaza cu codepage-ul Windows
@@ -187,8 +218,8 @@ def chain_for(language: str) -> tuple[str, ...]:
 
 
 def run_stage(source: str, candidates: list[Candidate], night_no: int,
-              batch_idx: int) -> tuple[Path | None, set[str]]:
-    """Ruleaza o sursa pe un subset. -> (fisierul de iesire, ISBN-urile rezolvate).
+              batch_idx: int) -> tuple[Path | None, set[str], int]:
+    """Ruleaza o sursa pe un subset. -> (iesirea, ISBN-urile rezolvate, exit code).
 
     "Rezolvat" = a venit inapoi cu descriere. Descrierea e golul real (2,7M de
     carti fara, fata de 27 fara coperta), deci ea decide daca mai are rost sa
@@ -208,20 +239,20 @@ def run_stage(source: str, candidates: list[Candidate], night_no: int,
         proc = subprocess.run(
             [PYTHON, str(HERE / script_name),
              "--input", str(input_path), "--output", str(output_path), *extra_args],
-            cwd=str(HERE), stdout=log_fh, stderr=subprocess.STDOUT,
+            cwd=str(HERE), stdout=log_fh, stderr=subprocess.STDOUT, env=child_env(),
         )
     if proc.returncode != 0:
         print(f"[nightly]   {script_name} a iesit cu cod {proc.returncode}, vezi {log_path.name}")
 
     if not output_path.exists():
-        return None, set()
+        return None, set(), proc.returncode
     try:
         entries = json.loads(output_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         print(f"[nightly]   {output_path.name} nu se poate citi: {exc}")
-        return None, set()
+        return None, set(), proc.returncode
     solved = {e["isbn"] for e in entries if not e.get("error") and e.get("description")}
-    return output_path, solved
+    return output_path, solved, proc.returncode
 
 
 def merge_into_master(batch_output: Path) -> int:
@@ -294,6 +325,7 @@ def main() -> None:
         # ca sa pornim un singur proces (si un singur browser) per sursa.
         pending = list(candidates)
         added = 0
+        quota_hit = False
         for source in ("libris", "carturesti", "google"):
             subset = [c for c in pending if source in chain_for(c.language)]
             if not subset:
@@ -303,11 +335,18 @@ def main() -> None:
                       f"(ruleaza: python enrich_libris.py --build-index)")
                 continue
             print(f"[nightly]   {source}: {len(subset)} carti")
-            output_path, solved = run_stage(source, subset, night_no, batch_idx)
+            output_path, solved, rc = run_stage(source, subset, night_no, batch_idx)
             if output_path is not None:
                 added += merge_into_master(output_path)
             print(f"[nightly]   {source}: {len(solved)}/{len(subset)} cu descriere")
             pending = [c for c in pending if c.isbn not in solved]
+            if source == "google" and rc == GOOGLE_QUOTA_EXIT:
+                quota_hit = True
+
+        if quota_hit:
+            print("[nightly] cota Google epuizata - opresc noaptea aici; batch-ul NU "
+                  "intra in ledger, ca sa fie reincercat data viitoare.")
+            break
 
         append_ledger(batch_isbns)
         ledger.update(batch_isbns)
