@@ -2,64 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/models/user.dart';
+import '../../data/models/price_offer.dart';
+import '../../data/models/exchange_request.dart';
+import '../../data/models/search_screen_args.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/application/auth_state.dart';
+import '../../shared/widgets/main_scaffold.dart';
+import 'deferred_screen.dart';
+
+// ---------------------------------------------------------------------------
+// Nivelul 0 - intră în bundle-ul inițial
+//
+// Doar ce trebuie ca un vizitator să vadă și să folosească ecranul de intrare:
+// login, înregistrare, resetare parolă, callback-ul Google. Plus shell-ul
+// (MainScaffold) și starea de autentificare, de care depinde redirectul.
+// ---------------------------------------------------------------------------
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/google_callback_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
-import '../../features/admin/presentation/admin_inactive_listings_screen.dart';
-import '../../features/admin/presentation/admin_screen.dart';
-import '../../features/admin/presentation/admin_users_screen.dart';
-import '../../features/admin/presentation/administrators_screen.dart';
-import '../../features/admin/presentation/feature_access_screen.dart';
-import '../../features/admin/presentation/listing_score_screen.dart';
-import '../../features/admin/presentation/roles_permissions_screen.dart';
-import '../../features/admin_chat/presentation/admin_chat_conversation_screen.dart';
-import '../../features/admin_chat/presentation/admin_chat_inbox_screen.dart';
-import '../../features/admin_chat/presentation/admin_chat_screen.dart';
-import '../../features/books/presentation/add_book_screen.dart';
-import '../../features/books/presentation/bulk_add_screen.dart';
-import '../../features/books/presentation/book_detail_screen.dart';
-import '../../features/books/presentation/books_map_screen.dart';
-import '../../features/books/presentation/browse_screen.dart';
-import '../../features/books/presentation/discover_screen.dart';
-import '../../features/books/presentation/trash_screen.dart';
-import '../../features/book_match/presentation/book_match_screen.dart';
-import '../../features/books/presentation/my_library_screen.dart';
-import '../../features/chat/presentation/conversation_screen.dart';
-import '../../features/chat/presentation/conversations_list_screen.dart';
-import '../../features/exchanges/presentation/exchange_confirm_screen.dart';
-import '../../features/exchanges/presentation/exchanges_screen.dart';
-import '../../features/exchanges/presentation/ready_to_exchange_screen.dart';
-import '../../features/offers/presentation/ready_to_sell_screen.dart';
-import '../../data/models/price_offer.dart';
-import '../../data/models/exchange_request.dart';
-import '../../features/home/presentation/home_screen.dart';
-import '../../features/notifications/presentation/notifications_screen.dart';
-import '../../features/profile/presentation/about_app_screen.dart';
-import '../../features/profile/presentation/roadmap_screen.dart';
-import '../../features/profile/presentation/edit_profile_screen.dart';
-import '../../features/profile/presentation/my_profile_screen.dart';
-import '../../features/profile/presentation/pre_registration_screen.dart';
-import '../../features/profile/presentation/leaderboard_screen.dart';
-import '../../features/profile/presentation/following_screen.dart';
-import '../../features/profile/presentation/settings_screen.dart';
-import '../../features/books/presentation/global_stats_screen.dart';
-import '../../features/books/presentation/my_bookshelf_screen.dart';
-import '../../features/profile/presentation/activity_feed_screen.dart';
-import '../../features/books/presentation/smart_matches_screen.dart';
-import '../../features/books/presentation/auction_detail_screen.dart';
-import '../../features/collections/presentation/my_collections_screen.dart';
-import '../../features/collections/presentation/collection_detail_screen.dart';
-import '../../features/groups/presentation/groups_screen.dart';
-import '../../features/groups/presentation/group_detail_screen.dart';
-import '../../features/profile/presentation/seller_analytics_screen.dart';
-import '../../features/profile/presentation/onboarding_flow_screen.dart';
-import '../../features/profile/presentation/public_profile_screen.dart';
-import '../../features/wishlist/presentation/wishlist_screen.dart';
-import '../../features/saved_searches/presentation/saved_searches_screen.dart';
-import '../../shared/widgets/main_scaffold.dart';
+
+// ---------------------------------------------------------------------------
+// Nivelurile 1-3 - încărcate amânat, câte o bibliotecă per nivel
+//
+// Nivelul 1 se preîncarcă în fundal imediat după primul frame (Home, Discover,
+// detaliu carte - unde ajunge userul în marea majoritate a cazurilor după
+// login). Nivelul 2 e restul aplicației de zi cu zi, nivelul 3 secțiunile
+// rare; ambele se descarcă la prima navigare într-acolo.
+//
+// Vezi `tiers/tier1.dart` pentru de ce sunt trei barrel-uri și nu un
+// `deferred as` per ecran.
+// ---------------------------------------------------------------------------
+import 'tiers/tier1.dart' deferred as tier1;
+import 'tiers/tier2.dart' deferred as tier2;
+import 'tiers/tier3.dart' deferred as tier3;
 
 /// Rute accesibile fără autentificare - adaugă aici orice rută nouă care nu
 /// trebuie să redirecteze spre /login (ex. un alt provider OAuth, un link
@@ -76,11 +52,36 @@ const _publicRoutes = {
 /// tab e user-ul curent (bazat pe URL).
 const kBranchPaths = ['/', '/search', '/library', '/chat', '/profile'];
 
+/// Pornește descărcarea ecranelor de nivel 1 (Home, Discover, detaliu carte)
+/// fără să le afișeze. Se apelează din `main.dart` după primul frame: userul e
+/// pe login (sau se restaurează sesiunea), conexiunea e liberă, iar când ajunge
+/// pe Home ecranul e deja descărcat, fără indicator de încărcare.
+void preloadPrimaryScreens() {
+  DeferredScreen.preload(tier1.loadLibrary);
+}
+
 /// Chei separate pentru navigator-ele nested - fără ele, `context.pop()` din
 /// interiorul unei rute standalone (ex. /wishlist) încearcă să scoată de pe
 /// stiva root și ecranul se umple cu blank.
 final _rootKey = GlobalKey<NavigatorState>();
 final _shellKey = GlobalKey<NavigatorState>();
+
+/// Prescurtare pentru o rută al cărei ecran stă într-o bibliotecă amânată.
+/// `loader` e mereu `<prefix>.loadLibrary`, iar `builder` construiește ecranul
+/// - apelat abia după ce biblioteca s-a încărcat.
+GoRoute _deferredRoute(
+  String path,
+  LibraryLoader loader,
+  Widget Function(BuildContext context, GoRouterState state) builder,
+) {
+  return GoRoute(
+    path: path,
+    builder: (context, state) => DeferredScreen(
+      loader: loader,
+      builder: (context) => builder(context, state),
+    ),
+  );
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -137,7 +138,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           code: state.uri.queryParameters['code'],
         ),
       ),
-      GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingFlowScreen()),
+      _deferredRoute('/onboarding', tier2.loadLibrary,
+          (context, state) => tier2.OnboardingFlowScreen()),
 
       // ShellRoute exterior - toate rutele autentificate stau înăuntru. Aici
       // se randează MainScaffold cu sidebar-ul. Când user-ul navighează între
@@ -163,157 +165,177 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state, navigationShell) => navigationShell,
             branches: [
               StatefulShellBranch(routes: [
-                GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+                _deferredRoute('/', tier1.loadLibrary,
+                    (context, state) => tier1.HomeScreen()),
               ]),
               StatefulShellBranch(routes: [
-                GoRoute(
-                  path: '/search',
-                  builder: (context, state) => const DiscoverScreen(),
-                ),
+                _deferredRoute('/search', tier1.loadLibrary,
+                    (context, state) => tier1.DiscoverScreen()),
               ]),
               StatefulShellBranch(routes: [
-                GoRoute(path: '/library', builder: (context, state) => const MyLibraryScreen()),
+                _deferredRoute('/library', tier2.loadLibrary,
+                    (context, state) => tier2.MyLibraryScreen()),
               ]),
               StatefulShellBranch(routes: [
-                GoRoute(
-                  path: '/chat',
-                  builder: (context, state) => const ConversationsListScreen(),
-                ),
+                _deferredRoute('/chat', tier2.loadLibrary,
+                    (context, state) => tier2.ConversationsListScreen()),
               ]),
               StatefulShellBranch(routes: [
-                GoRoute(
-                  path: '/profile',
-                  builder: (context, state) => const MyProfileScreen(),
-                ),
+                _deferredRoute('/profile', tier2.loadLibrary,
+                    (context, state) => tier2.MyProfileScreen()),
               ]),
             ],
           ),
 
           // Rute standalone - toate acestea afișează sidebar-ul din
           // MainScaffold și schimbă doar zona de conținut din dreapta.
-          GoRoute(path: '/wishlist', builder: (context, state) => const WishlistScreen()),
-          GoRoute(path: '/saved-searches', builder: (context, state) => const SavedSearchesScreen()),
-          GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
-          GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
-          GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
-          GoRoute(path: '/about-app', builder: (context, state) => const AboutAppScreen()),
-          GoRoute(path: '/roadmap', builder: (context, state) => const RoadmapScreen()),
-          GoRoute(path: '/library/add', builder: (context, state) => const AddBookScreen()),
-          GoRoute(path: '/library/bulk-add', builder: (context, state) => const BulkAddScreen()),
-          GoRoute(path: '/library/trash', builder: (context, state) => const TrashScreen()),
-          GoRoute(
-            path: '/browse',
-            builder: (context, state) {
-              final args = state.extra as SearchScreenArgs?;
-              return BrowseScreen(
-                initialTitle: args?.title,
-                initialAuthor: args?.author,
-                initialGenre: args?.genre,
-                initialListingType: args?.listingType,
-                initialCity: args?.city,
-                initialSort: args?.sort,
-              );
-            },
+          _deferredRoute('/wishlist', tier2.loadLibrary,
+              (context, state) => tier2.WishlistScreen()),
+          _deferredRoute('/saved-searches', tier3.loadLibrary,
+              (context, state) => tier3.SavedSearchesScreen()),
+          _deferredRoute('/notifications', tier2.loadLibrary,
+              (context, state) => tier2.NotificationsScreen()),
+          _deferredRoute('/settings', tier2.loadLibrary,
+              (context, state) => tier2.SettingsScreen()),
+          _deferredRoute('/profile/edit', tier2.loadLibrary,
+              (context, state) => tier2.EditProfileScreen()),
+          _deferredRoute('/about-app', tier3.loadLibrary,
+              (context, state) => tier3.AboutAppScreen()),
+          _deferredRoute('/roadmap', tier3.loadLibrary,
+              (context, state) => tier3.RoadmapScreen()),
+          _deferredRoute('/library/add', tier2.loadLibrary,
+              (context, state) => tier2.AddBookScreen()),
+          _deferredRoute('/library/bulk-add', tier3.loadLibrary,
+              (context, state) => tier3.BulkAddScreen()),
+          _deferredRoute('/library/trash', tier3.loadLibrary,
+              (context, state) => tier3.TrashScreen()),
+          _deferredRoute('/browse', tier2.loadLibrary, (context, state) {
+            final args = state.extra as SearchScreenArgs?;
+            return tier2.BrowseScreen(
+              initialTitle: args?.title,
+              initialAuthor: args?.author,
+              initialGenre: args?.genre,
+              initialListingType: args?.listingType,
+              initialCity: args?.city,
+              initialSort: args?.sort,
+            );
+          }),
+          _deferredRoute('/map', tier3.loadLibrary,
+              (context, state) => tier3.BooksMapScreen()),
+          _deferredRoute('/exchanges', tier3.loadLibrary,
+              (context, state) => tier3.ExchangesScreen()),
+          _deferredRoute(
+            '/exchanges/:id/confirm',
+            tier3.loadLibrary,
+            (context, state) => tier3.ExchangeConfirmScreen(
+              exchangeId: state.pathParameters['id']!,
+            ),
           ),
-          GoRoute(path: '/map', builder: (context, state) => const BooksMapScreen()),
-          GoRoute(path: '/exchanges', builder: (context, state) => const ExchangesScreen()),
-          GoRoute(
-            path: '/exchanges/:id/confirm',
-            builder: (context, state) => ExchangeConfirmScreen(exchangeId: state.pathParameters['id']!),
-          ),
-          GoRoute(
-            path: '/exchanges/:id/ready',
-            builder: (context, state) => ReadyToExchangeScreen(
+          _deferredRoute(
+            '/exchanges/:id/ready',
+            tier3.loadLibrary,
+            (context, state) => tier3.ReadyToExchangeScreen(
               exchangeId: state.pathParameters['id']!,
               initial: state.extra as ExchangeRequest?,
             ),
           ),
-          GoRoute(
-            path: '/offers/:id/ready',
-            builder: (context, state) => ReadyToSellScreen(
+          _deferredRoute(
+            '/offers/:id/ready',
+            tier3.loadLibrary,
+            (context, state) => tier3.ReadyToSellScreen(
               offerId: state.pathParameters['id']!,
               initial: state.extra as PriceOffer?,
             ),
           ),
-          GoRoute(path: '/admin', builder: (context, state) => const AdminScreen()),
-          GoRoute(
-            path: '/admin/users',
-            builder: (context, state) => const AdminUsersScreen(),
-          ),
-          GoRoute(
-            path: '/admin/listings/inactive',
-            builder: (context, state) => const AdminInactiveListingsScreen(),
-          ),
-          GoRoute(
-            path: '/admin/feature-access',
-            builder: (context, state) => const FeatureAccessScreen(),
-          ),
-          GoRoute(
-            path: '/admin/listings/score',
-            builder: (context, state) => const ListingScoreScreen(),
-          ),
-          GoRoute(
-            path: '/admin/administrators',
-            builder: (context, state) => const AdministratorsScreen(),
-          ),
-          GoRoute(
-            path: '/admin/roles',
-            builder: (context, state) => const RolesPermissionsScreen(),
-          ),
-          GoRoute(
-            path: '/admin/chat',
-            builder: (context, state) => const AdminChatInboxScreen(),
-          ),
-          GoRoute(
-            path: '/admin/chat/:id',
-            builder: (context, state) => AdminChatConversationScreen(
+          _deferredRoute('/admin', tier3.loadLibrary,
+              (context, state) => tier3.AdminScreen()),
+          _deferredRoute('/admin/users', tier3.loadLibrary,
+              (context, state) => tier3.AdminUsersScreen()),
+          _deferredRoute('/admin/listings/inactive', tier3.loadLibrary,
+              (context, state) => tier3.AdminInactiveListingsScreen()),
+          _deferredRoute('/admin/feature-access', tier3.loadLibrary,
+              (context, state) => tier3.FeatureAccessScreen()),
+          _deferredRoute('/admin/listings/score', tier3.loadLibrary,
+              (context, state) => tier3.ListingScoreScreen()),
+          _deferredRoute('/admin/administrators', tier3.loadLibrary,
+              (context, state) => tier3.AdministratorsScreen()),
+          _deferredRoute('/admin/roles', tier3.loadLibrary,
+              (context, state) => tier3.RolesPermissionsScreen()),
+          _deferredRoute('/admin/chat', tier3.loadLibrary,
+              (context, state) => tier3.AdminChatInboxScreen()),
+          _deferredRoute(
+            '/admin/chat/:id',
+            tier3.loadLibrary,
+            (context, state) => tier3.AdminChatConversationScreen(
               conversationId: state.pathParameters['id']!,
             ),
           ),
-          GoRoute(path: '/support/chat', builder: (context, state) => const AdminChatScreen()),
-          GoRoute(path: '/pre-register', builder: (context, state) => const PreRegistrationScreen()),
-          GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
-          GoRoute(path: '/following', builder: (context, state) => const FollowingScreen()),
-          GoRoute(path: '/global-stats', builder: (context, state) => const GlobalStatsScreen()),
-          GoRoute(path: '/bookshelf', builder: (context, state) => const MyBookshelfScreen()),
-          GoRoute(path: '/activity-feed', builder: (context, state) => const ActivityFeedScreen()),
-          GoRoute(path: '/smart-matches', builder: (context, state) => const SmartMatchesScreen()),
-          GoRoute(path: '/book-match', builder: (context, state) => const BookMatchScreen()),
-          GoRoute(
-            path: '/auctions/:id',
-            builder: (context, state) => AuctionDetailScreen(auctionId: state.pathParameters['id']!),
+          _deferredRoute('/support/chat', tier3.loadLibrary,
+              (context, state) => tier3.AdminChatScreen()),
+          _deferredRoute('/pre-register', tier3.loadLibrary,
+              (context, state) => tier3.PreRegistrationScreen()),
+          _deferredRoute('/leaderboard', tier3.loadLibrary,
+              (context, state) => tier3.LeaderboardScreen()),
+          _deferredRoute('/following', tier3.loadLibrary,
+              (context, state) => tier3.FollowingScreen()),
+          _deferredRoute('/global-stats', tier3.loadLibrary,
+              (context, state) => tier3.GlobalStatsScreen()),
+          _deferredRoute('/bookshelf', tier3.loadLibrary,
+              (context, state) => tier3.MyBookshelfScreen()),
+          _deferredRoute('/activity-feed', tier3.loadLibrary,
+              (context, state) => tier3.ActivityFeedScreen()),
+          _deferredRoute('/smart-matches', tier3.loadLibrary,
+              (context, state) => tier3.SmartMatchesScreen()),
+          _deferredRoute('/book-match', tier2.loadLibrary,
+              (context, state) => tier2.BookMatchScreen()),
+          _deferredRoute(
+            '/auctions/:id',
+            tier3.loadLibrary,
+            (context, state) => tier3.AuctionDetailScreen(
+              auctionId: state.pathParameters['id']!,
+            ),
           ),
-          GoRoute(path: '/collections', builder: (context, state) => const MyCollectionsScreen()),
-          GoRoute(path: '/groups', builder: (context, state) => const GroupsScreen()),
-          GoRoute(path: '/seller-analytics', builder: (context, state) => const SellerAnalyticsScreen()),
-          GoRoute(
-            path: '/groups/:id',
-            builder: (context, state) => GroupDetailScreen(groupId: state.pathParameters['id']!),
+          _deferredRoute('/collections', tier3.loadLibrary,
+              (context, state) => tier3.MyCollectionsScreen()),
+          _deferredRoute('/groups', tier3.loadLibrary,
+              (context, state) => tier3.GroupsScreen()),
+          _deferredRoute('/seller-analytics', tier3.loadLibrary,
+              (context, state) => tier3.SellerAnalyticsScreen()),
+          _deferredRoute(
+            '/groups/:id',
+            tier3.loadLibrary,
+            (context, state) => tier3.GroupDetailScreen(
+              groupId: state.pathParameters['id']!,
+            ),
           ),
-          GoRoute(
-            path: '/collections/:id',
-            builder: (context, state) => CollectionDetailScreen(
+          _deferredRoute(
+            '/collections/:id',
+            tier3.loadLibrary,
+            (context, state) => tier3.CollectionDetailScreen(
               collectionId: state.pathParameters['id']!,
               ownerId: state.uri.queryParameters['ownerId'],
             ),
           ),
-          GoRoute(
-            path: '/users/:userId',
-            builder: (context, state) => PublicProfileScreen(
+          _deferredRoute(
+            '/users/:userId',
+            tier2.loadLibrary,
+            (context, state) => tier2.PublicProfileScreen(
               userId: state.pathParameters['userId']!,
               fallback: state.extra as PublicUser?,
             ),
           ),
-          GoRoute(
-            path: '/books/:userBookId',
-            builder: (context, state) => BookDetailScreen(
+          _deferredRoute(
+            '/books/:userBookId',
+            tier1.loadLibrary,
+            (context, state) => tier1.BookDetailScreen(
               userBookId: state.pathParameters['userBookId']!,
               fallbackOwner: state.extra as PublicUser?,
             ),
           ),
-          GoRoute(
-            path: '/chat/:conversationId',
-            builder: (context, state) => ConversationScreen(
+          _deferredRoute(
+            '/chat/:conversationId',
+            tier2.loadLibrary,
+            (context, state) => tier2.ConversationScreen(
               conversationId: state.pathParameters['conversationId']!,
               otherUser: state.extra as PublicUser?,
             ),
@@ -322,9 +344,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/photo-viewer',
             pageBuilder: (context, state) {
               final (photos, initialIndex) = state.extra as (List<String>, int);
+              // PhotoViewerScreen stă în biblioteca detaliului de carte, de
+              // unde e deschis oricum - deci în practică e deja încărcată.
               return MaterialPage(
                 fullscreenDialog: true,
-                child: PhotoViewerScreen(photos: photos, initialIndex: initialIndex),
+                child: DeferredScreen(
+                  loader: tier1.loadLibrary,
+                  builder: (context) => tier1.PhotoViewerScreen(
+                    photos: photos,
+                    initialIndex: initialIndex,
+                  ),
+                ),
               );
             },
           ),

@@ -11,6 +11,7 @@ import '../../../core/theme/theme_controller.dart';
 import '../../../core/utils/support_pages.dart';
 import '../../../data/models/user.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/language_picker.dart';
 import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../auth/application/auth_controller.dart';
 import '../application/profile_controller.dart';
@@ -672,33 +673,6 @@ class _ListingTypeToggle extends StatelessWidget {
       value: hidden,
       onChanged: saving ? null : onChanged,
     );
-  }
-}
-
-/// Selectorul de limbă - folosit atât din Setări, cât și din ecranul de login.
-/// Bifa arată limba folosită efectiv (vezi [effectiveLocaleProvider]), nu
-/// „Română" implicit peste o aplicație care rula în limba telefonului.
-Future<void> showLanguagePicker(BuildContext context, WidgetRef ref) async {
-  final current = ref.read(effectiveLocaleProvider);
-  final chosen = await showDialog<AppLocale>(
-    context: context,
-    builder: (context) => SimpleDialog(
-      title: Text(context.l10n.profileLanguage),
-      children: [
-        for (final locale in AppLocale.values)
-          RadioListTile<AppLocale>(
-            title: Text(locale.label),
-            value: locale,
-            // ignore: deprecated_member_use
-            groupValue: current,
-            // ignore: deprecated_member_use
-            onChanged: (value) => Navigator.of(context).pop(value),
-          ),
-      ],
-    ),
-  );
-  if (chosen != null) {
-    await ref.read(localeControllerProvider.notifier).setLocale(chosen);
   }
 }
 

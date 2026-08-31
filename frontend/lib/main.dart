@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/locale/locale_controller.dart';
-import 'core/network/providers.dart';
+import 'core/notifications/push_gateway.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
@@ -33,6 +33,11 @@ void main() async {
     usePathUrlStrategy();
     await initializeDateFormatting();
     runApp(const ProviderScope(child: ShelfShareApp()));
+    // Ecranele de nivel 1 (Home, Discover, detaliu carte) se descarcă în
+    // fundal abia DUPĂ primul frame - adică după ce login-ul e deja pe ecran
+    // și interactiv. Vezi `preloadPrimaryScreens` și `deferred_screen.dart`
+    // pentru împărțirea pe niveluri.
+    WidgetsBinding.instance.addPostFrameCallback((_) => preloadPrimaryScreens());
   }, (error, stack) {
     // ignore: avoid_print
     print('ZoneError: $error\n$stack');
@@ -54,7 +59,7 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
     // Firebase se inițializează o singură dată, indiferent dacă userul e
     // logat - abonarea/dezabonarea efectivă a tokenului se face mai jos, în
     // build(), pe baza stării de autentificare.
-    Future.microtask(() => ref.read(pushNotificationsServiceProvider).initialize());
+    Future.microtask(() => ref.read(pushGatewayProvider).initialize());
   }
 
   @override
@@ -82,7 +87,7 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
     // Abonăm/dezabonăm dispozitivul la push exact când starea de auth se
     // schimbă - nu la fiecare rebuild (de-asta e în ref.listen, nu ref.watch).
     ref.listen(authControllerProvider, (previous, next) {
-      final push = ref.read(pushNotificationsServiceProvider);
+      final push = ref.read(pushGatewayProvider);
       if (next is AuthAuthenticated) {
         push.registerForCurrentUser();
       } else if (previous is AuthAuthenticated && next is AuthUnauthenticated) {

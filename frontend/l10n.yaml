@@ -4,3 +4,10 @@ output-localization-file: app_localizations.dart
 output-class: AppLocalizations
 untranslated-messages-file: untranslated.txt
 nullable-getter: false
+
+# Fiecare limbă ajunge într-o bibliotecă amânată: la pornire se descarcă doar
+# limba activă, nu toate patru. Traducerile sunt ~660 KB de sursă Dart (4 x
+# ~105 KB de mesaje + tabelul comun), tot în bundle-ul inițial înainte de asta,
+# deși un vizitator citește o singură limbă. Vezi core/router/deferred_screen.dart
+# pentru restul împărțirii pe niveluri.
+use-deferred-loading: true

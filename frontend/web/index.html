@@ -301,9 +301,10 @@
     // TextInput.finishAutofillContext, vezi login_screen.dart).
     // Procentul 0-100% de pe splash e o SIMULARE (nu progres real de bytes
     // descărcați) - Flutter web nu expune un semnal fin-grained de progres
-    // pentru încărcarea bundle-ului fără să rescriem manual loader-ul
-    // (flutter_bootstrap.js e auto-generat la fiecare `flutter build web`,
-    // orice modificare acolo s-ar pierde la următorul build). Se apropie
+    // pentru încărcarea bundle-ului fără să rescriem manual loader-ul.
+    // (Loader-ul E personalizabil, prin șablonul web/flutter_bootstrap.js -
+    // vezi acolo canvaskitBaseUrl - dar tot nu primim procente reale de la
+    // engine.) Se apropie
     // asimptotic de 92% cât timp așteaptă, ca userul să nu vadă niciodată
     // 100% înainte ca aplicația chiar să fie gata - finalizarea reală tot
     // vine din "flutter-first-frame" / timeout, ca înainte, neschimbat.

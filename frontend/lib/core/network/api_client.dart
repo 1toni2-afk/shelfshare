@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'token_storage.dart';
@@ -85,6 +87,42 @@ class ApiClient {
   final void Function()? onSessionExpired;
 
   Dio get dio => _dio;
+
+  /// Se asigură că token-ul din storage e valid, reîmprospătându-l dacă a
+  /// expirat (sau e pe punctul să expire).
+  ///
+  /// Există pentru socket-ul de chat, care are nevoie de un token proaspăt la
+  /// (re)conectare. Înainte, „proaspăt" se obținea printr-un GET pe
+  /// `/profile/me` doar ca să declanșeze interceptorul de 401 de mai sus -
+  /// adică profilul complet descărcat de fiecare dată când socket-ul se
+  /// autentifica. În waterfall-ul de pornire se vedeau 4 cereri `/profile/me`
+  /// una după alta. Aici nu se face niciun request cât timp token-ul e încă
+  /// valid; ne uităm doar la `exp` din payload-ul JWT.
+  Future<void> ensureFreshToken() async {
+    final token = await _tokenStorage.getAccessToken();
+    if (token != null && !_isExpiringSoon(token)) return;
+    await _tryRefreshToken();
+  }
+
+  /// `exp` din payload-ul JWT (secunde Unix), cu o marjă de 30s ca un token
+  /// care expiră chiar în timpul handshake-ului să fie tratat ca expirat.
+  /// Orice token pe care nu-l putem citi e considerat expirat - reîmprospătarea
+  /// e ieftină, iar un handshake cu token invalid nu e.
+  bool _isExpiringSoon(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return true;
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      ) as Map<String, dynamic>;
+      final exp = payload['exp'];
+      if (exp is! int) return true;
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+      return expiresAt.isBefore(DateTime.now().toUtc().add(const Duration(seconds: 30)));
+    } catch (_) {
+      return true;
+    }
+  }
 
   Future<bool> _tryRefreshToken() async {
     final refreshToken = await _tokenStorage.getRefreshToken();

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../notifications/push_notifications_service.dart';
 import 'api_client.dart';
 import 'token_storage.dart';
 
@@ -34,6 +33,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   );
 });
 
-final pushNotificationsServiceProvider = Provider<PushNotificationsService>((ref) {
-  return PushNotificationsService(ref.watch(apiClientProvider));
-});
+// `pushNotificationsServiceProvider` s-a mutat în `notifications/push_gateway.dart`,
+// în spatele unui import amânat: definit aici, importul normal al serviciului
+// trăgea tot SDK-ul Firebase în bundle-ul inițial, deși notificările n-au
+// niciun rol până după login.

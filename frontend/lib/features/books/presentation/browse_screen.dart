@@ -10,34 +10,12 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/browse_controller.dart';
 import '../data/books_repository.dart';
 import 'browse_filters_sheet.dart';
+export '../../../data/models/search_screen_args.dart' show SearchScreenArgs;
 
 final _popularSearchesProvider = FutureProvider((ref) {
   return ref.watch(booksRepositoryProvider).getPopularSearches();
 });
 
-/// Argumente opționale trimise ecranului de căutare din alte ecrane (ex.
-/// wishlist trimite un titlu, Home trimite un gen din secțiunea Categorii).
-class SearchScreenArgs {
-  const SearchScreenArgs({
-    this.title,
-    this.author,
-    this.genre,
-    this.listingType,
-    this.city,
-    this.sort,
-  });
-  final String? title;
-  final String? author;
-  final String? genre;
-  /// „swap" / „sale" / „auction" / „donation" - folosit de sheet-ul
-  /// „Filtrează" din Discover.
-  final String? listingType;
-  final String? city;
-  /// „popularity" / „recent" / „oldest" / „distance" - sheet-ul „Sortează"
-  /// din Discover. „distance" are efect doar dacă userul are oraș setat în
-  /// profil.
-  final String? sort;
-}
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({

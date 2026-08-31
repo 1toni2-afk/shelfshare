@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/locale/locale_controller.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../profile/presentation/settings_screen.dart' show showLanguagePicker;
+import '../../../shared/widgets/language_picker.dart';
 import '../../../shared/widgets/google_sign_in_button.dart';
 import '../../support/presentation/support_dialog.dart';
 import '../application/auth_controller.dart';

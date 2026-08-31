@@ -14,7 +14,7 @@
 #   ./scripts/build-android.ps1 -Bundle         # doar AAB
 #   ./scripts/build-android.ps1 -ApiBaseUrl http://192.168.1.10:3000
 
-#: acelasi motiv ca la deploy-web.ps1 - tree-shaking-ul de
+# --no-tree-shake-icons: acelasi motiv ca la deploy-web.ps1 - tree-shaking-ul de
 # iconite se uita doar la referintele statice de IconData si arunca glifele
 # folosite prin cautari dinamice (Map<String, IconData>), care ajung invizibile
 # in aplicatie fara nicio eroare.
@@ -50,12 +50,12 @@ Push-Location $frontend
 try {
     if ($Apk) {
         Write-Host "==> Build APK (API_BASE_URL=$ApiBaseUrl)..." -ForegroundColor Cyan
-        & $flutter build apk --release --dart-define=API_BASE_URL=$ApiBaseUrl
+        & $flutter build apk --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl
         if ($LASTEXITCODE -ne 0) { throw "flutter build apk a esuat." }
     }
     if ($Bundle) {
         Write-Host "==> Build AAB (API_BASE_URL=$ApiBaseUrl)..." -ForegroundColor Cyan
-        & $flutter build appbundle --release --dart-define=API_BASE_URL=$ApiBaseUrl
+        & $flutter build appbundle --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl
         if ($LASTEXITCODE -ne 0) { throw "flutter build appbundle a esuat." }
     }
 } finally {

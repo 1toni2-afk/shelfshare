@@ -106,11 +106,12 @@ class ChatSocketService {
   }
 
   Future<void> _provideFreshAuth(void Function(Map<String, dynamic>) callback) async {
-    // Declanșează același mecanism de refresh ca la cererile HTTP obișnuite
-    // (interceptorul din ApiClient reîmprospătează automat la un 401) -
-    // dacă token-ul curent a expirat, avem unul nou în storage după acest apel.
+    // Reîmprospătează token-ul doar dacă chiar a expirat - vezi
+    // `ApiClient.ensureFreshToken`. Înainte se cerea `/profile/me` la fiecare
+    // (re)conectare a socket-ului, doar ca efect secundar, ceea ce însemna
+    // profilul complet descărcat de mai multe ori la pornirea aplicației.
     try {
-      await _ref.read(apiClientProvider).dio.get('/profile/me');
+      await _ref.read(apiClientProvider).ensureFreshToken();
     } catch (_) {}
     final token = await _ref.read(tokenStorageProvider).getAccessToken();
     callback({'token': token});

@@ -45,7 +45,11 @@ if ($Pull) {
 Write-Host "==> Build web (API_BASE_URL=$ApiBaseUrl)..." -ForegroundColor Cyan
 Push-Location $frontend
 try {
-    & $flutter build web --release --dart-define=API_BASE_URL=$ApiBaseUrl
+    # --no-tree-shake-icons e obligatoriu: tree-shaking-ul implicit se uita doar
+    # la referintele statice de IconData si arunca glifele folosite prin cautari
+    # dinamice (ex. Map<String, IconData> pentru iconitele din sidebar) - in
+    # productie iconitele alea au ajuns invizibile, fara nicio eroare vizibila.
+    & $flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl
     if ($LASTEXITCODE -ne 0) { throw "flutter build web a esuat." }
 } finally {
     Pop-Location
