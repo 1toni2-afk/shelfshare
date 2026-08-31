@@ -283,6 +283,9 @@ Allow: /
 Sitemap: ${siteUrl}/sitemap.xml
 `;
 
+const APP_ADS_TXT = `google.com, pub-7014376175927154, DIRECT, f08c47fec0942fa0
+`;
+
 const mime = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -303,6 +306,30 @@ http.createServer((req, res) => {
   if (reqPath === '/robots.txt') {
     res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=3600' });
     res.end(ROBOTS_TXT);
+    return;
+  }
+
+  // Autorizarea AdMob (standardul IAB app-ads.txt): declară public ce conturi
+  // au dreptul să vândă reclame în aplicațiile care listează shelfshare.ro la
+  // "Website" în magazin. Crawler-ul cere fix /app-ads.txt din rădăcină - fără
+  // ruta asta cererea ar cădea pe fallback-ul de SPA de mai jos și ar primi
+  // index.html cu 200, adică "găsit, dar invalid", nu "lipsă".
+  //
+  // ATENȚIE: fișierul e autoritar pentru TOATE aplicațiile care trimit aici,
+  // nu doar pentru cea care l-a cerut prima (Werewolf Companion). Fără fișier
+  // înseamnă "nu mă pronunț"; cu fișier înseamnă "doar cine e pe listă are
+  // voie să vândă, restul e fraudă". Deci dacă ShelfShare primește vreodată
+  // reclame pe alt cont AdMob sau pe altă rețea (Unity Ads, AppLovin), adaugă
+  // o linie nouă aici - altfel îți declari singur propriul inventar ca
+  // neautorizat și cumpărătorii îl filtrează. Pe același cont nu e nevoie de
+  // nimic: linia de mai sus îl acoperă deja.
+  //
+  // Nu adăuga /app-ads.txt în Disallow-urile din ROBOTS_TXT: crawler-ul n-ar
+  // mai putea citi fișierul, iar verificarea din AdMob ar pica fără vreo
+  // eroare vizibilă.
+  if (reqPath === '/app-ads.txt') {
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=3600' });
+    res.end(APP_ADS_TXT);
     return;
   }
   if (reqPath === '/sitemap.xml') {
