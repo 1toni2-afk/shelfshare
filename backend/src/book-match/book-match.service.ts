@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BOOK_GENRES, GENRE_ADJACENCY } from '../common/constants/book-genres';
@@ -11,6 +12,7 @@ import {
   DISCOVERY_BOOST_SWIPES,
   DISCOVERY_SERENDIPITY_RATIO,
   NEGATIVE_GENRE_THRESHOLD,
+  NEUTRAL_GENRE_BAND,
   ONBOARDING_SWIPES_TARGET,
   RECALIBRATION_COOLDOWN_DAYS,
   RECALIBRATION_FACTOR,
@@ -45,6 +47,25 @@ const COLD_START_FAVORITE_RATIO = 0.8;
 
 /// Câte genuri „de top" alimentează cardurile de profil.
 const TOP_GENRES_FOR_PROFILE = 3;
+
+/// Câte swipe-uri trebuie să existe într-un gen ca scorul lui negativ să
+/// însemne „gen respins". Sub prag, scorul e o medie peste 1-2 swipe-uri: un
+/// singur „Nu" dat unei cărți urâte ar coborî genul sub prag și, cum genurile
+/// respinse nu se mai servesc niciodată, genul n-ar mai avea cum să-și revină
+/// (nu mai primește swipe-uri => scorul rămâne înghețat sub prag).
+const MIN_SWIPES_FOR_GENRE_REJECTION = 3;
+
+/// Câte genuri rămân servibile indiferent de scoruri. Fără această podea, un
+/// user care dă mai mult „Nu" decât „Da" (perfect normal: media pe gen scade
+/// sub prag la ~3 „Nu" pentru fiecare „Da") ajunge să aibă TOATE genurile
+/// respinse - și ecranul de Book Match rămâne gol definitiv. Genurile păstrate
+/// sunt cele mai puțin respinse; scorul lor negativ le ține oricum jos în
+/// ponderare, doar că nu mai dispar cu totul.
+const MIN_ALLOWED_GENRES = 5;
+
+/// Sub atâția candidați, eșantionul TABLESAMPLE e considerat ratat și se
+/// reîncearcă printr-o interogare exactă pe index (vezi `sampleCandidates`).
+const MIN_CANDIDATE_POOL = 60;
 
 /// Titluri populare, cross-gen, folosite ca pool de cold start atunci când
 /// userul nu a selectat niciun gen favorit la onboarding - fără el, primele
@@ -230,12 +251,34 @@ export class BookMatchService {
     if (!user) throw new NotFoundException('Utilizatorul nu a fost găsit');
 
     const excluded = await this.excludedBookIds(userId, sessionId);
-    const candidates = await this.sampleCandidates([...excluded.all]);
+    const coldStart = user.onboardingSwipesCount < ONBOARDING_SWIPES_TARGET;
+
+    // Genurile respinse se filtrează în SQL, nu doar în Node: după importul
+    // Open Library, un gen rămas servibil poate fi 0.03% din catalog, iar un
+    // eșantion oarbă de ~1000 de rânduri nu-l nimerește aproape niciodată -
+    // ecranul rămânea gol deși existau sute de cărți valide.
+    const scores = coldStart ? null : await this.loadScores(userId);
+    const allowed = scores
+      ? this.allowedGenres(scores, excluded.genreSwipeCounts)
+      : null;
+
+    let candidates = this.dedupeWorks(
+      await this.sampleCandidates([...excluded.all], allowed),
+      excluded.workKeys,
+    );
+    // Plasă de siguranță: dacă genurile rămase permise nu mai au nimic de
+    // servit, mai bine o carte dintr-un gen respins decât un ecran gol.
+    if (candidates.length === 0 && allowed != null) {
+      candidates = this.dedupeWorks(
+        await this.sampleCandidates([...excluded.all], null),
+        excluded.workKeys,
+      );
+    }
     if (candidates.length === 0) {
       return { sessionId, cards: [] };
     }
 
-    if (user.onboardingSwipesCount < ONBOARDING_SWIPES_TARGET) {
+    if (scores == null) {
       return {
         sessionId,
         cards: await this.coldStartBatch(
@@ -243,11 +286,11 @@ export class BookMatchService {
           size,
           user.favoriteGenres,
           [...excluded.all],
+          excluded.workKeys,
         ),
       };
     }
 
-    const scores = await this.loadScores(userId);
     const boosted = user.discoveryBoostSwipesRemaining > 0;
     return {
       sessionId,
@@ -256,9 +299,85 @@ export class BookMatchService {
         scores,
         size,
         boosted,
-        excluded.previouslySwiped,
+        excluded.previouslySwipedWorks,
+        allowed,
       ),
     };
+  }
+
+  /**
+   * Genurile pe care avem voie să le servim. Un gen e respins doar dacă are
+   * scor sub prag ȘI destule swipe-uri cât scorul să însemne ceva
+   * (MIN_SWIPES_FOR_GENRE_REJECTION); iar dacă respingerile ar lăsa mai puțin
+   * de MIN_ALLOWED_GENRES genuri, se readmit cele mai puțin respinse.
+   * `null` = nimic de filtrat (calea rapidă, fără condiție pe gen în SQL).
+   */
+  private allowedGenres(
+    scores: UserScoreMaps,
+    genreSwipeCounts: Map<string, number>,
+  ): string[] | null {
+    const known = [...scores.genre.keys()];
+    const catalog = [...new Set<string>([...BOOK_GENRES, ...known])];
+
+    const rejected = new Set(
+      known.filter(
+        (genre) =>
+          (scores.genre.get(genre) ?? 0) < NEGATIVE_GENRE_THRESHOLD &&
+          (genreSwipeCounts.get(genre) ?? 0) >= MIN_SWIPES_FOR_GENRE_REJECTION,
+      ),
+    );
+    if (rejected.size === 0) return null;
+
+    const readmitCount = MIN_ALLOWED_GENRES - (catalog.length - rejected.size);
+    if (readmitCount > 0) {
+      const leastRejected = [...rejected]
+        .sort((a, b) => (scores.genre.get(b) ?? 0) - (scores.genre.get(a) ?? 0))
+        .slice(0, readmitCount);
+      for (const genre of leastRejected) rejected.delete(genre);
+      if (rejected.size === 0) return null;
+    }
+
+    return catalog.filter((genre) => !rejected.has(genre));
+  }
+
+  /**
+   * Cheia de „operă" a unei cărți: titlu + autor normalizate. Importul Open
+   * Library aduce aceeași carte în zeci-sute de ediții, fiecare cu id propriu
+   * („Pride and Prejudice" are 286 de rânduri servibile) - fără cheia asta,
+   * userul vede același titlu iar și iar, cu altă copertă, și dedublarea pe
+   * bookId nu ajută cu nimic. Autorul intră în cheie cu tokenii sortați, ca
+   * „Jane Austen" și „Austen, Jane" să dea aceeași cheie.
+   */
+  private workKey(book: { title: string; author: string | null }): string {
+    const norm = (value: string) =>
+      value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    const author = norm(book.author ?? '')
+      .split(' ')
+      .sort()
+      .join(' ');
+    return `${norm(book.title)}|${author}`;
+  }
+
+  /// Scoate din bazin operele deja atinse (orice ediție) și păstrează o
+  /// singură ediție per operă.
+  private dedupeWorks(
+    candidates: CandidateBook[],
+    excludedWorkKeys: Set<string>,
+  ): CandidateBook[] {
+    const seen = new Set<string>();
+    const out: CandidateBook[] = [];
+    for (const book of candidates) {
+      const key = this.workKey(book);
+      if (excludedWorkKeys.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      out.push(book);
+    }
+    return out;
   }
 
   /**
@@ -268,7 +387,10 @@ export class BookMatchService {
    * peste prag, eșantionează fizic (TABLESAMPLE) în loc să sorteze random
    * întreaga tabelă.
    */
-  private async sampleCandidates(excludedIds: string[]): Promise<CandidateBook[]> {
+  private async sampleCandidates(
+    excludedIds: string[],
+    allowedGenres: string[] | null,
+  ): Promise<CandidateBook[]> {
     // Estimare rapidă (din statisticile autovacuum, nu un COUNT(*) real - la
     // fel de scump ca interogarea pe care vrem s-o evităm). Poate fi 0 imediat
     // după un bulk-insert nean­alizat încă; fallback-ul de mai jos (findMany)
@@ -293,7 +415,9 @@ export class BookMatchService {
           id: { notIn: excludedIds },
           coverUrl: { not: null },
           description: { not: null },
-          genre: { not: null },
+          ...(allowedGenres
+            ? { genre: { in: allowedGenres } }
+            : { genre: { not: null } }),
         },
         select: CARD_SELECT,
         take: CANDIDATE_POOL_LIMIT,
@@ -303,28 +427,73 @@ export class BookMatchService {
     // Marjă x3 față de target: TABLESAMPLE SYSTEM aproximează pe blocuri (nu
     // exact pe rânduri), iar rândurile excluse (inclusiv cele fără copertă)
     // mai reduc din câte rămân utile.
-    const samplePercent = Math.min(100, ((CANDIDATE_POOL_LIMIT * 3) / approxTotal) * 100);
+    const samplePercent = Math.min(
+      100,
+      ((CANDIDATE_POOL_LIMIT * 3) / approxTotal) * 100,
+    );
 
-    return excludedIds.length > 0
-      ? this.prisma.$queryRaw<CandidateBook[]>`
-          SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore"
-          FROM books TABLESAMPLE SYSTEM (${samplePercent})
-          WHERE id NOT IN (${Prisma.join(excludedIds)})
-            AND "coverUrl" IS NOT NULL
-            AND description IS NOT NULL
-            AND genre IS NOT NULL
-          ORDER BY RANDOM()
-          LIMIT ${CANDIDATE_POOL_LIMIT}
-        `
-      : this.prisma.$queryRaw<CandidateBook[]>`
-          SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore"
-          FROM books TABLESAMPLE SYSTEM (${samplePercent})
-          WHERE "coverUrl" IS NOT NULL
-            AND description IS NOT NULL
-            AND genre IS NOT NULL
-          ORDER BY RANDOM()
-          LIMIT ${CANDIDATE_POOL_LIMIT}
-        `;
+    const notExcluded =
+      excludedIds.length > 0
+        ? Prisma.sql`AND id NOT IN (${Prisma.join(excludedIds)})`
+        : Prisma.empty;
+    const genreFilter = allowedGenres
+      ? Prisma.sql`AND genre IN (${Prisma.join(allowedGenres)})`
+      : Prisma.sql`AND genre IS NOT NULL`;
+
+    const sampled = await this.prisma.$queryRaw<CandidateBook[]>`
+      SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore"
+      FROM books TABLESAMPLE SYSTEM (${samplePercent})
+      WHERE "coverUrl" IS NOT NULL
+        AND description IS NOT NULL
+        ${genreFilter}
+        ${notExcluded}
+      ORDER BY RANDOM()
+      LIMIT ${CANDIDATE_POOL_LIMIT}
+    `;
+    if (sampled.length >= MIN_CANDIDATE_POOL || allowedGenres == null) {
+      return sampled;
+    }
+
+    // Eșantion ratat: genurile rămase servibile sunt prea rare ca TABLESAMPLE
+    // (care ia blocuri fizice, nu rânduri filtrate) să le nimerească.
+    return this.exactCandidates(allowedGenres, notExcluded);
+  }
+
+  /**
+   * Bazin exact, per gen permis, când eșantionarea fizică nu e de ajuns.
+   *
+   * Nu `ORDER BY RANDOM()` pe filtrul de gen: planner-ul alege seq scan paralel
+   * pe tot catalogul (măsurat 4.4s pe 3.68M de rânduri) fiindcă trebuie oricum
+   * să sorteze toate potrivirile. În loc de asta tăiem indexul (genre, id)
+   * într-un punct aleator și luăm rândurile imediat de după și de dinainte -
+   * două index range scan-uri per gen, ~30ms fiecare, cu un start diferit la
+   * fiecare apel (deci nu aceleași cărți de fiecare dată).
+   */
+  private async exactCandidates(
+    allowedGenres: string[],
+    notExcluded: Prisma.Sql,
+  ): Promise<CandidateBook[]> {
+    const half = Math.max(
+      1,
+      Math.ceil(CANDIDATE_POOL_LIMIT / (allowedGenres.length * 2)),
+    );
+    const columns = Prisma.sql`SELECT id, title, author, "coverUrl", genre, "publishedYear", description, "popularityScore" FROM books`;
+
+    const parts = allowedGenres.flatMap((genre) => {
+      const cut = randomUUID();
+      return [
+        Prisma.sql`(${columns} WHERE genre = ${genre} AND id >= ${cut}
+            AND "coverUrl" IS NOT NULL AND description IS NOT NULL ${notExcluded}
+            ORDER BY id LIMIT ${half})`,
+        Prisma.sql`(${columns} WHERE genre = ${genre} AND id < ${cut}
+            AND "coverUrl" IS NOT NULL AND description IS NOT NULL ${notExcluded}
+            ORDER BY id DESC LIMIT ${half})`,
+      ];
+    });
+
+    return this.prisma.$queryRaw<CandidateBook[]>(
+      Prisma.join(parts, ' UNION ALL '),
+    );
   }
 
   /**
@@ -335,39 +504,78 @@ export class BookMatchService {
    *    care userul le are deja listate (sunt ale lui).
    *  - `previouslySwiped` - „Nu"/„Skip" din sesiuni anterioare: au voie să
    *    revină, dar cu greutate ajustată de scorurile curente.
+   *  - `workKeys` - aceleași cărți, dar ca titlu+autor normalizat: excluderea
+   *    pe id lasă să treacă celelalte zeci de ediții ale aceleiași opere din
+   *    importul Open Library (vezi `workKey`).
+   *
+   * Tot de aici ies și `genreSwipeCounts` (câte swipe-uri are userul în
+   * fiecare gen), folosite ca prag de încredere pentru respingerea unui gen -
+   * fără o interogare în plus, fiindcă oricum citim tot istoricul aici.
    */
   private async excludedBookIds(userId: string, sessionId: string) {
+    const bookRef = { select: { title: true, author: true, genre: true } };
     const [swipes, wishlist, owned] = await Promise.all([
       this.prisma.bookSwipe.findMany({
         where: { userId },
-        select: { bookId: true, action: true, sessionId: true },
+        select: { bookId: true, action: true, sessionId: true, book: bookRef },
       }),
       this.prisma.wishlistItem.findMany({
         where: { userId },
-        select: { bookId: true },
+        select: { bookId: true, book: bookRef },
       }),
       this.prisma.userBook.findMany({
         where: { userId, deletedAt: null },
-        select: { bookId: true },
+        select: { bookId: true, book: bookRef },
       }),
     ]);
 
     const all = new Set<string>();
     const previouslySwiped = new Set<string>();
+    const workKeys = new Set<string>();
+    const previouslySwipedWorks = new Set<string>();
+    const genreSwipeCounts = new Map<string, number>();
+
+    const rememberWork = (
+      book?: {
+        title: string;
+        author: string | null;
+      } | null,
+    ) => {
+      if (book) workKeys.add(this.workKey(book));
+    };
+
     for (const swipe of swipes) {
       if (swipe.sessionId === sessionId || swipe.action === 'YES') {
         all.add(swipe.bookId);
+        rememberWork(swipe.book);
       } else {
         previouslySwiped.add(swipe.bookId);
+        if (swipe.book) previouslySwipedWorks.add(this.workKey(swipe.book));
       }
+      const genre = swipe.book?.genre;
+      if (genre)
+        genreSwipeCounts.set(genre, (genreSwipeCounts.get(genre) ?? 0) + 1);
     }
-    for (const item of wishlist) all.add(item.bookId);
-    for (const item of owned) all.add(item.bookId);
+    for (const item of wishlist) {
+      all.add(item.bookId);
+      rememberWork(item.book);
+    }
+    for (const item of owned) {
+      all.add(item.bookId);
+      rememberWork(item.book);
+    }
     // O carte respinsă în sesiunea curentă nu revine, chiar dacă a fost și
     // „no" într-o sesiune veche.
     for (const id of all) previouslySwiped.delete(id);
+    for (const key of workKeys) previouslySwipedWorks.delete(key);
 
-    return { all, previouslySwiped };
+    return {
+      all,
+      previouslySwiped,
+      previouslySwipedWorks,
+      workKeys,
+      genreSwipeCounts,
+    };
   }
 
   /**
@@ -388,9 +596,15 @@ export class BookMatchService {
     size: number,
     favoriteGenres: string[],
     excludedIds: string[],
+    excludedWorkKeys: Set<string>,
   ): Promise<BookMatchCard[]> {
     if (favoriteGenres.length === 0) {
-      return this.coldStartFallbackBatch(candidates, size, excludedIds);
+      return this.coldStartFallbackBatch(
+        candidates,
+        size,
+        excludedIds,
+        excludedWorkKeys,
+      );
     }
 
     const favorites = new Set(favoriteGenres);
@@ -405,8 +619,17 @@ export class BookMatchService {
     const weightOf = (book: CandidateBook) =>
       1 + (book.popularityScore ?? BOOK_MATCH_DEFAULT_POPULARITY);
 
-    // Pool-ul de profil: câte COLD_START_PER_GENRE titluri din fiecare gen
-    // favorit, ca un singur gen popular să nu acopere tot batch-ul.
+    const favoriteTarget = Math.round(size * COLD_START_FAVORITE_RATIO);
+
+    // Pool-ul de profil: cel puțin COLD_START_PER_GENRE titluri din fiecare gen
+    // favorit, ca un singur gen popular să nu acopere tot batch-ul - dar
+    // niciodată atât de puține cât să nu se poată acoperi cota (cu 3 genuri
+    // favorite și 4 titluri fiecare, 12 < 16 însemna că restul batch-ului se
+    // umplea cu orice, adică exact senzația de „random" pe care cota o evită).
+    const perGenre = Math.max(
+      COLD_START_PER_GENRE,
+      Math.ceil(favoriteTarget / favoriteGenres.length),
+    );
     const favoritePool: CandidateBook[] = [];
     for (const genre of favoriteGenres) {
       const bucket = byGenre.get(genre);
@@ -414,7 +637,7 @@ export class BookMatchService {
       favoritePool.push(
         ...weightedSample(
           bucket.map((book) => ({ item: book, weight: weightOf(book) })),
-          COLD_START_PER_GENRE,
+          perGenre,
         ),
       );
     }
@@ -423,7 +646,6 @@ export class BookMatchService {
       (book) => !favorites.has(book.genre ?? ''),
     );
 
-    const favoriteTarget = Math.round(size * COLD_START_FAVORITE_RATIO);
     const wildcardTarget = size - favoriteTarget;
 
     const wildcard = weightedSample(
@@ -470,7 +692,13 @@ export class BookMatchService {
     candidates: CandidateBook[],
     size: number,
     excludedIds: string[],
+    excludedWorkKeys: Set<string>,
   ): Promise<BookMatchCard[]> {
+    // `take` era `size`, fără nicio ordonare: Postgres întoarce aceleași
+    // rânduri, în aceeași ordine, la fiecare apel - deci fiecare cont nou
+    // primea exact aceleași prime carduri. Luăm toate potrivirile (lista de
+    // titluri e fixă și scurtă), le dedublăm pe operă (aceleași titluri
+    // populare au zeci de ediții în catalog) și abia apoi eșantionăm.
     const fallbackBooks = await this.prisma.book.findMany({
       where: {
         id: { notIn: excludedIds },
@@ -478,10 +706,9 @@ export class BookMatchService {
         title: { in: [...COLD_START_FALLBACK_TITLES], mode: 'insensitive' },
       },
       select: CARD_SELECT,
-      take: size,
     });
 
-    const pool = [...fallbackBooks];
+    const pool = this.dedupeWorks(fallbackBooks, excludedWorkKeys);
     if (pool.length < size) {
       const byGenre = new Map<string, CandidateBook[]>();
       for (const book of candidates) {
@@ -491,6 +718,7 @@ export class BookMatchService {
         else byGenre.set(genre, [book]);
       }
       const used = new Set(pool.map((b) => b.id));
+      const usedWorks = new Set(pool.map((b) => this.workKey(b)));
       for (const genre of BOOK_GENRES) {
         const bucket = byGenre.get(genre);
         if (!bucket) continue;
@@ -501,18 +729,19 @@ export class BookMatchService {
           })),
           COLD_START_PER_GENRE,
         )) {
-          if (used.has(book.id)) continue;
+          if (used.has(book.id) || usedWorks.has(this.workKey(book))) continue;
           pool.push(book);
           used.add(book.id);
+          usedWorks.add(this.workKey(book));
         }
       }
       if (pool.length < size) {
         for (const book of candidates) {
           if (pool.length >= size) break;
-          if (!used.has(book.id)) {
-            pool.push(book);
-            used.add(book.id);
-          }
+          if (used.has(book.id) || usedWorks.has(this.workKey(book))) continue;
+          pool.push(book);
+          used.add(book.id);
+          usedWorks.add(this.workKey(book));
         }
       }
     }
@@ -534,7 +763,8 @@ export class BookMatchService {
     scores: UserScoreMaps,
     size: number,
     boosted: boolean,
-    previouslySwiped: Set<string>,
+    previouslySwipedWorks: Set<string>,
+    allowedGenres: string[] | null,
   ): BookMatchCard[] {
     const discoveryTarget = discoveryCountFor(size, boosted);
     const profileTarget = size - discoveryTarget;
@@ -547,9 +777,12 @@ export class BookMatchService {
         .map(([genre]) => genre),
     );
 
+    // Aceeași listă folosită și în SQL (vezi `allowedGenres`), ca filtrarea în
+    // Node să nu poată tăia mai mult decât a cerut interogarea - altfel
+    // bazinul rămas s-ar putea goli complet.
+    const allowed = allowedGenres ? new Set(allowedGenres) : null;
     const isRejectedGenre = (genre: string | null) =>
-      genre != null &&
-      (scores.genre.get(genre) ?? 0) < NEGATIVE_GENRE_THRESHOLD;
+      allowed != null && genre != null && !allowed.has(genre);
 
     // Genuri „vecine" celor din top - discovery-ul controlat le preferă în
     // loc să tragă uniform din tot catalogul eșantionat (vezi GENRE_ADJACENCY).
@@ -566,7 +799,11 @@ export class BookMatchService {
 
     for (const book of candidates) {
       if (isRejectedGenre(book.genre)) continue;
-      const resurface = this.resurfaceFactor(book, scores, previouslySwiped);
+      const resurface = this.resurfaceFactor(
+        book,
+        scores,
+        previouslySwipedWorks,
+      );
       const genreScore = book.genre ? (scores.genre.get(book.genre) ?? 0) : 0;
       const knownGenre = book.genre != null && scores.genre.has(book.genre);
 
@@ -580,10 +817,7 @@ export class BookMatchService {
           weight: Math.max(0.05, composite + 1 + bonus) * resurface,
         });
       }
-      if (
-        !knownGenre ||
-        Math.abs(genreScore) <= Math.abs(NEGATIVE_GENRE_THRESHOLD)
-      ) {
+      if (!knownGenre || Math.abs(genreScore) <= NEUTRAL_GENRE_BAND) {
         // Distanță controlată: un gen vecin celor din top e discovery „aproape"
         // (ex. userul iubește Fantasy, nu a atins încă SF); orice altceva e
         // serendipity - rămâne posibil, dar o cotă mică, nu jumătate din batch.
@@ -650,6 +884,18 @@ export class BookMatchService {
       }
     }
 
+    // Ultima plasă: nimic n-a trecut de filtre (toate genurile din bazin sunt
+    // respinse). Servim totuși ce avem - un ecran gol e mai rău decât un gen
+    // pe care userul l-a notat prost.
+    if (cards.length === 0) {
+      for (const book of weightedSample(
+        candidates.map((item) => ({ item, weight: 1 })),
+        size,
+      )) {
+        cards.push(this.toCard(book, true));
+      }
+    }
+
     // Amestecăm, altfel toate cardurile de discovery ar veni la coadă și
     // userul ar simți o „a doua parte" mai slabă a sesiunii.
     return weightedSample(
@@ -666,9 +912,12 @@ export class BookMatchService {
   private resurfaceFactor(
     book: CandidateBook,
     scores: UserScoreMaps,
-    previouslySwiped: Set<string>,
+    previouslySwipedWorks: Set<string>,
   ): number {
-    if (!previouslySwiped.has(book.id)) return 1;
+    // Pe cheie de operă, nu pe id: altfel „Nu" dat unei ediții din Dracula
+    // lăsa celelalte 207 ediții să intre cu factor 1, ca și cum n-ar fi fost
+    // văzute niciodată.
+    if (!previouslySwipedWorks.has(this.workKey(book))) return 1;
     const genre = book.genre ? (scores.genre.get(book.genre) ?? 0) : 0;
     const author = book.author ? (scores.author.get(book.author) ?? 0) : 0;
     const affinity = (genre + author) / 2;

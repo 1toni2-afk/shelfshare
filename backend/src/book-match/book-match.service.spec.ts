@@ -236,15 +236,101 @@ describe('BookMatchService', () => {
       );
     });
 
+    /// Istoric de swipe-uri „vechi" (alta sesiune) pentru cartile date, ca
+    /// genul lor sa aiba destule voturi cat scorul negativ sa conteze.
+    const oldNoSwipes = (books: Book[]) =>
+      books.map((b) => ({
+        bookId: b.id,
+        action: 'NO' as const,
+        sessionId: 'sess-veche',
+        book: { title: b.title, author: b.author, genre: b.genre },
+      }));
+
     it('nu serveste niciodata un gen clar respins, nici ca discovery', async () => {
       scoredUser();
       prisma.userGenreScore.findMany.mockResolvedValue([
         { genre: 'Fantasy', score: 1.2 },
         { genre: 'Thriller', score: -0.9 },
       ]);
+      prisma.bookSwipe.findMany.mockResolvedValue(
+        oldNoSwipes(CATALOG.filter((b) => b.genre === 'Thriller').slice(0, 3)),
+      );
 
       const { cards } = await service.getQueue('user-1', 'sess-1', 20);
       expect(cards.some((c) => c.genre === 'Thriller')).toBe(false);
+    });
+
+    it('un singur Nu nu ingroapa un gen pentru totdeauna', async () => {
+      scoredUser();
+      // Scor sub prag, dar dintr-un singur swipe: media e nesemnificativa, iar
+      // un gen exclus nu mai primeste swipe-uri, deci n-ar mai iesi niciodata
+      // din groapa.
+      prisma.userGenreScore.findMany.mockResolvedValue([
+        { genre: 'Fantasy', score: 1.2 },
+        { genre: 'Thriller', score: -0.5 },
+      ]);
+      prisma.bookSwipe.findMany.mockResolvedValue(
+        oldNoSwipes(CATALOG.filter((b) => b.genre === 'Thriller').slice(0, 1)),
+      );
+
+      const { cards } = await service.getQueue('user-1', 'sess-1', 20);
+      expect(cards.some((c) => c.genre === 'Thriller')).toBe(true);
+    });
+
+    it('nu ramane fara carduri cand toate genurile sunt sub prag', async () => {
+      scoredUser();
+      prisma.userGenreScore.findMany.mockResolvedValue(
+        [...new Set(CATALOG.map((b) => b.genre))].map((genre) => ({
+          genre,
+          score: -0.9,
+        })),
+      );
+      prisma.bookSwipe.findMany.mockResolvedValue(
+        oldNoSwipes(
+          [...new Set(CATALOG.map((b) => b.genre))].flatMap((genre) =>
+            CATALOG.filter((b) => b.genre === genre).slice(0, 3),
+          ),
+        ),
+      );
+
+      const { cards } = await service.getQueue('user-1', 'sess-1', 20);
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    it('nu serveste alta editie a unei carti deja votate', async () => {
+      scoredUser();
+      // Acelasi titlu+autor ca b0-0, alt id: exact ce produce importul Open
+      // Library (sute de editii per opera).
+      const editie = { ...CATALOG[0], id: 'b0-0-bis' };
+      prisma.book.findMany.mockResolvedValue([...CATALOG, editie]);
+      prisma.bookSwipe.findMany.mockResolvedValue([
+        {
+          bookId: CATALOG[0].id,
+          action: 'YES' as const,
+          sessionId: 'sess-veche',
+          book: {
+            title: CATALOG[0].title,
+            author: CATALOG[0].author,
+            genre: CATALOG[0].genre,
+          },
+        },
+      ]);
+
+      const { cards } = await service.getQueue('user-1', 'sess-1', 20);
+      expect(cards.some((c) => c.bookId === 'b0-0-bis')).toBe(false);
+    });
+
+    it('nu pune doua editii ale aceleiasi carti in acelasi batch', async () => {
+      scoredUser();
+      prisma.book.findMany.mockResolvedValue([
+        ...CATALOG,
+        { ...CATALOG[0], id: 'b0-0-bis' },
+        { ...CATALOG[1], id: 'b0-1-bis' },
+      ]);
+
+      const { cards } = await service.getQueue('user-1', 'sess-1', 20);
+      const titluri = cards.map((c) => `${c.title}|${c.author}`);
+      expect(new Set(titluri).size).toBe(titluri.length);
     });
 
     it('cardurile de discovery vin din genuri neutre, nu din topul userului', async () => {

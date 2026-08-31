@@ -432,6 +432,11 @@ model Book {
   reviews          Review[]
 
   @@index([series])
+  /// Book Match cade pe interogări exacte per gen când eșantionul aleator nu
+  /// nimerește genurile rămase servibile (vezi `exactCandidates`): index range
+  /// scan pe (gen, id) dintr-un punct aleator, în loc de seq scan pe tot
+  /// catalogul importat.
+  @@index([genre, id])
   @@map("books")
 }
 

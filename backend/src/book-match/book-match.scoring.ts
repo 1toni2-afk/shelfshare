@@ -53,9 +53,18 @@ export const DISCOVERY_BOOST_SWIPES = 20;
 export const DISCOVERY_SERENDIPITY_RATIO = 0.15;
 
 /// Sub acest scor un gen e considerat respins - nu mai apare nici măcar ca
-/// discovery. Ușor negativ, nu 0, ca un singur „no" accidental să nu îngroape
-/// un gen pentru totdeauna.
-export const NEGATIVE_GENRE_THRESHOLD = -0.15;
+/// discovery (dar vezi MIN_SWIPES_FOR_GENRE_REJECTION și MIN_ALLOWED_GENRES din
+/// book-match.service.ts: respingerea cere și destule voturi, și nu poate goli
+/// catalogul). Scorul e o MEDIE ponderată a punctelor, deci pragul se citește
+/// în raportul „nu"/„da" din acel gen: -0.3 înseamnă ~6-7 „Nu" la fiecare „Da".
+/// Era -0.15 (~3 „Nu" la un „Da"), adică nivelul normal de swipe al oricui -
+/// ajungeau să fie respinse toate genurile și coada rămânea goală.
+export const NEGATIVE_GENRE_THRESHOLD = -0.3;
+
+/// Cât de aproape de 0 trebuie să stea scorul unui gen ca genul să treacă drept
+/// „neutru" și să poată alimenta cardurile de discovery. Separat de pragul de
+/// respingere: un gen poate fi prea slab ca să fie discovery fără să fie respins.
+export const NEUTRAL_GENRE_BAND = 0.15;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
