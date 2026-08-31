@@ -18,6 +18,10 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/safety-center', priority: '0.4' },
   { path: '/help-center', priority: '0.4' },
   { path: '/about-dev', priority: '0.3' },
+  { path: '/privacy', priority: '0.3' },
+  { path: '/terms', priority: '0.3' },
+  { path: '/en/privacy', priority: '0.2' },
+  { path: '/en/terms', priority: '0.2' },
 ];
 
 // Pagini plain-HTML, randate direct de acest server, fără Flutter - conținut
@@ -30,6 +34,24 @@ const STATIC_HTML_PAGES = {
   '/safety-center': path.join(__dirname, 'static-pages', 'safety-center.html'),
   '/about-dev': path.join(__dirname, 'static-pages', 'about-dev.html'),
   '/help-center': path.join(__dirname, 'static-pages', 'help-center.html'),
+  // Cerute de verificarea OAuth a Google (ecranul de consimțământ) ca linkuri
+  // publice, la adrese distincte, pe același domeniu cu aplicația. Trebuie să
+  // rămână accesibile FĂRĂ autentificare - de-asta sunt aici, nu în router-ul
+  // Flutter din spatele login-ului.
+  //
+  // Fiecare pagină răspunde și cu, și fără „.html", ca să meargă indiferent de
+  // ce formă a adresei ajunge în consola Google sau într-un link extern.
+  // Canonical rămâne varianta fără extensie (vezi <link rel="canonical"> din
+  // fișiere), deci dublura nu produce conținut duplicat pentru motoarele de
+  // căutare. Traducerile stau la /en/... , legate între ele prin hreflang.
+  '/privacy': path.join(__dirname, 'static-pages', 'privacy.html'),
+  '/privacy.html': path.join(__dirname, 'static-pages', 'privacy.html'),
+  '/en/privacy': path.join(__dirname, 'static-pages', 'privacy.en.html'),
+  '/en/privacy.html': path.join(__dirname, 'static-pages', 'privacy.en.html'),
+  '/terms': path.join(__dirname, 'static-pages', 'terms.html'),
+  '/terms.html': path.join(__dirname, 'static-pages', 'terms.html'),
+  '/en/terms': path.join(__dirname, 'static-pages', 'terms.en.html'),
+  '/en/terms.html': path.join(__dirname, 'static-pages', 'terms.en.html'),
 };
 
 function fetchJson(url) {
