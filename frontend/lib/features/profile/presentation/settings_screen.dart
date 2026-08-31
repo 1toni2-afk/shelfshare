@@ -203,6 +203,17 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.person_outline,
                           label: l10n.aboutDevTitle,
                           onTap: () => openSupportPage(context, '/about-dev')),
+                      // openLegalPage, nu openSupportPage: documentele astea
+                      // sunt traduse, deci ruta depinde de limba interfeței
+                      // (/privacy pentru română, /en/privacy pentru engleză).
+                      _SettingsTile(
+                          icon: Icons.privacy_tip_outlined,
+                          label: l10n.profilePrivacyPolicy,
+                          onTap: () => openLegalPage(context, 'privacy')),
+                      _SettingsTile(
+                          icon: Icons.gavel_outlined,
+                          label: l10n.profileTermsOfService,
+                          onTap: () => openLegalPage(context, 'terms')),
                       _SettingsTile(
                           icon: Icons.feedback_outlined,
                           label: l10n.profileSendFeedback,

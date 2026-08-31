@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'token_storage.dart';
 
 /// URL-ul backend-ului. Pentru emulator Android, "localhost" nu ajunge
@@ -7,9 +8,18 @@ import 'token_storage.dart';
 class ApiConfig {
   ApiConfig._();
 
+  /// Default-ul diferă între debug și release DINADINS: un build de release
+  /// făcut fără --dart-define=API_BASE_URL ajungea cu "localhost:3000"
+  /// compilat în binar, adică fiecare request de pe telefon lovea telefonul
+  /// însuși. Nu se vedea ca eroare de configurare, ci ca „A apărut o eroare.
+  /// Încearcă din nou." la orice login (vezi AuthController._extractMessage,
+  /// care cade pe mesajul generic când requestul nu primește niciun răspuns).
+  /// În release cădem deci pe producție, iar dart-define rămâne disponibil
+  /// pentru cine chiar vrea alt backend.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:3000',
+    defaultValue:
+        kReleaseMode ? 'https://api.shelfshare.ro' : 'http://localhost:3000',
   );
 }
 

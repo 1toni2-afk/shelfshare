@@ -27,14 +27,17 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <!-- Google Analytics (GA4) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-36HN8BM30V"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-36HN8BM30V');
-  </script>
+  <!-- Google Analytics (GA4) - încărcat DOAR după consimțământ explicit.
+       Înainte, gtag.js pornea necondiționat aici, în <head>: pune cookie-uri
+       și trimite un page_view către Google din prima milisecundă, adică
+       înainte ca userul să fi putut spune ceva. Sub GDPR + directiva
+       ePrivacy, analytics-ul cu cookie-uri are nevoie de consimțământ
+       PRECEDENT, iar politica noastră de confidențialitate declară exact
+       asta ca temei (vezi secțiunea 5 din scripts/static-pages/privacy.html).
+       Acum nu se face nicio cerere către googletagmanager.com până când
+       bannerul din <body> nu primește un „Accept" - vezi loadAnalytics()
+       acolo. Un refuz, sau lipsa unei alegeri, înseamnă zero trafic spre
+       Google. Doar web: pe Android/iOS nu există GA în aplicație. -->
 
   <meta name="description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
   <meta name="theme-color" content="#7C3A1E">
@@ -196,6 +199,72 @@
       max-width: 100%;
       height: auto;
     }
+    /* Bannerul de consimțământ pentru analytics. Stă peste tot (inclusiv
+       peste canvas-ul Flutter), dar sub #splash: se arată abia după ce
+       aplicația a randat primul frame, ca să nu concureze cu ecranul de
+       încărcare. Culorile oglindesc paleta din app_theme.dart, cu varianta
+       dark după tema browserului - Flutter n-a pornit încă neapărat, deci
+       nu putem citi tema aleasă în aplicație. */
+    #cookie-consent {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 9998;
+      margin: 0 auto;
+      max-width: 560px;
+      background: #FDFAF4;
+      color: #2A1A0E;
+      border: 1px solid rgba(42, 26, 14, 0.13);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+      padding: 18px 20px;
+      font-family: sans-serif;
+    }
+    #cookie-consent p {
+      margin: 0 0 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #cookie-consent a {
+      color: #C8783A;
+    }
+    #cookie-consent .cc-actions {
+      display: flex;
+      gap: 10px;
+    }
+    /* Aceeași dimensiune și greutate pentru ambele butoane: GDPR cere ca
+       refuzul să fie la fel de ușor ca acceptul, nu un link șters pe lângă
+       un buton colorat. */
+    #cookie-consent button {
+      flex: 1;
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #cookie-consent .cc-accept {
+      background: #7C3A1E;
+      color: #FDF9F3;
+      border: 1px solid #7C3A1E;
+    }
+    #cookie-consent .cc-reject {
+      background: transparent;
+      color: inherit;
+      border: 1px solid rgba(42, 26, 14, 0.35);
+    }
+    @media (prefers-color-scheme: dark) {
+      #cookie-consent {
+        background: #19191B;
+        color: #F5F3F0;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+      #cookie-consent .cc-reject {
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+    }
   </style>
 </head>
 <body>
@@ -306,6 +375,98 @@
         });
       }
     }
+  </script>
+
+  <script>
+    // Consimțământ pentru Google Analytics. Regula: nicio cerere către
+    // Google până când userul nu apasă explicit „Accept". Refuzul și lipsa
+    // unei alegeri se comportă identic din punctul de vedere al traficului
+    // (zero), diferă doar prin faptul că un refuz nu mai reafișează
+    // bannerul.
+    //
+    // Alegerea stă în localStorage, nu într-un cookie: e per-browser, nu se
+    // trimite la fiecare cerere și nu are nevoie ea însăși de consimțământ,
+    // fiind strict necesară pentru a onora o preferință exprimată de user.
+    (function () {
+      var KEY = 'ss-analytics-consent';
+      var GA_ID = 'G-36HN8BM30V';
+      var stored = null;
+      // Poate arunca în modul privat al unor browsere sau cu cookie-urile
+      // blocate de tot; atunci ne comportăm ca și cum n-ar exista o alegere.
+      try { stored = localStorage.getItem(KEY); } catch (e) {}
+
+      function loadAnalytics() {
+        if (window.__ssAnalyticsLoaded) return;
+        window.__ssAnalyticsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', GA_ID);
+      }
+
+      function remember(value) {
+        try { localStorage.setItem(KEY, value); } catch (e) {}
+      }
+
+      function showBanner() {
+        var el = document.createElement('div');
+        el.id = 'cookie-consent';
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-live', 'polite');
+        el.setAttribute('aria-label', 'Consimțământ pentru statistici');
+        el.innerHTML =
+          '<p>Folosim Google Analytics ca să vedem câți oameni intră pe site. ' +
+          'Nu pornește nimic până nu accepți, iar refuzul nu schimbă cu nimic ' +
+          'felul în care funcționează aplicația. ' +
+          '<a href="/privacy">Detalii în politica de confidențialitate</a>.</p>' +
+          '<div class="cc-actions">' +
+          '<button type="button" class="cc-reject">Refuz</button>' +
+          '<button type="button" class="cc-accept">Accept</button>' +
+          '</div>';
+        document.body.appendChild(el);
+        el.querySelector('.cc-accept').addEventListener('click', function () {
+          remember('granted');
+          el.remove();
+          loadAnalytics();
+        });
+        el.querySelector('.cc-reject').addEventListener('click', function () {
+          remember('denied');
+          el.remove();
+        });
+      }
+
+      if (stored === 'granted') {
+        loadAnalytics();
+        return;
+      }
+      if (stored === 'denied') return;
+
+      // Bannerul apare abia după ce dispare splash-ul, ca userul să nu vadă
+      // două straturi suprapuse la pornire. Timeout-ul e plasa de siguranță
+      // pentru cazul în care „flutter-first-frame" nu se declanșează, ca
+      // alegerea să rămână oricum posibilă.
+      var shown = false;
+      function showOnce() {
+        if (shown) return;
+        shown = true;
+        showBanner();
+      }
+      window.addEventListener('flutter-first-frame', function () {
+        setTimeout(showOnce, 400);
+      });
+      setTimeout(showOnce, 15500);
+
+      // Retragerea consimțământului: șterge alegerea și reafișează bannerul
+      // la următoarea încărcare. Expusă global ca să poată fi apelată de
+      // oriunde (consolă, sau un buton din aplicație, dacă se adaugă unul).
+      window.shelfShareResetAnalyticsConsent = function () {
+        try { localStorage.removeItem(KEY); } catch (e) {}
+      };
+    })();
   </script>
 
   <!--

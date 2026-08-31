@@ -437,6 +437,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileHelpCenter => 'Häufige Fragen';
 
   @override
+  String get profilePrivacyPolicy => 'Datenschutzerklärung';
+
+  @override
+  String get profileTermsOfService => 'Nutzungsbedingungen';
+
+  @override
   String get profileLeaderboard => 'Rangliste';
 
   @override

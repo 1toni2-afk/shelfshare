@@ -9,6 +9,14 @@ const port = 5959;
 const siteUrl = 'https://shelfshare.ro';
 const apiUrl = 'https://api.shelfshare.ro';
 
+// Documentele legale (cerute de verificarea OAuth a Google), traduse în toate
+// limbile aplicației. Româna e implicită: stă în rădăcină, restul sub prefixul
+// lor. O limbă nouă = o intrare aici plus cele două fișiere HTML; rutele și
+// sitemap-ul se generează singure mai jos.
+const LEGAL_DOCS = ['privacy', 'terms'];
+const LEGAL_LANGS = ['ro', 'en', 'de', 'hu'];
+const LEGAL_DEFAULT_LANG = 'ro';
+
 const STATIC_SITEMAP_ROUTES = [
   { path: '/', priority: '1.0' },
   { path: '/login', priority: '0.3' },
@@ -18,10 +26,14 @@ const STATIC_SITEMAP_ROUTES = [
   { path: '/safety-center', priority: '0.4' },
   { path: '/help-center', priority: '0.4' },
   { path: '/about-dev', priority: '0.3' },
-  { path: '/privacy', priority: '0.3' },
-  { path: '/terms', priority: '0.3' },
-  { path: '/en/privacy', priority: '0.2' },
-  { path: '/en/terms', priority: '0.2' },
+  // Doar varianta fără „.html" - aia e canonical în paginile propriu-zise,
+  // deci sitemap-ul nu trebuie să anunțe și dublura.
+  ...LEGAL_DOCS.flatMap((doc) =>
+    LEGAL_LANGS.map((lang) => ({
+      path: lang === LEGAL_DEFAULT_LANG ? `/${doc}` : `/${lang}/${doc}`,
+      priority: lang === LEGAL_DEFAULT_LANG ? '0.3' : '0.2',
+    })),
+  ),
 ];
 
 // Pagini plain-HTML, randate direct de acest server, fără Flutter - conținut
@@ -44,14 +56,20 @@ const STATIC_HTML_PAGES = {
   // Canonical rămâne varianta fără extensie (vezi <link rel="canonical"> din
   // fișiere), deci dublura nu produce conținut duplicat pentru motoarele de
   // căutare. Traducerile stau la /en/... , legate între ele prin hreflang.
-  '/privacy': path.join(__dirname, 'static-pages', 'privacy.html'),
-  '/privacy.html': path.join(__dirname, 'static-pages', 'privacy.html'),
-  '/en/privacy': path.join(__dirname, 'static-pages', 'privacy.en.html'),
-  '/en/privacy.html': path.join(__dirname, 'static-pages', 'privacy.en.html'),
-  '/terms': path.join(__dirname, 'static-pages', 'terms.html'),
-  '/terms.html': path.join(__dirname, 'static-pages', 'terms.html'),
-  '/en/terms': path.join(__dirname, 'static-pages', 'terms.en.html'),
-  '/en/terms.html': path.join(__dirname, 'static-pages', 'terms.en.html'),
+  // 2 documente x 4 limbi x 2 forme de adresă = 16 rute, deci generate, nu
+  // scrise de mână. Româna e limba implicită și stă în rădăcină (/privacy),
+  // restul sub prefixul lor (/en/privacy). Fișierele urmează aceeași regulă:
+  // privacy.html pentru română, privacy.en.html pentru celelalte.
+  ...Object.fromEntries(
+    LEGAL_DOCS.flatMap((doc) =>
+      LEGAL_LANGS.flatMap((lang) => {
+        const url = lang === LEGAL_DEFAULT_LANG ? `/${doc}` : `/${lang}/${doc}`;
+        const suffix = lang === LEGAL_DEFAULT_LANG ? '' : `.${lang}`;
+        const file = path.join(__dirname, 'static-pages', `${doc}${suffix}.html`);
+        return [[url, file], [`${url}.html`, file]];
+      }),
+    ),
+  ),
 };
 
 function fetchJson(url) {

@@ -433,6 +433,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileHelpCenter => 'Gyakori kérdések';
 
   @override
+  String get profilePrivacyPolicy => 'Adatvédelmi tájékoztató';
+
+  @override
+  String get profileTermsOfService => 'Felhasználási feltételek';
+
+  @override
   String get profileLeaderboard => 'Ranglista';
 
   @override

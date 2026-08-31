@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adatvédelmi tájékoztató | ShelfShare</title>
+<meta name="description" content="Milyen adatokat gyűjt a ShelfShare, miért, kivel osztja meg, és milyen jogaid vannak velük kapcsolatban.">
+<meta name="theme-color" content="#7C3A1E">
+<link rel="canonical" href="https://shelfshare.ro/hu/privacy">
+<link rel="alternate" hreflang="ro" href="https://shelfshare.ro/privacy">
+<link rel="alternate" hreflang="en" href="https://shelfshare.ro/en/privacy">
+<link rel="alternate" hreflang="de" href="https://shelfshare.ro/de/privacy">
+<link rel="alternate" hreflang="hu" href="https://shelfshare.ro/hu/privacy">
+<link rel="alternate" hreflang="x-default" href="https://shelfshare.ro/privacy">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shelfshare.ro/hu/privacy">
+<meta property="og:site_name" content="ShelfShare">
+<meta property="og:title" content="Adatvédelmi tájékoztató | ShelfShare">
+<meta property="og:description" content="Milyen adatokat gyűjt a ShelfShare, miért, kivel osztja meg, és milyen jogaid vannak velük kapcsolatban.">
+<meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+<meta property="og:locale" content="hu_HU">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: #F8F4EC;
+    --foreground: #2A1A0E;
+    --card: #FDFAF4;
+    --primary: #7C3A1E;
+    --primary-foreground: #FDF9F3;
+    --accent: #C8783A;
+    --accent-foreground: #FDF9F3;
+    --muted-foreground: #655A4A;
+    --border: rgba(42, 26, 14, 0.13);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0E0E0F;
+      --foreground: #F5F3F0;
+      --card: #19191B;
+      --muted-foreground: #A8A6A3;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  header .back {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .lang {
+    display: flex;
+    gap: 4px;
+    flex: none;
+  }
+  .lang a {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .lang a[aria-current='page'] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: transparent;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    margin: 0 0 6px;
+  }
+  .updated {
+    color: var(--muted-foreground);
+    font-size: 14px;
+    margin: 0 0 28px;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    margin: 32px 0 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 15px;
+    margin: 20px 0 6px;
+  }
+  p, li {
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+  ul {
+    padding-left: 22px;
+    margin: 0 0 16px;
+  }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 700; }
+  a { color: var(--accent); }
+  .lead {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 8px;
+  }
+  .lead p:last-child { margin-bottom: 0; }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 0 0 16px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    min-width: 460px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 700;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+  }
+  .contact {
+    text-align: center;
+    margin-top: 32px;
+    color: var(--muted-foreground);
+    font-size: 14px;
+  }
+  .contact a { color: inherit; }
+</style>
+</head>
+<body>
+  <header>
+    <a class="back" href="/">← ShelfShare</a>
+    <nav class="lang" aria-label="Nyelv">
+      <a href="/privacy" hreflang="ro" lang="ro">RO</a>
+      <a href="/en/privacy" hreflang="en" lang="en">EN</a>
+      <a href="/de/privacy" hreflang="de" lang="de">DE</a>
+      <a href="/hu/privacy" hreflang="hu" lang="hu" aria-current="page">HU</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Adatvédelmi tájékoztató</h1>
+    <p class="updated">Utoljára frissítve: 2026. augusztus 31.</p>
+
+    <div class="lead">
+      <p>A ShelfShare egy alkalmazás, amelyben az emberek könyveket cserélnek, ajándékoznak és adnak el egymásnak. Ahhoz, hogy működjön, bizonyos adatokat tárolnia kell rólad. Ez az oldal pontosan elmagyarázza, melyek ezek, miért őrizzük meg őket, és mit tehetsz velük.</p>
+      <p>Az adataiddal kapcsolatos bármely kérdésben: <a href="mailto:contact@shelfshare.ro">contact@shelfshare.ro</a>.</p>
+    </div>
+
+    <h2>1. Milyen adatokat gyűjtünk</h2>
+
+    <h3>Fiókadatok</h3>
+    <ul>
+      <li><strong>Ha e-mail-címmel és jelszóval regisztrálsz:</strong> az e-mail-címed és a jelszavad. A jelszót soha nem tároljuk olvasható formában — csak egy bcrypt-kivonatot őrzünk meg, amelyből a jelszó nem állítható vissza.</li>
+      <li><strong>Ha Google-fiókkal lépsz be:</strong> az e-mail-címed, a megjelenített neved, a profilképed és a Google-fiókazonosítód. Részletek a 4. pontban.</li>
+    </ul>
+
+    <h3>Profiladatok, amelyeket te adsz meg</h3>
+    <p>Név, felhasználónév, város, bemutatkozás, profilkép, a születésed napja és hónapja (szándékosan év nélkül — egy születésnapi köszöntéshez nem kell tudnunk a korodat), a nyelvek, amelyeken olvasol, kedvenc műfajaid és szerzőid, olvasási tempód és éves olvasási célod. Szinte mindegyik megadása önkéntes.</p>
+
+    <h3>Az általad létrehozott tartalom</h3>
+    <p>Könyvhirdetések és fényképeik, értékelések, polcok és gyűjtemények, kívánságlisták, árajánlatok, aukciók, csoportok és bejegyzéseik, cserekérelmek, más felhasználóknak adott értékelések, csevegőüzenetek és beküldött bejelentések.</p>
+
+    <h3>A használat során keletkező adatok</h3>
+    <p>Mely könyveket nyitod meg, milyen kereséseket futtatsz, a Book Match döntéseid, az ezekből számított ízlésprofil, az egymást követő aktív napok sorozata, a tapasztalati pontjaid és az utolsó tevékenységed időpontja. Mindez azért van, hogy releváns könyveket ajánlhassunk és megmutathassuk a haladásodat.</p>
+
+    <h3>Technikai adatok</h3>
+    <ul>
+      <li>Az <strong>IP-címed</strong>, a biztonsági naplóban, kizárólag olyan eseményekhez kapcsolódóan, mint a sikertelen bejelentkezési kísérletek vagy a fiókzárolások.</li>
+      <li>Az eszközöd <strong>értesítési tokenje</strong>, ha engedélyezed a push-értesítéseket.</li>
+      <li><strong>Tevékenységi naplók</strong> a felhasználók közötti és az adminisztrátorokkal folytatott interakciókról. Az üzenetek tartalma nem kerül beléjük.</li>
+    </ul>
+
+    <h2>2. Miért gyűjtjük őket</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Cél</th><th>Jogalap</th></tr>
+        <tr><td>Fiók létrehozása, hirdetések közzététele, csevegés, cserék</td><td>Az általad kért szolgáltatás teljesítése</td></tr>
+        <tr><td>Visszaélés elleni védelem: bejelentkezési kísérletek korlátozása, ideiglenes fiókzárolás, biztonsági napló</td><td>Jogos érdekünk a platform biztonságának fenntartásához</td></tr>
+        <tr><td>Könyvajánlások az ízlésed alapján</td><td>A szolgáltatás teljesítése</td></tr>
+        <tr><td>Push-értesítések</td><td>A hozzájárulásod, amelyet a telefonod beállításaiban bármikor visszavonhatsz</td></tr>
+        <tr><td>Forgalmi statisztika a webes változaton</td><td>Hozzájárulás — lásd az 5. pontot</td></tr>
+      </table>
+    </div>
+    <p>Az adataidat senkinek nem adjuk el, és nem használjuk célzott hirdetésre.</p>
+
+    <h2>3. Mi nyilvános és mi nem</h2>
+    <p><strong>Más felhasználók számára látható:</strong> a felhasználóneved, profilképed, városod, bemutatkozásod, a hírneved és a cseréid száma, a hirdetéseid és az általad írt értékelések.</p>
+    <p><strong>Mások számára soha nem látható:</strong> az e-mail-címed, a jelszavad, az IP-címed, a születésnapod és a privát üzeneteid tartalma.</p>
+    <p>Részletes felügyeleted van: a beállításokban típusonként külön — csere, eladás, ajándékozás, aukció — elrejtheted a hirdetéseidet a nyilvános találatok közül, és elrejtheted a valódi nevedet is.</p>
+
+    <h2>4. Belépés Google-fiókkal</h2>
+    <p>Amikor a „Folytatás Google-fiókkal" lehetőséget választod, pontosan négy dolgot kapunk meg a Google-tól: az <strong>e-mail-címedet, a megjelenített nevedet, a profilképedet és egy egyedi fiókazonosítót</strong>. Ezek az <code>email</code> és <code>profile</code> engedélyeknek felelnek meg — csak ezt a kettőt kérjük.</p>
+    <p>A Google-fiókod jelszavát soha nem kapjuk meg, és nincs hozzáférésünk a Gmailhez, a Drive-hoz, a Naptárhoz, a névjegyekhez vagy bármely más Google-szolgáltatáshoz.</p>
+    <p>A ShelfShare a Google API-któl kapott adatokat a <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a> előírásainak megfelelően használja, beleértve a korlátozott felhasználásra (Limited Use) vonatkozó követelményeket. A Google-on keresztül kapott adatokat kizárólag a fiókod létrehozására és azonosítására használjuk — nem adjuk tovább, nem használjuk hirdetésre, és emberek sem olvassák, kivéve ha te kérsz tőlünk segítséget, ha a jogszabály előírja, vagy ha egy visszaélés kivizsgálásához szükséges.</p>
+
+    <h2>5. Harmadik felek szolgáltatásai</h2>
+    <p>Ezt a listát szándékosan tartjuk rövidnek. Az alkalmazás saját kezelésű kiszolgálón fut, nem felhőplatformon.</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Szolgáltatás</th><th>Mit kap meg</th><th>Mire</th></tr>
+        <tr><td>Google</td><td>A fent leírt belépési adatokat</td><td>Belépés Google-fiókkal</td></tr>
+        <tr><td>Resend</td><td>Az e-mail-címedet</td><td>Megerősítő és jelszó-visszaállító e-mailek</td></tr>
+        <tr><td>Firebase Cloud Messaging</td><td>Az eszköz tokenjét és az értesítés tartalmát</td><td>A push-értesítések kézbesítése</td></tr>
+        <tr><td>Cloudflare</td><td>A közted és a kiszolgáló közötti forgalmat, az IP-címet is</td><td>A kiszolgálóhoz vezető biztonságos kapcsolat</td></tr>
+        <tr><td>Google Analytics</td><td>Böngészési adatokat a webhelyen</td><td>Forgalmi statisztika, csak a webes változatban</td></tr>
+      </table>
+    </div>
+    <p>Amikor könyvet adsz hozzá, lekérdezzük az Open Library és a Google Books adatait a címért, a szerzőért, a borítóért és a listaárért. Ezek a kérések csak a könyv adatait tartalmazzák — rólad soha semmit.</p>
+    <p>Az „About dev" oldalon található egy PayPal-hivatkozás adományozáshoz. Ha használod, a fizetés teljes egészében a PayPalnál zajlik; mi fizetési adatot nem látunk és nem tárolunk.</p>
+
+    <h2>6. Hol tárolódnak az adatok és hogyan védjük őket</h2>
+    <p>Az adatbázis és a fényképek egy személyesen üzemeltetett, Romániában található kiszolgálón vannak. A kiszolgáló nem érhető el közvetlenül az internetről — minden forgalom egy Cloudflare-alagúton halad át.</p>
+    <p>Naponta készül GPG-vel titkosított biztonsági mentés, amelyet 14 napig őrzünk, valamint korlátozott számú változatot egy külső merevlemezen. A jelszavakat bcrypt-kivonatként tároljuk. Az ismételten sikertelen bejelentkezések ideiglenesen zárolják a fiókot.</p>
+    <p>Egyetlen rendszer sem tökéletesen biztonságos. Ha egy incidens érinti az adataidat, értesítünk.</p>
+
+    <h2>7. Meddig őrizzük meg az adatokat</h2>
+    <ul>
+      <li><strong>A fiókod:</strong> amíg nem kéred a törlését.</li>
+      <li><strong>A törlés kérése után:</strong> a fiók azonnal letiltásra kerül, a tényleges törlés <strong>15 nap</strong> múlva történik meg. Ez alatt meggondolhatod magad, ha újra bejelentkezel. A határidő lejárta után az adatok véglegesen törlődnek.</li>
+      <li><strong>A biztonsági mentések:</strong> a törlés után még legfeljebb 14 napig tartalmazhatják az adataidat, majd a mentések rotációjával eltűnnek.</li>
+      <li><strong>A biztonsági naplók:</strong> külön őrizzük, visszaélések kivizsgálásához.</li>
+    </ul>
+    <p>A más felhasználóknak küldött üzenetek láthatók maradnak az ő beszélgetésükben, hasonlóan egy már kézbesített SMS-hez.</p>
+
+    <h2>8. A jogaid</h2>
+    <p>Ha az Európai Unióban tartózkodsz, az általános adatvédelmi rendelet (GDPR) alapján jogod van kérni az adataidhoz való <strong>hozzáférést</strong>, azok <strong>helyesbítését</strong>, <strong>törlését</strong>, a kezelés <strong>korlátozását</strong>, a kezelés elleni <strong>tiltakozást</strong>, valamint az adataid <strong>hordozhatóságát</strong> géppel olvasható formátumban. A hozzájárulásodat bármikor visszavonhatod ott, ahol az volt a jogalap.</p>
+    <p>A legtöbbet közvetlenül az alkalmazásban is elvégezheted: szerkesztheted a profilodat, elrejtheted a hirdetéseidet, és törölheted a fiókodat a Beállításokból. Minden egyébben írj a <a href="mailto:contact@shelfshare.ro">contact@shelfshare.ro</a> címre — legfeljebb 30 napon belül válaszolunk.</p>
+    <p>Ha nem vagy elégedett a válaszunkkal, panaszt tehetsz a romániai adatvédelmi hatóságnál (<a href="https://www.dataprotection.ro" target="_blank" rel="noopener">dataprotection.ro</a>) vagy az országod felügyeleti hatóságánál.</p>
+
+    <h2>9. Gyermekek</h2>
+    <p>A ShelfShare nem 16 év alatti gyermekeknek szól, és tudatosan nem gyűjtünk róluk adatot. Ha tudomásodra jut, hogy egy 16 év alatti gyermek fiókot hozott létre, írj nekünk, és töröljük.</p>
+
+    <h2>10. Változások</h2>
+    <p>Ha módosítjuk ezt a tájékoztatót, frissítjük az oldal tetején lévő dátumot. Lényeges változásokról az alkalmazásban értesítünk, mielőtt hatályba lépnének.</p>
+
+    <p class="contact"><a href="mailto:contact@shelfshare.ro">contact@shelfshare.ro</a> · <a href="/hu/terms">Felhasználási feltételek</a></p>
+  </main>
+</body>
+</html>

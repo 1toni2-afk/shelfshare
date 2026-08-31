@@ -431,6 +431,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileHelpCenter => 'Întrebări frecvente';
 
   @override
+  String get profilePrivacyPolicy => 'Politica de confidențialitate';
+
+  @override
+  String get profileTermsOfService => 'Termeni și condiții';
+
+  @override
   String get profileLeaderboard => 'Clasament';
 
   @override

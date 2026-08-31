@@ -428,6 +428,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileHelpCenter => 'FAQ';
 
   @override
+  String get profilePrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get profileTermsOfService => 'Terms of service';
+
+  @override
   String get profileLeaderboard => 'Leaderboard';
 
   @override

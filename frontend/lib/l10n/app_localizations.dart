@@ -858,6 +858,18 @@ abstract class AppLocalizations {
   /// **'Întrebări frecvente'**
   String get profileHelpCenter;
 
+  /// No description provided for @profilePrivacyPolicy.
+  ///
+  /// In ro, this message translates to:
+  /// **'Politica de confidențialitate'**
+  String get profilePrivacyPolicy;
+
+  /// No description provided for @profileTermsOfService.
+  ///
+  /// In ro, this message translates to:
+  /// **'Termeni și condiții'**
+  String get profileTermsOfService;
+
   /// No description provided for @profileLeaderboard.
   ///
   /// In ro, this message translates to:
