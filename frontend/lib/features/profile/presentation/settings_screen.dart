@@ -229,12 +229,6 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.support_agent_outlined,
                           label: l10n.adminChatTitle,
                           onTap: () => context.push('/support/chat')),
-                      if (user.isAdmin)
-                        _SettingsTile(
-                            icon: Icons.admin_panel_settings_outlined,
-                            label: l10n.profileAdminPanel,
-                            onTap: () => context.push('/admin')),
-                      if (user.isAdmin) _ScoreBadgeToggle(user: user),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -242,6 +236,16 @@ class _SettingsList extends ConsumerWidget {
                   _SettingsGroupLabel(l10n.profileGroupAccountActions),
                   _SettingsGroup(
                     children: [
+                      // Intrările de admin stăteau la coada grupului de ajutor
+                      // și documente legale, unde n-aveau ce căuta. Rămân
+                      // împreună: toggle-ul de scor e util doar cuiva care are
+                      // deja acces la panou.
+                      if (user.isAdmin)
+                        _SettingsTile(
+                            icon: Icons.admin_panel_settings_outlined,
+                            label: l10n.profileAdminPanel,
+                            onTap: () => context.push('/admin')),
+                      if (user.isAdmin) _ScoreBadgeToggle(user: user),
                       _SettingsTile(
                         icon: Icons.logout,
                         label: l10n.profileLogout,
