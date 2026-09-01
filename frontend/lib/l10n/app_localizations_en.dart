@@ -4119,4 +4119,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exchangeStatusCompleted => 'Completed';
+
+  @override
+  String get profileGroupActivityDiscovery => 'Activity & Discovery';
+
+  @override
+  String get profileGroupSupportApp => 'Support the app';
+
+  @override
+  String get profileGroupHelpLegal => 'Help & Legal';
+
+  @override
+  String get profileGroupAccountActions => 'Account actions';
+
+  @override
+  String get deleteAccountAction => 'Delete account';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Your account and all related data (books, swaps, messages, wishlist) will be permanently deleted after 15 days. You can cancel any time during that period by signing back in and tapping \"Cancel deletion\".\n\nDo you want to continue?';
+
+  @override
+  String get deleteAccountKeep => 'Keep account';
+
+  @override
+  String get deleteAccountScheduled => 'Account deletion scheduled';
+
+  @override
+  String get deleteAccountScheduleFailed =>
+      'Couldn\'t schedule the deletion. Please try again.';
+
+  @override
+  String get deleteAccountCancelled => 'Deletion cancelled';
+
+  @override
+  String get deleteAccountCancelFailed => 'Couldn\'t cancel. Please try again.';
+
+  @override
+  String get deleteAccountPendingTitle => 'Your account will be deleted';
+
+  @override
+  String deleteAccountPendingIn(String date, int days) {
+    return 'Deletion date: $date (in $days days).\nCancel now and your account stays active.';
+  }
+
+  @override
+  String deleteAccountPendingToday(String date) {
+    return 'Deletion date: $date (today).\nCancel now and your account stays active.';
+  }
+
+  @override
+  String get deleteAccountCancelAction => 'Cancel deletion';
 }

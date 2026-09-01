@@ -7503,6 +7503,96 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Finalizat'**
   String get exchangeStatusCompleted;
+
+  /// No description provided for @profileGroupActivityDiscovery.
+  ///
+  /// In ro, this message translates to:
+  /// **'Activitate și descoperire'**
+  String get profileGroupActivityDiscovery;
+
+  /// No description provided for @profileGroupSupportApp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Susține aplicația'**
+  String get profileGroupSupportApp;
+
+  /// No description provided for @profileGroupHelpLegal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ajutor și informații legale'**
+  String get profileGroupHelpLegal;
+
+  /// No description provided for @profileGroupAccountActions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acțiuni cont'**
+  String get profileGroupAccountActions;
+
+  /// No description provided for @deleteAccountAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Șterge contul'**
+  String get deleteAccountAction;
+
+  /// No description provided for @deleteAccountConfirmBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contul tău și toate datele asociate (cărți, schimburi, mesaje, wishlist) vor fi șterse definitiv după 15 zile. Poți anula oricând în această perioadă reintrând în cont și apăsând „Anulează ștergerea\".\n\nVrei să continui?'**
+  String get deleteAccountConfirmBody;
+
+  /// No description provided for @deleteAccountKeep.
+  ///
+  /// In ro, this message translates to:
+  /// **'Renunță'**
+  String get deleteAccountKeep;
+
+  /// No description provided for @deleteAccountScheduled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergerea contului a fost programată'**
+  String get deleteAccountScheduled;
+
+  /// No description provided for @deleteAccountScheduleFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut programa ștergerea. Încearcă din nou.'**
+  String get deleteAccountScheduleFailed;
+
+  /// No description provided for @deleteAccountCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ștergerea a fost anulată'**
+  String get deleteAccountCancelled;
+
+  /// No description provided for @deleteAccountCancelFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut anula. Încearcă din nou.'**
+  String get deleteAccountCancelFailed;
+
+  /// No description provided for @deleteAccountPendingTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contul tău va fi șters'**
+  String get deleteAccountPendingTitle;
+
+  /// No description provided for @deleteAccountPendingIn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Data ștergerii: {date} (peste {days} zile).\nPoți anula acum și contul va rămâne activ.'**
+  String deleteAccountPendingIn(String date, int days);
+
+  /// No description provided for @deleteAccountPendingToday.
+  ///
+  /// In ro, this message translates to:
+  /// **'Data ștergerii: {date} (astăzi).\nPoți anula acum și contul va rămâne activ.'**
+  String deleteAccountPendingToday(String date);
+
+  /// No description provided for @deleteAccountCancelAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulează ștergerea'**
+  String get deleteAccountCancelAction;
 }
 
 class _AppLocalizationsDelegate

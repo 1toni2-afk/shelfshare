@@ -4142,4 +4142,56 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get exchangeStatusCompleted => 'Finalizat';
+
+  @override
+  String get profileGroupActivityDiscovery => 'Activitate și descoperire';
+
+  @override
+  String get profileGroupSupportApp => 'Susține aplicația';
+
+  @override
+  String get profileGroupHelpLegal => 'Ajutor și informații legale';
+
+  @override
+  String get profileGroupAccountActions => 'Acțiuni cont';
+
+  @override
+  String get deleteAccountAction => 'Șterge contul';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Contul tău și toate datele asociate (cărți, schimburi, mesaje, wishlist) vor fi șterse definitiv după 15 zile. Poți anula oricând în această perioadă reintrând în cont și apăsând „Anulează ștergerea\".\n\nVrei să continui?';
+
+  @override
+  String get deleteAccountKeep => 'Renunță';
+
+  @override
+  String get deleteAccountScheduled => 'Ștergerea contului a fost programată';
+
+  @override
+  String get deleteAccountScheduleFailed =>
+      'Nu am putut programa ștergerea. Încearcă din nou.';
+
+  @override
+  String get deleteAccountCancelled => 'Ștergerea a fost anulată';
+
+  @override
+  String get deleteAccountCancelFailed =>
+      'Nu am putut anula. Încearcă din nou.';
+
+  @override
+  String get deleteAccountPendingTitle => 'Contul tău va fi șters';
+
+  @override
+  String deleteAccountPendingIn(String date, int days) {
+    return 'Data ștergerii: $date (peste $days zile).\nPoți anula acum și contul va rămâne activ.';
+  }
+
+  @override
+  String deleteAccountPendingToday(String date) {
+    return 'Data ștergerii: $date (astăzi).\nPoți anula acum și contul va rămâne activ.';
+  }
+
+  @override
+  String get deleteAccountCancelAction => 'Anulează ștergerea';
 }

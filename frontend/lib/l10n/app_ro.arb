@@ -2217,5 +2217,22 @@
     "exchangeStatusRejected": "Respins",
     "exchangeStatusCancelled": "Anulat",
     "exchangeStatusExpired": "Expirat",
-    "exchangeStatusCompleted": "Finalizat"
+    "exchangeStatusCompleted": "Finalizat",
+    "profileGroupActivityDiscovery": "Activitate și descoperire",
+    "profileGroupSupportApp": "Susține aplicația",
+    "profileGroupHelpLegal": "Ajutor și informații legale",
+    "profileGroupAccountActions": "Acțiuni cont",
+    "deleteAccountAction": "Șterge contul",
+    "deleteAccountConfirmBody": "Contul tău și toate datele asociate (cărți, schimburi, mesaje, wishlist) vor fi șterse definitiv după 15 zile. Poți anula oricând în această perioadă reintrând în cont și apăsând „Anulează ștergerea\".\n\nVrei să continui?",
+    "deleteAccountKeep": "Renunță",
+    "deleteAccountScheduled": "Ștergerea contului a fost programată",
+    "deleteAccountScheduleFailed": "Nu am putut programa ștergerea. Încearcă din nou.",
+    "deleteAccountCancelled": "Ștergerea a fost anulată",
+    "deleteAccountCancelFailed": "Nu am putut anula. Încearcă din nou.",
+    "deleteAccountPendingTitle": "Contul tău va fi șters",
+    "deleteAccountPendingIn": "Data ștergerii: {date} (peste {days} zile).\nPoți anula acum și contul va rămâne activ.",
+    "@deleteAccountPendingIn": {"placeholders": {"date": {"type": "String"}, "days": {"type": "int"}}},
+    "deleteAccountPendingToday": "Data ștergerii: {date} (astăzi).\nPoți anula acum și contul va rămâne activ.",
+    "@deleteAccountPendingToday": {"placeholders": {"date": {"type": "String"}}},
+    "deleteAccountCancelAction": "Anulează ștergerea"
 }

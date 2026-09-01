@@ -4189,4 +4189,56 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get exchangeStatusCompleted => 'Abgeschlossen';
+
+  @override
+  String get profileGroupActivityDiscovery => 'Aktivität & Entdecken';
+
+  @override
+  String get profileGroupSupportApp => 'App unterstützen';
+
+  @override
+  String get profileGroupHelpLegal => 'Hilfe & Rechtliches';
+
+  @override
+  String get profileGroupAccountActions => 'Kontoaktionen';
+
+  @override
+  String get deleteAccountAction => 'Konto löschen';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Dein Konto und alle zugehörigen Daten (Bücher, Tausche, Nachrichten, Wunschliste) werden nach 15 Tagen endgültig gelöscht. Du kannst das jederzeit in diesem Zeitraum rückgängig machen, indem du dich wieder anmeldest und auf „Löschung abbrechen\" tippst.\n\nMöchtest du fortfahren?';
+
+  @override
+  String get deleteAccountKeep => 'Konto behalten';
+
+  @override
+  String get deleteAccountScheduled => 'Kontolöschung geplant';
+
+  @override
+  String get deleteAccountScheduleFailed =>
+      'Die Löschung konnte nicht geplant werden. Bitte versuche es erneut.';
+
+  @override
+  String get deleteAccountCancelled => 'Löschung abgebrochen';
+
+  @override
+  String get deleteAccountCancelFailed =>
+      'Abbrechen fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get deleteAccountPendingTitle => 'Dein Konto wird gelöscht';
+
+  @override
+  String deleteAccountPendingIn(String date, int days) {
+    return 'Löschdatum: $date (in $days Tagen).\nBrich jetzt ab und dein Konto bleibt aktiv.';
+  }
+
+  @override
+  String deleteAccountPendingToday(String date) {
+    return 'Löschdatum: $date (heute).\nBrich jetzt ab und dein Konto bleibt aktiv.';
+  }
+
+  @override
+  String get deleteAccountCancelAction => 'Löschung abbrechen';
 }

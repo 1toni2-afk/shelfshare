@@ -108,11 +108,6 @@ class _SettingsList extends ConsumerWidget {
                           builder: (context) => ProfileQrDialog(userId: user.id),
                         ),
                       ),
-                      _SettingsTile(
-                        icon: Icons.swap_horiz,
-                        label: l10n.profileMyExchanges,
-                        onTap: () => context.push('/exchanges'),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -132,6 +127,10 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.groups_outlined,
                           label: l10n.groupsTitle,
                           onTap: () => context.push('/groups')),
+                      _SettingsTile(
+                          icon: Icons.swap_horiz,
+                          label: l10n.profileMyExchanges,
+                          onTap: () => context.push('/exchanges')),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -140,9 +139,27 @@ class _SettingsList extends ConsumerWidget {
                   _ListingPrivacyCard(user: user),
                   const SizedBox(height: 20),
 
-                  _SettingsGroupLabel(l10n.profileGroupDiscovery),
+                  // Descoperirea, statisticile și activitatea recentă erau trei
+                  // grupuri separate, deși toate răspund la aceeași întrebare:
+                  // „ce se întâmplă în jurul meu". Unite într-unul singur,
+                  // ordonate de la propria activitate spre restul comunității.
+                  _SettingsGroupLabel(l10n.profileGroupActivityDiscovery),
                   _SettingsGroup(
                     children: [
+                      _SettingsTile(
+                          icon: Icons.dynamic_feed_outlined,
+                          label: l10n.profileActivityFeed,
+                          onTap: () => context.push('/activity-feed')),
+                      _SettingsTile(
+                          icon: Icons.bar_chart_outlined,
+                          label: l10n.profileGlobalStats,
+                          onTap: () => context.push('/global-stats')),
+                      _SettingsTile(
+                        icon: Icons.insights_outlined,
+                        iconColor: user.isPremium ? AppColors.warning : null,
+                        label: l10n.premiumAnalyticsTitle,
+                        onTap: () => context.push('/seller-analytics'),
+                      ),
                       _SettingsTile(
                           icon: Icons.compare_arrows_outlined,
                           label: l10n.profileSmartMatches,
@@ -155,37 +172,26 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.leaderboard_outlined,
                           label: l10n.profileLeaderboard,
                           onTap: () => context.push('/leaderboard')),
-                      _SettingsTile(
-                          icon: Icons.dynamic_feed_outlined,
-                          label: l10n.profileActivityFeed,
-                          onTap: () => context.push('/activity-feed')),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  _SettingsGroupLabel(l10n.profileGroupStats),
-                  _SettingsGroup(
-                    children: [
-                      _SettingsTile(
-                          icon: Icons.bar_chart_outlined,
-                          label: l10n.profileGlobalStats,
-                          onTap: () => context.push('/global-stats')),
-                      _SettingsTile(
-                        icon: Icons.insights_outlined,
-                        iconColor: user.isPremium ? AppColors.warning : null,
-                        label: l10n.premiumAnalyticsTitle,
-                        onTap: () => context.push('/seller-analytics'),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
 
                   // Donația mutată jos (Milestone 23) - simpatică, dar nu
                   // trebuie să fie primul lucru pe care-l vezi în Setări.
+                  _SettingsGroupLabel(l10n.profileGroupSupportApp),
                   _KeepAliveCard(onTap: () => openSupportPage(context, '/about-dev')),
+                  const SizedBox(height: 8),
+                  _SettingsGroup(
+                    children: [
+                      _SettingsTile(
+                          icon: Icons.android,
+                          label: l10n.profilePreRegister,
+                          onTap: () => context.push('/pre-register')),
+                    ],
+                  ),
                   const SizedBox(height: 20),
 
-                  _SettingsGroupLabel(l10n.profileGroupSupport),
+                  _SettingsGroupLabel(l10n.profileGroupHelpLegal),
                   _SettingsGroup(
                     children: [
                       _SettingsTile(
@@ -223,10 +229,6 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.support_agent_outlined,
                           label: l10n.adminChatTitle,
                           onTap: () => context.push('/support/chat')),
-                      _SettingsTile(
-                          icon: Icons.android,
-                          label: l10n.profilePreRegister,
-                          onTap: () => context.push('/pre-register')),
                       if (user.isAdmin)
                         _SettingsTile(
                             icon: Icons.admin_panel_settings_outlined,
@@ -237,6 +239,7 @@ class _SettingsList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
 
+                  _SettingsGroupLabel(l10n.profileGroupAccountActions),
                   _SettingsGroup(
                     children: [
                       _SettingsTile(
@@ -800,25 +803,21 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
   bool _busy = false;
 
   Future<void> _requestDeletion() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Șterge contul'),
-        content: const Text(
-          'Contul tău și toate datele asociate (cărți, schimburi, mesaje, wishlist) '
-          'vor fi șterse definitiv după 15 zile. Poți anula oricând în această perioadă '
-          'reintrând în cont și apăsând „Anulează ștergerea".\n\n'
-          'Vrei să continui?',
-        ),
+        title: Text(l10n.deleteAccountAction),
+        content: Text(l10n.deleteAccountConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Renunță'),
+            child: Text(l10n.deleteAccountKeep),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.destructive),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Șterge contul'),
+            child: Text(l10n.deleteAccountAction),
           ),
         ],
       ),
@@ -839,12 +838,12 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
       await ref.read(profileControllerProvider.notifier).refresh();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ștergerea contului a fost programată')),
+        SnackBar(content: Text(l10n.deleteAccountScheduled)),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nu am putut programa ștergerea. Încearcă din nou.')),
+        SnackBar(content: Text(l10n.deleteAccountScheduleFailed)),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -852,18 +851,19 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
   }
 
   Future<void> _cancelDeletion() async {
+    final l10n = context.l10n;
     setState(() => _busy = true);
     try {
       await ref.read(profileRepositoryProvider).cancelAccountDeletion();
       await ref.read(profileControllerProvider.notifier).refresh();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ștergerea a fost anulată')),
+        SnackBar(content: Text(l10n.deleteAccountCancelled)),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nu am putut anula. Încearcă din nou.')),
+        SnackBar(content: Text(l10n.deleteAccountCancelFailed)),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -872,6 +872,7 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final scheduledAt = widget.user.deletionScheduledAt;
     if (scheduledAt != null) {
       final daysLeft = scheduledAt.difference(DateTime.now()).inDays;
@@ -893,7 +894,7 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Contul tău va fi șters',
+                    l10n.deleteAccountPendingTitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: AppColors.destructive,
                           fontWeight: FontWeight.bold,
@@ -904,9 +905,9 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Data ștergerii: $dateStr'
-              '${daysLeft > 0 ? " (peste $daysLeft zile)" : " (astăzi)"}.\n'
-              'Poți anula acum și contul va rămâne activ.',
+              daysLeft > 0
+                  ? l10n.deleteAccountPendingIn(dateStr, daysLeft)
+                  : l10n.deleteAccountPendingToday(dateStr),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
@@ -920,7 +921,7 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
                         width: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Anulează ștergerea'),
+                    : Text(l10n.deleteAccountCancelAction),
               ),
             ),
           ],
@@ -931,7 +932,7 @@ class _DeleteAccountSectionState extends ConsumerState<_DeleteAccountSection> {
     return TextButton(
       onPressed: _busy ? null : _requestDeletion,
       style: TextButton.styleFrom(foregroundColor: AppColors.destructive),
-      child: const Text('Șterge contul'),
+      child: Text(l10n.deleteAccountAction),
     );
   }
 }

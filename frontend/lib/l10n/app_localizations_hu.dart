@@ -4142,4 +4142,56 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get exchangeStatusCompleted => 'Befejezve';
+
+  @override
+  String get profileGroupActivityDiscovery => 'Aktivitás és felfedezés';
+
+  @override
+  String get profileGroupSupportApp => 'Támogasd az alkalmazást';
+
+  @override
+  String get profileGroupHelpLegal => 'Súgó és jogi tudnivalók';
+
+  @override
+  String get profileGroupAccountActions => 'Fiókműveletek';
+
+  @override
+  String get deleteAccountAction => 'Fiók törlése';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'A fiókod és minden kapcsolódó adat (könyvek, cserék, üzenetek, kívánságlista) 15 nap után véglegesen törlődik. Ez alatt az idő alatt bármikor visszavonhatod: jelentkezz be újra, és koppints a „Törlés visszavonása\" gombra.\n\nBiztosan folytatod?';
+
+  @override
+  String get deleteAccountKeep => 'Fiók megtartása';
+
+  @override
+  String get deleteAccountScheduled => 'A fiók törlése ütemezve';
+
+  @override
+  String get deleteAccountScheduleFailed =>
+      'Nem sikerült ütemezni a törlést. Próbáld újra.';
+
+  @override
+  String get deleteAccountCancelled => 'A törlés visszavonva';
+
+  @override
+  String get deleteAccountCancelFailed =>
+      'Nem sikerült visszavonni. Próbáld újra.';
+
+  @override
+  String get deleteAccountPendingTitle => 'A fiókod törölve lesz';
+
+  @override
+  String deleteAccountPendingIn(String date, int days) {
+    return 'Törlés dátuma: $date ($days nap múlva).\nVond vissza most, és a fiókod aktív marad.';
+  }
+
+  @override
+  String deleteAccountPendingToday(String date) {
+    return 'Törlés dátuma: $date (ma).\nVond vissza most, és a fiókod aktív marad.';
+  }
+
+  @override
+  String get deleteAccountCancelAction => 'Törlés visszavonása';
 }

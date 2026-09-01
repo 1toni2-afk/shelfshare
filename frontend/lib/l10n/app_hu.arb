@@ -1321,5 +1321,20 @@
     "exchangeStatusRejected": "Elutasítva",
     "exchangeStatusCancelled": "Visszavonva",
     "exchangeStatusExpired": "Lejárt",
-    "exchangeStatusCompleted": "Befejezve"
+    "exchangeStatusCompleted": "Befejezve",
+    "profileGroupActivityDiscovery": "Aktivitás és felfedezés",
+    "profileGroupSupportApp": "Támogasd az alkalmazást",
+    "profileGroupHelpLegal": "Súgó és jogi tudnivalók",
+    "profileGroupAccountActions": "Fiókműveletek",
+    "deleteAccountAction": "Fiók törlése",
+    "deleteAccountConfirmBody": "A fiókod és minden kapcsolódó adat (könyvek, cserék, üzenetek, kívánságlista) 15 nap után véglegesen törlődik. Ez alatt az idő alatt bármikor visszavonhatod: jelentkezz be újra, és koppints a „Törlés visszavonása\" gombra.\n\nBiztosan folytatod?",
+    "deleteAccountKeep": "Fiók megtartása",
+    "deleteAccountScheduled": "A fiók törlése ütemezve",
+    "deleteAccountScheduleFailed": "Nem sikerült ütemezni a törlést. Próbáld újra.",
+    "deleteAccountCancelled": "A törlés visszavonva",
+    "deleteAccountCancelFailed": "Nem sikerült visszavonni. Próbáld újra.",
+    "deleteAccountPendingTitle": "A fiókod törölve lesz",
+    "deleteAccountPendingIn": "Törlés dátuma: {date} ({days} nap múlva).\nVond vissza most, és a fiókod aktív marad.",
+    "deleteAccountPendingToday": "Törlés dátuma: {date} (ma).\nVond vissza most, és a fiókod aktív marad.",
+    "deleteAccountCancelAction": "Törlés visszavonása"
 }

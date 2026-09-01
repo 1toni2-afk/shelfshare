@@ -1321,5 +1321,20 @@
     "exchangeStatusRejected": "Abgelehnt",
     "exchangeStatusCancelled": "Storniert",
     "exchangeStatusExpired": "Abgelaufen",
-    "exchangeStatusCompleted": "Abgeschlossen"
+    "exchangeStatusCompleted": "Abgeschlossen",
+    "profileGroupActivityDiscovery": "Aktivität & Entdecken",
+    "profileGroupSupportApp": "App unterstützen",
+    "profileGroupHelpLegal": "Hilfe & Rechtliches",
+    "profileGroupAccountActions": "Kontoaktionen",
+    "deleteAccountAction": "Konto löschen",
+    "deleteAccountConfirmBody": "Dein Konto und alle zugehörigen Daten (Bücher, Tausche, Nachrichten, Wunschliste) werden nach 15 Tagen endgültig gelöscht. Du kannst das jederzeit in diesem Zeitraum rückgängig machen, indem du dich wieder anmeldest und auf „Löschung abbrechen\" tippst.\n\nMöchtest du fortfahren?",
+    "deleteAccountKeep": "Konto behalten",
+    "deleteAccountScheduled": "Kontolöschung geplant",
+    "deleteAccountScheduleFailed": "Die Löschung konnte nicht geplant werden. Bitte versuche es erneut.",
+    "deleteAccountCancelled": "Löschung abgebrochen",
+    "deleteAccountCancelFailed": "Abbrechen fehlgeschlagen. Bitte versuche es erneut.",
+    "deleteAccountPendingTitle": "Dein Konto wird gelöscht",
+    "deleteAccountPendingIn": "Löschdatum: {date} (in {days} Tagen).\nBrich jetzt ab und dein Konto bleibt aktiv.",
+    "deleteAccountPendingToday": "Löschdatum: {date} (heute).\nBrich jetzt ab und dein Konto bleibt aktiv.",
+    "deleteAccountCancelAction": "Löschung abbrechen"
 }
