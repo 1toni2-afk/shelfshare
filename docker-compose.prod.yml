@@ -62,6 +62,13 @@ services:
       # într-un fișier separat) - vezi backend/src/activity-log. Scris pe
       # host prin bind mount, ca să supraviețuiască rebuild-urilor de imagine.
       ACTIVITY_LOG_DIR: /app/logs
+      # Push notifications (Firebase Cloud Messaging). Ajunge oricum prin
+      # env_file de mai sus; e trecuta si aici explicit ca sa fie vizibila
+      # printre variabilele de care depinde serviciul. Nesetata, PushService
+      # logheaza un warning si devine no-op - clopotelul si socket-ul merg mai
+      # departe, doar push-ul catre telefon lipseste. Vezi .env.example pentru
+      # formatul JSON pe un singur rand si pentru fisierele de client.
+      FIREBASE_SERVICE_ACCOUNT: ${FIREBASE_SERVICE_ACCOUNT:-}
     volumes:
       - ./logs:/app/logs
     ports:
