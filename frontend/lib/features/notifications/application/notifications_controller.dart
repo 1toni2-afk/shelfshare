@@ -10,7 +10,9 @@ class NotificationsController extends AsyncNotifier<List<AppNotification>> {
     // rămâne montat cât e aplicația deschisă - listener-ul de socket de mai jos
     // primește notificări live și când userul nu e pe ecranul de notificări.
     final socketService = ref.read(chatSocketServiceProvider);
-    await socketService.connect();
+    // Fără await: lista vine pe HTTP și nu are de ce să aștepte socketul.
+    // Vezi nota din ChatSocketService.connectInBackground.
+    socketService.connectInBackground();
     socketService.onNotification(_reload);
     ref.onDispose(() => socketService.offNotification(_reload));
 

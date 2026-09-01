@@ -17,7 +17,9 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
     // rămânea neschimbată până la un refresh manual de pagină (care
     // remonta ecranul și forța un refetch).
     final socketService = ref.read(chatSocketServiceProvider);
-    await socketService.connect();
+    // Fără await: lista vine pe HTTP și nu are de ce să aștepte socketul.
+    // Vezi nota din ChatSocketService.connectInBackground.
+    socketService.connectInBackground();
     socketService.onNotification(_silentReload);
     ref.onDispose(() => socketService.offNotification(_silentReload));
 

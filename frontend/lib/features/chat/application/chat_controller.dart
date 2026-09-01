@@ -108,7 +108,16 @@ class ChatController extends Notifier<ChatState> {
       state = state.copyWith(isLoading: false, error: 'Nu am putut încărca mesajele.');
     }
 
-    await _socketService.connect();
+    // Un handshake eșuat nu trebuie să sară peste legarea listener-ilor de mai
+    // jos: dacă socket.io reușește o reconectare ulterioară, conversația
+    // trebuie să primească mesajele live pe ACELAȘI socket. Înainte, excepția
+    // ieșea din `_init` (apelat fără await din `build`) și rămânea neprinsă.
+    try {
+      await _socketService.connect();
+    } catch (error) {
+      // ignore: avoid_print
+      print('[chat] socketul nu s-a conectat pentru $conversationId: $error');
+    }
     _socketService.joinConversation(
       conversationId,
       onJoined: (online) => state = state.copyWith(otherUserOnline: online),

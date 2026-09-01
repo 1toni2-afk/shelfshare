@@ -129,7 +129,17 @@ class ApiClient {
     if (refreshToken == null) return false;
 
     try {
-      final response = await Dio(BaseOptions(baseUrl: ApiConfig.baseUrl)).post(
+      // Aceleași timeout-uri ca pe clientul principal. Fără ele, Dio așteaptă
+      // la infinit: o cerere de refresh blocată ținea în loc `ensureFreshToken`,
+      // iar prin el funcția de auth a socketului, care nu mai apela niciodată
+      // callback-ul de conectare (vezi ChatSocketService._provideFreshAuth).
+      final response = await Dio(
+        BaseOptions(
+          baseUrl: ApiConfig.baseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        ),
+      ).post(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
       );
