@@ -4170,4 +4170,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountCancelAction => 'Cancel deletion';
+
+  @override
+  String get installBannerText => 'Get instant notifications in the app';
+
+  @override
+  String get installBannerAction => 'Install';
+
+  @override
+  String get installBannerDismiss => 'Dismiss';
 }

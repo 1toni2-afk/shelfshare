@@ -1336,5 +1336,8 @@
     "deleteAccountPendingTitle": "A fiókod törölve lesz",
     "deleteAccountPendingIn": "Törlés dátuma: {date} ({days} nap múlva).\nVond vissza most, és a fiókod aktív marad.",
     "deleteAccountPendingToday": "Törlés dátuma: {date} (ma).\nVond vissza most, és a fiókod aktív marad.",
-    "deleteAccountCancelAction": "Törlés visszavonása"
+    "deleteAccountCancelAction": "Törlés visszavonása",
+    "installBannerText": "Azonnali értesítések az alkalmazásban",
+    "installBannerAction": "Telepítés",
+    "installBannerDismiss": "Bezárás"
 }

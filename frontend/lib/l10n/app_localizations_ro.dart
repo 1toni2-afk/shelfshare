@@ -4194,4 +4194,13 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get deleteAccountCancelAction => 'Anulează ștergerea';
+
+  @override
+  String get installBannerText => 'Primești notificări instant în aplicație';
+
+  @override
+  String get installBannerAction => 'Instalează';
+
+  @override
+  String get installBannerDismiss => 'Închide';
 }

@@ -1481,5 +1481,8 @@
     "deleteAccountPendingTitle": "Your account will be deleted",
     "deleteAccountPendingIn": "Deletion date: {date} (in {days} days).\nCancel now and your account stays active.",
     "deleteAccountPendingToday": "Deletion date: {date} (today).\nCancel now and your account stays active.",
-    "deleteAccountCancelAction": "Cancel deletion"
+    "deleteAccountCancelAction": "Cancel deletion",
+    "installBannerText": "Get instant notifications in the app",
+    "installBannerAction": "Install",
+    "installBannerDismiss": "Dismiss"
 }

@@ -1336,5 +1336,8 @@
     "deleteAccountPendingTitle": "Dein Konto wird gelöscht",
     "deleteAccountPendingIn": "Löschdatum: {date} (in {days} Tagen).\nBrich jetzt ab und dein Konto bleibt aktiv.",
     "deleteAccountPendingToday": "Löschdatum: {date} (heute).\nBrich jetzt ab und dein Konto bleibt aktiv.",
-    "deleteAccountCancelAction": "Löschung abbrechen"
+    "deleteAccountCancelAction": "Löschung abbrechen",
+    "installBannerText": "Sofortige Benachrichtigungen in der App",
+    "installBannerAction": "Installieren",
+    "installBannerDismiss": "Schließen"
 }

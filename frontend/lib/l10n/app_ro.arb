@@ -2234,5 +2234,8 @@
     "@deleteAccountPendingIn": {"placeholders": {"date": {"type": "String"}, "days": {"type": "int"}}},
     "deleteAccountPendingToday": "Data ștergerii: {date} (astăzi).\nPoți anula acum și contul va rămâne activ.",
     "@deleteAccountPendingToday": {"placeholders": {"date": {"type": "String"}}},
-    "deleteAccountCancelAction": "Anulează ștergerea"
+    "deleteAccountCancelAction": "Anulează ștergerea",
+    "installBannerText": "Primești notificări instant în aplicație",
+    "installBannerAction": "Instalează",
+    "installBannerDismiss": "Închide"
 }

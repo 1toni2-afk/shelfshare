@@ -4194,4 +4194,13 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get deleteAccountCancelAction => 'Törlés visszavonása';
+
+  @override
+  String get installBannerText => 'Azonnali értesítések az alkalmazásban';
+
+  @override
+  String get installBannerAction => 'Telepítés';
+
+  @override
+  String get installBannerDismiss => 'Bezárás';
 }

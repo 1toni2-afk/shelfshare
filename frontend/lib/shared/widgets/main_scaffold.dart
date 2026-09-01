@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/locale/l10n_extensions.dart';
@@ -9,6 +10,7 @@ import '../../features/chat/application/conversations_controller.dart';
 import '../../features/notifications/application/notifications_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
 import 'sidebar_shortcuts.dart';
+import 'android_install_banner.dart';
 
 /// Ecran mai lat de-atât înseamnă „desktop" - sub, sidebar-ul devine drawer.
 const kSidebarBreakpoint = 900.0;
@@ -55,6 +57,10 @@ class MainScaffold extends ConsumerWidget {
 
     if (isDesktop) {
       return Scaffold(
+        // Slotul de jos al Scaffold-ului, nu un overlay peste conținut: banda
+        // ocupă spațiu în layout, deci nu acoperă niciodată ultimul rând din
+        // pagină. Se ascunde singură când nu e cazul (vezi widgetul).
+        bottomNavigationBar: const AndroidInstallBanner(),
         body: Row(
           children: [
             SizedBox(width: kSidebarWidth, child: sidebar),
@@ -83,6 +89,7 @@ class MainScaffold extends ConsumerWidget {
     // orice săgeată de back automată a AppBar-ului ecranului curent.
     return Scaffold(
       key: _shellScaffoldKey,
+      bottomNavigationBar: const AndroidInstallBanner(),
       // Lățime mai mare pentru gestul de swipe-din-margine: cea implicită din
       // Flutter (20dp) e prea îngustă ca să fie ușor de nimerit pe telefon.
       // Bumped 48 -> 96 (Milestone 23 Buggs #3): 48dp tot era prea îngust în

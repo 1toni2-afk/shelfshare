@@ -7593,6 +7593,24 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Anulează ștergerea'**
   String get deleteAccountCancelAction;
+
+  /// No description provided for @installBannerText.
+  ///
+  /// In ro, this message translates to:
+  /// **'Primești notificări instant în aplicație'**
+  String get installBannerText;
+
+  /// No description provided for @installBannerAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Instalează'**
+  String get installBannerAction;
+
+  /// No description provided for @installBannerDismiss.
+  ///
+  /// In ro, this message translates to:
+  /// **'Închide'**
+  String get installBannerDismiss;
 }
 
 class _AppLocalizationsDelegate
