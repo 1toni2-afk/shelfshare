@@ -69,8 +69,16 @@ class _TypewriterTextState extends State<TypewriterText> {
     while (_running && mounted) {
       final phrase = widget.phrases[_phraseIndex];
 
+      // Numărăm în GRAFEME, nu în unități UTF-16: salutările conțin emoji
+      // (🌙, 🎉, chiar și steagul 🇷🇴, care are patru unități UTF-16), iar un
+      // contor pe `length` se oprea inevitabil între cele două jumătăți ale
+      // unui surogat. `substring` întorcea atunci jumătate de caracter, iar
+      // randarea crăpa cu „Invalid argument(s): string is not well-formed
+      // UTF-16", lăsând titlul din AppBar gol.
+      final length = phrase.text.characters.length;
+
       // Tastare
-      for (var i = 1; i <= phrase.text.length; i++) {
+      for (var i = 1; i <= length; i++) {
         if (!await _wait(widget.typingSpeed)) return;
         setState(() => _charCount = i);
       }
@@ -79,7 +87,7 @@ class _TypewriterTextState extends State<TypewriterText> {
       if (!await _wait(phrase.hold)) return;
 
       // Ștergere
-      for (var i = phrase.text.length - 1; i >= 0; i--) {
+      for (var i = length - 1; i >= 0; i--) {
         if (!await _wait(widget.deletingSpeed)) return;
         setState(() => _charCount = i);
       }
@@ -93,7 +101,9 @@ class _TypewriterTextState extends State<TypewriterText> {
     final phrase = widget.phrases.isEmpty
         ? const TypewriterPhrase('', Duration.zero)
         : widget.phrases[_phraseIndex];
-    final visible = phrase.text.substring(0, _charCount.clamp(0, phrase.text.length));
+    // `characters.take` respectă grafemele - vezi nota din `_run`.
+    final graphemes = phrase.text.characters;
+    final visible = graphemes.take(_charCount.clamp(0, graphemes.length)).toString();
     // Cursorul e mereu prezent în layout - doar culoarea alternează între
     // opac și transparent. Varianta veche schimba `_` cu spațiu, dar spațiul
     // și `_` au lățimi diferite în fonturi non-monospace, iar `centerTitle`
