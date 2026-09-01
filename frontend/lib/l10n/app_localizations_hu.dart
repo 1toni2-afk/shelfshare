@@ -4106,4 +4106,40 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get onboardingWelcomeSource => 'Forrás: ribble-pack.co.uk';
+
+  @override
+  String get offerStatusPending => 'Függőben';
+
+  @override
+  String get offerStatusAccepted => 'Elfogadva';
+
+  @override
+  String get offerStatusRejected => 'Elutasítva';
+
+  @override
+  String get offerStatusCancelled => 'Visszavonva';
+
+  @override
+  String get offerStatusExpired => 'Lejárt';
+
+  @override
+  String get offerStatusCompleted => 'Befejezve';
+
+  @override
+  String get exchangeStatusPending => 'Függőben';
+
+  @override
+  String get exchangeStatusAccepted => 'Elfogadva';
+
+  @override
+  String get exchangeStatusRejected => 'Elutasítva';
+
+  @override
+  String get exchangeStatusCancelled => 'Visszavonva';
+
+  @override
+  String get exchangeStatusExpired => 'Lejárt';
+
+  @override
+  String get exchangeStatusCompleted => 'Befejezve';
 }

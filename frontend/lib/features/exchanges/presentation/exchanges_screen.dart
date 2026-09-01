@@ -310,6 +310,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final (color, bg) = switch (status) {
       ExchangeStatus.pending => (AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
       ExchangeStatus.accepted => (AppColors.primary, AppColors.primary.withValues(alpha: 0.15)),
@@ -321,7 +322,7 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
-      child: Text(status.label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(status.label(l10n), style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -722,6 +723,7 @@ class _OfferStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final (color, bg) = switch (status) {
       OfferStatus.pending => (AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
       OfferStatus.accepted => (AppColors.primary, AppColors.primary.withValues(alpha: 0.15)),
@@ -733,7 +735,7 @@ class _OfferStatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
-      child: Text(status.label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(status.label(l10n), style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 }

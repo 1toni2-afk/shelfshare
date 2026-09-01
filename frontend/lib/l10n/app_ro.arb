@@ -2205,5 +2205,17 @@
     "onboardingWelcomeBullet2": "🌳 Creat ca să ajute mediul",
     "onboardingWelcomeBullet3": "📖 Un copac produce în medie ~20.000 de pagini de hârtie, deci fiecare schimb contează",
     "onboardingWelcomeBullet4": "🤝 Nu e doar despre citit, e despre împărtășit",
-    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk"
+    "onboardingWelcomeSource": "Sursă: ribble-pack.co.uk",
+    "offerStatusPending": "În așteptare",
+    "offerStatusAccepted": "Acceptată",
+    "offerStatusRejected": "Respinsă",
+    "offerStatusCancelled": "Anulată",
+    "offerStatusExpired": "Expirată",
+    "offerStatusCompleted": "Finalizată",
+    "exchangeStatusPending": "În așteptare",
+    "exchangeStatusAccepted": "Acceptat",
+    "exchangeStatusRejected": "Respins",
+    "exchangeStatusCancelled": "Anulat",
+    "exchangeStatusExpired": "Expirat",
+    "exchangeStatusCompleted": "Finalizat"
 }

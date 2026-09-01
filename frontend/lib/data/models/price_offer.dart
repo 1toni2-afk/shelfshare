@@ -1,3 +1,4 @@
+import '../../l10n/app_localizations.dart';
 import 'book.dart';
 import 'user.dart';
 import 'user_book.dart';
@@ -24,20 +25,22 @@ extension OfferStatusX on OfferStatus {
     }
   }
 
-  String get label {
+  /// Eticheta afișată în UI. Era hardcodată în română, deci pe interfața EN/DE/HU
+  /// ieșea un „În așteptare" în mijlocul textului tradus - acum trece prin l10n.
+  String label(AppLocalizations l10n) {
     switch (this) {
       case OfferStatus.pending:
-        return 'În așteptare';
+        return l10n.offerStatusPending;
       case OfferStatus.accepted:
-        return 'Acceptată';
+        return l10n.offerStatusAccepted;
       case OfferStatus.rejected:
-        return 'Respinsă';
+        return l10n.offerStatusRejected;
       case OfferStatus.cancelled:
-        return 'Anulată';
+        return l10n.offerStatusCancelled;
       case OfferStatus.expired:
-        return 'Expirată';
+        return l10n.offerStatusExpired;
       case OfferStatus.completed:
-        return 'Finalizată';
+        return l10n.offerStatusCompleted;
     }
   }
 }

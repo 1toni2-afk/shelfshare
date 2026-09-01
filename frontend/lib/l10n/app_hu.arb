@@ -1309,5 +1309,17 @@
     "onboardingWelcomeBullet2": "🌳 Azért készült, hogy segítsen a környezetnek",
     "onboardingWelcomeBullet3": "📖 Egy fa átlagosan kb. 20 000 lap papírt ad, ezért minden csere számít",
     "onboardingWelcomeBullet4": "🤝 Nem csak az olvasásról szól, hanem a megosztásról is",
-    "onboardingWelcomeSource": "Forrás: ribble-pack.co.uk"
+    "onboardingWelcomeSource": "Forrás: ribble-pack.co.uk",
+    "offerStatusPending": "Függőben",
+    "offerStatusAccepted": "Elfogadva",
+    "offerStatusRejected": "Elutasítva",
+    "offerStatusCancelled": "Visszavonva",
+    "offerStatusExpired": "Lejárt",
+    "offerStatusCompleted": "Befejezve",
+    "exchangeStatusPending": "Függőben",
+    "exchangeStatusAccepted": "Elfogadva",
+    "exchangeStatusRejected": "Elutasítva",
+    "exchangeStatusCancelled": "Visszavonva",
+    "exchangeStatusExpired": "Lejárt",
+    "exchangeStatusCompleted": "Befejezve"
 }

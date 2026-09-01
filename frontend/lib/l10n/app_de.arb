@@ -1309,5 +1309,17 @@
     "onboardingWelcomeBullet2": "🌳 Gemacht, um der Umwelt zu helfen",
     "onboardingWelcomeBullet3": "📖 Ein Baum liefert im Schnitt rund 20.000 Blatt Papier – jeder Tausch zählt",
     "onboardingWelcomeBullet4": "🤝 Es geht nicht nur ums Lesen, sondern ums Teilen",
-    "onboardingWelcomeSource": "Quelle: ribble-pack.co.uk"
+    "onboardingWelcomeSource": "Quelle: ribble-pack.co.uk",
+    "offerStatusPending": "Ausstehend",
+    "offerStatusAccepted": "Angenommen",
+    "offerStatusRejected": "Abgelehnt",
+    "offerStatusCancelled": "Storniert",
+    "offerStatusExpired": "Abgelaufen",
+    "offerStatusCompleted": "Abgeschlossen",
+    "exchangeStatusPending": "Ausstehend",
+    "exchangeStatusAccepted": "Angenommen",
+    "exchangeStatusRejected": "Abgelehnt",
+    "exchangeStatusCancelled": "Storniert",
+    "exchangeStatusExpired": "Abgelaufen",
+    "exchangeStatusCompleted": "Abgeschlossen"
 }

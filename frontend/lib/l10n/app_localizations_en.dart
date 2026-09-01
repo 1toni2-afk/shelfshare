@@ -4083,4 +4083,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingWelcomeSource => 'Source: ribble-pack.co.uk';
+
+  @override
+  String get offerStatusPending => 'Pending';
+
+  @override
+  String get offerStatusAccepted => 'Accepted';
+
+  @override
+  String get offerStatusRejected => 'Declined';
+
+  @override
+  String get offerStatusCancelled => 'Cancelled';
+
+  @override
+  String get offerStatusExpired => 'Expired';
+
+  @override
+  String get offerStatusCompleted => 'Completed';
+
+  @override
+  String get exchangeStatusPending => 'Pending';
+
+  @override
+  String get exchangeStatusAccepted => 'Accepted';
+
+  @override
+  String get exchangeStatusRejected => 'Declined';
+
+  @override
+  String get exchangeStatusCancelled => 'Cancelled';
+
+  @override
+  String get exchangeStatusExpired => 'Expired';
+
+  @override
+  String get exchangeStatusCompleted => 'Completed';
 }

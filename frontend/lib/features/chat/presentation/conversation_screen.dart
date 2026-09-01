@@ -1469,7 +1469,7 @@ class _MessageContent extends StatelessWidget {
                   ],
                 ),
               ),
-              _StatusPill(label: status.label, color: textColor),
+              _StatusPill(label: status.label(l10n), color: textColor),
             ],
           ),
           const SizedBox(height: 12),
@@ -1486,33 +1486,39 @@ class _MessageContent extends StatelessWidget {
           ],
           if (!isMine && status == OfferStatus.pending) ...[
             const SizedBox(height: 10),
+            // Trei butoane pe un rand nu incap in latimea unei bule de chat
+            // (max 75% din ecran): eticheta „Contra-oferta" ramane fara loc
+            // si Flutter o rupe litera cu litera pe verticala. Pastram doar
+            // Refuza/Accepta pe rand, iar contra-oferta trece dedesubt pe
+            // toata latimea.
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.close, size: 16),
-                    label: Text(l10n.exchangeReject),
+                    label: Text(l10n.exchangeReject, maxLines: 1, overflow: TextOverflow.ellipsis),
                     onPressed: () => onOfferAction(message, accept: false),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                // Contra-ofertă (Batch 11) - deschide dialog cu preț nou.
-                Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.swap_horiz, size: 16),
-                    label: Text(l10n.chatOfferCounterAction),
-                    onPressed: () => onCounterOffer(message),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.check, size: 16),
-                    label: Text(l10n.exchangeAccept),
+                    label: Text(l10n.exchangeAccept, maxLines: 1, overflow: TextOverflow.ellipsis),
                     onPressed: () => onOfferAction(message, accept: true),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 6),
+            // Contra-ofertă (Batch 11) - deschide dialog cu preț nou.
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.swap_horiz, size: 16),
+                label: Text(l10n.chatOfferCounterAction, maxLines: 1, overflow: TextOverflow.ellipsis),
+                onPressed: () => onCounterOffer(message),
+              ),
             ),
           ],
         ],
@@ -1551,7 +1557,7 @@ class _MessageContent extends StatelessWidget {
                   ],
                 ),
               ),
-              _StatusPill(label: status.label, color: textColor),
+              _StatusPill(label: status.label(l10n), color: textColor),
             ],
           ),
           if (!isMine && status == OfferStatus.pending) ...[
@@ -1561,7 +1567,7 @@ class _MessageContent extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.close, size: 16),
-                    label: Text(l10n.exchangeReject),
+                    label: Text(l10n.exchangeReject, maxLines: 1, overflow: TextOverflow.ellipsis),
                     onPressed: () => onExchangeRequestAction(message, accept: false),
                   ),
                 ),
@@ -1569,7 +1575,7 @@ class _MessageContent extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.check, size: 16),
-                    label: Text(l10n.exchangeAccept),
+                    label: Text(l10n.exchangeAccept, maxLines: 1, overflow: TextOverflow.ellipsis),
                     onPressed: () => onExchangeRequestAction(message, accept: true),
                   ),
                 ),

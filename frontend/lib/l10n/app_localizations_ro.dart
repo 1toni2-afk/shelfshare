@@ -4106,4 +4106,40 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get onboardingWelcomeSource => 'Sursă: ribble-pack.co.uk';
+
+  @override
+  String get offerStatusPending => 'În așteptare';
+
+  @override
+  String get offerStatusAccepted => 'Acceptată';
+
+  @override
+  String get offerStatusRejected => 'Respinsă';
+
+  @override
+  String get offerStatusCancelled => 'Anulată';
+
+  @override
+  String get offerStatusExpired => 'Expirată';
+
+  @override
+  String get offerStatusCompleted => 'Finalizată';
+
+  @override
+  String get exchangeStatusPending => 'În așteptare';
+
+  @override
+  String get exchangeStatusAccepted => 'Acceptat';
+
+  @override
+  String get exchangeStatusRejected => 'Respins';
+
+  @override
+  String get exchangeStatusCancelled => 'Anulat';
+
+  @override
+  String get exchangeStatusExpired => 'Expirat';
+
+  @override
+  String get exchangeStatusCompleted => 'Finalizat';
 }

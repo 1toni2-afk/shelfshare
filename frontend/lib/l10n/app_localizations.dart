@@ -7431,6 +7431,78 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Sursă: ribble-pack.co.uk'**
   String get onboardingWelcomeSource;
+
+  /// No description provided for @offerStatusPending.
+  ///
+  /// In ro, this message translates to:
+  /// **'În așteptare'**
+  String get offerStatusPending;
+
+  /// No description provided for @offerStatusAccepted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acceptată'**
+  String get offerStatusAccepted;
+
+  /// No description provided for @offerStatusRejected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Respinsă'**
+  String get offerStatusRejected;
+
+  /// No description provided for @offerStatusCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulată'**
+  String get offerStatusCancelled;
+
+  /// No description provided for @offerStatusExpired.
+  ///
+  /// In ro, this message translates to:
+  /// **'Expirată'**
+  String get offerStatusExpired;
+
+  /// No description provided for @offerStatusCompleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Finalizată'**
+  String get offerStatusCompleted;
+
+  /// No description provided for @exchangeStatusPending.
+  ///
+  /// In ro, this message translates to:
+  /// **'În așteptare'**
+  String get exchangeStatusPending;
+
+  /// No description provided for @exchangeStatusAccepted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Acceptat'**
+  String get exchangeStatusAccepted;
+
+  /// No description provided for @exchangeStatusRejected.
+  ///
+  /// In ro, this message translates to:
+  /// **'Respins'**
+  String get exchangeStatusRejected;
+
+  /// No description provided for @exchangeStatusCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulat'**
+  String get exchangeStatusCancelled;
+
+  /// No description provided for @exchangeStatusExpired.
+  ///
+  /// In ro, this message translates to:
+  /// **'Expirat'**
+  String get exchangeStatusExpired;
+
+  /// No description provided for @exchangeStatusCompleted.
+  ///
+  /// In ro, this message translates to:
+  /// **'Finalizat'**
+  String get exchangeStatusCompleted;
 }
 
 class _AppLocalizationsDelegate

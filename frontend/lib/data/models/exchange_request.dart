@@ -1,3 +1,4 @@
+import '../../l10n/app_localizations.dart';
 import 'user.dart';
 import 'user_book.dart';
 
@@ -23,20 +24,21 @@ extension ExchangeStatusX on ExchangeStatus {
     }
   }
 
-  String get label {
+  /// Vezi nota din OfferStatusX.label - aceeași problemă de i18n.
+  String label(AppLocalizations l10n) {
     switch (this) {
       case ExchangeStatus.pending:
-        return 'În așteptare';
+        return l10n.exchangeStatusPending;
       case ExchangeStatus.accepted:
-        return 'Acceptat';
+        return l10n.exchangeStatusAccepted;
       case ExchangeStatus.rejected:
-        return 'Respins';
+        return l10n.exchangeStatusRejected;
       case ExchangeStatus.cancelled:
-        return 'Anulat';
+        return l10n.exchangeStatusCancelled;
       case ExchangeStatus.completed:
-        return 'Finalizat';
+        return l10n.exchangeStatusCompleted;
       case ExchangeStatus.expired:
-        return 'Expirat';
+        return l10n.exchangeStatusExpired;
     }
   }
 }
