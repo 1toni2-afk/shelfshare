@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/providers.dart';
 import '../../core/theme/app_theme.dart';
+import 'analytics_consent.dart';
 
 /// Cheia sub care ținem minte că userul a închis banda. Fără persistență, o
 /// bandă care reapare la fiecare navigare face mai mult rău decât bine.
@@ -73,6 +74,18 @@ class _AndroidInstallBannerState extends ConsumerState<AndroidInstallBanner> {
   @override
   Widget build(BuildContext context) {
     if (_visible != true) return const SizedBox.shrink();
+
+    // Banda de consimțământ pentru analytics (web/index.html) e
+    // `position: fixed; bottom`, deci plutește peste canvas-ul Flutter -
+    // exact peste banda asta. Cât timp userul nu a răspuns la ea, ne dăm la o
+    // parte; două benzi suprapuse jos nu se citesc nici una, nici alta.
+    //
+    // Verificat la fiecare build, nu o singură dată la montare: userul poate
+    // răspunde la consimțământ cât timp e deja într-un ecran din shell, iar
+    // banda trebuie să apară după aceea. E o singură citire din localStorage,
+    // neglijabilă, și build-ul nu rulează la fiecare cadru.
+    if (!analyticsConsentAnswered()) return const SizedBox.shrink();
+
     final l10n = context.l10n;
 
     return Material(
