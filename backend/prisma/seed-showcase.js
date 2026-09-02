@@ -864,7 +864,8 @@ async function phaseDedup(resolved) {
  * „Feed"-ul (GET /profile/activity-feed) arată DOAR activitatea userilor pe
  * care îi urmărești, recompusă din date reale: anunțuri noi, cărți terminate,
  * vânzări încheiate și schimburi finalizate. Ca să aibă ce arăta la capturi,
- * generăm schimburi carte-contra-carte între conturile urmărite.
+ * generăm pentru conturile urmărite toate cele trei feluri de eveniment:
+ * schimburi carte-contra-carte, vânzări încheiate și cărți terminate.
  *
  * Cărțile schimbate primesc anunțuri PROPRII, marcate ca transferate - un
  * schimb finalizat pe un anunț activ l-ar scoate din feed-ul de căutare
@@ -872,6 +873,8 @@ async function phaseDedup(resolved) {
  */
 const FEED_TAG = 'schimb-finalizat';
 const FEED_EXCHANGES_PER_USER = 2;
+const FEED_SALES_PER_USER = 1;
+const FEED_FINISHED_PER_USER = 2;
 
 const FEED_REVIEWS = [
   ['Ne-am întâlnit în centru, totul ca la carte.', 'Om de treabă, cartea impecabilă.'],
@@ -985,6 +988,99 @@ async function phaseFeed(resolved, demoUsers, owner) {
   }
 
   console.log(`  ${created} schimburi finalizate pe ${followed.length} conturi urmărite.`);
+
+  // --- Vânzări încheiate („cineva a vândut X cu Y lei") ---
+  // Feed-ul le atribuie VÂNZĂTORULUI (vezi maparea `sale` din
+  // profile.service.ts), deci `ownerId` trebuie să fie contul urmărit;
+  // cumpărătorul poate fi oricine.
+  let sales = 0;
+  for (const [i, user] of followed.entries()) {
+    for (let k = 0; k < FEED_SALES_PER_USER; k++) {
+      const item = usable[(i * 11 + k * 3 + 5) % usable.length];
+      // Cumpărătorul nu poate fi vânzătorul: mergem la următorul cont demo
+      // dacă indexul calculat cade chiar pe el (altfel pierdeam o vânzare).
+      let buyerIndex = (i * 13 + k * 7 + 3) % demoUsers.length;
+      if (demoUsers[buyerIndex].id === user.id) {
+        buyerIndex = (buyerIndex + 1) % demoUsers.length;
+      }
+      const buyer = demoUsers[buyerIndex];
+      const at = ago(2 + ((i * 5 + k * 4) % 24));
+      const price = 28 + ((i * 7 + k * 5) % 42);
+
+      console.log(`  ${(user.name ?? user.email).padEnd(20)} a vândut „${item.entry.title}" cu ${price} lei`);
+      sales++;
+      if (!APPLY) continue;
+
+      const listedAt = new Date(at.getTime() - 15 * DAY);
+      const listing = await prisma.userBook.create({
+        data: {
+          userId: user.id,
+          bookId: item.book.id,
+          condition: pick(CONDITIONS, i + k + 1),
+          language: item.entry.language,
+          photos: [item.book.coverUrl],
+          mainPhotoUrl: item.book.coverUrl,
+          description: pick(LISTING_NOTES, i * 3 + k),
+          tags: [FEED_TAG],
+          city: user.city ?? pick(CITIES, i + 2),
+          viewCount: 35 + ((i * 11 + k * 6) % 90),
+          createdAt: listedAt,
+          availableForSwap: false,
+          isForSale: false,
+          salePrice: price,
+          permanentlyTransferred: true,
+        },
+      });
+      await stamp('user_books', listing.id, listedAt, at);
+
+      const offer = await prisma.priceOffer.create({
+        data: {
+          buyerId: buyer.id,
+          ownerId: user.id,
+          userBookId: listing.id,
+          amount: price,
+          message: 'O iau eu, dacă mai e disponibilă.',
+          status: 'COMPLETED',
+          acceptedAt: new Date(at.getTime() - 2 * DAY),
+          meetingTime: at,
+          meetingLocation: `Librăria Humanitas, ${user.city ?? 'București'}`,
+          meetingAcceptedAt: new Date(at.getTime() - 2 * DAY),
+          buyerSafetyAckAt: at,
+          ownerSafetyAckAt: at,
+          buyerDoneAt: at,
+          ownerDoneAt: at,
+        },
+      });
+      await stamp('price_offers', offer.id, new Date(at.getTime() - 4 * DAY), at);
+    }
+  }
+  console.log(`  ${sales} vânzări încheiate.`);
+
+  // --- Cărți terminate („a terminat de citit X") ---
+  // Rafturile conturilor urmărite se refac de la zero: sunt conturi demo,
+  // n-au alte date de păstrat, iar `@@unique([userId, bookId])` ar bloca
+  // oricum o a doua inserare a aceluiași titlu.
+  let finished = 0;
+  if (APPLY) {
+    await prisma.bookshelfEntry.deleteMany({
+      where: { userId: { in: followed.map((u) => u.id) } },
+    });
+  }
+  for (const [i, user] of followed.entries()) {
+    for (let k = 0; k < FEED_FINISHED_PER_USER; k++) {
+      const item = usable[(i * 9 + k * 4 + 23) % usable.length];
+      const at = ago(1 + ((i * 3 + k * 5) % 20));
+      console.log(`  ${(user.name ?? user.email).padEnd(20)} a terminat „${item.entry.title}"`);
+      finished++;
+      if (!APPLY) continue;
+
+      const entry = await prisma.bookshelfEntry.create({
+        data: { userId: user.id, bookId: item.book.id, status: 'FINISHED' },
+      });
+      await stamp('bookshelf_entries', entry.id, new Date(at.getTime() - 20 * DAY), at);
+    }
+  }
+  console.log(`  ${finished} cărți terminate.`);
 }
 
 async function phasePoze(resolved) {
