@@ -1,5 +1,5 @@
-name: shelfshare
-description: "ShelfShare - schimbÄƒ, vinde sau cumpÄƒrÄƒ cÄƒrÈ›i second-hand."
+﻿name: shelfshare
+description: "ShelfShare - schimbÃ„Æ’, vinde sau cumpÃ„Æ’rÃ„Æ’ cÃ„Æ’rÃˆâ€ºi second-hand."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.5.1+15
+version: 1.5.1+16
 environment:
   sdk: ^3.12.2
 
@@ -79,11 +79,11 @@ flutter_launcher_icons:
   image_path: "assets/icon/icon-square.png"
   adaptive_icon_background: "#7C3A1E"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
-  # Desenul din icon-foreground.png ocupÄƒ ~67% din pÃ¢nzÄƒ, adicÄƒ exact cÃ¢t zona
-  # sigurÄƒ a unei iconiÈ›e adaptive Android (72dp din 108dp = 66,7%). La limita
-  # aia, mÄƒÈ™tile rotunde ale launcher-elor taie fix pe marginea desenului È™i
-  # iconiÈ›a pare umflatÄƒ. Inset-ul o micÈ™oreazÄƒ la ~52% din pÃ¢nzÄƒ, deci rÄƒmÃ¢ne
-  # centratÄƒ, cu spaÈ›iu de respiraÈ›ie Ã®n orice formÄƒ de mascÄƒ.
+  # Desenul din icon-foreground.png ocupÃ„Æ’ ~67% din pÃƒÂ¢nzÃ„Æ’, adicÃ„Æ’ exact cÃƒÂ¢t zona
+  # sigurÃ„Æ’ a unei iconiÃˆâ€ºe adaptive Android (72dp din 108dp = 66,7%). La limita
+  # aia, mÃ„Æ’Ãˆâ„¢tile rotunde ale launcher-elor taie fix pe marginea desenului Ãˆâ„¢i
+  # iconiÃˆâ€ºa pare umflatÃ„Æ’. Inset-ul o micÃˆâ„¢oreazÃ„Æ’ la ~52% din pÃƒÂ¢nzÃ„Æ’, deci rÃ„Æ’mÃƒÂ¢ne
+  # centratÃ„Æ’, cu spaÃˆâ€ºiu de respiraÃˆâ€ºie ÃƒÂ®n orice formÃ„Æ’ de mascÃ„Æ’.
   adaptive_icon_foreground_inset: 12
 
 flutter_native_splash:
@@ -124,17 +124,17 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # Bundlate local, nu prin `google_fonts` (care le descarcă la runtime de pe
-  # fonts.gstatic.com pe web). Fișiere variabile (un singur .ttf acoperă toată
-  # plaja de greutăți 100-900) - descărcate din github.com/google/fonts, nu
-  # de pe CDN-ul Google Fonts (care servește woff/woff2, nu garantat compatibil
-  # cu pipeline-ul de assets Flutter pe toate platformele). Motivul: pe rețele
-  # mobile/tab-uri incognito unde fetch-ul runtime la fonts.gstatic.com eșuează
-  # sau întârzie, aplicația cădea pe fontul de sistem - metrici de linie
-  # diferite față de DM Sans/Playfair Display, ceea ce dezalinia vertical
-  # textul din câmpuri chiar și cu `textAlignVertical: TextAlignVertical.center`
-  # setat corect (centrarea e relativă la propria linie de text, nu ajută dacă
-  # fontul efectiv randat e altul decât cel pentru care a fost gândit padding-ul).
+  # Bundlate local, nu prin `google_fonts` (care le descarcÄƒ la runtime de pe
+  # fonts.gstatic.com pe web). FiÈ™iere variabile (un singur .ttf acoperÄƒ toatÄƒ
+  # plaja de greutÄƒÈ›i 100-900) - descÄƒrcate din github.com/google/fonts, nu
+  # de pe CDN-ul Google Fonts (care serveÈ™te woff/woff2, nu garantat compatibil
+  # cu pipeline-ul de assets Flutter pe toate platformele). Motivul: pe reÈ›ele
+  # mobile/tab-uri incognito unde fetch-ul runtime la fonts.gstatic.com eÈ™ueazÄƒ
+  # sau Ã®ntÃ¢rzie, aplicaÈ›ia cÄƒdea pe fontul de sistem - metrici de linie
+  # diferite faÈ›Äƒ de DM Sans/Playfair Display, ceea ce dezalinia vertical
+  # textul din cÃ¢mpuri chiar È™i cu `textAlignVertical: TextAlignVertical.center`
+  # setat corect (centrarea e relativÄƒ la propria linie de text, nu ajutÄƒ dacÄƒ
+  # fontul efectiv randat e altul decÃ¢t cel pentru care a fost gÃ¢ndit padding-ul).
   fonts:
     - family: DM Sans
       fonts:
