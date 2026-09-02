@@ -50,7 +50,7 @@ const prisma = new PrismaClient({ adapter });
 
 const APPLY = process.argv.includes('--apply');
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) ?? '').split('=')[1] || null;
-const PHASES = ['nume', 'coperte', 'dedup', 'anunturi', 'istoric', 'poze', 'chat', 'feed'];
+const PHASES = ['nume', 'coperte', 'dedup', 'anunturi', 'istoric', 'poze', 'chat', 'feed', 'licitatii'];
 
 const OWNER_EMAIL = 'dtoniyi@yahoo.com';
 /** Conturi de sistem - nu primesc anunțuri demo și nu se redenumesc. */
@@ -1127,6 +1127,165 @@ async function phaseFeed(resolved, demoUsers, owner) {
   console.log(`  ${progress} actualizări de progres de lectură.`);
 }
 
+/**
+ * Licitațiile create la faza „anunturi" sunt active, dar goale: fără nicio
+ * ofertă, cardul arată prețul de pornire și atât. Aici le dăm viață - ofertanți
+ * diferiți, preț în creștere, termene eșalonate (de la câteva ore la câteva
+ * zile) și urmăritori - inclusiv două la care proprietarul e cel mai mare
+ * ofertant și una la care a fost depășit.
+ *
+ * Regulile din auctions.service.ts sunt respectate ca la un bid real: nimeni
+ * nu licitează la propria licitație, fiecare ofertă e strict mai mare decât
+ * precedenta, iar `currentPrice`/`highestBidderId` rămân în acord cu ultimul
+ * rând din `bids`.
+ */
+const AUCTION_SEED_COUNT = 18;
+const AUCTION_MIN_STEP = 3;
+
+async function phaseLicitatii(demoUsers, owner) {
+  console.log('\n=== FAZA: licitatii ===');
+
+  const follows = await prisma.follow.findMany({
+    where: { followerId: owner.id },
+    select: { followingId: true },
+  });
+  const followedIds = new Set(follows.map((f) => f.followingId));
+
+  const all = await prisma.auction.findMany({
+    where: { status: 'ACTIVE' },
+    include: { userBook: { include: { book: true, user: true } } },
+    // Ordine stabilă: fără ea, două rulări aleg alte 18 licitații din cele
+    // ~70 active, iar ofertele rămase pe cele părăsite nu mai sunt curățate.
+    orderBy: { id: 'asc' },
+  });
+
+  // Întâi licitațiile conturilor urmărite (apar și în feed-ul de activitate,
+  // ca anunțuri noi), apoi ale proprietarului (ca să aibă și el oferte
+  // primite), apoi restul - ca browse-ul să nu arate un singur oraș.
+  const rank = (a) => {
+    if (followedIds.has(a.userBook.userId)) return 0;
+    if (a.userBook.userId === owner.id) return 1;
+    return 2;
+  };
+  const chosen = all.sort((x, y) => rank(x) - rank(y)).slice(0, AUCTION_SEED_COUNT);
+
+  console.log(`  ${chosen.length} licitații din ${all.length} active`);
+  if (!APPLY) return;
+
+  // Se șterg TOATE ofertele și urmăririle, nu doar cele ale licitațiilor
+  // alese acum: sunt integral date de seed (înainte de prima rulare tabela
+  // `bids` era goală), iar altfel o rulare anterioară lăsa în urmă oferte pe
+  // licitații care nu mai intră în selecție.
+  await prisma.bid.deleteMany({});
+  await prisma.auctionWatch.deleteMany({});
+  // Preț curent înapoi pe cel de pornire peste tot (copiere coloană-la-coloană,
+  // deci SQL brut) - o licitație rămasă din selecția anterioară ar fi păstrat
+  // altfel un preț urcat, fără nicio ofertă în spate.
+  await prisma.$executeRawUnsafe(
+    `UPDATE "auctions" SET "currentPrice" = "startingPrice", "highestBidderId" = NULL WHERE status = 'ACTIVE'`,
+  );
+  await prisma.notification.deleteMany({ where: { userId: owner.id, type: 'OUTBID' } });
+
+  let bidCount = 0;
+  for (const [i, auction] of chosen.entries()) {
+    const sellerId = auction.userBook.userId;
+    const bidders = demoUsers.filter((u) => u.id !== sellerId);
+    const rounds = 2 + ((i * 3) % 5); // 2-6 oferte
+    const start = Number(auction.startingPrice);
+
+    // Proprietarul intră ca ofertant pe câteva licitații ale altora: pe două
+    // rămâne cel mai mare ofertant, pe una e depășit imediat după.
+    const ownerBidsLast = sellerId !== owner.id && (i === 0 || i === 3);
+    const ownerOutbid = sellerId !== owner.id && i === 6;
+
+    // Termene eșalonate: câteva se termină azi (cronometrul e cel mai
+    // convingător element din captură), restul în zilele următoare.
+    const endsAt =
+      i < 3
+        ? new Date(now.getTime() + (3 + i * 4) * 3_600_000)
+        : ahead(1 + ((i - 3) % 6));
+
+    let price = start;
+    let highestBidderId = null;
+    for (let k = 0; k < rounds; k++) {
+      // Pași mici (3-7 lei): pe o carte la mâna a doua, un salt de 15 lei
+      // per ofertă ducea prețul curent la dublul celui de pornire.
+      price += AUCTION_MIN_STEP + ((i + k) % 3) * 2;
+      const isLast = k === rounds - 1;
+      let bidder;
+      if (ownerBidsLast && isLast) bidder = owner;
+      else if (ownerOutbid && k === rounds - 2) bidder = owner;
+      else bidder = bidders[(i * 5 + k * 7) % bidders.length];
+      if (bidder.id === sellerId) bidder = bidders[(i + k) % bidders.length];
+
+      const bid = await prisma.bid.create({
+        data: { auctionId: auction.id, bidderId: bidder.id, amount: price },
+      });
+      // Ofertele se înghesuie spre prezent, ca la o licitație reală. Ancora e
+      // ACUM, nu `endsAt`: o licitație care se termină peste două zile ar fi
+      // primit altfel oferte cu dată în viitor, iar istoricul le arăta pe
+      // toate ca „chiar acum".
+      const hoursAgo = (rounds - k) * (6 + (i % 5));
+      await stampCreatedOnly(
+        'bids',
+        bid.id,
+        new Date(now.getTime() - hoursAgo * 3_600_000),
+      );
+      highestBidderId = bidder.id;
+      bidCount++;
+    }
+
+    await prisma.auction.update({
+      where: { id: auction.id },
+      data: {
+        currentPrice: price,
+        highestBidderId,
+        endsAt,
+        // Preț de rezervă / „cumpără acum" doar pe o parte din ele, ca în UI
+        // să apară ambele variante de card.
+        reservePrice: i % 4 === 0 ? Math.round(price * 1.3) : null,
+        buyNowPrice: i % 3 === 0 ? Math.round(price * 1.8) : null,
+      },
+    });
+
+    // Urmăritori: proprietarul urmărește primele licitații ale altora, plus
+    // câțiva ofertanți care nu au licitat încă.
+    const watchers = [
+      ...(sellerId !== owner.id && i < 5 ? [owner] : []),
+      bidders[(i * 3 + 1) % bidders.length],
+      bidders[(i * 3 + 2) % bidders.length],
+    ];
+    for (const w of watchers) {
+      const exists = await prisma.auctionWatch.findUnique({
+        where: { auctionId_userId: { auctionId: auction.id, userId: w.id } },
+      });
+      if (!exists) {
+        await prisma.auctionWatch.create({
+          data: { auctionId: auction.id, userId: w.id },
+        });
+      }
+    }
+
+    if (ownerOutbid) {
+      const notification = await prisma.notification.create({
+        data: {
+          userId: owner.id,
+          type: 'OUTBID',
+          message: `Ai fost depășit la licitația pentru „${auction.userBook.book.title}"`,
+          data: { auctionId: auction.id, userBookId: auction.userBookId },
+          isRead: false,
+        },
+      });
+      await stampCreatedOnly('notifications', notification.id, ago(0.3));
+    }
+  }
+
+  console.log(
+    `  ${bidCount} oferte pe ${chosen.length} licitații (3 se termină azi, ` +
+      'proprietarul e cel mai mare ofertant la 2 și depășit la una).',
+  );
+}
+
 async function phasePoze(resolved) {
   console.log('\n=== FAZA: poze ===');
   // Toate anunțurile, nu doar cele ale rândurilor rezolvate acum: același
@@ -1675,6 +1834,8 @@ async function main() {
   if (run('chat')) await phaseChat(resolved, demoUsers, owner);
   // După „chat": are nevoie de relațiile de urmărire create acolo.
   if (run('feed')) await phaseFeed(resolved, demoUsers, owner);
+  // Tot după „chat": foloseste relatiile de urmarire si notificarile lui.
+  if (run('licitatii')) await phaseLicitatii(demoUsers, owner);
 
   console.log(APPLY ? '\nGata.' : '\nDry-run încheiat - repetă cu --apply ca să scrie în baza de date.');
 }
