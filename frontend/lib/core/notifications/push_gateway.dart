@@ -17,10 +17,31 @@ import 'push_notifications_service.dart' deferred as push;
 /// inițializarea de după primul frame, nu înaintea lui. Toate metodele sunt
 /// „fire and forget": dacă descărcarea eșuează (offline), aplicația merge mai
 /// departe fără push, exact ca înainte pe un dispozitiv fără permisiune.
+/// Ruta cerută de un tap pe o notificare de sistem, care încă n-a fost
+/// aplicată.
+///
+/// Tap-ul poate ajunge înainte ca aplicația să fie gata de navigat - la
+/// pornirea din starea complet închisă, `getInitialMessage()` răspunde cât
+/// timp sesiunea încă se restaurează din secure storage, iar un `push` de
+/// atunci ar fi înghițit imediat de redirectul routerului către `/login`.
+/// Ruta stă aici până când `main.dart` o poate consuma în siguranță.
+class PendingNotificationRoute extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? route) => state = route;
+}
+
+final pendingNotificationRouteProvider =
+    NotifierProvider<PendingNotificationRoute, String?>(
+  PendingNotificationRoute.new,
+);
+
 class PushGateway {
-  PushGateway(this._apiClient);
+  PushGateway(this._apiClient, this._onRoute);
 
   final ApiClient _apiClient;
+  final void Function(String route) _onRoute;
 
   /// Tipat `dynamic` fiindcă Dart interzice tipurile dintr-o bibliotecă
   /// amânată în adnotări („deferred type can't be used in a declaration") -
@@ -31,7 +52,7 @@ class PushGateway {
 
   Future<dynamic> _ensure() async {
     await push.loadLibrary();
-    return _service ??= push.PushNotificationsService(_apiClient);
+    return _service ??= push.PushNotificationsService(_apiClient, _onRoute);
   }
 
   Future<void> initialize() async => (await _ensure()).initialize() as Future<void>;
@@ -44,5 +65,8 @@ class PushGateway {
 }
 
 final pushGatewayProvider = Provider<PushGateway>((ref) {
-  return PushGateway(ref.watch(apiClientProvider));
+  return PushGateway(
+    ref.watch(apiClientProvider),
+    (route) => ref.read(pendingNotificationRouteProvider.notifier).set(route),
+  );
 });

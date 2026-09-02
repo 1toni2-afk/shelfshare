@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../../data/models/app_notification.dart';
 import '../network/api_client.dart';
+import 'notification_route.dart';
 
 /// ID-ul canalului Android pentru notificările primite cât timp aplicația e
 /// deschisă (foreground) - FCM nu le arată automat pe bara de notificări în
@@ -28,8 +31,15 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 /// google-services.json, vezi android/app/build.gradle.kts) - restul
 /// aplicației funcționează normal, doar fără push.
 class PushNotificationsService {
-  PushNotificationsService(this._apiClient);
+  PushNotificationsService(this._apiClient, this._onRoute);
   final ApiClient _apiClient;
+
+  /// Unde trimitem userul când apasă pe o notificare de sistem. Un callback,
+  /// nu o navigare directă: serviciul ăsta poate rula înainte ca aplicația să
+  /// aibă router (tap pe notificare cu aplicația închisă), deci decizia de
+  /// „acum sau după ce se restaurează sesiunea" nu e a lui. Vezi
+  /// `pendingNotificationRouteProvider`.
+  final void Function(String route) _onRoute;
 
   final _localNotifications = FlutterLocalNotificationsPlugin();
   bool _ready = false;
@@ -51,6 +61,18 @@ class PushNotificationsService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     await _initLocalNotifications();
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+
+    // Tap pe o notificare de sistem cât timp aplicația era doar în background:
+    // procesul trăiește, deci evenimentul ajunge pe stream.
+    FirebaseMessaging.onMessageOpenedApp.listen(_openFromData);
+
+    // Tap pe o notificare care a pornit aplicația din starea complet închisă:
+    // nu există stream, mesajul se citește o singură dată, la pornire. Fără
+    // asta, un tap pe „ai primit un mesaj" deschidea pur și simplu aplicația
+    // pe ecranul de start.
+    final initial = await FirebaseMessaging.instance.getInitialMessage();
+    if (initial != null) _openFromData(initial);
+
     _ready = true;
   }
 
@@ -58,6 +80,19 @@ class PushNotificationsService {
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     await _localNotifications.initialize(
       settings: const InitializationSettings(android: androidInit),
+      // Notificările afișate cât timp aplicația e în foreground sunt randate
+      // de flutter_local_notifications, nu de FCM - deci tap-ul pe ele nu
+      // trece prin `onMessageOpenedApp`, are nevoie de propriul callback.
+      onDidReceiveNotificationResponse: (response) {
+        final payload = response.payload;
+        if (payload == null || payload.isEmpty) return;
+        try {
+          final decoded = jsonDecode(payload) as Map<String, dynamic>;
+          _openFromData(null, decoded);
+        } catch (error) {
+          debugPrint('[push] Payload invalid la tap: $error');
+        }
+      },
     );
     await _localNotifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -86,7 +121,30 @@ class PushNotificationsService {
           priority: Priority.high,
         ),
       ),
+      // Fără payload, callback-ul de tap de mai sus n-ar avea din ce calcula
+      // destinația - `message.data` e singurul loc unde vine tipul notificării
+      // și id-ul conversației/schimbului.
+      payload: jsonEncode(message.data),
     );
+  }
+
+  /// Traduce payload-ul unei notificări în rută și o predă mai departe.
+  ///
+  /// `data` din FCM e mereu `Map<String, String>` - backend-ul serializează
+  /// acolo tipul notificării (`type`, în forma din API: `NEW_MESSAGE` etc.) și
+  /// cheile de care depinde destinația (`conversationId`, `offerId`, ...).
+  /// Vezi backend/src/notifications/notifications.service.ts.
+  void _openFromData(RemoteMessage? message, [Map<String, dynamic>? raw]) {
+    final data = raw ?? message?.data;
+    final rawType = data?['type'];
+    if (rawType == null) return;
+    final route = routeForNotification(
+      NotificationTypeX.fromJson(rawType.toString()),
+      data,
+    );
+    // Un tip pe care clientul ăsta nu-l cunoaște, sau date insuficiente:
+    // deschidem aplicația fără să sărim undeva la întâmplare.
+    if (route != null) _onRoute(route);
   }
 
   /// Apelat după login/restaurare sesiune: cere permisiunea de notificări (pe

@@ -18,11 +18,24 @@ export class NotificationsService {
    * Push-ul e mereu best-effort: userul deja are notificarea în DB și pe
    * socket cât timp ajungem aici, deci o eroare la FCM (token expirat,
    * Firebase nesetat, offline) nu trebuie să afecteze restul fluxului.
+   *
+   * `type` și `data` merg în payload-ul de date al mesajului FCM, nu doar în
+   * rândul din DB: aplicația calculează din ele unde să ducă tap-ul pe
+   * notificarea de sistem (vezi frontend/lib/core/notifications/
+   * notification_route.dart). Fără ele, un tap pe „ai primit un mesaj"
+   * deschidea doar aplicația, pe ecranul de start.
    */
-  private sendPushSafe(userId: string, message: string) {
-    this.push.sendToUser(userId, 'ShelfShare', message).catch((error) => {
-      this.logger.warn(`Push eșuat pentru ${userId}: ${error}`);
-    });
+  private sendPushSafe(
+    userId: string,
+    message: string,
+    type: NotificationType,
+    data?: Record<string, unknown>,
+  ) {
+    this.push
+      .sendToUser(userId, 'ShelfShare', message, buildPushData(type, data))
+      .catch((error) => {
+        this.logger.warn(`Push eșuat pentru ${userId}: ${error}`);
+      });
   }
 
   async create(
@@ -44,7 +57,7 @@ export class NotificationsService {
     // să se actualizeze fără refresh de pagină. Dacă userul nu e conectat pe
     // socket, se pierde - o va vedea oricum la următoarea încărcare (GET /mine).
     this.realtime.emitToUser(userId, 'notification', notification);
-    this.sendPushSafe(userId, message);
+    this.sendPushSafe(userId, message, type, data);
 
     return notification;
   }
@@ -90,7 +103,7 @@ export class NotificationsService {
     this.realtime.emitToUser(userId, 'notification', notification);
     // Push doar la prima notificare necitită din grup - altfel 10 mesaje
     // consecutive ar da 10 push-uri, exact ce dedup-ul ăsta încearcă să evite.
-    if (!existing) this.sendPushSafe(userId, message);
+    if (!existing) this.sendPushSafe(userId, message, type, data);
     return notification;
   }
 
@@ -146,4 +159,27 @@ export class NotificationsService {
     });
     return { message: 'Toate marcate ca citite' };
   }
+}
+
+/**
+ * FCM acceptă în `data` doar perechi string-string - orice altceva e respins
+ * de SDK la trimitere. Serializăm deci fiecare valoare, sărind peste null:
+ * o cheie absentă și una cu textul "null" nu înseamnă același lucru pentru
+ * client, care decide destinația după prezența cheii.
+ *
+ * Obiectele/array-urile ajung JSON, ca să nu devină tăcut "[object Object]" -
+ * niciun tip de notificare nu rutează după ele astăzi, dar o valoare citibilă
+ * face diferența când se depanează un payload.
+ */
+function buildPushData(
+  type: NotificationType,
+  data?: Record<string, unknown>,
+): Record<string, string> {
+  const payload: Record<string, string> = { type };
+  for (const [key, value] of Object.entries(data ?? {})) {
+    if (value === null || value === undefined) continue;
+    payload[key] =
+      typeof value === 'object' ? JSON.stringify(value) : String(value);
+  }
+  return payload;
 }

@@ -52,6 +52,25 @@ describe('NotificationsService', () => {
     });
   });
 
+  it('trimite tipul si datele in payload-ul de push, ca tap-ul sa duca undeva', async () => {
+    prisma.notification.create.mockResolvedValue({ id: 'notif-1' });
+
+    await service.create('user-1', 'NEW_MESSAGE', 'Ai un mesaj nou', {
+      conversationId: 'c-1',
+      unreadCount: 3,
+      readAt: null,
+    });
+
+    expect(push.sendToUser).toHaveBeenCalledWith(
+      'user-1',
+      'ShelfShare',
+      'Ai un mesaj nou',
+      // Totul serializat ca string (FCM refuza orice altceva), iar cheile cu
+      // valoare null sarite: clientul decide destinatia dupa prezenta cheii.
+      { type: 'NEW_MESSAGE', conversationId: 'c-1', unreadCount: '3' },
+    );
+  });
+
   it('impinge notificarea creata live catre user, pe socket', async () => {
     prisma.notification.create.mockResolvedValue({ id: 'notif-1' });
 

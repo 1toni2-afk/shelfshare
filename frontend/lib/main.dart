@@ -82,6 +82,22 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
     setState(() {});
   }
 
+  /// Navighează la ruta cerută de un tap pe notificare, dacă avem una și dacă
+  /// userul e autentificat - altfel o lăsăm în așteptare, redirectul routerului
+  /// ar înlocui-o oricum cu `/login`.
+  ///
+  /// Navigarea se amână cu un frame: apelul vine din `ref.listen`, adică din
+  /// mijlocul unui build, iar `go_router` nu acceptă o navigare de acolo.
+  void _consumePendingNotificationRoute() {
+    final route = ref.read(pendingNotificationRouteProvider);
+    if (route == null) return;
+    if (ref.read(authControllerProvider) is! AuthAuthenticated) return;
+    ref.read(pendingNotificationRouteProvider.notifier).set(null);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(routerProvider).push(route);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Abonăm/dezabonăm dispozitivul la push exact când starea de auth se
@@ -90,9 +106,21 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
       final push = ref.read(pushGatewayProvider);
       if (next is AuthAuthenticated) {
         push.registerForCurrentUser();
+        // Un tap pe notificare care a pornit aplicația din starea închisă
+        // ajunge înaintea sesiunii restaurate - abia acum putem naviga acolo.
+        _consumePendingNotificationRoute();
       } else if (previous is AuthAuthenticated && next is AuthUnauthenticated) {
         push.unregisterCurrentDevice();
+        // Ruta cerută de o notificare a contului de dinainte nu mai are ce
+        // căuta după logout.
+        ref.read(pendingNotificationRouteProvider.notifier).set(null);
       }
+    });
+    // Tap cu aplicația deja deschisă (foreground sau background): sesiunea
+    // există de mult, deci starea de auth nu se mai schimbă și ascultătorul de
+    // mai sus nu s-ar declanșa niciodată.
+    ref.listen(pendingNotificationRouteProvider, (_, next) {
+      if (next != null) _consumePendingNotificationRoute();
     });
     final router = ref.watch(routerProvider);
     final locale = ref.watch(effectiveLocaleProvider);
