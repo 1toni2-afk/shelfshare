@@ -7,6 +7,7 @@ import { Book, BookshelfStatus } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookDescriptionService } from '../books/book-description.service';
+import { AddOwnedBookDto } from './dto/add-owned-book.dto';
 
 export type BookshelfImportSource = 'goodreads' | 'storygraph';
 
@@ -183,7 +184,12 @@ export class BookshelfService {
     return Number.isFinite(n) && n > 0 ? n : undefined;
   }
 
-  async setStatus(userId: string, bookId: string, status: BookshelfStatus) {
+  async setStatus(
+    userId: string,
+    bookId: string,
+    status: BookshelfStatus,
+    owned?: boolean,
+  ) {
     const book = await this.prisma.book.findUnique({ where: { id: bookId } });
     if (!book) {
       throw new NotFoundException('Cartea nu a fost găsită');
@@ -191,8 +197,11 @@ export class BookshelfService {
 
     const entry = await this.prisma.bookshelfEntry.upsert({
       where: { userId_bookId: { userId, bookId } },
-      create: { userId, bookId, status },
-      update: { status },
+      // `owned` absent din request => nu îl atingem pe o intrare existentă
+      // (butonul de status de pe pagina cărții nu are de unde să știe dacă
+      // userul are exemplarul în mână), dar la creare pornește de la false.
+      create: { userId, bookId, status, owned: owned ?? false },
+      update: { status, ...(owned === undefined ? {} : { owned }) },
       include: { book: true },
     });
 
@@ -215,6 +224,185 @@ export class BookshelfService {
       where: { userId_bookId: { userId, bookId } },
     });
     return { status: entry?.status ?? null };
+  }
+
+  /**
+   * „Add to shelf" - cartea ajunge în raftul personal ca deținută, FĂRĂ să
+   * creeze un anunț. Reutilizează exact aceeași rezolvare de carte ca importul
+   * CSV (dedupe pe ISBN, altfel titlu+autor), ca să nu umplem catalogul cu
+   * duplicate pentru titluri deja cunoscute.
+   */
+  async addOwnedBook(userId: string, dto: AddOwnedBookDto) {
+    // Validăm ÎNAINTE de orice scriere: altfel un procent fără total lăsa în
+    // urmă o carte nouă în catalog și o intrare de raft, apoi arunca 400 -
+    // userul vedea eroare, dar cartea îi apărea totuși pe raft.
+    if (dto.currentPage == null && dto.percentRead != null) {
+      const knownTotal = dto.totalPages ?? (await this.lookupPageCount(dto));
+      if (knownTotal == null) {
+        throw new BadRequestException(
+          'Ca să salvăm un procent, avem nevoie de numărul total de pagini',
+        );
+      }
+    }
+
+    const book = await this.resolveOrCreateBookForShelf(dto);
+
+    const entry = await this.prisma.bookshelfEntry.upsert({
+      where: { userId_bookId: { userId, bookId: book.id } },
+      create: {
+        userId,
+        bookId: book.id,
+        status: dto.status ?? 'READING',
+        owned: dto.owned ?? true,
+      },
+      update: {
+        status: dto.status ?? 'READING',
+        owned: dto.owned ?? true,
+      },
+      include: { book: true },
+    });
+
+    if (!book.description) {
+      this.bookDescriptions.scheduleBackfill(book.id);
+    }
+
+    const progress = await this.saveProgress(userId, book, dto);
+    return { ...entry, progress };
+  }
+
+  /**
+   * Progresul la citit, așa cum vine din formularul de „add to shelf":
+   * pagini SAU procent, plus numărul total de pagini al ediției proprii.
+   * Procentul se convertește imediat în pagini - `ReadingProgress.currentPage`
+   * rămâne singura sursă de adevăr, ca bara de progres să arate la fel
+   * indiferent cum a fost introdus.
+   */
+  private async saveProgress(
+    userId: string,
+    book: Book,
+    dto: AddOwnedBookDto,
+  ) {
+    const total = dto.totalPages ?? book.pageCount ?? null;
+
+    let currentPage = dto.currentPage ?? null;
+    if (currentPage == null && dto.percentRead != null) {
+      if (total == null) {
+        throw new BadRequestException(
+          'Ca să salvăm un procent, avem nevoie de numărul total de pagini',
+        );
+      }
+      currentPage = Math.round((total * dto.percentRead) / 100);
+    }
+    // Nici pagini, nici procent, nici pagini de ediție => n-avem ce salva.
+    if (currentPage == null && dto.totalPages == null) return null;
+    currentPage ??= 0;
+
+    if (total != null && currentPage > total) {
+      throw new BadRequestException(
+        `Pagina nu poate depăși numărul total de pagini (${total})`,
+      );
+    }
+
+    return this.prisma.readingProgress.upsert({
+      where: { userId_bookId: { userId, bookId: book.id } },
+      create: {
+        userId,
+        bookId: book.id,
+        currentPage,
+        totalPages: dto.totalPages ?? null,
+      },
+      update: {
+        currentPage,
+        ...(dto.totalPages == null ? {} : { totalPages: dto.totalPages }),
+      },
+    });
+  }
+
+  /// Câte pagini știm deja despre carte, fără s-o creăm - folosit doar la
+  /// validarea de mai sus, ca un procent trimis pentru o carte deja din catalog
+  /// să fie acceptat chiar dacă userul n-a completat totalul manual.
+  private async lookupPageCount(dto: AddOwnedBookDto) {
+    const isbn = this.cleanIsbn(dto.isbn);
+    const existing = isbn
+      ? await this.prisma.book.findUnique({ where: { isbn } })
+      : await this.prisma.book.findFirst({
+          where: {
+            title: { equals: dto.title, mode: 'insensitive' },
+            author: dto.author
+              ? { equals: dto.author, mode: 'insensitive' }
+              : undefined,
+          },
+        });
+    return existing?.pageCount ?? null;
+  }
+
+  private async resolveOrCreateBookForShelf(dto: AddOwnedBookDto) {
+    const isbn = this.cleanIsbn(dto.isbn);
+    const existing = isbn
+      ? await this.prisma.book.findUnique({ where: { isbn } })
+      : await this.prisma.book.findFirst({
+          where: {
+            title: { equals: dto.title, mode: 'insensitive' },
+            author: dto.author
+              ? { equals: dto.author, mode: 'insensitive' }
+              : undefined,
+          },
+        });
+    if (existing) return existing;
+
+    return this.prisma.book.create({
+      data: {
+        isbn,
+        title: dto.title,
+        author: dto.author,
+        coverUrl: dto.coverUrl,
+        genre: dto.genre,
+        publisher: dto.publisher,
+        publishedYear: dto.publishedYear,
+        // `totalPages` din DTO e paginile EDIȚIEI userului și stă pe
+        // ReadingProgress; pe Book îl punem doar când creăm cartea acum, ca
+        // primă valoare cunoscută pentru catalog.
+        pageCount: dto.totalPages,
+        source: 'shelf-manual',
+      },
+    });
+  }
+
+  /**
+   * Cărțile pe care userul le DEȚINE dar nu le-a scos la listare - prim-planul
+   * din My Shelf. O carte care are deja un anunț activ (UserBook nesters) iese
+   * de aici: apare oricum în grila de listări de dedesubt, ar fi dublată.
+   */
+  async getOwnedShelf(userId: string) {
+    const [entries, listed, progress] = await Promise.all([
+      this.prisma.bookshelfEntry.findMany({
+        where: { userId, owned: true },
+        include: { book: true },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.userBook.findMany({
+        where: { userId, deletedAt: null },
+        select: { bookId: true },
+      }),
+      this.prisma.readingProgress.findMany({ where: { userId } }),
+    ]);
+
+    const listedBookIds = new Set(listed.map((l) => l.bookId));
+    const progressByBook = new Map(progress.map((p) => [p.bookId, p]));
+
+    return entries
+      .filter((e) => !listedBookIds.has(e.bookId))
+      .map((e) => {
+        const p = progressByBook.get(e.bookId);
+        return {
+          bookId: e.bookId,
+          status: e.status,
+          book: e.book,
+          currentPage: p?.currentPage ?? 0,
+          totalPages: p?.totalPages ?? e.book.pageCount ?? null,
+          updatedAt: e.updatedAt,
+        };
+      });
   }
 
   async getMyShelf(userId: string) {

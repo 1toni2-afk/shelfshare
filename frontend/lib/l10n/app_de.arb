@@ -1342,5 +1342,42 @@
     "installBannerDismiss": "Schließen",
     "installCardTitle": "ShelfShare für Android",
     "installCardText": "Installiere die App auf deinem Android-Handy und erhalte sofort Benachrichtigungen.",
-    "installCardAction": "App holen"
+    "installCardAction": "App holen",
+    "shelfOwnedSectionTitle": "Meine Bücher",
+    "shelfOwnedSectionSubtitle": "{count} in deinem Besitz, nicht inseriert",
+    "@shelfOwnedSectionSubtitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfOwnedEmpty": "Bücher, die du deinem Regal hinzufügst, erscheinen hier - zusammen mit deinem Lesefortschritt.",
+    "shelfOwnedAddCta": "Ins Regal legen",
+    "shelfAddModeQuestion": "Was möchtest du mit diesem Buch tun?",
+    "shelfAddModeShelf": "Ins Regal legen",
+    "shelfAddModeShelfHint": "Behalte es in deinem persönlichen Regal und verfolge deinen Lesefortschritt. Niemand sonst sieht es.",
+    "shelfAddModeListing": "Buch inserieren",
+    "shelfAddModeListingHint": "Veröffentliche ein Inserat, damit andere es tauschen, kaufen oder erhalten können.",
+    "shelfFabAddBook": "Buch hinzufügen",
+    "shelfProgressTotalPages": "Seitenzahl deiner Ausgabe",
+    "shelfProgressUnitPages": "Seiten",
+    "shelfProgressUnitPercent": "Prozent",
+    "shelfProgressPagesRead": "Gelesene Seiten",
+    "shelfProgressPercentRead": "Gelesen in Prozent",
+    "shelfProgressNeedTotal": "Trage zuerst die Gesamtseitenzahl ein.",
+    "shelfProgressMarkFinished": "Als gelesen markieren",
+    "shelfProgressPercentLabel": "{percent}% gelesen",
+    "@shelfProgressPercentLabel": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfAddedToShelf": "Zu deinem Regal hinzugefügt.",
+    "shelfFinishedCta": "Du hast es ausgelesen - weitergeben?",
+    "shelfListItNow": "Inserieren",
+    "shelfRemoveFromShelf": "Aus dem Regal entfernen",
+    "shelfUpdateProgress": "Fortschritt aktualisieren"
 }

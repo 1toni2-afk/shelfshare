@@ -16,7 +16,9 @@ class ReadingProgress {
     return ReadingProgress(
       bookId: json['bookId'] as String,
       currentPage: json['currentPage'] as int,
-      totalPages: book?['pageCount'] as int?,
+      // Ediția proprie a userului bate catalogul - vezi
+      // ReadingProgress.totalPages pe backend.
+      totalPages: (json['totalPages'] as num?)?.toInt() ?? book?['pageCount'] as int?,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }

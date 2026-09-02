@@ -4213,4 +4213,80 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get installCardAction => 'Kérem az appot';
+
+  @override
+  String get shelfOwnedSectionTitle => 'Könyveim';
+
+  @override
+  String shelfOwnedSectionSubtitle(int count) {
+    return '$count a tiéd, nincs meghirdetve';
+  }
+
+  @override
+  String get shelfOwnedEmpty =>
+      'A polcodhoz adott könyvek itt jelennek meg, az olvasási haladásoddal együtt.';
+
+  @override
+  String get shelfOwnedAddCta => 'Polcra teszem';
+
+  @override
+  String get shelfAddModeQuestion => 'Mit szeretnél kezdeni ezzel a könyvvel?';
+
+  @override
+  String get shelfAddModeShelf => 'Polcra teszem';
+
+  @override
+  String get shelfAddModeShelfHint =>
+      'A saját polcodon marad, és követheted az olvasásodat. Más nem látja.';
+
+  @override
+  String get shelfAddModeListing => 'Könyv meghirdetése';
+
+  @override
+  String get shelfAddModeListingHint =>
+      'Hirdetést teszel közzé, hogy mások elcserélhessék, megvehessék vagy megkaphassák.';
+
+  @override
+  String get shelfFabAddBook => 'Könyv hozzáadása';
+
+  @override
+  String get shelfProgressTotalPages => 'A te kiadásod oldalszáma';
+
+  @override
+  String get shelfProgressUnitPages => 'Oldal';
+
+  @override
+  String get shelfProgressUnitPercent => 'Százalék';
+
+  @override
+  String get shelfProgressPagesRead => 'Elolvasott oldalak';
+
+  @override
+  String get shelfProgressPercentRead => 'Elolvasott százalék';
+
+  @override
+  String get shelfProgressNeedTotal => 'Először add meg a teljes oldalszámot.';
+
+  @override
+  String get shelfProgressMarkFinished => 'Megjelölés befejezettként';
+
+  @override
+  String shelfProgressPercentLabel(int percent) {
+    return '$percent% elolvasva';
+  }
+
+  @override
+  String get shelfAddedToShelf => 'Hozzáadva a polcodhoz.';
+
+  @override
+  String get shelfFinishedCta => 'Kiolvastad - továbbadnád?';
+
+  @override
+  String get shelfListItNow => 'Meghirdetem';
+
+  @override
+  String get shelfRemoveFromShelf => 'Levétel a polcról';
+
+  @override
+  String get shelfUpdateProgress => 'Haladás frissítése';
 }

@@ -86,6 +86,49 @@ class Bookshelf {
   }
 }
 
+/// O carte pe care userul o DEȚINE dar nu a scos-o (încă) la listare -
+/// prim-planul din My Shelf. Vine din `GET /bookshelf/me/owned`, care combină
+/// BookshelfEntry (owned + status) cu ReadingProgress (pagina curentă și
+/// numărul de pagini al ediției proprii, care poate diferi de catalog).
+class OwnedBook {
+  final Book book;
+  final BookshelfStatus status;
+  final int currentPage;
+  final int? totalPages;
+
+  const OwnedBook({
+    required this.book,
+    required this.status,
+    this.currentPage = 0,
+    this.totalPages,
+  });
+
+  /// Fracție 0..1 pentru bara de progres. Null când nu știm totalul - atunci
+  /// afișăm doar „Pagina X", fără bară (nu putem inventa un procent).
+  double? get progress {
+    final total = totalPages;
+    if (total == null || total <= 0) return null;
+    return (currentPage / total).clamp(0.0, 1.0);
+  }
+
+  /// Terminată de citit: fie marcată explicit FINISHED, fie progresul a ajuns
+  /// la ultima pagină. Doar atunci oferim „scoate-o la schimb/vânzare".
+  bool get isFinished {
+    if (status == BookshelfStatus.finished) return true;
+    final total = totalPages;
+    return total != null && total > 0 && currentPage >= total;
+  }
+
+  factory OwnedBook.fromJson(Map<String, dynamic> json) {
+    return OwnedBook(
+      book: Book.fromJson(json['book'] as Map<String, dynamic>),
+      status: BookshelfStatusX.fromJson(json['status'] as String),
+      currentPage: (json['currentPage'] as num?)?.toInt() ?? 0,
+      totalPages: (json['totalPages'] as num?)?.toInt(),
+    );
+  }
+}
+
 class SearchStat {
   final String query;
   final int count;

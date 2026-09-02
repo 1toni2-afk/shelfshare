@@ -14,12 +14,15 @@ import '../../../data/models/external_book_result.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/utils/cover_proxy.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../../../shared/widgets/field_label.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../application/my_library_controller.dart';
 import '../data/auctions_repository.dart';
 import '../data/books_repository.dart';
+import '../data/bookshelf_repository.dart';
 import '../data/genre_tag_suggestions.dart';
+import '../data/reading_progress_repository.dart';
 
 /// Ecranul „+ Share" refăcut pe layout-ul din Milestone 10:
 ///
@@ -32,14 +35,46 @@ import '../data/genre_tag_suggestions.dart';
 /// 6. Mod de anunț: schimb / vânzare / licitație / donație (single-select).
 /// 7. Localitate (unde se face schimbul).
 /// 8. Buton „Mai multe informații" care extinde pagini/an/editura.
+/// Cele două lucruri pe care le poate face ecranul. „Add to shelf" e implicit:
+/// majoritatea cărților pe care le are cineva în casă nu sunt (încă) de dat mai
+/// departe, iar drumul spre listare rămâne la un tap distanță, aici sau din
+/// My Shelf, după ce cartea e terminată.
+enum AddBookMode { shelf, listing }
+
 class AddBookScreen extends ConsumerStatefulWidget {
-  const AddBookScreen({super.key});
+  const AddBookScreen({
+    super.key,
+    this.initialMode = AddBookMode.shelf,
+    this.prefillBookId,
+    this.prefillTitle,
+    this.prefillAuthor,
+    this.prefillIsbn,
+    this.prefillCoverUrl,
+  });
+
+  final AddBookMode initialMode;
+
+  /// Cartea din catalog pentru care se face listarea, când o știm deja
+  /// („Listeaz-o" de pe o carte din raft) - trimisă ca `bookId` la creare, ca
+  /// să nu ajungem cu două intrări de catalog pentru același titlu.
+  final String? prefillBookId;
+
+  /// Pre-completare când ecranul e deschis pentru o carte deja cunoscută -
+  /// ex. „Listeaz-o" de pe o carte terminată din raft. Userul poate schimba
+  /// orice, e doar un punct de plecare.
+  final String? prefillTitle;
+  final String? prefillAuthor;
+  final String? prefillIsbn;
+  final String? prefillCoverUrl;
 
   @override
   ConsumerState<AddBookScreen> createState() => _AddBookScreenState();
 }
 
 enum _ListingMode { swap, sale, auction, donation }
+
+/// Unitatea în care userul dă progresul la citit în modul „add to shelf".
+enum _ProgressUnit { pages, percent }
 
 class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   final _titleController = TextEditingController();
@@ -60,6 +95,14 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
   final List<String> _tags = [];
   final List<XFile> _photos = [];
+
+  /// Cate pagini a citit deja (sau cat la suta, dupa `_progressUnit`) - doar
+  /// in modul „add to shelf". Numarul TOTAL de pagini foloseste
+  /// `_pageCountController`, acelasi camp ca la listare.
+  final _progressController = TextEditingController();
+
+  late AddBookMode _mode = widget.initialMode;
+  _ProgressUnit _progressUnit = _ProgressUnit.pages;
 
   bool _isSubmitting = false;
   bool _showMoreInfo = false;
@@ -139,6 +182,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     if (auth is AuthAuthenticated) {
       _city = auth.user.city;
     }
+    // Pre-completare (ex. „Listeaz-o" de pe o carte terminată din raft).
+    // Setat DUPĂ listeneri, deliberat: căutarea de coperte pornește oricum
+    // debounced, iar dacă avem deja ISBN nu mai are ce căuta.
+    if (widget.prefillTitle != null) _titleController.text = widget.prefillTitle!;
+    if (widget.prefillAuthor != null) _authorController.text = widget.prefillAuthor!;
+    _isbnFromAutocomplete = widget.prefillIsbn;
+    _selectedCoverUrl = widget.prefillCoverUrl;
   }
 
   /// Programăm o interogare la /books/covers cu 500ms debounce. Nu apelăm
@@ -171,6 +221,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
   @override
   void dispose() {
+    _progressController.dispose();
     _searchDebounce?.cancel();
     _coverSearchDebounce?.cancel();
     _titleController.dispose();
@@ -492,12 +543,74 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     }
   }
 
+  /// „Add to shelf": cartea intră în raftul personal ca deținută, fără anunț.
+  /// Nu trece prin `addToLibrary` (care ar crea un UserBook, deci o listare
+  /// vizibilă tuturor) - vezi POST /bookshelf/own.
+  Future<void> _submitToShelf(String title) async {
+    final l10n = context.l10n;
+    final total = int.tryParse(_pageCountController.text.trim());
+    final progress = int.tryParse(_progressController.text.trim());
+    if (_progressUnit == _ProgressUnit.percent && progress != null && total == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.shelfProgressNeedTotal)));
+      return;
+    }
+    final isFinished = _progressUnit == _ProgressUnit.percent
+        ? progress == 100
+        : (total != null && progress != null && progress >= total);
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref.read(bookshelfRepositoryProvider).addOwnedBook(
+            title: title,
+            author: _authorController.text.trim(),
+            isbn: _isbnFromAutocomplete,
+            coverUrl: _selectedCoverUrl,
+            genre: _genreController.text.trim(),
+            publisher: _publisherController.text.trim(),
+            publishedYear: int.tryParse(_publishedYearController.text.trim()),
+            status: isFinished ? BookshelfStatus.finished : BookshelfStatus.reading,
+            totalPages: total,
+            currentPage: _progressUnit == _ProgressUnit.pages ? progress : null,
+            percentRead: _progressUnit == _ProgressUnit.percent ? progress : null,
+          );
+      ref.invalidate(myOwnedShelfProvider);
+      ref.invalidate(myBookshelfProvider);
+      ref.invalidate(myReadingProgressProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.shelfAddedToShelf)));
+      Navigator.of(context).pop();
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data is Map && data['message'] != null
+          ? (data['message'] is List
+              ? (data['message'] as List).join(', ')
+              : data['message'].toString())
+          : l10n.addBookGenericError;
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.addBookGenericError)));
+      }
+    }
+  }
+
   Future<void> _submit() async {
     final l10n = context.l10n;
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.addBookTitleRequired)));
+      return;
+    }
+    if (_mode == AddBookMode.shelf) {
+      await _submitToShelf(title);
       return;
     }
     if (_photos.isEmpty) {
@@ -534,6 +647,12 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       // recreăm anunțul - vezi comentariul de la `_createdUserBook`.
       final userBook = _createdUserBook ??=
           await ref.read(booksRepositoryProvider).addToLibrary(
+                // Doar dacă userul n-a ales între timp altă carte din
+                // autocomplete - atunci prefillul nu mai descrie ce e în
+                // formular și l-am lista pe cel greșit.
+                bookId: _titleController.text.trim() == widget.prefillTitle
+                    ? widget.prefillBookId
+                    : null,
                 isbn: _isbnFromAutocomplete,
                 title: title,
                 author: _authorController.text.trim().isEmpty
@@ -649,8 +768,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.addBookTitle),
-        actions: isDesktop
+        title: Text(_mode == AddBookMode.shelf
+            ? l10n.shelfAddModeShelf
+            : l10n.shelfAddModeListing),
+        actions: isDesktop && _mode == AddBookMode.listing
             ? [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -676,10 +797,179 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1180),
-            child: isDesktop ? _buildDesktop(context) : _buildMobile(context),
+            child: _mode == AddBookMode.shelf
+                ? _buildShelfForm(context)
+                : (isDesktop ? _buildDesktop(context) : _buildMobile(context)),
           ),
         ),
       ),
+    );
+  }
+
+  /// Selectorul „ce vrei să faci cu cartea asta" - primul lucru din ecran, în
+  /// ambele moduri. Căutarea titlului e identică în ambele cazuri; diferă doar
+  /// ce se întâmplă la salvare.
+  Widget _modePicker(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final options = <(AddBookMode, String, String, IconData)>[
+      (AddBookMode.shelf, l10n.shelfAddModeShelf, l10n.shelfAddModeShelfHint,
+          Icons.menu_book_outlined),
+      (AddBookMode.listing, l10n.shelfAddModeListing,
+          l10n.shelfAddModeListingHint, Icons.storefront_outlined),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.shelfAddModeQuestion,
+          style: theme.textTheme.labelLarge?.copyWith(color: AppColors.mutedForeground),
+        ),
+        const SizedBox(height: 10),
+        for (final option in options)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => setState(() => _mode = option.$1),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: _mode == option.$1 ? AppColors.accent : theme.dividerColor,
+                    width: _mode == option.$1 ? 2 : 1,
+                  ),
+                  color: _mode == option.$1
+                      ? AppColors.accent.withValues(alpha: 0.08)
+                      : null,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(option.$4,
+                        color: _mode == option.$1
+                            ? AppColors.accent
+                            : AppColors.mutedForeground),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(option.$2, style: theme.textTheme.titleSmall),
+                          const SizedBox(height: 2),
+                          Text(
+                            option.$3,
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: AppColors.mutedForeground),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Formularul scurt pentru „add to shelf": doar ce ține de CARTE și de
+  /// progresul la citit. Fără poze, stare, oraș sau preț - nimeni în afară de
+  /// proprietar nu vede exemplarul, deci n-are cui să-i descrie starea.
+  Widget _buildShelfForm(BuildContext context) {
+    final l10n = context.l10n;
+    final total = int.tryParse(_pageCountController.text.trim());
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _modePicker(context),
+        const SizedBox(height: 20),
+        _titleFieldWithMyBooksButton(context),
+        const SizedBox(height: 12),
+        TextField(
+          textAlignVertical: TextAlignVertical.center,
+          controller: _authorController,
+          decoration: InputDecoration(hintText: l10n.shareAuthorHint),
+        ),
+        const SizedBox(height: 12),
+        _CoverPicker(
+          selectedUrl: _selectedCoverUrl,
+          recommended: _recommendedCovers,
+          onSelect: (url) => setState(() => _selectedCoverUrl = url),
+          onClear: () => setState(() => _selectedCoverUrl = null),
+        ),
+        _genreField(context),
+        const SizedBox(height: 20),
+        // Numărul de pagini e precompletat din autocomplete, dar rămâne
+        // editabil: tirajul din mâna userului poate avea alt număr decât
+        // ediția din catalog, iar progresul se măsoară pe ediția LUI.
+        FieldLabel(l10n.shelfProgressTotalPages),
+        TextField(
+          textAlignVertical: TextAlignVertical.center,
+          controller: _pageCountController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            hintText: l10n.shelfProgressTotalPages,
+            suffixIcon: _detailsLoading ? const _FieldSpinner() : null,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SegmentedButton<_ProgressUnit>(
+          segments: [
+            ButtonSegment(
+                value: _ProgressUnit.pages, label: Text(l10n.shelfProgressUnitPages)),
+            ButtonSegment(
+                value: _ProgressUnit.percent, label: Text(l10n.shelfProgressUnitPercent)),
+          ],
+          selected: {_progressUnit},
+          onSelectionChanged: (selection) {
+            final unit = selection.first;
+            // Procentul fără total n-are cum să devină pagini - vezi
+            // saveProgress din bookshelf.service.ts, care refuză exact asta.
+            if (unit == _ProgressUnit.percent && total == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.shelfProgressNeedTotal)),
+              );
+              return;
+            }
+            setState(() => _progressUnit = unit);
+          },
+        ),
+        const SizedBox(height: 12),
+        FieldLabel(_progressUnit == _ProgressUnit.pages
+            ? l10n.shelfProgressPagesRead
+            : l10n.shelfProgressPercentRead),
+        TextField(
+          textAlignVertical: TextAlignVertical.center,
+          controller: _progressController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: InputDecoration(
+            hintText: _progressUnit == _ProgressUnit.pages
+                ? l10n.shelfProgressPagesRead
+                : l10n.shelfProgressPercentRead,
+            suffixText: _progressUnit == _ProgressUnit.percent ? '%' : null,
+            helperText: _progressUnit == _ProgressUnit.pages && total != null
+                ? l10n.bookshelfProgressFieldOfTotal(total)
+                : null,
+          ),
+        ),
+        const SizedBox(height: 28),
+        ElevatedButton(
+          onPressed: _isSubmitting ? null : _submit,
+          child: _isSubmitting
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.shelfOwnedAddCta),
+        ),
+      ],
     );
   }
 
@@ -689,6 +979,9 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     return ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            _modePicker(context),
+            const SizedBox(height: 20),
+
             // 1. Poze - sus, cu placeholder mare cu „+"
             _PhotoPicker(
               photos: _photos,
@@ -864,6 +1157,8 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _modePicker(context),
+                const SizedBox(height: 20),
                 Text(l10n.shareSectionBook,
                     style: Theme.of(context)
                         .textTheme

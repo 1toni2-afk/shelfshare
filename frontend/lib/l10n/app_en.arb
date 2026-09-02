@@ -1487,5 +1487,42 @@
     "installBannerDismiss": "Dismiss",
     "installCardTitle": "ShelfShare on Android",
     "installCardText": "Install the app on your Android phone and get instant notifications.",
-    "installCardAction": "Get the app"
+    "installCardAction": "Get the app",
+    "shelfOwnedSectionTitle": "My books",
+    "shelfOwnedSectionSubtitle": "{count} you own, not listed",
+    "@shelfOwnedSectionSubtitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfOwnedEmpty": "Books you add to your shelf show up here, together with your reading progress.",
+    "shelfOwnedAddCta": "Add to shelf",
+    "shelfAddModeQuestion": "What do you want to do with this book?",
+    "shelfAddModeShelf": "Add to shelf",
+    "shelfAddModeShelfHint": "Keep it on your personal shelf and track your reading. Nobody else sees it.",
+    "shelfAddModeListing": "List a book",
+    "shelfAddModeListingHint": "Publish a listing so others can swap, buy or receive it.",
+    "shelfFabAddBook": "Add a book",
+    "shelfProgressTotalPages": "Total pages in your edition",
+    "shelfProgressUnitPages": "Pages",
+    "shelfProgressUnitPercent": "Percent",
+    "shelfProgressPagesRead": "Pages read",
+    "shelfProgressPercentRead": "Percent read",
+    "shelfProgressNeedTotal": "Fill in the total number of pages first.",
+    "shelfProgressMarkFinished": "Mark as finished",
+    "shelfProgressPercentLabel": "{percent}% read",
+    "@shelfProgressPercentLabel": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfAddedToShelf": "Added to your shelf.",
+    "shelfFinishedCta": "You've finished it - want to pass it on?",
+    "shelfListItNow": "List it",
+    "shelfRemoveFromShelf": "Remove from shelf",
+    "shelfUpdateProgress": "Update progress"
 }

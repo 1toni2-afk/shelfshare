@@ -7,6 +7,7 @@ import {
   IsISBN,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   MaxLength,
   Min,
@@ -21,6 +22,14 @@ import { BookCondition } from '@prisma/client';
  * clientul trece explicit la vânzare prin PATCH /books/:id (updateUserBook).
  */
 export class AddBookDto {
+  /// Cartea din catalog pe care o listăm, când o știm deja - cazul „Listeaz-o"
+  /// de pe o carte din raftul personal. Fără el, o carte fără ISBN ar fi
+  /// duplicată în catalog (vezi findOrCreateBook), iar raftul ar arăta și
+  /// intrarea veche, și listarea nouă, ca două cărți diferite.
+  @IsOptional()
+  @IsUUID()
+  bookId?: string;
+
   @IsOptional()
   @IsISBN(undefined, { message: 'ISBN invalid' })
   isbn?: string;

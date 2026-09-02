@@ -430,6 +430,7 @@ class BooksRepository {
   }
 
   Future<UserBook> addToLibrary({
+    String? bookId,
     String? isbn,
     String? title,
     String? author,
@@ -452,6 +453,7 @@ class BooksRepository {
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books', data: {
+      if (bookId != null && bookId.isNotEmpty) 'bookId': bookId,
       if (isbn != null && isbn.isNotEmpty) 'isbn': isbn,
       if (title != null && title.isNotEmpty) 'title': title,
       if (author != null && author.isNotEmpty) 'author': author,

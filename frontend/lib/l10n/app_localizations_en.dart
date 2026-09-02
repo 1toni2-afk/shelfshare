@@ -4189,4 +4189,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get installCardAction => 'Get the app';
+
+  @override
+  String get shelfOwnedSectionTitle => 'My books';
+
+  @override
+  String shelfOwnedSectionSubtitle(int count) {
+    return '$count you own, not listed';
+  }
+
+  @override
+  String get shelfOwnedEmpty =>
+      'Books you add to your shelf show up here, together with your reading progress.';
+
+  @override
+  String get shelfOwnedAddCta => 'Add to shelf';
+
+  @override
+  String get shelfAddModeQuestion => 'What do you want to do with this book?';
+
+  @override
+  String get shelfAddModeShelf => 'Add to shelf';
+
+  @override
+  String get shelfAddModeShelfHint =>
+      'Keep it on your personal shelf and track your reading. Nobody else sees it.';
+
+  @override
+  String get shelfAddModeListing => 'List a book';
+
+  @override
+  String get shelfAddModeListingHint =>
+      'Publish a listing so others can swap, buy or receive it.';
+
+  @override
+  String get shelfFabAddBook => 'Add a book';
+
+  @override
+  String get shelfProgressTotalPages => 'Total pages in your edition';
+
+  @override
+  String get shelfProgressUnitPages => 'Pages';
+
+  @override
+  String get shelfProgressUnitPercent => 'Percent';
+
+  @override
+  String get shelfProgressPagesRead => 'Pages read';
+
+  @override
+  String get shelfProgressPercentRead => 'Percent read';
+
+  @override
+  String get shelfProgressNeedTotal =>
+      'Fill in the total number of pages first.';
+
+  @override
+  String get shelfProgressMarkFinished => 'Mark as finished';
+
+  @override
+  String shelfProgressPercentLabel(int percent) {
+    return '$percent% read';
+  }
+
+  @override
+  String get shelfAddedToShelf => 'Added to your shelf.';
+
+  @override
+  String get shelfFinishedCta => 'You\'ve finished it - want to pass it on?';
+
+  @override
+  String get shelfListItNow => 'List it';
+
+  @override
+  String get shelfRemoveFromShelf => 'Remove from shelf';
+
+  @override
+  String get shelfUpdateProgress => 'Update progress';
 }

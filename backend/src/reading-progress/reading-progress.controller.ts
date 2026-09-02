@@ -37,6 +37,11 @@ export class ReadingProgressController {
     @Body() dto: SetReadingProgressDto,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.readingProgressService.setProgress(userId!, bookId, dto.currentPage);
+    return this.readingProgressService.setProgress(
+      userId!,
+      bookId,
+      dto.currentPage,
+      dto.totalPages,
+    );
   }
 }

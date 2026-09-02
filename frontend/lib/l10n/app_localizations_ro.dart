@@ -4213,4 +4213,81 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get installCardAction => 'Vreau aplicația';
+
+  @override
+  String get shelfOwnedSectionTitle => 'Cărțile mele';
+
+  @override
+  String shelfOwnedSectionSubtitle(int count) {
+    return '$count pe care le ai, nelistate';
+  }
+
+  @override
+  String get shelfOwnedEmpty =>
+      'Cărțile pe care le adaugi în raft apar aici, împreună cu progresul tău la citit.';
+
+  @override
+  String get shelfOwnedAddCta => 'Adaugă în raft';
+
+  @override
+  String get shelfAddModeQuestion => 'Ce vrei să faci cu această carte?';
+
+  @override
+  String get shelfAddModeShelf => 'Adaugă în raft';
+
+  @override
+  String get shelfAddModeShelfHint =>
+      'O ții în raftul tău personal și îți urmărești progresul la citit. Nu o vede nimeni altcineva.';
+
+  @override
+  String get shelfAddModeListing => 'Listează cartea';
+
+  @override
+  String get shelfAddModeListingHint =>
+      'Publici un anunț, ca alții să o poată schimba, cumpăra sau primi.';
+
+  @override
+  String get shelfFabAddBook => 'Adaugă o carte';
+
+  @override
+  String get shelfProgressTotalPages => 'Total pagini în ediția ta';
+
+  @override
+  String get shelfProgressUnitPages => 'Pagini';
+
+  @override
+  String get shelfProgressUnitPercent => 'Procent';
+
+  @override
+  String get shelfProgressPagesRead => 'Pagini citite';
+
+  @override
+  String get shelfProgressPercentRead => 'Procent citit';
+
+  @override
+  String get shelfProgressNeedTotal =>
+      'Completează întâi numărul total de pagini.';
+
+  @override
+  String get shelfProgressMarkFinished => 'Marchează drept terminată';
+
+  @override
+  String shelfProgressPercentLabel(int percent) {
+    return '$percent% citit';
+  }
+
+  @override
+  String get shelfAddedToShelf => 'Adăugată în raftul tău.';
+
+  @override
+  String get shelfFinishedCta => 'Ai terminat-o - vrei să o dai mai departe?';
+
+  @override
+  String get shelfListItNow => 'Listeaz-o';
+
+  @override
+  String get shelfRemoveFromShelf => 'Scoate din raft';
+
+  @override
+  String get shelfUpdateProgress => 'Actualizează progresul';
 }

@@ -17,7 +17,9 @@ import '../../../shared/widgets/genre_radar_card.dart';
 import '../../../shared/widgets/motto_text.dart';
 import '../application/my_library_controller.dart';
 import '../data/books_repository.dart';
+import '../data/bookshelf_repository.dart';
 import 'edit_listing_sheet.dart';
+import 'owned_books_section.dart';
 
 class MyLibraryScreen extends ConsumerStatefulWidget {
   const MyLibraryScreen({super.key});
@@ -209,9 +211,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           if (index >= items.length) {
             return ListTile(
               leading: const Icon(Icons.add),
-              // Nu prin l10n (context.l10n.myShelfShare) - userul vrea "Share"
-              // literal, netradus, nu "Împarte".
-              title: const Text('Share'),
+              title: Text(context.l10n.shelfFabAddBook),
               onTap: () => context.push('/library/add'),
             );
           }
@@ -465,8 +465,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           : FloatingActionButton.extended(
               onPressed: () => context.push('/library/add'),
               icon: const Icon(Icons.add),
-              // Netradus intenționat - "Share", nu "Împarte". Vezi mai jos.
-              label: const Text('Share'),
+              // Nu mai e „Share": ecranul de adăugare pornește pe „add to
+              // shelf" (cartea rămâne a userului) și oferă listarea ca a doua
+              // opțiune, deci labelul trebuie să le acopere pe amândouă.
+              label: Text(l10n.shelfFabAddBook),
             ),
       bottomNavigationBar: _selectionMode
           ? BottomAppBar(
@@ -499,7 +501,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           : null,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.read(myLibraryControllerProvider.notifier).refresh(),
+          onRefresh: () {
+            ref.invalidate(myOwnedShelfProvider);
+            return ref.read(myLibraryControllerProvider.notifier).refresh();
+          },
           child: state.when(
             data: (books) {
               if (books.isEmpty) {
@@ -545,6 +550,13 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
+                  // Prim-planul: cărțile deținute, nelistate - vezi
+                  // owned_books_section.dart. Listările propriu-zise (mai jos)
+                  // sunt subsetul pe care userul a ales să-l dea mai departe.
+                  const OwnedBooksSection(),
+                  const SizedBox(height: 24),
+                  const Divider(height: 1),
+                  const SizedBox(height: 18),
                   Text(
                     l10n.libraryShelfSubtitle(all.length, available.length),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
@@ -995,6 +1007,7 @@ class _AddBookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     // Aceeași structură ca BookCard (copertă 2:3 + titlu dedesubt) - altfel
     // grila întindea cutia bordată pe toată înălțimea celulei (care include
     // și spațiul pentru titlu+autor de sub copertă la cărțile reale), deci
@@ -1032,9 +1045,10 @@ class _AddBookCard extends StatelessWidget {
             children: [
               Icon(Icons.add, size: 16, color: AppColors.foreground),
               const SizedBox(width: 4),
-              // Netradus intenționat - "Share", nu "Împarte".
+              // Cardul deschide același ecran ca FAB-ul, care pornește pe
+              // „add to shelf" - deci nu mai poate scrie „Share".
               Text(
-                'Share',
+                l10n.shelfFabAddBook,
                 style: TextStyle(
                   fontFamily: 'Playfair Display',
                   fontWeight: FontWeight.w700,

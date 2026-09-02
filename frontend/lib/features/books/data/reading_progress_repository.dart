@@ -14,9 +14,14 @@ class ReadingProgressRepository {
         .toList();
   }
 
-  Future<ReadingProgress> setProgress(String bookId, int currentPage) async {
+  /// `totalPages` suprascrie numărul de pagini din catalog cu cel al ediției
+  /// pe care o are userul în mână (vezi ReadingProgress.totalPages pe backend).
+  Future<ReadingProgress> setProgress(String bookId, int currentPage, {int? totalPages}) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.put('/reading-progress/$bookId', data: {'currentPage': currentPage});
+    final response = await dio.put('/reading-progress/$bookId', data: {
+      'currentPage': currentPage,
+      'totalPages': ?totalPages,
+    });
     return ReadingProgress.fromJson(response.data as Map<String, dynamic>);
   }
 }

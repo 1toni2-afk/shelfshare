@@ -220,8 +220,22 @@ final routerProvider = Provider<GoRouter>((ref) {
               (context, state) => tier3.AboutAppScreen()),
           _deferredRoute('/roadmap', tier3.loadLibrary,
               (context, state) => tier3.RoadmapScreen()),
-          _deferredRoute('/library/add', tier2.loadLibrary,
-              (context, state) => tier2.AddBookScreen()),
+          // Parametrii vin din query, nu din `extra`: linkul „Listeaz-o" de pe
+          // o carte terminată din raft trebuie să supraviețuiască unui refresh
+          // pe web, unde `extra` se pierde.
+          _deferredRoute('/library/add', tier2.loadLibrary, (context, state) {
+            final q = state.uri.queryParameters;
+            return tier2.AddBookScreen(
+              initialMode: q['mode'] == 'listing'
+                  ? tier2.AddBookMode.listing
+                  : tier2.AddBookMode.shelf,
+              prefillBookId: q['bookId'],
+              prefillTitle: q['title'],
+              prefillAuthor: q['author'],
+              prefillIsbn: q['isbn'],
+              prefillCoverUrl: q['cover'],
+            );
+          }),
           _deferredRoute('/library/bulk-add', tier3.loadLibrary,
               (context, state) => tier3.BulkAddScreen()),
           _deferredRoute('/library/trash', tier3.loadLibrary,

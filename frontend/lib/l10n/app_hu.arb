@@ -1342,5 +1342,42 @@
     "installBannerDismiss": "Bezárás",
     "installCardTitle": "ShelfShare Androidon",
     "installCardText": "Telepítsd az alkalmazást az Android telefonodra, és azonnal kapsz értesítéseket.",
-    "installCardAction": "Kérem az appot"
+    "installCardAction": "Kérem az appot",
+    "shelfOwnedSectionTitle": "Könyveim",
+    "shelfOwnedSectionSubtitle": "{count} a tiéd, nincs meghirdetve",
+    "@shelfOwnedSectionSubtitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfOwnedEmpty": "A polcodhoz adott könyvek itt jelennek meg, az olvasási haladásoddal együtt.",
+    "shelfOwnedAddCta": "Polcra teszem",
+    "shelfAddModeQuestion": "Mit szeretnél kezdeni ezzel a könyvvel?",
+    "shelfAddModeShelf": "Polcra teszem",
+    "shelfAddModeShelfHint": "A saját polcodon marad, és követheted az olvasásodat. Más nem látja.",
+    "shelfAddModeListing": "Könyv meghirdetése",
+    "shelfAddModeListingHint": "Hirdetést teszel közzé, hogy mások elcserélhessék, megvehessék vagy megkaphassák.",
+    "shelfFabAddBook": "Könyv hozzáadása",
+    "shelfProgressTotalPages": "A te kiadásod oldalszáma",
+    "shelfProgressUnitPages": "Oldal",
+    "shelfProgressUnitPercent": "Százalék",
+    "shelfProgressPagesRead": "Elolvasott oldalak",
+    "shelfProgressPercentRead": "Elolvasott százalék",
+    "shelfProgressNeedTotal": "Először add meg a teljes oldalszámot.",
+    "shelfProgressMarkFinished": "Megjelölés befejezettként",
+    "shelfProgressPercentLabel": "{percent}% elolvasva",
+    "@shelfProgressPercentLabel": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfAddedToShelf": "Hozzáadva a polcodhoz.",
+    "shelfFinishedCta": "Kiolvastad - továbbadnád?",
+    "shelfListItNow": "Meghirdetem",
+    "shelfRemoveFromShelf": "Levétel a polcról",
+    "shelfUpdateProgress": "Haladás frissítése"
 }

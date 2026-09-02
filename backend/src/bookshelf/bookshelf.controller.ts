@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { BookshelfService } from './bookshelf.service';
 import { SetBookshelfStatusDto } from './dto/set-bookshelf-status.dto';
+import { AddOwnedBookDto } from './dto/add-owned-book.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -31,6 +32,19 @@ export class BookshelfController {
   getMyShelf(@Req() req: Request) {
     const { userId } = req.user as AuthenticatedUser;
     return this.bookshelfService.getMyShelf(userId!);
+  }
+
+  // Cartile detinute dar nelistate - prim-planul din My Shelf.
+  @Get('me/owned')
+  getOwnedShelf(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.bookshelfService.getOwnedShelf(userId!);
+  }
+
+  @Post('own')
+  addOwnedBook(@Req() req: Request, @Body() dto: AddOwnedBookDto) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.bookshelfService.addOwnedBook(userId!, dto);
   }
 
   @Get('me/genres')
@@ -77,7 +91,12 @@ export class BookshelfController {
     @Body() dto: SetBookshelfStatusDto,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.bookshelfService.setStatus(userId!, bookId, dto.status);
+    return this.bookshelfService.setStatus(
+      userId!,
+      bookId,
+      dto.status,
+      dto.owned,
+    );
   }
 
   @Delete(':bookId')

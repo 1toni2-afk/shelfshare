@@ -2240,5 +2240,42 @@
     "installBannerDismiss": "Închide",
     "installCardTitle": "ShelfShare pe Android",
     "installCardText": "Instalează aplicația pe telefonul tău Android și primești notificări instant.",
-    "installCardAction": "Vreau aplicația"
+    "installCardAction": "Vreau aplicația",
+    "shelfOwnedSectionTitle": "Cărțile mele",
+    "shelfOwnedSectionSubtitle": "{count} pe care le ai, nelistate",
+    "@shelfOwnedSectionSubtitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfOwnedEmpty": "Cărțile pe care le adaugi în raft apar aici, împreună cu progresul tău la citit.",
+    "shelfOwnedAddCta": "Adaugă în raft",
+    "shelfAddModeQuestion": "Ce vrei să faci cu această carte?",
+    "shelfAddModeShelf": "Adaugă în raft",
+    "shelfAddModeShelfHint": "O ții în raftul tău personal și îți urmărești progresul la citit. Nu o vede nimeni altcineva.",
+    "shelfAddModeListing": "Listează cartea",
+    "shelfAddModeListingHint": "Publici un anunț, ca alții să o poată schimba, cumpăra sau primi.",
+    "shelfFabAddBook": "Adaugă o carte",
+    "shelfProgressTotalPages": "Total pagini în ediția ta",
+    "shelfProgressUnitPages": "Pagini",
+    "shelfProgressUnitPercent": "Procent",
+    "shelfProgressPagesRead": "Pagini citite",
+    "shelfProgressPercentRead": "Procent citit",
+    "shelfProgressNeedTotal": "Completează întâi numărul total de pagini.",
+    "shelfProgressMarkFinished": "Marchează drept terminată",
+    "shelfProgressPercentLabel": "{percent}% citit",
+    "@shelfProgressPercentLabel": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfAddedToShelf": "Adăugată în raftul tău.",
+    "shelfFinishedCta": "Ai terminat-o - vrei să o dai mai departe?",
+    "shelfListItNow": "Listeaz-o",
+    "shelfRemoveFromShelf": "Scoate din raft",
+    "shelfUpdateProgress": "Actualizează progresul"
 }

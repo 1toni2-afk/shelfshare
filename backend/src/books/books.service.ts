@@ -618,6 +618,16 @@ export class BooksService {
   }
 
   private async findOrCreateBook(dto: AddBookDto) {
+    if (dto.bookId) {
+      const known = await this.prisma.book.findUnique({
+        where: { id: dto.bookId },
+      });
+      if (!known) {
+        throw new BadRequestException('Cartea nu a fost găsită în catalog');
+      }
+      return known;
+    }
+
     if (dto.isbn) {
       const cleanIsbn = dto.isbn.replace(/[-\s]/g, '');
       const existing = await this.prisma.book.findUnique({
@@ -719,7 +729,24 @@ export class BooksService {
   async getUserBook(userBookId: string) {
     const userBook = await this.prisma.userBook.findUnique({
       where: { id: userBookId },
-      include: { book: true, user: { select: OWNER_SELECT } },
+      include: {
+        book: true,
+        user: { select: OWNER_SELECT },
+        // Fără licitație aici, `auction` venea mereu null pe detaliul unui
+        // anunț de tip licitație, iar redirectul spre /auctions/:id din
+        // book_detail_screen.dart (singura cale de a licita, fiindcă
+        // browse-ul nu distinge tipul la navigare) nu se declanșa niciodată:
+        // cardul cu ciocănel deschidea o pagină „Indisponibil".
+        auction: {
+          select: {
+            id: true,
+            currentPrice: true,
+            endsAt: true,
+            status: true,
+            buyNowPrice: true,
+          },
+        },
+      },
     });
     if (!userBook) {
       throw new NotFoundException('Cartea nu a fost găsită în bibliotecă');

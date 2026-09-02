@@ -4260,4 +4260,80 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get installCardAction => 'App holen';
+
+  @override
+  String get shelfOwnedSectionTitle => 'Meine Bücher';
+
+  @override
+  String shelfOwnedSectionSubtitle(int count) {
+    return '$count in deinem Besitz, nicht inseriert';
+  }
+
+  @override
+  String get shelfOwnedEmpty =>
+      'Bücher, die du deinem Regal hinzufügst, erscheinen hier - zusammen mit deinem Lesefortschritt.';
+
+  @override
+  String get shelfOwnedAddCta => 'Ins Regal legen';
+
+  @override
+  String get shelfAddModeQuestion => 'Was möchtest du mit diesem Buch tun?';
+
+  @override
+  String get shelfAddModeShelf => 'Ins Regal legen';
+
+  @override
+  String get shelfAddModeShelfHint =>
+      'Behalte es in deinem persönlichen Regal und verfolge deinen Lesefortschritt. Niemand sonst sieht es.';
+
+  @override
+  String get shelfAddModeListing => 'Buch inserieren';
+
+  @override
+  String get shelfAddModeListingHint =>
+      'Veröffentliche ein Inserat, damit andere es tauschen, kaufen oder erhalten können.';
+
+  @override
+  String get shelfFabAddBook => 'Buch hinzufügen';
+
+  @override
+  String get shelfProgressTotalPages => 'Seitenzahl deiner Ausgabe';
+
+  @override
+  String get shelfProgressUnitPages => 'Seiten';
+
+  @override
+  String get shelfProgressUnitPercent => 'Prozent';
+
+  @override
+  String get shelfProgressPagesRead => 'Gelesene Seiten';
+
+  @override
+  String get shelfProgressPercentRead => 'Gelesen in Prozent';
+
+  @override
+  String get shelfProgressNeedTotal => 'Trage zuerst die Gesamtseitenzahl ein.';
+
+  @override
+  String get shelfProgressMarkFinished => 'Als gelesen markieren';
+
+  @override
+  String shelfProgressPercentLabel(int percent) {
+    return '$percent% gelesen';
+  }
+
+  @override
+  String get shelfAddedToShelf => 'Zu deinem Regal hinzugefügt.';
+
+  @override
+  String get shelfFinishedCta => 'Du hast es ausgelesen - weitergeben?';
+
+  @override
+  String get shelfListItNow => 'Inserieren';
+
+  @override
+  String get shelfRemoveFromShelf => 'Aus dem Regal entfernen';
+
+  @override
+  String get shelfUpdateProgress => 'Fortschritt aktualisieren';
 }

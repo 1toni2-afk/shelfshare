@@ -43,6 +43,51 @@ class BookshelfRepository {
     return Bookshelf.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Cărțile deținute dar nelistate - prim-planul din My Shelf.
+  Future<List<OwnedBook>> getOwnedShelf() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/bookshelf/me/owned');
+    return (response.data as List)
+        .map((e) => OwnedBook.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// „Add to shelf" - adaugă o carte ca deținută, fără să creeze un anunț.
+  /// `percentRead` e alternativa la `currentPage` pentru cine știe doar cât la
+  /// sută a citit; backendul îl convertește în pagini.
+  Future<void> addOwnedBook({
+    required String title,
+    String? author,
+    String? isbn,
+    String? coverUrl,
+    String? genre,
+    String? publisher,
+    int? publishedYear,
+    BookshelfStatus status = BookshelfStatus.reading,
+    int? totalPages,
+    int? currentPage,
+    int? percentRead,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    // Câmpurile goale devin null, nu string gol: validatorii backendului
+    // (@IsISBN, @MaxLength) resping un "" trimis explicit.
+    String? clean(String? value) =>
+        (value == null || value.trim().isEmpty) ? null : value.trim();
+    await dio.post('/bookshelf/own', data: {
+      'title': title,
+      'author': ?clean(author),
+      'isbn': ?clean(isbn),
+      'coverUrl': ?clean(coverUrl),
+      'genre': ?clean(genre),
+      'publisher': ?clean(publisher),
+      'publishedYear': ?publishedYear,
+      'status': status.toJson(),
+      'totalPages': ?totalPages,
+      'currentPage': ?currentPage,
+      'percentRead': ?percentRead,
+    });
+  }
+
   Future<List<GenreCount>> getGenreDistribution() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/bookshelf/me/genres');
@@ -58,9 +103,12 @@ class BookshelfRepository {
     return status != null ? BookshelfStatusX.fromJson(status) : null;
   }
 
-  Future<void> setStatus(String bookId, BookshelfStatus status) async {
+  Future<void> setStatus(String bookId, BookshelfStatus status, {bool? owned}) async {
     final dio = _ref.read(apiClientProvider).dio;
-    await dio.put('/bookshelf/$bookId', data: {'status': status.toJson()});
+    await dio.put('/bookshelf/$bookId', data: {
+      'status': status.toJson(),
+      'owned': ?owned,
+    });
   }
 
   Future<void> removeFromShelf(String bookId) async {
@@ -98,6 +146,11 @@ final bookshelfRepositoryProvider = Provider<BookshelfRepository>((ref) {
 /// se rebuiește (ex. la logout/login).
 final myBookshelfProvider = FutureProvider<Bookshelf>((ref) {
   return ref.watch(bookshelfRepositoryProvider).getMyShelf();
+});
+
+/// Cărțile deținute dar nelistate, afișate în prim-planul din My Shelf.
+final myOwnedShelfProvider = FutureProvider<List<OwnedBook>>((ref) {
+  return ref.watch(bookshelfRepositoryProvider).getOwnedShelf();
 });
 
 /// Top 5 genuri din raftul propriu - alimentează graficul radar din My Shelf.

@@ -629,6 +629,12 @@ model ReadingProgress {
 
   currentPage Int
 
+  /// Numărul total de pagini al EDIȚIEI pe care o are userul în mână, când
+  /// diferă de `Book.pageCount` (ediția din catalog). Null = folosim
+  /// `Book.pageCount`. Nu scriem peste `Book.pageCount`, care e partajat între
+  /// toți userii care au aceeași carte în catalog.
+  totalPages Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -961,6 +967,14 @@ model BookshelfEntry {
   book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   status BookshelfStatus
+
+  /// Cartea e DEȚINUTĂ fizic de user, dar nu (neapărat) scoasă la schimb/vânzare.
+  /// Distinct de UserBook, care înseamnă „am făcut un anunț cu ea": raftul
+  /// personal din My Shelf arată în prim-plan exact aceste cărți (owned = true
+  /// fără UserBook activ), ca userul să-și țină progresul la citit înainte de a
+  /// decide dacă o listează. False pentru intrările venite din import CSV sau
+  /// din butonul „vreau să citesc" de pe pagina unei cărți străine.
+  owned Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

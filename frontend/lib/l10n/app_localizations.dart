@@ -7629,6 +7629,144 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Vreau aplicația'**
   String get installCardAction;
+
+  /// No description provided for @shelfOwnedSectionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărțile mele'**
+  String get shelfOwnedSectionTitle;
+
+  /// No description provided for @shelfOwnedSectionSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} pe care le ai, nelistate'**
+  String shelfOwnedSectionSubtitle(int count);
+
+  /// No description provided for @shelfOwnedEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărțile pe care le adaugi în raft apar aici, împreună cu progresul tău la citit.'**
+  String get shelfOwnedEmpty;
+
+  /// No description provided for @shelfOwnedAddCta.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă în raft'**
+  String get shelfOwnedAddCta;
+
+  /// No description provided for @shelfAddModeQuestion.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce vrei să faci cu această carte?'**
+  String get shelfAddModeQuestion;
+
+  /// No description provided for @shelfAddModeShelf.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă în raft'**
+  String get shelfAddModeShelf;
+
+  /// No description provided for @shelfAddModeShelfHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'O ții în raftul tău personal și îți urmărești progresul la citit. Nu o vede nimeni altcineva.'**
+  String get shelfAddModeShelfHint;
+
+  /// No description provided for @shelfAddModeListing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Listează cartea'**
+  String get shelfAddModeListing;
+
+  /// No description provided for @shelfAddModeListingHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Publici un anunț, ca alții să o poată schimba, cumpăra sau primi.'**
+  String get shelfAddModeListingHint;
+
+  /// No description provided for @shelfFabAddBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă o carte'**
+  String get shelfFabAddBook;
+
+  /// No description provided for @shelfProgressTotalPages.
+  ///
+  /// In ro, this message translates to:
+  /// **'Total pagini în ediția ta'**
+  String get shelfProgressTotalPages;
+
+  /// No description provided for @shelfProgressUnitPages.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pagini'**
+  String get shelfProgressUnitPages;
+
+  /// No description provided for @shelfProgressUnitPercent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Procent'**
+  String get shelfProgressUnitPercent;
+
+  /// No description provided for @shelfProgressPagesRead.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pagini citite'**
+  String get shelfProgressPagesRead;
+
+  /// No description provided for @shelfProgressPercentRead.
+  ///
+  /// In ro, this message translates to:
+  /// **'Procent citit'**
+  String get shelfProgressPercentRead;
+
+  /// No description provided for @shelfProgressNeedTotal.
+  ///
+  /// In ro, this message translates to:
+  /// **'Completează întâi numărul total de pagini.'**
+  String get shelfProgressNeedTotal;
+
+  /// No description provided for @shelfProgressMarkFinished.
+  ///
+  /// In ro, this message translates to:
+  /// **'Marchează drept terminată'**
+  String get shelfProgressMarkFinished;
+
+  /// No description provided for @shelfProgressPercentLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'{percent}% citit'**
+  String shelfProgressPercentLabel(int percent);
+
+  /// No description provided for @shelfAddedToShelf.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adăugată în raftul tău.'**
+  String get shelfAddedToShelf;
+
+  /// No description provided for @shelfFinishedCta.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ai terminat-o - vrei să o dai mai departe?'**
+  String get shelfFinishedCta;
+
+  /// No description provided for @shelfListItNow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Listeaz-o'**
+  String get shelfListItNow;
+
+  /// No description provided for @shelfRemoveFromShelf.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scoate din raft'**
+  String get shelfRemoveFromShelf;
+
+  /// No description provided for @shelfUpdateProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Actualizează progresul'**
+  String get shelfUpdateProgress;
 }
 
 class _AppLocalizationsDelegate
