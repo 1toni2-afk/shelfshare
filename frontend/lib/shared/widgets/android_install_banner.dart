@@ -150,3 +150,168 @@ class _AndroidInstallBannerState extends ConsumerState<AndroidInstallBanner> {
     );
   }
 }
+
+/// Pe desktop web nu are cine să instaleze un APK, dar vizitatorul are aproape
+/// sigur un telefon Android în buzunar - deci acolo promovăm aplicația ca
+/// „pune-o pe telefonul tău", nu ca „instalează acum".
+///
+/// Condiția e complementară cu `canOfferAndroidInstall`: exact una dintre cele
+/// două e adevărată pe web, deci banda de jos și cardul din meniu nu apar
+/// niciodată în același timp.
+bool get canPromoteAndroidApp => kIsWeb && !canOfferAndroidInstall;
+
+/// Card de promovare a aplicației de Android, pentru locurile unde o bandă
+/// lipită jos ar fi nepotrivită.
+///
+/// Are exact două întrebuințări, iar `inSidebar` le distinge - toate celelalte
+/// diferențe (cine îl vede, dacă se poate închide, unde duce butonul) decurg
+/// din ea, deci nu le mai expunem ca parametri separați:
+///
+///  * `true` - în meniul din stânga, pe desktop. Îl vede doar cine NU e deja
+///    pe Android (aceia primesc banda de jos), se poate închide definitiv, și
+///    duce la `/pre-register`, ruta din shell-ul autentificat.
+///  * `false` - pe pagina de creare a contului. O văd toți vizitatorii de web,
+///    n-are „×" (pagina se vede o singură dată, n-are rost să consumăm
+///    alegerea de „nu mai arăta") și duce la `/get-the-app`, varianta publică
+///    a aceluiași ecran - altfel router-ul ar trimite la login un vizitator
+///    care încă nu are cont.
+class AndroidInstallCard extends ConsumerStatefulWidget {
+  const AndroidInstallCard({super.key, required this.inSidebar});
+
+  final bool inSidebar;
+
+  @override
+  ConsumerState<AndroidInstallCard> createState() => _AndroidInstallCardState();
+}
+
+class _AndroidInstallCardState extends ConsumerState<AndroidInstallCard> {
+  bool? _visible;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final applies = widget.inSidebar ? canPromoteAndroidApp : kIsWeb;
+    if (!applies) {
+      if (mounted) setState(() => _visible = false);
+      return;
+    }
+    if (!widget.inSidebar) {
+      if (mounted) setState(() => _visible = true);
+      return;
+    }
+    String? dismissed;
+    try {
+      dismissed = await ref.read(secureStorageProvider).read(key: _dismissedKey);
+    } catch (_) {
+      // Storage indisponibil (navigare privată) - preferăm să-l arătăm.
+    }
+    if (mounted) setState(() => _visible = dismissed == null);
+  }
+
+  /// Aceeași cheie ca banda de jos: „nu mai vreau să văd asta" e un singur
+  /// răspuns, indiferent pe ce dispozitiv l-a dat userul.
+  Future<void> _dismiss() async {
+    setState(() => _visible = false);
+    try {
+      await ref.read(secureStorageProvider).write(key: _dismissedKey, value: '1');
+    } catch (_) {
+      // Reapare la sesiunea următoare. Acceptabil.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_visible != true) return const SizedBox.shrink();
+
+    // Banda de consimțământ din web/index.html e `position: fixed; bottom`,
+    // lată de max 560px și centrată - la lățimi de 900-1040px ajunge peste
+    // colțul de jos al sidebar-ului, exact unde stă cardul. Cât timp userul
+    // nu a răspuns, ne dăm la o parte.
+    //
+    // Doar în sidebar: pe pagina de înscriere cardul e conținut normal, în
+    // fluxul unui scroll, iar ascunderea lui aici ar fi definitivă în
+    // practică - un „Accept" în DOM nu declanșează un rebuild în Flutter, deci
+    // cardul n-ar mai reapărea. Acolo e suficient că banda dispare singură
+    // după răspuns și descoperă cardul de sub ea.
+    if (widget.inSidebar && !analyticsConsentAnswered()) {
+      return const SizedBox.shrink();
+    }
+
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.phone_android, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 1),
+                  child: Text(
+                    l10n.installCardTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              if (widget.inSidebar)
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, size: 15),
+                    tooltip: l10n.installBannerDismiss,
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    color: AppColors.mutedForeground,
+                    onPressed: _dismiss,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.installCardText,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.mutedForeground,
+            ),
+          ),
+          const SizedBox(height: 10),
+          FilledButton(
+            // Aplicația nu e încă în Play Store: pre-înscrierea e singurul
+            // lucru care poate fi făcut acum. Cand ajunge in magazin, aici
+            // intra linkul de Play.
+            onPressed: () =>
+                context.push(widget.inSidebar ? '/pre-register' : '/get-the-app'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              visualDensity: VisualDensity.compact,
+            ),
+            child: Text(
+              l10n.installCardAction,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

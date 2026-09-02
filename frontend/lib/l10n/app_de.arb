@@ -1339,5 +1339,8 @@
     "deleteAccountCancelAction": "Löschung abbrechen",
     "installBannerText": "Sofortige Benachrichtigungen in der App",
     "installBannerAction": "Installieren",
-    "installBannerDismiss": "Schließen"
+    "installBannerDismiss": "Schließen",
+    "installCardTitle": "ShelfShare für Android",
+    "installCardText": "Installiere die App auf deinem Android-Handy und erhalte sofort Benachrichtigungen.",
+    "installCardAction": "App holen"
 }

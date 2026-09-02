@@ -53,7 +53,12 @@ class MainScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = MediaQuery.of(context).size.width >= kSidebarBreakpoint;
-    final sidebar = _Sidebar(currentLocation: currentLocation);
+    // Cardul de instalare apare doar în meniul de desktop: pe mobil aceeași
+    // invitație e deja banda lipită jos, iar în drawer ar fi văzută rar.
+    final sidebar = _Sidebar(
+      currentLocation: currentLocation,
+      showInstallCard: isDesktop,
+    );
 
     if (isDesktop) {
       return Scaffold(
@@ -145,8 +150,9 @@ class _MenuFab extends StatelessWidget {
 /// Chat, Notificări), secțiune „Scurtături" (linkuri către pagini legate),
 /// și un footer (Settings, Help, avatarul userului).
 class _Sidebar extends ConsumerStatefulWidget {
-  const _Sidebar({required this.currentLocation});
+  const _Sidebar({required this.currentLocation, this.showInstallCard = false});
   final String currentLocation;
+  final bool showInstallCard;
 
   @override
   ConsumerState<_Sidebar> createState() => _SidebarState();
@@ -332,6 +338,15 @@ class _SidebarState extends ConsumerState<_Sidebar> {
                 ],
               ),
             ),
+            // Invitația de a instala aplicația de Android, chiar deasupra
+            // footer-ului: e ultimul lucru din meniu, deci nu împinge
+            // navigarea, dar rămâne mereu vizibil (nu se pierde în scroll-ul
+            // listei de scurtături). Se ascunde singur când nu e cazul.
+            if (widget.showInstallCard)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(12, 8, 12, 12),
+                child: AndroidInstallCard(inSidebar: true),
+              ),
             // Footer: Setări, Help, avatarul userului.
             _SidebarTile(
               item: _NavItem(

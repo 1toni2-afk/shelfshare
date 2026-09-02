@@ -1339,5 +1339,8 @@
     "deleteAccountCancelAction": "Törlés visszavonása",
     "installBannerText": "Azonnali értesítések az alkalmazásban",
     "installBannerAction": "Telepítés",
-    "installBannerDismiss": "Bezárás"
+    "installBannerDismiss": "Bezárás",
+    "installCardTitle": "ShelfShare Androidon",
+    "installCardText": "Telepítsd az alkalmazást az Android telefonodra, és azonnal kapsz értesítéseket.",
+    "installCardAction": "Kérem az appot"
 }

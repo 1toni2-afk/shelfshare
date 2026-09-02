@@ -7611,6 +7611,24 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Închide'**
   String get installBannerDismiss;
+
+  /// No description provided for @installCardTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'ShelfShare pe Android'**
+  String get installCardTitle;
+
+  /// No description provided for @installCardText.
+  ///
+  /// In ro, this message translates to:
+  /// **'Instalează aplicația pe telefonul tău Android și primești notificări instant.'**
+  String get installCardText;
+
+  /// No description provided for @installCardAction.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vreau aplicația'**
+  String get installCardAction;
 }
 
 class _AppLocalizationsDelegate

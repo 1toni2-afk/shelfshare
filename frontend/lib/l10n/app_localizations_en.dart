@@ -4179,4 +4179,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get installBannerDismiss => 'Dismiss';
+
+  @override
+  String get installCardTitle => 'ShelfShare on Android';
+
+  @override
+  String get installCardText =>
+      'Install the app on your Android phone and get instant notifications.';
+
+  @override
+  String get installCardAction => 'Get the app';
 }

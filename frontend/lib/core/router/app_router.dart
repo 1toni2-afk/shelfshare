@@ -47,6 +47,15 @@ const _publicRoutes = {
   '/auth/google/callback',
 };
 
+/// Rute care merg în ambele stări de autentificare - nici nu cer login, nici
+/// nu redirecționează un user logat înapoi la „/". Pre-înscrierea pentru
+/// aplicația de Android e singura de acest fel: backend-ul o expune public
+/// (`OptionalJwtAuthGuard`), iar invitația apare și pe pagina de creare cont,
+/// unde vizitatorul n-are încă sesiune.
+const _neutralRoutes = {
+  '/get-the-app',
+};
+
 /// Rutele fiecărui branch din tab-uri, în ordinea din sidebar. Folosit atât de
 /// router pentru StatefulShellRoute cât și de MainScaffold ca să știe pe ce
 /// tab e user-ul curent (bazat pe URL).
@@ -100,6 +109,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final goingToOnboarding = state.matchedLocation == '/onboarding';
 
       if (isLoading) return null; // așteptăm restaurarea sesiunii, fără redirect
+      if (_neutralRoutes.contains(state.matchedLocation)) return null;
       if (!isAuthenticated && !goingToAuth) return '/login';
       if (isAuthenticated && goingToAuth) return '/';
       // Onboarding-ul e un wizard unic (username + chestionar de cititor +
@@ -140,6 +150,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       _deferredRoute('/onboarding', tier2.loadLibrary,
           (context, state) => tier2.OnboardingFlowScreen()),
+
+      // Aceeași pre-înscriere ca `/pre-register`, dar la nivel root - fără
+      // sidebar, deci randabilă și fără sesiune (sidebar-ul citește profilul,
+      // notificările și conversațiile userului). `/pre-register` rămâne
+      // varianta din meniu, pentru userii deja logați.
+      _deferredRoute('/get-the-app', tier3.loadLibrary,
+          (context, state) => tier3.PreRegistrationScreen()),
 
       // ShellRoute exterior - toate rutele autentificate stau înăuntru. Aici
       // se randează MainScaffold cu sidebar-ul. Când user-ul navighează între

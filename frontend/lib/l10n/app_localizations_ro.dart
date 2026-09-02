@@ -4203,4 +4203,14 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get installBannerDismiss => 'Închide';
+
+  @override
+  String get installCardTitle => 'ShelfShare pe Android';
+
+  @override
+  String get installCardText =>
+      'Instalează aplicația pe telefonul tău Android și primești notificări instant.';
+
+  @override
+  String get installCardAction => 'Vreau aplicația';
 }

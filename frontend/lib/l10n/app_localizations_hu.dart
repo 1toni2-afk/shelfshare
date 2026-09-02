@@ -4203,4 +4203,14 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get installBannerDismiss => 'Bezárás';
+
+  @override
+  String get installCardTitle => 'ShelfShare Androidon';
+
+  @override
+  String get installCardText =>
+      'Telepítsd az alkalmazást az Android telefonodra, és azonnal kapsz értesítéseket.';
+
+  @override
+  String get installCardAction => 'Kérem az appot';
 }

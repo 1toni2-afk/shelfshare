@@ -2237,5 +2237,8 @@
     "deleteAccountCancelAction": "Anulează ștergerea",
     "installBannerText": "Primești notificări instant în aplicație",
     "installBannerAction": "Instalează",
-    "installBannerDismiss": "Închide"
+    "installBannerDismiss": "Închide",
+    "installCardTitle": "ShelfShare pe Android",
+    "installCardText": "Instalează aplicația pe telefonul tău Android și primești notificări instant.",
+    "installCardAction": "Vreau aplicația"
 }

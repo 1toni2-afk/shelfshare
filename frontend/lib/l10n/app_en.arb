@@ -1484,5 +1484,8 @@
     "deleteAccountCancelAction": "Cancel deletion",
     "installBannerText": "Get instant notifications in the app",
     "installBannerAction": "Install",
-    "installBannerDismiss": "Dismiss"
+    "installBannerDismiss": "Dismiss",
+    "installCardTitle": "ShelfShare on Android",
+    "installCardText": "Install the app on your Android phone and get instant notifications.",
+    "installCardAction": "Get the app"
 }

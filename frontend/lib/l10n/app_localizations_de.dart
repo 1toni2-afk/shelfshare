@@ -4250,4 +4250,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get installBannerDismiss => 'Schließen';
+
+  @override
+  String get installCardTitle => 'ShelfShare für Android';
+
+  @override
+  String get installCardText =>
+      'Installiere die App auf deinem Android-Handy und erhalte sofort Benachrichtigungen.';
+
+  @override
+  String get installCardAction => 'App holen';
 }

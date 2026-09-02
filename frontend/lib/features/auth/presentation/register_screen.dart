@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/android_install_banner.dart';
 import '../../../shared/widgets/google_sign_in_button.dart';
 import '../application/auth_controller.dart';
 import '../application/auth_state.dart';
@@ -214,6 +215,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                         ),
                       ),
+                    ),
+                    // Contul proaspăt creat are sens mai ales în aplicație
+                    // (notificări push). E singurul moment în care userul e
+                    // sigur nou, deci merită invitația - fără „×", pagina se
+                    // vede o singură dată. O arătăm și vizitatorilor de pe
+                    // Android: ecranele de auth sunt în afara shell-ului, deci
+                    // aici nu există banda de jos cu care s-ar suprapune.
+                    const Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: AndroidInstallCard(inSidebar: false),
                     ),
                   ],
                 ),
