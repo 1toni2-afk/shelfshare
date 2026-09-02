@@ -50,7 +50,7 @@ const prisma = new PrismaClient({ adapter });
 
 const APPLY = process.argv.includes('--apply');
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) ?? '').split('=')[1] || null;
-const PHASES = ['nume', 'coperte', 'dedup', 'anunturi', 'istoric', 'poze', 'chat'];
+const PHASES = ['nume', 'coperte', 'dedup', 'anunturi', 'istoric', 'poze', 'chat', 'feed'];
 
 const OWNER_EMAIL = 'dtoniyi@yahoo.com';
 /** Conturi de sistem - nu primesc anunțuri demo și nu se redenumesc. */
@@ -860,6 +860,133 @@ async function phaseDedup(resolved) {
  * nouă), iar atunci `photos`/`mainPhotoUrl` rămân pe URL-ul vechi - cardul
  * din feed ar arăta o copertă, pagina cărții alta.
  */
+/**
+ * „Feed"-ul (GET /profile/activity-feed) arată DOAR activitatea userilor pe
+ * care îi urmărești, recompusă din date reale: anunțuri noi, cărți terminate,
+ * vânzări încheiate și schimburi finalizate. Ca să aibă ce arăta la capturi,
+ * generăm schimburi carte-contra-carte între conturile urmărite.
+ *
+ * Cărțile schimbate primesc anunțuri PROPRII, marcate ca transferate - un
+ * schimb finalizat pe un anunț activ l-ar scoate din feed-ul de căutare
+ * (permanentlyTransferred), iar vitrina de anunțuri trebuie să rămână plină.
+ */
+const FEED_TAG = 'schimb-finalizat';
+const FEED_EXCHANGES_PER_USER = 2;
+
+const FEED_REVIEWS = [
+  ['Ne-am întâlnit în centru, totul ca la carte.', 'Om de treabă, cartea impecabilă.'],
+  ['A venit fix la ora stabilită.', 'Recomand, discuție plăcută despre cărți.'],
+  ['Cartea arăta mai bine decât în poze.', 'Schimb rapid, fără bătăi de cap.'],
+  ['Ne-am înțeles din primul mesaj.', 'Mulțumesc pentru schimb!'],
+];
+
+async function phaseFeed(resolved, demoUsers, owner) {
+  console.log('\n=== FAZA: feed ===');
+  const usable = resolved.filter((r) => r.book && r.book.coverUrl);
+
+  const follows = await prisma.follow.findMany({
+    where: { followerId: owner.id },
+    select: { followingId: true },
+  });
+  const followedIds = new Set(follows.map((f) => f.followingId));
+  const followed = demoUsers.filter((u) => followedIds.has(u.id));
+
+  if (followed.length === 0) {
+    throw new Error('Proprietarul nu urmărește niciun cont demo - rulează întâi faza „chat".');
+  }
+
+  // Idempotent: schimburile generate aici stau pe anunțuri marcate cu
+  // FEED_TAG, deci a doua rulare le rescrie, nu le adună.
+  const old = await prisma.userBook.count({ where: { tags: { has: FEED_TAG } } });
+  console.log(`  ${old} anunțuri de schimb generate anterior (se refac)`);
+  if (APPLY) await prisma.userBook.deleteMany({ where: { tags: { has: FEED_TAG } } });
+
+  let created = 0;
+  for (const [i, user] of followed.entries()) {
+    for (let k = 0; k < FEED_EXCHANGES_PER_USER; k++) {
+      // Partenerul de schimb e alt cont demo (poate fi și el urmărit -
+      // evenimentul apare o singură dată, atribuit requesterului).
+      const counterpart = demoUsers.find(
+        (u, n) => u.id !== user.id && n === (i * 7 + k * 3 + 11) % demoUsers.length,
+      ) ?? demoUsers.find((u) => u.id !== user.id);
+      const wanted = usable[(i * 5 + k * 2) % usable.length];
+      const given = usable[(i * 5 + k * 2 + 17) % usable.length];
+      const at = ago(1 + ((i * 4 + k * 3) % 26));
+
+      console.log(
+        `  ${(user.name ?? user.email).padEnd(20)} „${wanted.entry.title}" <-> ` +
+          `„${given.entry.title}" cu ${counterpart.name ?? counterpart.email}`,
+      );
+      created++;
+      if (!APPLY) continue;
+
+      const listedAt = new Date(at.getTime() - 12 * DAY);
+      const sides = [
+        { user, item: wanted },
+        { user: counterpart, item: given },
+      ];
+      // listings[0] = cartea cerută (a userului urmărit), listings[1] = cea dată.
+      const listings = [];
+      for (const side of sides) {
+        const listing = await prisma.userBook.create({
+          data: {
+            userId: side.user.id,
+            bookId: side.item.book.id,
+            condition: pick(CONDITIONS, i + k),
+            language: side.item.entry.language,
+            photos: [side.item.book.coverUrl],
+            mainPhotoUrl: side.item.book.coverUrl,
+            description: pick(LISTING_NOTES, i + k),
+            tags: [FEED_TAG],
+            city: side.user.city ?? pick(CITIES, i),
+            viewCount: 20 + ((i * 9 + k * 5) % 60),
+            createdAt: listedAt,
+            availableForSwap: false,
+            isForSale: false,
+            permanentlyTransferred: true,
+          },
+        });
+        await stamp('user_books', listing.id, listedAt, at);
+        listings.push(listing);
+      }
+
+      const [reviewA, reviewB] = pick(FEED_REVIEWS, i + k);
+      const exchange = await prisma.exchangeRequest.create({
+        data: {
+          requesterId: counterpart.id,
+          ownerId: user.id,
+          requestedBookId: listings[0].id,
+          offeredBookId: listings[1].id,
+          message: `Fac schimb „${given.entry.title}" pentru „${wanted.entry.title}"?`,
+          status: 'COMPLETED',
+          acceptedAt: new Date(at.getTime() - 3 * DAY),
+          meetingTime: at,
+          meetingLocation: `Librăria Cărturești, ${user.city ?? 'București'}`,
+          meetingProposedBy: user.id,
+          meetingAcceptedAt: new Date(at.getTime() - 3 * DAY),
+          requesterSafetyAckAt: at,
+          ownerSafetyAckAt: at,
+          requesterDoneAt: at,
+          ownerDoneAt: at,
+          requesterRatingForOwner: 5,
+          ownerRatingForRequester: (i + k) % 4 === 0 ? 4 : 5,
+          requesterReviewForOwner: reviewA,
+          ownerReviewForRequester: reviewB,
+          requesterCommunicationForOwner: 5,
+          requesterPunctualityForOwner: 5,
+          requesterConditionForOwner: 5,
+          ownerCommunicationForRequester: 5,
+          ownerPunctualityForRequester: 4,
+          ownerConditionForRequester: 5,
+        },
+      });
+      await stamp('exchange_requests', exchange.id, new Date(at.getTime() - 5 * DAY), at);
+    }
+  }
+
+  console.log(`  ${created} schimburi finalizate pe ${followed.length} conturi urmărite.`);
+}
+
 async function phasePoze(resolved) {
   console.log('\n=== FAZA: poze ===');
   // Toate anunțurile, nu doar cele ale rândurilor rezolvate acum: același
@@ -1406,6 +1533,8 @@ async function main() {
   if (run('istoric')) await phaseIstoric(resolved, demoUsers, owner);
   if (run('poze')) await phasePoze(resolved);
   if (run('chat')) await phaseChat(resolved, demoUsers, owner);
+  // După „chat": are nevoie de relațiile de urmărire create acolo.
+  if (run('feed')) await phaseFeed(resolved, demoUsers, owner);
 
   console.log(APPLY ? '\nGata.' : '\nDry-run încheiat - repetă cu --apply ca să scrie în baza de date.');
 }
