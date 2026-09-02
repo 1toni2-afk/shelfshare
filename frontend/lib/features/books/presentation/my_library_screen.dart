@@ -607,6 +607,10 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   if (!isDesktop) ...[
                     const SizedBox(height: 20),
                     const GenreRadarCard(),
+                    // Spațiu liber cât FAB-ul extins plus marginea lui, ca
+                    // butonul „Adaugă carte" să plutească peste gol, nu peste
+                    // grafic. Graficul rămâne la înălțimea lui.
+                    const SizedBox(height: 88),
                   ],
                 ],
               );
@@ -635,6 +639,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                           ),
                           const SizedBox(height: 16),
                           const GenreRadarCard(),
+                          const SizedBox(height: 88),
                         ],
                       ),
                     ),

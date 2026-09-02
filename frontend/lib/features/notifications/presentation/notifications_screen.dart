@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../data/models/app_notification.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../../shared/widgets/fading_scroll_row.dart';
 import '../application/notifications_controller.dart';
 import 'notification_routing.dart';
 
@@ -149,34 +150,30 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         ),
                       ),
                       SliverToBoxAdapter(
-                        child: Padding(
+                        child: FadingScrollRow(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              _FilterPill(
-                                label: l10n.notificationsFilterAll,
-                                selected: _filter == _Filter.all,
-                                onTap: () => setState(() => _filter = _Filter.all),
-                              ),
-                              _FilterPill(
-                                label: l10n.notificationsFilterUnread,
-                                selected: _filter == _Filter.unread,
-                                onTap: () => setState(() => _filter = _Filter.unread),
-                              ),
-                              _FilterPill(
-                                label: l10n.notificationsFilterExchanges,
-                                selected: _filter == _Filter.exchanges,
-                                onTap: () => setState(() => _filter = _Filter.exchanges),
-                              ),
-                              _FilterPill(
-                                label: l10n.notificationsFilterMessages,
-                                selected: _filter == _Filter.messages,
-                                onTap: () => setState(() => _filter = _Filter.messages),
-                              ),
-                            ],
-                          ),
+                          children: [
+                            _FilterPill(
+                              label: l10n.notificationsFilterAll,
+                              selected: _filter == _Filter.all,
+                              onTap: () => setState(() => _filter = _Filter.all),
+                            ),
+                            _FilterPill(
+                              label: l10n.notificationsFilterUnread,
+                              selected: _filter == _Filter.unread,
+                              onTap: () => setState(() => _filter = _Filter.unread),
+                            ),
+                            _FilterPill(
+                              label: l10n.notificationsFilterExchanges,
+                              selected: _filter == _Filter.exchanges,
+                              onTap: () => setState(() => _filter = _Filter.exchanges),
+                            ),
+                            _FilterPill(
+                              label: l10n.notificationsFilterMessages,
+                              selected: _filter == _Filter.messages,
+                              onTap: () => setState(() => _filter = _Filter.messages),
+                            ),
+                          ],
                         ),
                       ),
                       const SliverToBoxAdapter(child: SizedBox(height: 8)),
