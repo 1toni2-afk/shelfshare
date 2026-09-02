@@ -135,6 +135,18 @@ export class AuthController {
       'FRONTEND_URL',
       'http://localhost:5959',
     );
+    // Pe Android/iOS fluxul pleacă din browserul extern, deci un redirect
+    // http l-ar lăsa pe user în varianta web a aplicației, nelogat în app.
+    // Ne întoarcem printr-un deep link cu schema proprie. Al treilea slash
+    // NU e o greșeală: host-ul trebuie să rămână gol, fiindcă Flutter
+    // construiește ruta doar din path-ul URI-ului și ar înghiți primul
+    // segment dacă el ar ajunge host (shelfshare://auth/... -> /google/...).
+    const scheme = this.config.get<string>('MOBILE_APP_SCHEME', 'shelfshare');
+    const isMobile = req.query.state === 'mobile';
+    const appUrl = (path: string) =>
+      isMobile
+        ? new URL(`${scheme}://${path}`)
+        : new URL(path, frontendUrl);
 
     try {
       const { googleId, email } = req.user as AuthenticatedUser;
@@ -147,12 +159,12 @@ export class AuthController {
       // istoricul browserului și în loguri) - trimitem doar un cod opac,
       // single-use, pe care frontend-ul îl schimbă printr-un apel API separat.
       const code = this.authService.createLoginCode(tokens);
-      const redirectUrl = new URL('/auth/google/callback', frontendUrl);
+      const redirectUrl = appUrl('/auth/google/callback');
       redirectUrl.searchParams.set('code', code);
       res.redirect(redirectUrl.toString());
     } catch (error) {
       this.logger.error(`Autentificare Google eșuată: ${error}`);
-      const errorUrl = new URL('/login', frontendUrl);
+      const errorUrl = appUrl('/login');
       errorUrl.searchParams.set('error', 'google_auth_failed');
       res.redirect(errorUrl.toString());
     }

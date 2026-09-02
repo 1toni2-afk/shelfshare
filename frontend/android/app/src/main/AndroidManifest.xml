@@ -32,9 +32,24 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Rutează deep link-urile primite prin engine direct la
+                 go_router, în loc să pornească aplicația pe ruta implicită. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Întoarcerea din fluxul Google OAuth: backend-ul redirectează
+                 browserul spre shelfshare:///auth/google/callback?code=...,
+                 iar Android readuce aplicația în față cu acel URI. Fără acest
+                 filtru, fluxul se termina în browser, pe varianta web. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="shelfshare"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
