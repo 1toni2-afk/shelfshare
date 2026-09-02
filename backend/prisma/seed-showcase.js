@@ -864,8 +864,8 @@ async function phaseDedup(resolved) {
  * „Feed"-ul (GET /profile/activity-feed) arată DOAR activitatea userilor pe
  * care îi urmărești, recompusă din date reale: anunțuri noi, cărți terminate,
  * vânzări încheiate și schimburi finalizate. Ca să aibă ce arăta la capturi,
- * generăm pentru conturile urmărite toate cele trei feluri de eveniment:
- * schimburi carte-contra-carte, vânzări încheiate și cărți terminate.
+ * generăm pentru conturile urmărite toate felurile de eveniment: schimburi
+ * carte-contra-carte, vânzări încheiate, cărți terminate și progres de lectură.
  *
  * Cărțile schimbate primesc anunțuri PROPRII, marcate ca transferate - un
  * schimb finalizat pe un anunț activ l-ar scoate din feed-ul de căutare
@@ -875,6 +875,7 @@ const FEED_TAG = 'schimb-finalizat';
 const FEED_EXCHANGES_PER_USER = 2;
 const FEED_SALES_PER_USER = 1;
 const FEED_FINISHED_PER_USER = 2;
+const FEED_PROGRESS_PER_USER = 1;
 
 const FEED_REVIEWS = [
   ['Ne-am întâlnit în centru, totul ca la carte.', 'Om de treabă, cartea impecabilă.'],
@@ -1081,6 +1082,49 @@ async function phaseFeed(resolved, demoUsers, owner) {
     }
   }
   console.log(`  ${finished} cărți terminate.`);
+
+  // --- Progres de lectură („e la pagina 180 din 400") ---
+  // Feed-ul ignoră paginile sub 5 (zgomot), deci ținem procentele în zona
+  // 25-75%. Cartea primește și un raft „în curs de citire", ca profilul
+  // public al userului să spună același lucru ca feed-ul.
+  let progress = 0;
+  if (APPLY) {
+    await prisma.readingProgress.deleteMany({
+      where: { userId: { in: followed.map((u) => u.id) } },
+    });
+  }
+  for (const [i, user] of followed.entries()) {
+    for (let k = 0; k < FEED_PROGRESS_PER_USER; k++) {
+      const item = usable[(i * 7 + k * 5 + 41) % usable.length];
+      const at = ago(1 + ((i * 2 + k * 3) % 12));
+      const pages = item.book.pageCount ?? 320;
+      const currentPage = Math.max(12, Math.round(pages * (0.25 + ((i + k) % 3) * 0.25)));
+
+      console.log(
+        `  ${(user.name ?? user.email).padEnd(20)} citește „${item.entry.title}" - pagina ${currentPage}/${pages}`,
+      );
+      progress++;
+      if (!APPLY) continue;
+
+      const row = await prisma.readingProgress.create({
+        data: { userId: user.id, bookId: item.book.id, currentPage },
+      });
+      await stamp('reading_progress', row.id, new Date(at.getTime() - 9 * DAY), at);
+
+      // Raftul poate avea deja titlul ăsta ca „terminat" (unique userId+bookId),
+      // caz în care progresul rămâne singur - nu suprascriem o carte terminată.
+      const onShelf = await prisma.bookshelfEntry.findUnique({
+        where: { userId_bookId: { userId: user.id, bookId: item.book.id } },
+      });
+      if (!onShelf) {
+        const entry = await prisma.bookshelfEntry.create({
+          data: { userId: user.id, bookId: item.book.id, status: 'READING' },
+        });
+        await stamp('bookshelf_entries', entry.id, new Date(at.getTime() - 9 * DAY), at);
+      }
+    }
+  }
+  console.log(`  ${progress} actualizări de progres de lectură.`);
 }
 
 async function phasePoze(resolved) {
