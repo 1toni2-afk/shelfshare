@@ -10,7 +10,6 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/browse_controller.dart';
 import '../data/books_repository.dart';
 import 'browse_filters_sheet.dart';
-export '../../../data/models/search_screen_args.dart' show SearchScreenArgs;
 
 final _popularSearchesProvider = FutureProvider((ref) {
   return ref.watch(booksRepositoryProvider).getPopularSearches();

@@ -20,7 +20,7 @@ import '../../../shared/utils/share_link.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../collections/presentation/add_to_collection_sheet.dart';
-import 'browse_screen.dart';
+import '../../../data/models/search_screen_args.dart';
 import '../../chat/data/chat_repository.dart';
 import '../../exchanges/data/exchanges_repository.dart';
 import '../../offers/data/offers_repository.dart';

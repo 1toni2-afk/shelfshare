@@ -7,7 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../books/application/book_detail_controller.dart';
 import '../../books/data/bookshelf_repository.dart';
 import '../data/collections_repository.dart';
-import 'my_collections_screen.dart';
+import '../application/collections_providers.dart';
 
 /// Deschide un bottom sheet cu toate listele în care poate intra o carte:
 /// întâi cele trei rafturi fixe (citesc / vreau să citesc / citită), apoi

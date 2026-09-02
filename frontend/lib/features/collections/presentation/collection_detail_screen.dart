@@ -7,7 +7,7 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../data/collections_repository.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
-import 'my_collections_screen.dart';
+import '../application/collections_providers.dart';
 
 final _collectionProvider = FutureProvider.family<BookCollection, String>((ref, id) {
   return ref.watch(collectionsRepositoryProvider).getOne(id);

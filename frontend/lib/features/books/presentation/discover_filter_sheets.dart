@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../data/books_repository.dart';
-import 'browse_screen.dart';
+import '../../../data/models/search_screen_args.dart';
 
 /// Genurile disponibile în catalog - aceeași sursă ca autocomplete-ul din
 /// filtrele de browse (`/books/genres`), ca să nu inventăm o taxonomie

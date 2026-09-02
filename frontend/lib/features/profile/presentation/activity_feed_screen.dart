@@ -8,7 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
-import '../../books/presentation/browse_screen.dart' show SearchScreenArgs;
+import '../../../data/models/search_screen_args.dart';
 import '../application/activity_feed_controller.dart';
 
 /// Reading Activity Feed - evenimente recente din activitatea userilor

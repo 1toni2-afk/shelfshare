@@ -14,7 +14,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../profile/application/profile_controller.dart';
 import '../data/books_repository.dart';
-import 'browse_screen.dart';
+import '../../../data/models/search_screen_args.dart';
 import 'discover_filter_sheets.dart';
 
 /// Ecranul „Descoperă" - înlocuiește tab-ul vechi de căutare cu un feed de

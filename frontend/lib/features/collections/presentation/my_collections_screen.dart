@@ -4,11 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../application/collections_providers.dart';
 import '../data/collections_repository.dart';
-
-final myCollectionsProvider = FutureProvider((ref) {
-  return ref.watch(collectionsRepositoryProvider).getMine();
-});
 
 class MyCollectionsScreen extends ConsumerWidget {
   const MyCollectionsScreen({super.key});

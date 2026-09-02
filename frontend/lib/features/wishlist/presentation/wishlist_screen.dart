@@ -8,7 +8,7 @@ import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/motto_text.dart';
-import '../../books/presentation/browse_screen.dart';
+import '../../../data/models/search_screen_args.dart';
 import '../application/wishlist_controller.dart';
 
 class WishlistScreen extends ConsumerWidget {
