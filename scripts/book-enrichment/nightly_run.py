@@ -20,19 +20,28 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import mimetypes
 import os
 import subprocess
 import sys
+import time
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
 
 HERE = Path(__file__).resolve().parent
 STATE_PATH = HERE / "nightly_state.json"
 LEDGER_PATH = HERE / "attempted_isbns.txt"
 MASTER_OUTPUT = HERE / "enriched_all.json"
+SCP_DB_PATH = HERE / "ShelfShare_SCP_DB.json"
+COVERS_DIR = HERE / "ShelfShare_SCP_DB_covers"
+COVERS_MANIFEST = COVERS_DIR / "manifest.json"
 RUNS_DIR = HERE / "nightly_runs"
 TASK_NAME = "ShelfShareEnrichmentScraper"
+COVER_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
 RUN_HOURS = 7.0  # 01:00 -> ~08:00; o rulare manuala poate cere alta durata cu --hours
 BATCH_SIZE = 50
@@ -113,7 +122,7 @@ def unregister_task(reason: str) -> None:
     )
 
 
-def candidate_sql(exclude: set[str], limit: int) -> str:
+def candidate_sql(exclude: set[str], limit: int, language_filter: str | None = None) -> str:
     """Cartile care au nevoie de imbogatire, in ordinea in care merita facute.
 
     tier 0 = atinse de un user (raft, swipe, recenzie, wishlist, ...)
@@ -125,6 +134,13 @@ def candidate_sql(exclude: set[str], limit: int) -> str:
     Coloana `title` e ultima pentru ca poate contine virgule (vezi run_query).
     """
     exclude_list = ",".join("'" + isbn.replace("'", "''") + "'" for isbn in exclude) or "''"
+    lang_list = ",".join("'" + lang.replace("'", "''") + "'" for lang in ROMANIAN_LANGS)
+    if language_filter == "ro":
+        lang_clause = f'AND b.language IN ({lang_list})'
+    elif language_filter == "other":
+        lang_clause = f'AND (b.language IS NULL OR b.language NOT IN ({lang_list}))'
+    else:
+        lang_clause = ""
     return f"""
     WITH touched AS ({TOUCHED_SQL})
     SELECT b.isbn,
@@ -137,6 +153,7 @@ def candidate_sql(exclude: set[str], limit: int) -> str:
     WHERE b.isbn IS NOT NULL
     AND b.isbn NOT IN ({exclude_list})
     AND (b.description IS NULL OR b."coverUrl" IS NULL)
+    {lang_clause}
     ORDER BY tier, b."popularityScore" DESC NULLS LAST, RANDOM()
     LIMIT {limit}
     """
@@ -202,9 +219,9 @@ def run_query(sql: str, columns: int = 2) -> list[list[str]]:
     return rows
 
 
-def fetch_batch(exclude: set[str], limit: int) -> list[Candidate]:
+def fetch_batch(exclude: set[str], limit: int, language_filter: str | None = None) -> list[Candidate]:
     candidates = []
-    for row in run_query(candidate_sql(exclude, limit), columns=4):
+    for row in run_query(candidate_sql(exclude, limit, language_filter), columns=4):
         if len(row) != 4:
             print(f"[nightly] rand neasteptat, il sar: {row!r}", file=sys.stderr)
             continue
@@ -272,6 +289,75 @@ def merge_into_master(batch_output: Path) -> int:
     return added
 
 
+def _cover_ext(url: str, content_type: str | None) -> str:
+    path_ext = Path(urlparse(url).path).suffix
+    if path_ext and len(path_ext) <= 5:
+        return path_ext
+    if content_type:
+        guessed = mimetypes.guess_extension(content_type.split(";")[0].strip())
+        if guessed:
+            return guessed
+    return ".jpg"
+
+
+def download_covers(entries: list[dict]) -> tuple[int, int]:
+    """Descarca local coperti pentru intrarile cu coverUrl, langa ShelfShare_SCP_DB.
+
+    Reia manifestul existent, deci nu re-descarca ce e deja salvat. -> (ok, failed).
+    """
+    COVERS_DIR.mkdir(exist_ok=True)
+    manifest = json.loads(COVERS_MANIFEST.read_text(encoding="utf-8")) if COVERS_MANIFEST.exists() else {}
+
+    todo = [e for e in entries if e.get("coverUrl")]
+    ok, failed = 0, 0
+    for i, entry in enumerate(todo, 1):
+        isbn, url = entry["isbn"], entry["coverUrl"]
+        if isbn in manifest and (COVERS_DIR / manifest[isbn]).exists():
+            continue
+        try:
+            resp = requests.get(url, headers=COVER_HEADERS, timeout=20)
+            resp.raise_for_status()
+            filename = f"{isbn}{_cover_ext(url, resp.headers.get('Content-Type'))}"
+            (COVERS_DIR / filename).write_bytes(resp.content)
+            manifest[isbn] = filename
+            ok += 1
+        except Exception as exc:
+            print(f"[nightly]   coperta {isbn}: EROARE {exc}", file=sys.stderr)
+            failed += 1
+        if i % 50 == 0:
+            COVERS_MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+        time.sleep(0.2)
+
+    COVERS_MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    return ok, failed
+
+
+def sync_scp_db() -> None:
+    """Regenereaza ShelfShare_SCP_DB.json din enriched_all.json, dupa fiecare batch."""
+    if not MASTER_OUTPUT.exists():
+        return
+    books = json.loads(MASTER_OUTPUT.read_text(encoding="utf-8"))
+    by_source = Counter(b.get("source") for b in books)
+    out = {
+        "name": "ShelfShare_SCP_DB",
+        "description": (
+            "Carti gasite prin scraping (carturesti.ro, libris.ro) si prin Google Books "
+            "API, in cadrul procesului de imbogatire a catalogului. Sursa pentru migrarea "
+            "viitoare de pe Google Books/Open Library."
+        ),
+        "generatedAt": datetime.datetime.now().isoformat(timespec="seconds"),
+        "totalBooks": len(books),
+        "stats": {
+            "bySource": dict(by_source),
+            "isbnVerified": sum(1 for b in books if b.get("isbnVerified")),
+            "withDescription": sum(1 for b in books if b.get("description")),
+            "withCoverUrl": sum(1 for b in books if b.get("coverUrl")),
+        },
+        "books": books,
+    }
+    SCP_DB_PATH.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Driverul de noapte al scraperelor de imbogatire.")
     parser.add_argument("--hours", type=float, default=RUN_HOURS,
@@ -300,15 +386,24 @@ def main() -> None:
     ledger = load_ledger()
     batch_idx = 0
     exhausted = False
+    # Odata ce Google raspunde 429 in serie intr-o noapte, cota nu se mai
+    # resetează pana maine - restul noptii trece doar pe romana (libris/
+    # carturesti, fara Google), ca sa nu stea degeaba pana la reluarea automata.
+    google_quota_exhausted = False
 
     while datetime.datetime.now() < stop_at:
         try:
-            candidates = fetch_batch(ledger, BATCH_SIZE)
+            language_filter = "ro" if google_quota_exhausted else None
+            candidates = fetch_batch(ledger, BATCH_SIZE, language_filter)
         except RuntimeError as exc:
             print(f"[nightly] eroare la interogarea DB, sar peste noaptea asta: {exc}")
             return
 
         if not candidates:
+            if language_filter == "ro":
+                print("[nightly] nicio carte netestata in romana ramasa - astept "
+                      "reluarea automata (cota Google se poate reseta pana atunci)")
+                break
             print("[nightly] nicio carte netestata ramasa in catalog - gata")
             exhausted = True
             break
@@ -338,15 +433,22 @@ def main() -> None:
             output_path, solved, rc = run_stage(source, subset, night_no, batch_idx)
             if output_path is not None:
                 added += merge_into_master(output_path)
+                batch_entries = json.loads(output_path.read_text(encoding="utf-8"))
+                cov_ok, cov_failed = download_covers(batch_entries)
+                if cov_ok or cov_failed:
+                    print(f"[nightly]   {source}: coperti {cov_ok} ok, {cov_failed} esuate")
+                sync_scp_db()
             print(f"[nightly]   {source}: {len(solved)}/{len(subset)} cu descriere")
             pending = [c for c in pending if c.isbn not in solved]
             if source == "google" and rc == GOOGLE_QUOTA_EXIT:
                 quota_hit = True
 
         if quota_hit:
-            print("[nightly] cota Google epuizata - opresc noaptea aici; batch-ul NU "
-                  "intra in ledger, ca sa fie reincercat data viitoare.")
-            break
+            google_quota_exhausted = True
+            print("[nightly] cota Google epuizata - batch-ul NU intra in ledger (se "
+                  "reincearca data viitoare); continui doar cu carti in romana pe "
+                  "libris/carturesti pana la reluarea automata.")
+            continue
 
         append_ledger(batch_isbns)
         ledger.update(batch_isbns)
