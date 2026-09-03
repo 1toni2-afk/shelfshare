@@ -11,6 +11,7 @@ import '../../book_match/presentation/book_match_screen.dart';
 import '../../books/presentation/add_book_screen.dart';
 import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
@@ -67,7 +68,13 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
 
   // Pasul 6 - prima carte adăugată în wizard (dacă userul a folosit CTA-ul),
   // afișată ca o confirmare pe ecran, nu doar un card gol de „adaugă o carte".
-  UserBook? _addedBook;
+  //
+  // Ținem `Book`, nu `UserBook`: cele două rute din AddBookScreen întorc
+  // lucruri diferite - listarea creează un UserBook (anunț), iar „add to
+  // shelf" doar o intrare de raft, deci doar cartea din catalog. Cardul de
+  // confirmare are nevoie de aceleași câmpuri în ambele cazuri.
+  Book? _addedBook;
+  String? _addedBookImageUrl;
 
   bool _finishing = false;
 
@@ -123,25 +130,53 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     }
   }
 
+  /// Ultimul pas al wizard-ului. Ordinea contează: chestionarul e cel care
+  /// pune `readingSurveyCompletedAt`, adică singurul lucru fără care routerul
+  /// ne trimite înapoi la /onboarding (vezi redirect-ul din app_router.dart).
+  ///
+  /// Orașul și limbile se salvează separat și NU au voie să blocheze
+  /// finalizarea: un PATCH picat pe ele (validare de oraș, rețea) lăsa userul
+  /// captiv în wizard - apăsa Continue, primea eroare și nu mai putea ieși
+  /// niciodată, deși partea obligatorie (username) era deja salvată.
+  /// La fel, dacă chestionarul a intrat pe server dar răspunsul nu s-a putut
+  /// aplica local, recitim profilul: dacă serverul îl are marcat ca parcurs,
+  /// plecăm mai departe în loc să reîncercăm la infinit.
   Future<void> _finish() async {
     setState(() => _finishing = true);
     try {
-      await ref.read(profileControllerProvider.notifier).updateProfile(
-            city: _city,
-            languages: _selectedLanguages.toList(),
-          );
-      await ref.read(profileControllerProvider.notifier).saveReadingSurvey(
-            favoriteGenres: _selectedGenres.toList(),
-            readingPace: _readingPace,
-            purpose: _purpose,
-          );
+      try {
+        await ref.read(profileControllerProvider.notifier).updateProfile(
+              city: _city,
+              languages: _selectedLanguages.toList(),
+            );
+      } catch (_) {
+        // Detalii opționale de profil - se pot completa oricând din Setări.
+      }
+
+      try {
+        await ref.read(profileControllerProvider.notifier).saveReadingSurvey(
+              favoriteGenres: _selectedGenres.toList(),
+              readingPace: _readingPace,
+              purpose: _purpose,
+            );
+      } catch (_) {
+        await ref.read(profileControllerProvider.notifier).refresh();
+        final user = ref.read(profileControllerProvider).value;
+        if (user?.readingSurveyCompletedAt == null) rethrow;
+      }
+
       if (mounted) context.go('/');
     } catch (_) {
       if (mounted) {
-        setState(() => _finishing = false);
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(context.l10n.surveySaveError)));
       }
+    } finally {
+      // În `finally`, nu doar pe ramura de eroare: altfel orice ieșire
+      // neprevăzută (inclusiv un `context.go` care nu duce nicăieri fiindcă
+      // redirect-ul routerului a mutat deja ecranul) lăsa butonul blocat pe
+      // spinner, fără nicio cale de a-l reapăsa.
+      if (mounted) setState(() => _finishing = false);
     }
   }
 
@@ -495,10 +530,23 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // ne-ar trimite instant înapoi - un "loop" din care se ieșea doar
     // cu Skip. Așa, AddBookScreen se deschide peste ecranul curent
     // fără ca GoRouter să considere că am părăsit /onboarding.
-    final added = await Navigator.of(context, rootNavigator: true).push<UserBook>(
-      MaterialPageRoute<UserBook>(builder: (_) => const AddBookScreen()),
+    final added = await Navigator.of(context, rootNavigator: true).push<Object>(
+      MaterialPageRoute<Object>(builder: (_) => const AddBookScreen()),
     );
-    if (added != null && mounted) setState(() => _addedBook = added);
+    if (!mounted) return;
+    // Listarea întoarce UserBook (are și pozele proprii), „add to shelf"
+    // întoarce direct cartea din catalog.
+    if (added is UserBook) {
+      setState(() {
+        _addedBook = added.book;
+        _addedBookImageUrl = added.primaryImageUrl;
+      });
+    } else if (added is Book) {
+      setState(() {
+        _addedBook = added;
+        _addedBookImageUrl = added.coverUrl;
+      });
+    }
   }
 
   Widget _buildAddBooksContent() {
@@ -528,7 +576,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   // ia locul „Add a book", iar autor+an iau locul textului de ajutor.
   Widget _buildAddedBookCard() {
     final l10n = context.l10n;
-    final book = _addedBook!.book;
+    final book = _addedBook!;
     final subtitle = [
       if (book.author != null && book.author!.isNotEmpty) book.author!,
       if (book.publishedYear != null) '${book.publishedYear}',
@@ -552,7 +600,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: BookCover.expand(
-                      url: _addedBook!.primaryImageUrl,
+                      url: _addedBookImageUrl,
                       title: book.title,
                     ),
                   ),

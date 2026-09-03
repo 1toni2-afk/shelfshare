@@ -9,9 +9,15 @@ class ProfileController extends AsyncNotifier<AppUser> {
     return ref.read(profileRepositoryProvider).getMyProfile();
   }
 
+  /// Reîncarcă profilul de pe server. Rezultatul se propagă și în
+  /// `authController`: routerul decide pe copia DE ACOLO dacă mai ține userul
+  /// în onboarding sau pe ecranul de verificare a emailului, deci un refresh
+  /// care actualiza doar starea asta lăsa routerul cu date vechi.
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => ref.read(profileRepositoryProvider).getMyProfile());
+    final user = state.value;
+    if (user != null) ref.read(authControllerProvider.notifier).setUser(user);
   }
 
   Future<void> updateProfile({

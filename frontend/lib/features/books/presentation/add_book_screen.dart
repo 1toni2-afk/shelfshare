@@ -581,7 +581,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(bookshelfRepositoryProvider).addOwnedBook(
+      final added = await ref.read(bookshelfRepositoryProvider).addOwnedBook(
             title: title,
             author: _authorController.text.trim(),
             isbn: _isbnFromAutocomplete,
@@ -600,7 +600,12 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.shelfAddedToShelf)));
-      Navigator.of(context).pop();
+      // Cu cartea adăugată, nu gol: onboarding-ul (vezi
+      // OnboardingFlowScreen._openAddBook) o afișează în locul cardului
+      // „adaugă o carte". Ruta de „add to shelf" popa fără valoare, deci
+      // cardul rămânea la CTA-ul inițial ca și cum nimic nu s-ar fi salvat -
+      // exact ca la ruta de listare, care întoarce UserBook-ul creat.
+      Navigator.of(context).pop(added);
     } on DioException catch (e) {
       final data = e.response?.data;
       final message = data is Map && data['message'] != null
@@ -1408,28 +1413,32 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                         itemCount: options.length,
                         itemBuilder: (context, index) {
                           final option = options.elementAt(index);
-                          final sourceLabel = option.source == 'google_books'
-                              ? 'Via Google Books'
-                              : 'Via fallback Open Library';
+                          // De unde vine rezultatul nu se mai scrie în text
+                          // („Via Google Books" / „Via fallback Open Library"):
+                          // pentru user externul e doar o plasă de siguranță,
+                          // nu o informație pe care s-o cântărească. Ce
+                          // contează - „cartea e deja la noi în bază" - se
+                          // vede din culoare: titlurile din catalogul propriu
+                          // sunt portocalii, restul în culoarea normală.
+                          final fromOwnCatalog = option.source == 'catalog';
                           return ListTile(
                             dense: true,
-                            title: Text(option.title, maxLines: 1),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (option.author != null)
-                                  Text(option.author!, maxLines: 1),
-                                Text(
-                                  sourceLabel,
-                                  maxLines: 1,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: AppColors.mutedForeground),
-                                ),
-                              ],
+                            title: Text(
+                              option.title,
+                              maxLines: 1,
+                              style: fromOwnCatalog
+                                  ? TextStyle(color: AppColors.accent)
+                                  : null,
                             ),
+                            subtitle: option.author == null
+                                ? null
+                                : Text(
+                                    option.author!,
+                                    maxLines: 1,
+                                    style: fromOwnCatalog
+                                        ? TextStyle(color: AppColors.accent)
+                                        : null,
+                                  ),
                             onTap: () => onSelected(option),
                           );
                         },

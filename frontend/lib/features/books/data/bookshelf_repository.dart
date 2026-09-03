@@ -55,7 +55,11 @@ class BookshelfRepository {
   /// „Add to shelf" - adaugă o carte ca deținută, fără să creeze un anunț.
   /// `percentRead` e alternativa la `currentPage` pentru cine știe doar cât la
   /// sută a citit; backendul îl convertește în pagini.
-  Future<void> addOwnedBook({
+  /// Întoarce cartea din catalog așa cum a rezolvat-o serverul (titlu, autor,
+  /// copertă, an) - onboarding-ul o arată în locul cardului „adaugă o carte",
+  /// ca userul să vadă ce a adăugat. `null` doar dacă răspunsul n-are `book`,
+  /// caz în care apelantul se descurcă fără confirmare vizuală.
+  Future<Book?> addOwnedBook({
     required String title,
     String? author,
     String? isbn,
@@ -73,7 +77,7 @@ class BookshelfRepository {
     // (@IsISBN, @MaxLength) resping un "" trimis explicit.
     String? clean(String? value) =>
         (value == null || value.trim().isEmpty) ? null : value.trim();
-    await dio.post('/bookshelf/own', data: {
+    final response = await dio.post('/bookshelf/own', data: {
       'title': title,
       'author': ?clean(author),
       'isbn': ?clean(isbn),
@@ -86,6 +90,11 @@ class BookshelfRepository {
       'currentPage': ?currentPage,
       'percentRead': ?percentRead,
     });
+    final data = response.data;
+    if (data is Map && data['book'] is Map) {
+      return Book.fromJson((data['book'] as Map).cast<String, dynamic>());
+    }
+    return null;
   }
 
   Future<List<GenreCount>> getGenreDistribution() async {
