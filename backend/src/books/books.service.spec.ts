@@ -342,6 +342,7 @@ describe('BooksService', () => {
       language: 'ro',
       genre: null,
       popularityScore: null,
+      curatedAt: null,
       ...over,
     });
 
@@ -425,6 +426,98 @@ describe('BooksService', () => {
 
       expect(results).toHaveLength(1);
       expect(results[0].source).toBe('catalog');
+    });
+  });
+
+  describe('catalogul propriu ca sursa principala', () => {
+    /** Rand din importul in masa Open Library: metadate subtiri, necurat. */
+    const bulkRow = (over = {}) => ({
+      id: 'book-1',
+      isbn: null,
+      title: 'Stapanul Inelelor: Fratia Inelului',
+      author: 'J.R.R. Tolkien',
+      description: null,
+      coverUrl: null,
+      publisher: null,
+      publishedYear: 2001,
+      pageCount: null,
+      language: 'ro',
+      genre: null,
+      popularityScore: null,
+      curatedAt: null,
+      ...over,
+    });
+
+    /** Un rand curat: metadate verificate manual, nu din importul in masa. */
+    const curatedRow = (over = {}) =>
+      bulkRow({
+        id: 'book-curat',
+        isbn: '9786060881490',
+        title: 'Cine a tradat-o pe Anne Frank?',
+        author: 'Rosemary Sullivan',
+        description: 'Descriere in romana, de la editura.',
+        publisher: 'Corint',
+        curatedAt: new Date('2026-09-03T10:00:00Z'),
+        ...over,
+      });
+
+    const externalResult = (title) => ({
+      isbn: null,
+      title,
+      author: 'Altcineva',
+      description: null,
+      coverUrl: null,
+      publisher: null,
+      publishedYear: null,
+      pageCount: null,
+      language: null,
+      genre: null,
+      subjects: [],
+      source: 'google_books',
+    });
+
+    it('nu mai cheama sursele externe cand exista o potrivire curata', async () => {
+      prisma.$queryRaw.mockResolvedValue([curatedRow()]);
+
+      const results = await service.searchExternal('Anne Frank');
+
+      expect(lookup.searchByTitle).not.toHaveBeenCalled();
+      expect(results).toHaveLength(1);
+      expect(results[0].isCurated).toBe(true);
+    });
+
+    it('cheama sursele externe cand potrivirea vine doar din importul in masa', async () => {
+      // Un rand din importul Open Library are des doar titlu+autor, deci
+      // externul chiar poate adauga descriere si coperta - nu-l sarim.
+      prisma.$queryRaw.mockResolvedValue([bulkRow()]);
+      lookup.searchByTitle.mockResolvedValue([externalResult('Ceva de la Google')]);
+
+      const results = await service.searchExternal('Stapanul Inelelor');
+
+      expect(lookup.searchByTitle).toHaveBeenCalled();
+      expect(results.map((r) => r.title)).toContain('Ceva de la Google');
+    });
+
+    it('cheama externul si cand catalogul nu intoarce nimic', async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+      lookup.searchByTitle.mockResolvedValue([externalResult('Doar extern')]);
+
+      const results = await service.searchExternal('titlu inexistent');
+
+      expect(lookup.searchByTitle).toHaveBeenCalled();
+      expect(results.map((r) => r.title)).toEqual(['Doar extern']);
+    });
+
+    it('pune randul curat inaintea celui din importul in masa, chiar daca doar al doilea incepe cu termenul cautat', async () => {
+      prisma.$queryRaw.mockResolvedValue([
+        bulkRow({ id: 'bulk', title: 'Anne of Green Gables' }),
+        curatedRow(),
+      ]);
+
+      const results = await service.searchExternal('Anne');
+
+      expect(results[0].title).toBe('Cine a tradat-o pe Anne Frank?');
+      expect(results[0].isCurated).toBe(true);
     });
   });
 });

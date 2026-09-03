@@ -43,6 +43,7 @@ interface CatalogSearchRow {
   language: string | null;
   genre: string | null;
   popularityScore: number | null;
+  curatedAt: Date | null;
 }
 
 const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
@@ -120,20 +121,33 @@ export class BooksService {
     // diacritice - „Stapanul Inelelor" nu întorcea nimic nici de la Google
     // Books (`intitle:` e potrivire de frază exactă), nici de la Open Library
     // (n-are edițiile românești), deși cartea era la noi în bază.
-    const [catalog, external] = await Promise.all([
-      // Căutarea în catalog depinde de `immutable_unaccent` și de indexul FTS
-      // create de migrarea books_diacritic_search. Dacă serverul pornește
-      // înaintea migrării, cererea pică pe „function does not exist" - fără
-      // prinderea de aici, ar lua cu ea și rezultatele externe, adică tot
-      // autocomplete-ul de la „adaugă carte", care mergea și înainte.
-      this.searchCatalog(query).catch((error) => {
-        this.logger.warn(
-          `Căutarea în catalog a eșuat (migrarea books_diacritic_search e aplicată?): ${error}`,
-        );
-        return [] as ExternalBookResult[];
-      }),
-      this.lookup.searchByTitle(query, { skipCoverFallback: true }),
-    ]);
+    // Căutarea în catalog depinde de `immutable_unaccent` și de indexul FTS
+    // create de migrarea books_diacritic_search. Dacă serverul pornește
+    // înaintea migrării, cererea pică pe „function does not exist" - fără
+    // prinderea de aici, ar lua cu ea și rezultatele externe, adică tot
+    // autocomplete-ul de la „adaugă carte", care mergea și înainte.
+    const catalog = await this.searchCatalog(query).catch((error) => {
+      this.logger.warn(
+        `Căutarea în catalog a eșuat (migrarea books_diacritic_search e aplicată?): ${error}`,
+      );
+      return [] as ExternalBookResult[];
+    });
+
+    // Catalogul PROPRIU, verificat manual, e sursa principală: descrieri în
+    // română, editura reală, coperta de la editură. Când găsim cartea acolo,
+    // providerii externi n-au ce adăuga - deci nici nu-i mai chemăm. Asta
+    // scutește și cota zilnică de Google Books, care se epuizează des.
+    const hasCurated = catalog.some((result) => result.isCurated);
+    if (hasCurated) {
+      return this.mergeSearchResults(query, catalog, []);
+    }
+
+    // Restul catalogului sunt rânduri din importul în masă Open Library: des
+    // doar titlu + autor, fără descriere sau copertă. O potrivire acolo NU e
+    // motiv să sărim externul - el chiar poate completa ce lipsește.
+    const external = await this.lookup.searchByTitle(query, {
+      skipCoverFallback: true,
+    });
     return this.mergeSearchResults(query, catalog, external);
   }
 
@@ -179,20 +193,28 @@ export class BooksService {
       .map((term, index) => (index === terms.length - 1 ? `${term}:*` : term))
       .join(' & ');
 
+    // Lotul mărginit ia întâi rândurile curate: fără `ORDER BY` în CTE, cele
+    // ~1900 de titluri verificate manual s-ar putea să nici nu intre în cele
+    // 500 de potriviri arbitrare alese dintre 3,68M de rânduri importate.
     const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>`
       WITH matched AS (
         SELECT
           id, isbn, title, author, description, "coverUrl", publisher,
-          "publishedYear", "pageCount", language, genre, "popularityScore"
+          "publishedYear", "pageCount", language, genre, "popularityScore",
+          "curatedAt"
         FROM "books"
         WHERE to_tsvector(
                 'simple',
                 immutable_unaccent(coalesce("title", '') || ' ' || coalesce("author", ''))
               ) @@ to_tsquery('simple', ${tsquery})
+        ORDER BY ("curatedAt" IS NOT NULL) DESC
         LIMIT 500
       )
       SELECT * FROM matched
-      ORDER BY COALESCE("popularityScore", 0) DESC, length(title) ASC
+      ORDER BY
+        ("curatedAt" IS NOT NULL) DESC,
+        COALESCE("popularityScore", 0) DESC,
+        length(title) ASC
       LIMIT ${limit}
     `;
 
@@ -210,6 +232,7 @@ export class BooksService {
       subjects: [],
       source: 'catalog' as const,
       bookId: row.id,
+      isCurated: row.curatedAt != null,
     }));
   }
 
@@ -231,10 +254,17 @@ export class BooksService {
       normalizedQuery.length > 0 &&
       this.toSearchTerms(result.title).join(' ').startsWith(normalizedQuery);
 
+    // Toate rândurile curate trec înaintea oricărui rezultat extern, nu doar
+    // cele care încep cu termenul căutat: sunt verificate manual, deci o
+    // potrivire acolo e mai bună decât orice aduce un provider extern.
+    const curated = catalog.filter((result) => result.isCurated);
+    const rest = catalog.filter((result) => !result.isCurated);
     const ordered = [
-      ...catalog.filter(startsWithQuery),
+      ...curated.filter(startsWithQuery),
+      ...curated.filter((result) => !startsWithQuery(result)),
+      ...rest.filter(startsWithQuery),
       ...external,
-      ...catalog.filter((result) => !startsWithQuery(result)),
+      ...rest.filter((result) => !startsWithQuery(result)),
     ];
 
     const seen = new Set<string>();

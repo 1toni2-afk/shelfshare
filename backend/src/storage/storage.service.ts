@@ -18,7 +18,17 @@ const WEBP_QUALITY = 80;
  * moderare nu expira niciodată: scăpat sau redirecționat o dată, transcriptul
  * rămânea public permanent. Vezi `getSignedUrl` pentru cum sunt servite acum.
  */
-const PUBLIC_PREFIXES = ['avatars', 'user-books', 'chat', 'feedback'] as const;
+const PUBLIC_PREFIXES = [
+  'avatars',
+  'user-books',
+  'chat',
+  'feedback',
+  // Coperțile catalogului propriu, importate din scrape (vezi
+  // prisma/import-scp-db.js). Sunt conținut de catalog, nu al vreunui user -
+  // publice ca orice copertă de carte, și servite de pe domeniul nostru, deci
+  // fără proxy-ul de CORS de care au nevoie coperțile de la Google Books.
+  'book-covers',
+] as const;
 
 /** Cât ține linkul de transcript din emailul de moderare (maximul S3 e 7 zile). */
 const SIGNED_URL_TTL_SECONDS = 7 * 24 * 60 * 60;

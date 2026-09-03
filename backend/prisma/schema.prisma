@@ -455,6 +455,17 @@ model Book {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Metadatele acestui rând vin din catalogul PROPRIU, verificat manual
+  /// (scrape Cărturești/Google - vezi scripts/book-enrichment), nu din
+  /// importul în masă din Open Library.
+  ///
+  /// Fără marcajul ăsta nu se putea face diferența: și cele ~1900 de titluri
+  /// curate, și cele 3,68M importate în vrac aveau `source = 'ol_cdump_import'`,
+  /// fiindcă îmbogățirea actualizează rânduri existente, nu creează altele
+  /// noi. Căutarea le preferă (vezi BooksService.searchCatalog) și sare peste
+  /// providerii externi când găsește o potrivire curată.
+  curatedAt DateTime?
+
   /// Book Match: cât de „cunoscută" e cartea, folosită doar ca multiplicator
   /// la cold start (primele 50 de swipe-uri), unde încă nu avem semnal de la
   /// user și vrem ca titlurile mari să tragă mai tare profilul într-o direcție.

@@ -27,4 +27,10 @@ export interface ExternalBookResult {
   source: 'open_library' | 'google_books' | 'catalog';
   /** Setat doar pentru `source: 'catalog'`. */
   bookId?: string;
+  /**
+   * Rândul vine din catalogul PROPRIU, verificat manual (vezi Book.curatedAt),
+   * nu din importul în masă din Open Library. Când o căutare are măcar un
+   * rezultat curat, providerii externi nici nu mai sunt chemați.
+   */
+  isCurated?: boolean;
 }

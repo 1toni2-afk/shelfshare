@@ -71,6 +71,11 @@ services:
       FIREBASE_SERVICE_ACCOUNT: ${FIREBASE_SERVICE_ACCOUNT:-}
     volumes:
       - ./logs:/app/logs
+      # Catalogul propriu, scrapuit (JSON + copertile descarcate). Montat
+      # read-only ca `prisma/import-scp-db.js` sa poata fi rulat direct dupa
+      # fiecare noapte de scraping, fara `docker cp` inainte:
+      #   docker exec shelfshare-backend-1 node prisma/import-scp-db.js
+      - ./scripts/book-enrichment:/scp:ro
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:

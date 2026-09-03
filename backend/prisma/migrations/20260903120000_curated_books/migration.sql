@@ -1,0 +1,13 @@
+-- Marcajul catalogului PROPRIU, verificat manual.
+--
+-- Îmbogățirea din scripts/book-enrichment actualizează rânduri deja existente
+-- în `books` (create de importul în masă din Open Library), nu creează altele
+-- noi - deci `source` rămâne 'ol_cdump_import' și pentru cele ~1900 de titluri
+-- curate, și pentru cele 3,68M importate în vrac. Fără o coloană separată,
+-- căutarea nu are cum să le prefere: pur și simplu nu le poate distinge.
+--
+-- Fără index pe coloană, deliberat: filtrarea o face indexul FTS
+-- (books_search_fts_idx), iar ordonarea „curate întâi" se aplică pe cel mult
+-- 500 de rânduri deja selectate (vezi BooksService.searchCatalog). Un btree
+-- pe 3,68M de rânduri aproape toate NULL ar ocupa zeci de MB degeaba.
+ALTER TABLE "books" ADD COLUMN IF NOT EXISTS "curatedAt" TIMESTAMP(3);
