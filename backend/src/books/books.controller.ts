@@ -22,6 +22,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
+import { ResolveWorkDto } from './dto/resolve-work.dto';
 import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
@@ -219,6 +220,30 @@ export class BooksController {
   addToLibrary(@Req() req: Request, @Body() dto: AddBookDto) {
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.addToLibrary(userId!, dto);
+  }
+
+  /**
+   * Pagina „despre carte" - o singură rută pentru toate listările din app
+   * (Discover, My Shelf, Search, Book Match). Publică: pagina unei cărți e
+   * conținut de catalog, nu ceva ce ține de contul cuiva.
+   *
+   * Înainte de ':userBookId', altfel 'work' ar fi citit ca id de anunț.
+   */
+  @Get('work/:bookId')
+  getWork(@Param('bookId') bookId: string) {
+    return this.booksService.getWork(bookId);
+  }
+
+  /**
+   * Deschiderea paginii operei pornind de la un rezultat de căutare externă,
+   * care încă n-are rând în catalog - vezi BooksService.resolveWork.
+   * Autentificat și limitat: creează rânduri în catalog.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @Post('work/resolve')
+  resolveWork(@Body() dto: ResolveWorkDto) {
+    return this.booksService.resolveWork(dto);
   }
 
   // Tot înainte de :userBookId, din același motiv ca 'browse'.

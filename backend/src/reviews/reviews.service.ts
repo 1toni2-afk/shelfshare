@@ -3,12 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { publicName } from '../common/utils/user-visibility';
 import { UpsertReviewDto } from './dto/upsert-review.dto';
 import { ReportReviewDto } from './dto/report-review.dto';
+import { ReportsService } from '../reports/reports.service';
 
 const AUTHOR_SELECT = { name: true, nameVisible: true, profileImage: true };
 
 @Injectable()
 export class ReviewsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private reports: ReportsService,
+  ) {}
 
   async upsert(userId: string, dto: UpsertReviewDto) {
     const book = await this.prisma.book.findUnique({ where: { id: dto.bookId } });
@@ -29,13 +33,46 @@ export class ReviewsService {
   async getForBook(bookId: string) {
     const [reviews, aggregate] = await Promise.all([
       this.prisma.review.findMany({
-        where: { bookId },
+        // Recenziile ascunse automat (vezi ReportsService.applyAutoHide) ies
+        // din pagina cărții, dar rămân în baza de date pentru moderator.
+        where: { bookId, hiddenAt: null },
         include: { user: { select: AUTHOR_SELECT } },
         orderBy: { createdAt: 'desc' },
         take: 50,
       }),
       this.prisma.review.aggregate({
-        where: { bookId },
+        where: { bookId, hiddenAt: null },
+        _avg: { rating: true },
+        _count: { rating: true },
+      }),
+    ]);
+
+    return {
+      averageRating: aggregate._avg.rating,
+      reviewCount: aggregate._count.rating,
+      reviews: reviews.map((r) => this.sanitizeAuthor(r)),
+    };
+  }
+
+  /**
+   * Recenziile unei OPERE, adunate peste toate edițiile ei (vezi
+   * BooksService.getWork - `Book` e per ediție, iar o recenzie scrisă pe
+   * ediția din 2001 e despre aceeași carte ca una scrisă pe cea din 2019).
+   * `getForBook` rămâne pentru pagina unei singure ediții.
+   */
+  async getForBooks(bookIds: string[]) {
+    if (bookIds.length === 0) {
+      return { averageRating: null, reviewCount: 0, reviews: [] };
+    }
+    const [reviews, aggregate] = await Promise.all([
+      this.prisma.review.findMany({
+        where: { bookId: { in: bookIds }, hiddenAt: null },
+        include: { user: { select: AUTHOR_SELECT } },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      this.prisma.review.aggregate({
+        where: { bookId: { in: bookIds }, hiddenAt: null },
         _avg: { rating: true },
         _count: { rating: true },
       }),
@@ -76,14 +113,14 @@ export class ReviewsService {
     if (review.userId === reporterId) {
       throw new BadRequestException('Nu îți poți raporta propria recenzie');
     }
-    return this.prisma.report.create({
-      data: {
-        reporterId,
-        reportedUserId: review.userId,
-        reason: dto.reason,
-        details: dto.details,
-        reviewId,
-      },
+    return this.reports.create({
+      reporterId,
+      reportedUserId: review.userId,
+      targetType: 'REVIEW',
+      targetId: reviewId,
+      reason: dto.reason,
+      details: dto.details,
+      extra: { reviewId },
     });
   }
 

@@ -19,6 +19,7 @@ import { AdminAuditInterceptor } from './admin-audit.interceptor';
 import { SetFeatureFlagsDto } from './dto/set-feature-flags.dto';
 import { SetListingScoreOverrideDto } from './dto/set-listing-score-override.dto';
 import { UpdateReportStatusDto } from './dto/update-report-status.dto';
+import { ListReportsDto } from './dto/list-reports.dto';
 import { FEATURE_FLAG_KEYS } from '../common/constants/feature-flags';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -143,8 +144,18 @@ export class AdminController {
   }
 
   @Get('reports/users')
-  getUserReports() {
-    return this.adminService.getUserReports();
+  getUserReports(@Query() filters: ListReportsDto) {
+    return this.adminService.getUserReports(filters);
+  }
+
+  @Get('reports/counts')
+  getReportCounts() {
+    return this.adminService.getReportCounts();
+  }
+
+  @Post('reports/:id/unhide')
+  async unhideReportTarget(@Param('id') id: string) {
+    return this.adminService.unhideReportById(id);
   }
 
   @Put('reports/:id/status')

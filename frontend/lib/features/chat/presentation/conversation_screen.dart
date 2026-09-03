@@ -149,7 +149,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     if (otherUser == null) return;
     final result = await showDialog<ReportReason>(
       context: context,
-      builder: (context) => const ReportReasonDialog(),
+      builder: (context) => ReportReasonDialog(target: ReportTargetKind.user),
     );
     if (result == null) return;
     try {
@@ -171,7 +171,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   Future<void> _reportConversation() async {
     final result = await showDialog<ReportReason>(
       context: context,
-      builder: (context) => const ReportReasonDialog(),
+      builder: (context) => ReportReasonDialog(target: ReportTargetKind.content),
     );
     if (result == null) return;
     try {

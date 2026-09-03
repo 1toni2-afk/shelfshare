@@ -186,7 +186,7 @@ class _ReadySellBody extends ConsumerWidget {
   Future<void> _reportIssue(BuildContext context, WidgetRef ref, String otherUserId) async {
     final reason = await showDialog<ReportReason>(
       context: context,
-      builder: (context) => const ReportReasonDialog(),
+      builder: (context) => ReportReasonDialog(target: ReportTargetKind.user),
     );
     if (reason == null) return;
     try {

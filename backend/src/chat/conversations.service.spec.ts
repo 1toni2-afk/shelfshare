@@ -9,6 +9,7 @@ import { MailService } from '../mail/mail.service';
 import { PresenceService } from './presence.service';
 import { RealtimeService } from '../common/realtime/realtime.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { ReportsService } from '../reports/reports.service';
 
 describe('ConversationsService', () => {
   let service: ConversationsService;
@@ -26,6 +27,7 @@ describe('ConversationsService', () => {
     getSignedUrl: jest.Mock;
   };
   let mail: { sendChatReportNotification: jest.Mock };
+  let reports: { create: jest.Mock; unhideTarget: jest.Mock };
   let presence: { isOnline: jest.Mock };
   let realtime: { emitToConversation: jest.Mock; emitToUser: jest.Mock };
 
@@ -63,6 +65,7 @@ describe('ConversationsService', () => {
       report: { create: jest.fn() },
       $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
     };
+    reports = { create: jest.fn(), unhideTarget: jest.fn() };
     storage = {
       uploadTextFile: jest.fn().mockResolvedValue('chat-reports/x.txt'),
       getPublicUrl: jest.fn((path: string) => `https://cdn.test/${path}`),
@@ -81,6 +84,7 @@ describe('ConversationsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConversationsService,
+        { provide: ReportsService, useValue: reports },
         { provide: PrismaService, useValue: prisma },
         { provide: StorageService, useValue: storage },
         {
@@ -420,7 +424,7 @@ describe('ConversationsService', () => {
           createdAt: new Date('2026-01-01T10:00:00.000Z'),
         },
       ]);
-      prisma.report.create.mockResolvedValue({ id: 'report-1' });
+      reports.create.mockResolvedValue({ id: 'report-1' });
     });
 
     it('exportă transcriptul în folderul chat-reports și îl leagă de raport', async () => {
@@ -441,14 +445,20 @@ describe('ConversationsService', () => {
       expect(storage.getPublicUrl).not.toHaveBeenCalledWith(
         'chat-reports/x.txt',
       );
-      expect(prisma.report.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
+      // Raportul trece prin ReportsService, nu direct prin Prisma: acolo stau
+      // regulile comune (o raportare per user per țintă, praguri de auto-hide).
+      expect(reports.create).toHaveBeenCalledWith(
+        expect.objectContaining({
           reporterId: 'user-a',
           reportedUserId: 'user-b',
-          conversationId: 'conv-1',
-          transcriptPath: 'chat-reports/x.txt',
+          targetType: 'CONVERSATION',
+          targetId: 'conv-1',
+          extra: expect.objectContaining({
+            conversationId: 'conv-1',
+            transcriptPath: 'chat-reports/x.txt',
+          }),
         }),
-      });
+      );
       expect(mail.sendChatReportNotification).toHaveBeenCalled();
     });
 

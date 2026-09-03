@@ -66,7 +66,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     final l10n = context.l10n;
     final reason = await showDialog<ReportReason>(
       context: context,
-      builder: (context) => const ReportReasonDialog(),
+      builder: (context) => ReportReasonDialog(target: ReportTargetKind.content),
     );
     if (reason == null) return;
     try {

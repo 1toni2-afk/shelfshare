@@ -195,6 +195,56 @@ class AdminUsersPage {
   }
 }
 
+/// Ce anume s-a raportat. Vine ca `targetType` de pe backend, unde e stocat
+/// pe langa cheile straine tipate - vezi ReportTargetType in schema.prisma.
+/// Panoul de moderare filtreaza dupa el, ca sa fie un singur panou pentru
+/// toate tipurile, nu cate unul per tip.
+enum ReportTargetType { user, listing, review, conversation, groupPost, exchange }
+
+extension ReportTargetTypeX on ReportTargetType {
+  static ReportTargetType fromJson(String value) {
+    switch (value) {
+      case 'LISTING':
+        return ReportTargetType.listing;
+      case 'REVIEW':
+        return ReportTargetType.review;
+      case 'CONVERSATION':
+        return ReportTargetType.conversation;
+      case 'GROUP_POST':
+        return ReportTargetType.groupPost;
+      case 'EXCHANGE':
+        return ReportTargetType.exchange;
+      case 'USER':
+      default:
+        return ReportTargetType.user;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case ReportTargetType.user:
+        return 'USER';
+      case ReportTargetType.listing:
+        return 'LISTING';
+      case ReportTargetType.review:
+        return 'REVIEW';
+      case ReportTargetType.conversation:
+        return 'CONVERSATION';
+      case ReportTargetType.groupPost:
+        return 'GROUP_POST';
+      case ReportTargetType.exchange:
+        return 'EXCHANGE';
+    }
+  }
+
+  /// Doar continutul poate fi ascuns automat (vezi AUTO_HIDEABLE_TARGETS pe
+  /// backend) - deci doar acolo are sens actiunea de repunere.
+  bool get isHideable =>
+      this == ReportTargetType.listing ||
+      this == ReportTargetType.review ||
+      this == ReportTargetType.groupPost;
+}
+
 enum ReportStatus { open, inProgress, resolved, dismissed }
 
 extension ReportStatusX on ReportStatus {
@@ -246,6 +296,17 @@ class UserReport {
   final String? reviewText;
   final int? reviewRating;
 
+  final ReportTargetType targetType;
+
+  /// Anuntul raportat, cand tinta e un anunt.
+  final String? userBookId;
+  final String? userBookTitle;
+
+  /// Setat cand continutul a fost deja ascuns automat de praguri (vezi
+  /// ReportsService.applyAutoHide). Moderatorul trebuie sa vada asta: altfel
+  /// n-ar sti daca mai are ceva de facut sau doar de confirmat.
+  final DateTime? contentHiddenAt;
+
   const UserReport({
     required this.id,
     required this.reason,
@@ -265,6 +326,10 @@ class UserReport {
     this.reviewId,
     this.reviewText,
     this.reviewRating,
+    this.targetType = ReportTargetType.user,
+    this.userBookId,
+    this.userBookTitle,
+    this.contentHiddenAt,
   });
 
   factory UserReport.fromJson(Map<String, dynamic> json) {
@@ -273,6 +338,7 @@ class UserReport {
     final assignedTo = json['assignedTo'] as Map<String, dynamic>?;
     final groupPost = json['groupPost'] as Map<String, dynamic>?;
     final review = json['review'] as Map<String, dynamic>?;
+    final userBook = json['userBook'] as Map<String, dynamic>?;
     return UserReport(
       id: json['id'] as String,
       reason: json['reason'] as String,
@@ -292,7 +358,20 @@ class UserReport {
       reviewId: review?['id'] as String?,
       reviewText: review?['text'] as String?,
       reviewRating: review?['rating'] as int?,
+      targetType:
+          ReportTargetTypeX.fromJson(json['targetType'] as String? ?? 'USER'),
+      userBookId: userBook?['id'] as String?,
+      userBookTitle:
+          (userBook?['book'] as Map<String, dynamic>?)?['title'] as String?,
+      // `hiddenAt` vine de pe tinta, nu de pe raport - de pe oricare din cele
+      // doua tipuri de continut incluse in raspuns.
+      contentHiddenAt: _parseHiddenAt(groupPost) ?? _parseHiddenAt(review),
     );
+  }
+
+  static DateTime? _parseHiddenAt(Map<String, dynamic>? target) {
+    final value = target?['hiddenAt'];
+    return value is String ? DateTime.tryParse(value) : null;
   }
 
   UserReport copyWith({
@@ -321,6 +400,10 @@ class UserReport {
       reviewId: reviewId,
       reviewText: reviewText,
       reviewRating: reviewRating,
+      targetType: targetType,
+      userBookId: userBookId,
+      userBookTitle: userBookTitle,
+      contentHiddenAt: contentHiddenAt,
     );
   }
 }
@@ -623,6 +706,28 @@ class UserFeatureFlags {
       flags: (json['flags'] as List)
           .map((e) => FeatureFlagValue.fromJson(e as Map<String, dynamic>))
           .toList(),
+    );
+  }
+}
+
+/// Un contor din coada de moderare: câte rapoarte are o combinație anume de
+/// (tip de țintă, status). Panoul le agregă pentru etichetele filtrelor.
+class ReportCount {
+  final ReportTargetType targetType;
+  final ReportStatus status;
+  final int count;
+
+  const ReportCount({
+    required this.targetType,
+    required this.status,
+    required this.count,
+  });
+
+  factory ReportCount.fromJson(Map<String, dynamic> json) {
+    return ReportCount(
+      targetType: ReportTargetTypeX.fromJson(json['targetType'] as String),
+      status: ReportStatusX.fromJson(json['status'] as String),
+      count: (json['count'] as num).toInt(),
     );
   }
 }

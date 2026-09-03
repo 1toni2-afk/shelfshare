@@ -80,7 +80,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final l10n = context.l10n;
     final result = await showDialog<ReportReason>(
       context: context,
-      builder: (context) => const ReportReasonDialog(),
+      builder: (context) => ReportReasonDialog(target: ReportTargetKind.content),
     );
     if (result == null) return;
     try {
@@ -663,7 +663,20 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
             ),
           ),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
+        // Puntea spre pagina OPEREI: aici e un exemplar anume (starea lui,
+        // prețul lui, proprietarul lui), acolo e cartea în sine - ediții,
+        // recenzii, cine altcineva o are. Aceeași rută din orice listare.
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => context.push('/work/${book.book.id}'),
+            icon: const Icon(Icons.info_outline, size: 18),
+            label: Text(l10n.workTitle),
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+          ),
+        ),
+        const SizedBox(height: 10),
         // Rând de badge-uri: gen + stare. (Cartea nu are rating agregat, deci
         // nu inventăm unul - vezi cardul „Owned by" pentru reputația userului.)
         Wrap(
@@ -965,7 +978,7 @@ class _ReviewTile extends ConsumerWidget {
     final l10n = context.l10n;
     final reason = await showDialog<ReportReason>(
       context: context,
-      builder: (context) => const ReportReasonDialog(),
+      builder: (context) => ReportReasonDialog(target: ReportTargetKind.content),
     );
     if (reason == null) return;
     try {

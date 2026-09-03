@@ -24,6 +24,26 @@ import { publicName } from '../common/utils/user-visibility';
 import { awardXp, XP_BOOK_LISTED } from '../common/utils/xp';
 import { ListingScoreService } from './listing-score.service';
 import { SavedSearchesService } from '../saved-searches/saved-searches.service';
+import { ExternalBookResult } from './types/external-book-result';
+import { ReviewsService } from '../reviews/reviews.service';
+import { ResolveWorkDto } from './dto/resolve-work.dto';
+
+/// Rândul brut întors de căutarea în catalog (`searchCatalog`) - doar
+/// coloanele de care are nevoie dropdown-ul de autocomplete.
+interface CatalogSearchRow {
+  id: string;
+  isbn: string | null;
+  title: string;
+  author: string | null;
+  description: string | null;
+  coverUrl: string | null;
+  publisher: string | null;
+  publishedYear: number | null;
+  pageCount: number | null;
+  language: string | null;
+  genre: string | null;
+  popularityScore: number | null;
+}
 
 const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
 const MAX_LISTING_IMPORT_ROWS = 500;
@@ -38,6 +58,29 @@ const MAX_TOTAL_LISTING_PHOTOS_PER_USER = 300;
 /// prețul vechi tăiat lângă cel nou, asta ar fi devenit o unealtă de marketing
 /// fals. 72h e și intervalul în care o reducere reală rămâne vizibilă.
 const PRICE_UPDATE_COOLDOWN_MS = 72 * 60 * 60 * 1000;
+
+/**
+ * Anunțurile pe care le vede publicul. Un anunț poate fi simultan de mai
+ * multe tipuri (și la schimb, și la vânzare), deci vizibilitatea se decide
+ * per-tip, nu printr-un flag pe anunț: apare dacă ARE MĂCAR UN tip pe care
+ * proprietarul nu l-a ascuns (vezi User în schema.prisma). Aceeași listă e
+ * folosită de căutare/discover ȘI de pagina operei, ca un anunț ascuns să nu
+ * reapară pe o altă rută.
+ */
+const PUBLICLY_VISIBLE_LISTING_OR: Prisma.UserBookWhereInput[] = [
+  { availableForSwap: true, user: { hideSwapListingsPublic: false } },
+  {
+    isForSale: true,
+    salePrice: { gt: 0 },
+    user: { hideSaleListingsPublic: false },
+  },
+  {
+    isForSale: true,
+    salePrice: { equals: 0 },
+    user: { hideDonationListingsPublic: false },
+  },
+  { isAuction: true, user: { hideAuctionListingsPublic: false } },
+];
 
 const OWNER_SELECT = {
   id: true,
@@ -62,6 +105,7 @@ export class BooksService {
     private notifications: NotificationsService,
     private listingScore: ListingScoreService,
     private savedSearches: SavedSearchesService,
+    private reviews: ReviewsService,
   ) {}
 
   async searchExternal(query: string) {
@@ -70,7 +114,285 @@ export class BooksService {
     // suplimentare care făceau dropdown-ul „super greoi" pe cache-miss). Coperta
     // venită gratis în răspunsul de căutare rămâne. `suggestCovers` folosește
     // varianta completă separat, pentru selectorul de coperte.
-    return this.lookup.searchByTitle(query, { skipCoverFallback: true });
+    //
+    // Catalogul propriu se caută ÎN PARALEL cu providerii externi: e singura
+    // sursă care are edițiile românești, iar căutarea lui e insensibilă la
+    // diacritice - „Stapanul Inelelor" nu întorcea nimic nici de la Google
+    // Books (`intitle:` e potrivire de frază exactă), nici de la Open Library
+    // (n-are edițiile românești), deși cartea era la noi în bază.
+    const [catalog, external] = await Promise.all([
+      // Căutarea în catalog depinde de `immutable_unaccent` și de indexul FTS
+      // create de migrarea books_diacritic_search. Dacă serverul pornește
+      // înaintea migrării, cererea pică pe „function does not exist" - fără
+      // prinderea de aici, ar lua cu ea și rezultatele externe, adică tot
+      // autocomplete-ul de la „adaugă carte", care mergea și înainte.
+      this.searchCatalog(query).catch((error) => {
+        this.logger.warn(
+          `Căutarea în catalog a eșuat (migrarea books_diacritic_search e aplicată?): ${error}`,
+        );
+        return [] as ExternalBookResult[];
+      }),
+      this.lookup.searchByTitle(query, { skipCoverFallback: true }),
+    ]);
+    return this.mergeSearchResults(query, catalog, external);
+  }
+
+  /** Câte rezultate întoarce dropdown-ul de autocomplete, în total. */
+  private static readonly _searchResultLimit = 12;
+
+  /**
+   * Cuvintele interogării, pregătite pentru `to_tsquery`: fără diacritice,
+   * minuscule, doar litere și cifre.
+   *
+   * Curățarea nu e cosmetică, e de securitate: `to_tsquery` are sintaxă
+   * proprie (`&`, `|`, `!`, `:`, paranteze), iar un text liber trimis
+   * neatins ar arunca erori de parsare pe orice apostrof sau `&` tastat.
+   * Eliminarea diacriticelor trebuie să dea EXACT ce dă `immutable_unaccent`
+   * pe partea de index (ă→a, â→a, î→i, ș→s, ț→t), altfel n-am potrivi nimic.
+   */
+  private toSearchTerms(query: string): string[] {
+    return query
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((term) => term.length > 0);
+  }
+
+  /**
+   * Căutare în catalogul propriu (~3,7M titluri importate), insensibilă la
+   * diacritice. Ultimul cuvânt e tratat ca prefix (`:*`), ca autocomplete-ul
+   * să găsească ceva și la jumătatea tastării.
+   *
+   * Sortarea se face pe un lot deja mărginit (CTE-ul de mai jos), nu pe toate
+   * potrivirile: un singur cuvânt generic poate potrivi zeci de mii de rânduri
+   * din catalog, iar un ORDER BY global pe ele ar face dropdown-ul mai lent
+   * decât apelurile externe pe care le completează.
+   */
+  async searchCatalog(
+    query: string,
+    limit = BooksService._searchResultLimit,
+  ): Promise<ExternalBookResult[]> {
+    const terms = this.toSearchTerms(query);
+    if (terms.length === 0) return [];
+    const tsquery = terms
+      .map((term, index) => (index === terms.length - 1 ? `${term}:*` : term))
+      .join(' & ');
+
+    const rows = await this.prisma.$queryRaw<CatalogSearchRow[]>`
+      WITH matched AS (
+        SELECT
+          id, isbn, title, author, description, "coverUrl", publisher,
+          "publishedYear", "pageCount", language, genre, "popularityScore"
+        FROM "books"
+        WHERE to_tsvector(
+                'simple',
+                immutable_unaccent(coalesce("title", '') || ' ' || coalesce("author", ''))
+              ) @@ to_tsquery('simple', ${tsquery})
+        LIMIT 500
+      )
+      SELECT * FROM matched
+      ORDER BY COALESCE("popularityScore", 0) DESC, length(title) ASC
+      LIMIT ${limit}
+    `;
+
+    return rows.map((row) => ({
+      isbn: row.isbn,
+      title: row.title,
+      author: row.author,
+      description: row.description,
+      coverUrl: row.coverUrl,
+      publisher: row.publisher,
+      publishedYear: row.publishedYear,
+      pageCount: row.pageCount,
+      language: row.language,
+      genre: row.genre,
+      subjects: [],
+      source: 'catalog' as const,
+      bookId: row.id,
+    }));
+  }
+
+  /**
+   * Reunește rezultatele din catalog cu cele externe, fără duplicate.
+   *
+   * Ordinea: întâi titlurile din catalog care ÎNCEP cu ce a tastat userul
+   * (potrivirea cea mai tare pe care o avem), apoi rezultatele externe (au
+   * coperte și descrieri mai bogate), apoi restul din catalog. Dedupe pe ISBN
+   * când există, altfel pe titlu+autor normalizate.
+   */
+  private mergeSearchResults(
+    query: string,
+    catalog: ExternalBookResult[],
+    external: ExternalBookResult[],
+  ): ExternalBookResult[] {
+    const normalizedQuery = this.toSearchTerms(query).join(' ');
+    const startsWithQuery = (result: ExternalBookResult) =>
+      normalizedQuery.length > 0 &&
+      this.toSearchTerms(result.title).join(' ').startsWith(normalizedQuery);
+
+    const ordered = [
+      ...catalog.filter(startsWithQuery),
+      ...external,
+      ...catalog.filter((result) => !startsWithQuery(result)),
+    ];
+
+    const seen = new Set<string>();
+    const merged: ExternalBookResult[] = [];
+    for (const result of ordered) {
+      const key = result.isbn
+        ? `isbn:${result.isbn.replace(/[-\s]/g, '')}`
+        : `ta:${this.toSearchTerms(result.title).join(' ')}|${this.toSearchTerms(result.author ?? '').join(' ')}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(result);
+      if (merged.length >= BooksService._searchResultLimit) break;
+    }
+    return merged;
+  }
+
+  /**
+   * Pagina „despre carte": UNA singură per operă, la care duc toate listările
+   * (Discover, My Shelf, Search, Book Match) - vezi ruta /work/:bookId.
+   *
+   * Gruparea edițiilor se face LA INTEROGARE, nu printr-un tabel `Work`:
+   * `Book` e per ediție (are isbn, editură, an), iar catalogul are ~3,7M de
+   * rânduri importate. Două rânduri sunt aceeași operă dacă titlul ȘI autorul
+   * coincid după normalizare (minuscule, fără diacritice). Consecința
+   * asumată: edițiile cu titlul scris altfel („Frăția inelului" vs „Stăpânul
+   * Inelelor: Frăția Inelului") rămân opere separate.
+   *
+   * Interogarea trece întâi prin indexul FTS (`books_search_fts_idx`) și abia
+   * apoi compară exact - fără prefiltrul indexat, egalitatea pe o expresie
+   * neindexată ar fi un seq scan pe tot catalogul.
+   */
+  async getWork(bookId: string) {
+    const book = await this.prisma.book.findUnique({ where: { id: bookId } });
+    if (!book) {
+      throw new NotFoundException('Cartea nu a fost găsită');
+    }
+
+    const editions = await this.findEditions(book);
+    const editionIds = editions.map((edition) => edition.id);
+
+    const [reviews, listings] = await Promise.all([
+      this.reviews.getForBooks(editionIds),
+      this.prisma.userBook.findMany({
+        where: {
+          bookId: { in: editionIds },
+          deletedAt: null,
+          hiddenAt: null,
+          OR: PUBLICLY_VISIBLE_LISTING_OR,
+        },
+        include: { book: true, user: { select: OWNER_SELECT } },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+    ]);
+
+    return {
+      book,
+      // Ediția curentă e mereu prima, ca dropdown-ul să deschidă pe ce a
+      // cerut userul, nu pe cea mai nouă din grup.
+      editions,
+      reviews,
+      listings: listings.map((listing) =>
+        this.sanitizeOwner(this.toPublicPhotos(listing)),
+      ),
+    };
+  }
+
+  /**
+   * Edițiile aceleiași opere: același titlu și același autor, normalizate.
+   * Întoarce ÎNTOTDEAUNA cel puțin cartea dată, chiar dacă titlul ei n-are
+   * niciun cuvânt indexabil (titluri numerice, simboluri).
+   */
+  private async findEditions(book: { id: string; title: string; author: string | null }) {
+    const terms = this.toSearchTerms(`${book.title} ${book.author ?? ''}`);
+    if (terms.length === 0) {
+      const only = await this.prisma.book.findUnique({ where: { id: book.id } });
+      return only ? [only] : [];
+    }
+    const tsquery = terms.join(' & ');
+
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "books"
+      WHERE to_tsvector(
+              'simple',
+              immutable_unaccent(coalesce("title", '') || ' ' || coalesce("author", ''))
+            ) @@ to_tsquery('simple', ${tsquery})
+        AND lower(immutable_unaccent(coalesce("title", ''))) =
+            lower(immutable_unaccent(${book.title}))
+        AND lower(immutable_unaccent(coalesce("author", ''))) =
+            lower(immutable_unaccent(${book.author ?? ''}))
+      LIMIT 50
+    `;
+
+    const ids = new Set(rows.map((row) => row.id));
+    ids.add(book.id);
+    const editions = await this.prisma.book.findMany({
+      where: { id: { in: [...ids] } },
+      orderBy: [{ publishedYear: 'desc' }, { createdAt: 'desc' }],
+    });
+    // Ediția cerută prima, restul în ordinea de mai sus.
+    return [
+      ...editions.filter((edition) => edition.id === book.id),
+      ...editions.filter((edition) => edition.id !== book.id),
+    ];
+  }
+
+  /**
+   * Deschiderea paginii „despre carte" pornind de la un rezultat de căutare
+   * EXTERN (Google Books / Open Library), care n-are încă rând în catalog.
+   *
+   * Materializăm cartea aici, la deschidere, nu abia la listare: pagina de
+   * operă, recenziile și raftul lucrează toate cu un `bookId`, iar fără el
+   * fiecare dintre ele ar avea nevoie de o cale paralelă „carte fără id".
+   * Dedupe pe ISBN, altfel pe titlu+autor normalizate - aceeași regulă ca la
+   * gruparea edițiilor, deci un titlu deja în catalog nu se dublează.
+   */
+  async resolveWork(dto: ResolveWorkDto): Promise<{ bookId: string }> {
+    const cleanIsbn = dto.isbn?.replace(/[-\s]/g, '').trim() || null;
+    if (cleanIsbn) {
+      const byIsbn = await this.prisma.book.findUnique({
+        where: { isbn: cleanIsbn },
+      });
+      if (byIsbn) return { bookId: byIsbn.id };
+    }
+
+    const terms = this.toSearchTerms(`${dto.title} ${dto.author ?? ''}`);
+    if (terms.length > 0) {
+      const existing = await this.prisma.$queryRaw<{ id: string }[]>`
+        SELECT id FROM "books"
+        WHERE to_tsvector(
+                'simple',
+                immutable_unaccent(coalesce("title", '') || ' ' || coalesce("author", ''))
+              ) @@ to_tsquery('simple', ${terms.join(' & ')})
+          AND lower(immutable_unaccent(coalesce("title", ''))) =
+              lower(immutable_unaccent(${dto.title}))
+          AND lower(immutable_unaccent(coalesce("author", ''))) =
+              lower(immutable_unaccent(${dto.author ?? ''}))
+        LIMIT 1
+      `;
+      if (existing.length > 0) return { bookId: existing[0].id };
+    }
+
+    const created = await this.prisma.book.create({
+      data: {
+        isbn: cleanIsbn,
+        title: dto.title,
+        author: dto.author,
+        coverUrl: dto.coverUrl,
+        publisher: dto.publisher,
+        publishedYear: dto.publishedYear,
+        pageCount: dto.pageCount,
+        language: dto.language,
+        genre: dto.genre,
+        description: dto.description,
+        source: dto.source ?? 'search',
+      },
+    });
+    return { bookId: created.id };
   }
 
   /** Vezi BookLookupService.fetchCoverImage - de ce există proxy-ul ăsta. */
@@ -117,8 +439,11 @@ export class BooksService {
 
     const where: Prisma.UserBookWhereInput = {
       // Cărțile din coșul de gunoi al proprietarului (soft-delete) NU trebuie
-      // să apară în feed - vezi Milestone 10 batch 2.
+      // să apară în feed - vezi Milestone 10 batch 2. `hiddenAt` e cealaltă
+      // jumătate: anunțul ascuns automat de moderare (vezi ReportsService)
+      // iese din căutare, dar rămâne al proprietarului.
       deletedAt: null,
+      hiddenAt: null,
       availableForSwap:
         filters.listingType != null
           ? filters.listingType === 'swap'
@@ -163,20 +488,7 @@ export class BooksService {
       // singur flag pe anunț. Un anunț apare dacă ARE MĂCAR UN tip pe care
       // proprietarul nu l-a ascuns - dacă toate tipurile lui sunt ascunse,
       // dispare complet din căutare/discover.
-      OR: [
-        { availableForSwap: true, user: { hideSwapListingsPublic: false } },
-        {
-          isForSale: true,
-          salePrice: { gt: 0 },
-          user: { hideSaleListingsPublic: false },
-        },
-        {
-          isForSale: true,
-          salePrice: { equals: 0 },
-          user: { hideDonationListingsPublic: false },
-        },
-        { isAuction: true, user: { hideAuctionListingsPublic: false } },
-      ],
+      OR: PUBLICLY_VISIBLE_LISTING_OR,
     };
 
     const fromCoords = filters.fromCity
@@ -969,6 +1281,7 @@ export class BooksService {
       where: {
         id: { in: scored.map((s) => s.userBookId) },
         deletedAt: null,
+        hiddenAt: null,
         availableForSwap: true,
       },
       include: { book: true, user: { select: OWNER_SELECT } },
@@ -986,6 +1299,7 @@ export class BooksService {
         where: {
           id: { notIn: result.map((r) => r.id) },
           deletedAt: null,
+          hiddenAt: null,
           availableForSwap: true,
         },
         include: { book: true, user: { select: OWNER_SELECT } },
@@ -1248,6 +1562,7 @@ export class BooksService {
     const candidates = await this.prisma.userBook.findMany({
       where: {
         deletedAt: null,
+        hiddenAt: null,
         availableForSwap: true,
         userId: { not: userId },
         OR: [
@@ -1303,6 +1618,7 @@ export class BooksService {
     const candidates = await this.prisma.userBook.findMany({
       where: {
         deletedAt: null,
+        hiddenAt: null,
         availableForSwap: true,
         bookId: { in: wished.map((w) => w.bookId) },
         condition: { in: ['NOUA', 'FOARTE_BUNA', 'BUNA'] },

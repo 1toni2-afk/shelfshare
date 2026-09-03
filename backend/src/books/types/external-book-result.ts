@@ -18,5 +18,13 @@ export interface ExternalBookResult {
    * trebuiască verificat în fiecare consumator.
    */
   subjects: string[];
-  source: 'open_library' | 'google_books';
+  /**
+   * 'catalog' = rând din propriul nostru tabel `books`, nu de la un provider
+   * extern - vezi BooksService.searchCatalog. Când sursa e 'catalog',
+   * `bookId` e completat, deci clientul poate lega direct anunțul de opera
+   * existentă în loc să creeze un duplicat după titlu.
+   */
+  source: 'open_library' | 'google_books' | 'catalog';
+  /** Setat doar pentru `source: 'catalog'`. */
+  bookId?: string;
 }

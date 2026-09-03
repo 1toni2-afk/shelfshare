@@ -16,6 +16,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 import { ReportConversationDto } from './dto/report-conversation.dto';
 import { RealtimeService } from '../common/realtime/realtime.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { ReportsService } from '../reports/reports.service';
 
 const PARTICIPANT_SELECT = {
   id: true,
@@ -91,6 +92,7 @@ export class ConversationsService {
     private presence: PresenceService,
     private realtime: RealtimeService,
     private activityLog: ActivityLogService,
+    private reports: ReportsService,
   ) {}
 
   /**
@@ -620,15 +622,14 @@ export class ConversationsService {
       `conversatie-${conversationId}`,
     );
 
-    const report = await this.prisma.report.create({
-      data: {
-        reporterId,
-        reportedUserId,
-        reason: dto.reason,
-        details: dto.details,
-        conversationId,
-        transcriptPath,
-      },
+    const report = await this.reports.create({
+      reporterId,
+      reportedUserId,
+      targetType: 'CONVERSATION',
+      targetId: conversationId,
+      reason: dto.reason,
+      details: dto.details,
+      extra: { conversationId, transcriptPath },
     });
 
     // Raportarea merge în jurnalul principal, nu în cel de chat: e o acțiune

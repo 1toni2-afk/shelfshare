@@ -37,9 +37,12 @@ import { SavedSearchesModule } from './saved-searches/saved-searches.module';
 import { BookOfMonthModule } from './book-of-month/book-of-month.module';
 import { ReadingProgressModule } from './reading-progress/reading-progress.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
+    // Global: se raporteaza din patru module fara legatura intre ele.
+    ReportsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     // Default rate limit applied to every route unless overridden with

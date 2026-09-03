@@ -7,12 +7,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportUserDto } from './dto/report-user.dto';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { ReportsService } from '../reports/reports.service';
 
 @Injectable()
 export class SafetyService {
   constructor(
     private prisma: PrismaService,
     private activityLog: ActivityLogService,
+    private reports: ReportsService,
   ) {}
 
   async blockUser(blockerId: string, blockedId: string) {
@@ -95,14 +97,16 @@ export class SafetyService {
     }
     await this.assertUserExists(reportedUserId);
 
-    const report = await this.prisma.report.create({
-      data: {
-        reporterId,
-        reportedUserId,
-        reason: dto.reason,
-        details: dto.details,
-        userBookId: dto.userBookId,
-      },
+    // Cu `userBookId` tinta e ANUNTUL, nu userul in general: doar asa poate
+    // auto-hide-ul sa numere rapoartele pe acelasi anunt (vezi ReportsService).
+    const report = await this.reports.create({
+      reporterId,
+      reportedUserId,
+      targetType: dto.userBookId ? 'LISTING' : 'USER',
+      targetId: dto.userBookId ?? reportedUserId,
+      reason: dto.reason,
+      details: dto.details,
+      extra: { userBookId: dto.userBookId },
     });
 
     // Raportul ajunge la moderatori, deci e și o interacțiune user-admin.

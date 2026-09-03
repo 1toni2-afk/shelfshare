@@ -1,6 +1,11 @@
 class BookReview {
   final String id;
   final String userId;
+
+  /// Ediția pe care a fost scrisă recenzia. Pe pagina operei recenziile vin
+  /// de pe TOATE edițiile ei, deci ștergerea trebuie să țintească ediția
+  /// corectă, nu cea deschisă în acel moment.
+  final String bookId;
   final int rating;
   final String? text;
   final String? authorName;
@@ -10,6 +15,7 @@ class BookReview {
   const BookReview({
     required this.id,
     required this.userId,
+    required this.bookId,
     required this.rating,
     this.text,
     this.authorName,
@@ -22,6 +28,7 @@ class BookReview {
     return BookReview(
       id: json['id'] as String,
       userId: json['userId'] as String,
+      bookId: json['bookId'] as String,
       rating: json['rating'] as int,
       text: json['text'] as String?,
       authorName: user['name'] as String?,

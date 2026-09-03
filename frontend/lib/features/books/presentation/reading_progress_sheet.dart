@@ -8,6 +8,7 @@ import '../../../data/models/book.dart';
 import '../../../shared/widgets/field_label.dart';
 import '../data/bookshelf_repository.dart';
 import '../data/reading_progress_repository.dart';
+import 'review_sheet.dart';
 
 /// Formularul de progres la citit pentru o carte deținută (My Shelf).
 ///
@@ -19,6 +20,15 @@ import '../data/reading_progress_repository.dart';
 ///   difere de cea din catalog, iar fără asta bara de progres mințea.
 ///
 /// Întoarce `true` dacă s-a salvat ceva (apelantul invalidează providerele).
+/// Ce s-a intamplat in sheet. `justFinished` e true DOAR la trecerea in
+/// „citita" - nu si cand cartea era deja terminata si userul doar reeditat
+/// progresul, ca promptul de recenzie sa nu reapara la fiecare salvare.
+class _SheetResult {
+  const _SheetResult({required this.saved, required this.justFinished});
+  final bool saved;
+  final bool justFinished;
+}
+
 Future<bool> showReadingProgressSheet(
   BuildContext context,
   WidgetRef ref, {
@@ -26,7 +36,7 @@ Future<bool> showReadingProgressSheet(
   required int currentPage,
   int? totalPages,
 }) async {
-  final saved = await showModalBottomSheet<bool>(
+  final result = await showModalBottomSheet<_SheetResult>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _ReadingProgressSheet(
@@ -35,7 +45,44 @@ Future<bool> showReadingProgressSheet(
       totalPages: totalPages ?? book.pageCount,
     ),
   );
-  return saved ?? false;
+  if (result == null) return false;
+
+  // Promptul de recenzie e SOFT: o intrebare, cu „nu acum" ca iesire evidenta.
+  // Momentul in care userul tocmai a terminat cartea e singurul in care are
+  // ceva de spus despre ea si e inca proaspat - dar a-i cere obligatoriu o
+  // recenzie ca sa poata marca o carte drept citita ar strica exact fluxul
+  // pe care il masuram (progresul la citit).
+  if (result.justFinished && context.mounted) {
+    await _promptForReview(context, ref, book);
+  }
+  return result.saved;
+}
+
+Future<void> _promptForReview(
+  BuildContext context,
+  WidgetRef ref,
+  Book book,
+) async {
+  final l10n = context.l10n;
+  final wantsToReview = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(l10n.reviewPromptTitle),
+      content: Text(l10n.reviewPromptBody(book.title)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.reviewPromptNotNow),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.reviewPromptWrite),
+        ),
+      ],
+    ),
+  );
+  if (wantsToReview != true || !context.mounted) return;
+  await showReviewSheet(context, ref, book: book);
 }
 
 enum _ProgressUnit { pages, percent }
@@ -50,6 +97,9 @@ class _ReadingProgressSheet extends ConsumerStatefulWidget {
   final Book book;
   final int currentPage;
   final int? totalPages;
+
+  /// Cartea era DEJA terminata cand s-a deschis sheet-ul.
+  bool get wasFinished => totalPages != null && currentPage >= totalPages!;
 
   @override
   ConsumerState<_ReadingProgressSheet> createState() => _ReadingProgressSheetState();
@@ -153,7 +203,11 @@ class _ReadingProgressSheetState extends ConsumerState<_ReadingProgressSheet> {
       ref.invalidate(myReadingProgressProvider);
       ref.invalidate(myOwnedShelfProvider);
       ref.invalidate(myBookshelfProvider);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        Navigator.of(context).pop(
+          _SheetResult(saved: true, justFinished: isDone && !widget.wasFinished),
+        );
+      }
     } on DioException catch (e) {
       final data = e.response?.data;
       final message = data is Map && data['message'] != null

@@ -163,12 +163,39 @@ class AdminRepository {
         .toList();
   }
 
-  Future<List<UserReport>> getUserReports() async {
+  /// Coada de moderare. Ambele filtre sunt opționale: fără ele întoarce tot,
+  /// exact ca înainte să existe filtrarea (panoul principal se bazează pe asta
+  /// pentru contorul din card).
+  Future<List<UserReport>> getUserReports({
+    ReportTargetType? targetType,
+    ReportStatus? status,
+  }) async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get('/admin/reports/users');
+    final response = await dio.get('/admin/reports/users', queryParameters: {
+      'targetType': ?targetType?.toJson(),
+      'status': ?status?.toJson(),
+    });
     return (response.data as List)
         .map((e) => UserReport.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Câte rapoarte sunt pe fiecare (tip de țintă, status) - alimentează
+  /// contoarele de pe filtre, ca moderatorul să vadă unde s-a strâns treabă
+  /// fără să deschidă fiecare filtru pe rând.
+  Future<List<ReportCount>> getReportCounts() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/reports/counts');
+    return (response.data as List)
+        .map((e) => ReportCount.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Repune conținutul ascuns automat de praguri - „raportul nu stă în
+  /// picioare". Ia id-ul raportului; ținta se citește pe server de pe el.
+  Future<void> unhideReportTarget(String reportId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.post('/admin/reports/$reportId/unhide');
   }
 
   Future<UserReport> updateReportStatus(

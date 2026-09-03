@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../data/models/external_book_result.dart';
+import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
@@ -13,6 +16,14 @@ import 'browse_filters_sheet.dart';
 
 final _popularSearchesProvider = FutureProvider((ref) {
   return ref.watch(booksRepositoryProvider).getPopularSearches();
+});
+
+/// Cautarea "peste tot": catalogul propriu + Google Books / Open Library.
+/// `autoDispose`, ca rezultatele sa nu se adune in memorie pentru fiecare
+/// termen tastat intr-o sesiune de cautare.
+final globalBookSearchProvider = FutureProvider.autoDispose
+    .family<List<ExternalBookResult>, String>((ref, query) {
+  return ref.watch(booksRepositoryProvider).searchExternal(query);
 });
 
 
@@ -165,7 +176,16 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
             ),
             if (_searchController.text.trim().isEmpty && !state.filters.hasActiveFilters)
               _PopularSearches(onSelect: _selectPopularSearch),
-            Expanded(child: _BrowseResults(state: state, scrollController: _scrollController)),
+            Expanded(
+              child: _BrowseResults(
+                state: state,
+                scrollController: _scrollController,
+                // Cautarea globala porneste de la ce e efectiv aplicat ca
+                // filtru, nu de la textul din camp: altfel ar cere rezultate
+                // externe la fiecare tasta, inaintea debounce-ului.
+                globalQuery: state.filters.title,
+              ),
+            ),
           ],
         ),
       ),
@@ -210,12 +230,23 @@ class _PopularSearches extends ConsumerWidget {
 }
 
 class _BrowseResults extends ConsumerWidget {
-  const _BrowseResults({required this.state, required this.scrollController});
+  const _BrowseResults({
+    required this.state,
+    required this.scrollController,
+    required this.globalQuery,
+  });
+
   final BrowseState state;
   final ScrollController scrollController;
 
+  /// Termenul pentru care cautam si in afara anunturilor din aplicatie.
+  final String? globalQuery;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final query = globalQuery?.trim();
+    final hasQuery = query != null && query.length >= 2;
+
     if (state.isLoading) {
       return const CenteredScrollable(child: CircularProgressIndicator());
     }
@@ -236,7 +267,11 @@ class _BrowseResults extends ConsumerWidget {
       );
     }
 
-    if (state.items.isEmpty) {
+    // Fara niciun anunt SI fara termen de cautare nu avem ce arata - starea
+    // goala ramane cea de dinainte. Cu termen, mesajul "niciun rezultat" e
+    // doar despre anunturi: sectiunea globala de dedesubt e exact motivul
+    // pentru care ecranul nu se mai opreste aici.
+    if (state.items.isEmpty && !hasQuery) {
       return CenteredScrollable(child: Text(context.l10n.browseEmpty));
     }
 
@@ -247,6 +282,14 @@ class _BrowseResults extends ConsumerWidget {
     return CustomScrollView(
       controller: scrollController,
       slivers: [
+        if (state.items.isEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            sliver: SliverToBoxAdapter(
+              child: Text(context.l10n.browseEmpty, textAlign: TextAlign.center),
+            ),
+          )
+        else
         SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: SliverGrid(
@@ -273,6 +316,223 @@ class _BrowseResults extends ConsumerWidget {
             padding: EdgeInsets.symmetric(vertical: 24),
             sliver: SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
           ),
+        if (hasQuery)
+          SliverToBoxAdapter(child: _GlobalResultsSection(query: query)),
+      ],
+    );
+  }
+}
+
+/// „Toate cărțile": rezultate din catalogul propriu ȘI de la Google Books /
+/// Open Library, nu doar din anunțurile active.
+///
+/// Motivul pentru care există: până acum, o carte pe care n-o listase nimeni
+/// pur și simplu nu exista din perspectiva căutării - userul primea „niciun
+/// rezultat" pentru un titlu perfect real. Acum primește cartea, cu pagina ei,
+/// de unde o poate pune pe raft sau o poate lista el însuși.
+class _GlobalResultsSection extends ConsumerWidget {
+  const _GlobalResultsSection({required this.query});
+  final String query;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final async = ref.watch(globalBookSearchProvider(query));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 32),
+          Text(l10n.browseGlobalTitle, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            l10n.browseGlobalSubtitle,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: AppColors.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          async.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            // Sursele externe pică des (cotă depășită, timeout), iar căutarea
+            // în anunțuri de deasupra rămâne utilă - deci eroarea ia doar
+            // secțiunea asta, nu ecranul.
+            error: (_, _) =>
+                _AddTitleCta(query: query, label: l10n.browseGlobalError),
+            data: (results) {
+              if (results.isEmpty) {
+                return _AddTitleCta(
+                  query: query,
+                  label: l10n.browseGlobalEmpty(query),
+                );
+              }
+              return Column(
+                children: [
+                  for (final result in results) _GlobalResultTile(result: result),
+                  const SizedBox(height: 8),
+                  _AddTitleCta(query: query, label: l10n.browseGlobalNotFound),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlobalResultTile extends ConsumerStatefulWidget {
+  const _GlobalResultTile({required this.result});
+  final ExternalBookResult result;
+
+  @override
+  ConsumerState<_GlobalResultTile> createState() => _GlobalResultTileState();
+}
+
+class _GlobalResultTileState extends ConsumerState<_GlobalResultTile> {
+  bool _opening = false;
+
+  /// Rezultatele din catalogul propriu au deja `bookId`; cele externe îl
+  /// primesc acum, la deschidere - serverul le caută întâi după ISBN, apoi
+  /// după titlu+autor, și abia dacă nu le găsește creează ceva (vezi
+  /// BooksService.resolveWork), deci deschiderea repetată nu umple catalogul.
+  Future<void> _open() async {
+    final existing = widget.result.bookId;
+    if (existing != null) {
+      context.push('/work/$existing');
+      return;
+    }
+    setState(() => _opening = true);
+    try {
+      final bookId =
+          await ref.read(booksRepositoryProvider).resolveWork(widget.result);
+      if (mounted) context.push('/work/$bookId');
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.commonGenericError)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _opening = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final result = widget.result;
+    final meta = [
+      if (result.publishedYear != null) '${result.publishedYear}',
+      if (result.publisher != null && result.publisher!.trim().isNotEmpty)
+        result.publisher!,
+    ].join(' · ');
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: _opening ? null : _open,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            children: [
+              BookCover(
+                url: result.coverUrl,
+                title: result.title,
+                width: 40,
+                height: 56,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      result.title,
+                      style: theme.textTheme.titleSmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (result.author != null)
+                      Text(
+                        result.author!,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: AppColors.mutedForeground),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (meta.isNotEmpty)
+                      Text(
+                        meta,
+                        style: theme.textTheme.labelSmall
+                            ?.copyWith(color: AppColors.mutedForeground),
+                      ),
+                  ],
+                ),
+              ),
+              if (_opening)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Icon(Icons.chevron_right, color: AppColors.mutedForeground),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ieșirea din fundătură: titlul nu e nici la noi, nici la sursele externe -
+/// atunci userul îl adaugă el, cu o poză proprie drept copertă (ecranul de
+/// adăugare are deja selectorul de poze).
+class _AddTitleCta extends StatelessWidget {
+  const _AddTitleCta({required this.query, required this.label});
+  final String query;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: AppColors.mutedForeground),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => context.push(
+              // `mode=listing`, nu raftul personal: modul de listare e singurul
+              // cu selector de poze, iar promisiunea de aici e exact „adaugă
+              // titlul cu poza ta drept copertă".
+              Uri(
+                path: '/library/add',
+                queryParameters: {'mode': 'listing', 'title': query},
+              ).toString(),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.accent,
+              side: const BorderSide(color: AppColors.accent),
+              minimumSize: const Size.fromHeight(48),
+            ),
+            icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
+            label: Text(context.l10n.browseAddTitleCta),
+          ),
+        ),
       ],
     );
   }

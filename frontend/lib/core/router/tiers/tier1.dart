@@ -12,3 +12,4 @@ library;
 export '../../../features/home/presentation/home_screen.dart';
 export '../../../features/books/presentation/discover_screen.dart';
 export '../../../features/books/presentation/book_detail_screen.dart';
+export '../../../features/books/presentation/book_work_screen.dart';

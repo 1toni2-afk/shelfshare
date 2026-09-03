@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
+import '../../../data/models/book_work.dart';
 import '../../../data/models/map_city.dart';
 import '../../../data/models/price_offer.dart';
 import '../../../data/models/user.dart';
@@ -647,7 +648,11 @@ class BooksRepository {
     final formData = FormData.fromMap({
       'photo': imageMultipartFile(bytes, filename),
     });
-    final response = await dio.post('/books/$userBookId/photos', data: formData);
+    final response = await dio.post(
+      '/books/$userBookId/photos',
+      data: formData,
+      options: imageUploadOptions(),
+    );
     final data = response.data;
     return data is Map ? data['photoUrl'] as String? : null;
   }
@@ -658,6 +663,38 @@ class BooksRepository {
   Future<void> addPhotoUrl(String userBookId, String url) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.post('/books/$userBookId/photos/from-url', data: {'url': url});
+  }
+
+  /// Pagina „despre carte" - o operă, cu edițiile, recenziile și exemplarele
+  /// listate în aplicație. Vezi BooksService.getWork.
+  Future<BookWork> getWork(String bookId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/books/work/$bookId');
+    return BookWork.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Id-ul de catalog pentru un rezultat de căutare care încă n-are unul
+  /// (titluri venite de la Google Books / Open Library). Serverul îl caută
+  /// după ISBN, apoi după titlu+autor, și abia dacă nu-l găsește îl creează -
+  /// deci apeluri repetate pe același titlu întorc același id.
+  Future<String> resolveWork(ExternalBookResult result) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    String? clean(String? value) =>
+        (value == null || value.trim().isEmpty) ? null : value.trim();
+    final response = await dio.post('/books/work/resolve', data: {
+      'title': result.title,
+      'author': ?clean(result.author),
+      'isbn': ?clean(result.isbn),
+      'coverUrl': ?clean(result.coverUrl),
+      'publisher': ?clean(result.publisher),
+      'publishedYear': ?result.publishedYear,
+      'pageCount': ?result.pageCount,
+      'language': ?clean(result.language),
+      'genre': ?clean(result.genre),
+      'description': ?clean(result.description),
+      'source': ?clean(result.source),
+    });
+    return (response.data as Map<String, dynamic>)['bookId'] as String;
   }
 
   /// Setează poza principală a anunțului (Batch 8). URL-ul poate fi o poză
@@ -672,4 +709,12 @@ class BooksRepository {
 
 final booksRepositoryProvider = Provider<BooksRepository>((ref) {
   return BooksRepository(ref);
+});
+
+/// Pagina „despre carte" pentru o operă. `autoDispose`: altfel fiecare carte
+/// deschisă într-o sesiune de răsfoire ar rămâne în memorie cu tot cu
+/// recenziile și anunțurile ei, iar catalogul are 3,7M de titluri de răsfoit.
+final bookWorkProvider =
+    FutureProvider.autoDispose.family<BookWork, String>((ref, bookId) {
+  return ref.watch(booksRepositoryProvider).getWork(bookId);
 });

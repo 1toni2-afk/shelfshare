@@ -166,13 +166,20 @@ class _AdminContent extends StatelessWidget {
             onTap: () => context.push('/admin/listings/inactive'),
           ),
         ),
-        const SizedBox(height: 28),
-        Text(l10n.adminUserReportsCount(data.userReports.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
-        if (data.userReports.isEmpty)
-          Text(l10n.adminNoReports)
-        else
-          for (final report in data.userReports) _UserReportTile(report: report),
+        // Coada de moderare are propriul panou, filtrabil dupa tipul tintei si
+        // dupa status - lista inline de aici crestea la nesfarsit si nu se
+        // putea restrange la ce cauta moderatorul.
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.flag_outlined),
+            title: Text(l10n.adminUserReportsCount(data.userReports.length)),
+            subtitle: Text(l10n.adminReportsDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/reports'),
+          ),
+        ),
         const SizedBox(height: 28),
         Text(l10n.adminUpcomingReleasesCount(data.upcomingReleases.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 4),
@@ -262,166 +269,6 @@ class _FeedbackTile extends StatelessWidget {
                   ),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _UserReportTile extends ConsumerWidget {
-  const _UserReportTile({required this.report});
-  final UserReport report;
-
-  Color _statusColor(ReportStatus status) {
-    switch (status) {
-      case ReportStatus.open:
-        return AppColors.warning;
-      case ReportStatus.inProgress:
-        return AppColors.primary;
-      case ReportStatus.resolved:
-        return AppColors.success;
-      case ReportStatus.dismissed:
-        return AppColors.mutedForeground;
-    }
-  }
-
-  String _statusLabel(BuildContext context, ReportStatus status) {
-    final l10n = context.l10n;
-    switch (status) {
-      case ReportStatus.open:
-        return l10n.adminReportStatusOpen;
-      case ReportStatus.inProgress:
-        return l10n.adminReportStatusInProgress;
-      case ReportStatus.resolved:
-        return l10n.adminReportStatusResolved;
-      case ReportStatus.dismissed:
-        return l10n.adminReportStatusDismissed;
-    }
-  }
-
-  Future<void> _applyStatus(BuildContext context, WidgetRef ref, ReportStatus status) async {
-    String? note;
-    if (status == ReportStatus.resolved || status == ReportStatus.dismissed) {
-      final l10n = context.l10n;
-      final controller = TextEditingController();
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(_statusLabel(context, status)),
-          content: TextField(
-            controller: controller,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: l10n.adminReportResolutionNoteLabel,
-              hintText: l10n.adminReportResolutionNoteHint,
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonCancel)),
-            TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonConfirm)),
-          ],
-        ),
-      );
-      controller.dispose();
-      if (confirmed != true) return;
-      note = controller.text.trim();
-    }
-    if (!context.mounted) return;
-    try {
-      await ref.read(adminControllerProvider.notifier).updateReportStatus(
-            report.id,
-            status,
-            resolutionNote: note != null && note.isNotEmpty ? note : null,
-          );
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.adminReportUpdateError)),
-        );
-      }
-    }
-  }
-
-  Future<void> _deleteContent(BuildContext context, WidgetRef ref) async {
-    final l10n = context.l10n;
-    final isPost = report.groupPostId != null;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isPost ? l10n.adminDeletePostConfirmTitle : l10n.adminDeleteReviewConfirmTitle),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonGiveUp)),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonDelete)),
-        ],
-      ),
-    );
-    if (confirmed != true || !context.mounted) return;
-    try {
-      if (isPost) {
-        await ref.read(adminControllerProvider.notifier).deleteReportedGroupPost(report.groupPostId!);
-      } else {
-        await ref.read(adminControllerProvider.notifier).deleteReportedReview(report.reviewId!);
-      }
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.adminContentDeleted)));
-      }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.adminContentDeleteError)));
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final assignedName = report.assignedToName ?? report.assignedToEmail;
-    final hasContent = report.groupPostId != null || report.reviewId != null;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        title: Text('${report.reportedName ?? report.reportedEmail} - ${report.reason}'),
-        subtitle: Text([
-          l10n.adminReportedBy(report.reporterName ?? report.reporterEmail),
-          assignedName != null ? l10n.adminReportAssignedTo(assignedName) : l10n.adminReportUnassigned,
-          if (report.details != null && report.details!.isNotEmpty) report.details!,
-          if (report.resolutionNote != null && report.resolutionNote!.isNotEmpty) report.resolutionNote!,
-          if (report.groupPostId != null) '${l10n.adminReportedPostLabel}: "${report.groupPostContent}"',
-          if (report.reviewId != null)
-            '${l10n.adminReportedReviewLabel} (${report.reviewRating}/5)'
-                '${report.reviewText != null && report.reviewText!.isNotEmpty ? ": ${report.reviewText}" : ""}',
-        ].join('\n')),
-        isThreeLine: true,
-        leading: Chip(
-          label: Text(_statusLabel(context, report.status), style: const TextStyle(fontSize: 11)),
-          backgroundColor: _statusColor(report.status).withValues(alpha: 0.15),
-          labelStyle: TextStyle(color: _statusColor(report.status)),
-          padding: EdgeInsets.zero,
-          visualDensity: VisualDensity.compact,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (hasContent)
-              IconButton(
-                icon: const Icon(Icons.delete_outline),
-                tooltip: report.groupPostId != null ? l10n.adminDeletePostAction : l10n.adminDeleteReviewAction,
-                onPressed: () => _deleteContent(context, ref),
-              ),
-            PopupMenuButton<ReportStatus>(
-              onSelected: (status) => _applyStatus(context, ref, status),
-              itemBuilder: (context) => [
-                if (report.status == ReportStatus.open)
-                  PopupMenuItem(value: ReportStatus.inProgress, child: Text(l10n.adminReportMarkInProgress)),
-                if (report.status != ReportStatus.resolved)
-                  PopupMenuItem(value: ReportStatus.resolved, child: Text(l10n.adminReportMarkResolved)),
-                if (report.status != ReportStatus.dismissed)
-                  PopupMenuItem(value: ReportStatus.dismissed, child: Text(l10n.adminReportMarkDismissed)),
-                if (report.status == ReportStatus.resolved || report.status == ReportStatus.dismissed)
-                  PopupMenuItem(value: ReportStatus.open, child: Text(l10n.adminReportReopen)),
-              ],
-            ),
           ],
         ),
       ),

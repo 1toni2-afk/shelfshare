@@ -280,6 +280,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           _deferredRoute('/admin', tier3.loadLibrary,
               (context, state) => tier3.AdminScreen()),
+          // Coada de moderare, filtrabila dupa tipul tintei si dupa status.
+          _deferredRoute('/admin/reports', tier3.loadLibrary,
+              (context, state) => tier3.AdminReportsScreen()),
           _deferredRoute('/admin/users', tier3.loadLibrary,
               (context, state) => tier3.AdminUsersScreen()),
           _deferredRoute('/admin/listings/inactive', tier3.loadLibrary,
@@ -353,6 +356,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             (context, state) => tier2.PublicProfileScreen(
               userId: state.pathParameters['userId']!,
               fallback: state.extra as PublicUser?,
+            ),
+          ),
+          // Pagina „despre carte" - o singură rută pentru toate listările din
+          // app. Distinctă de /books/:userBookId, care rămâne pagina unui
+          // ANUNȚ anume (exemplarul unui user, cu preț și proprietar).
+          _deferredRoute(
+            '/work/:bookId',
+            tier1.loadLibrary,
+            (context, state) => tier1.BookWorkScreen(
+              bookId: state.pathParameters['bookId']!,
             ),
           ),
           _deferredRoute(

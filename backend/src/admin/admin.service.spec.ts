@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FeedbackService } from '../feedback/feedback.service';
 import { SupportService } from '../support/support.service';
 import { ListingScoreService } from '../books/listing-score.service';
+import { ReportsService } from '../reports/reports.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -37,6 +38,7 @@ describe('AdminService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
+        { provide: ReportsService, useValue: { create: jest.fn(), unhideTarget: jest.fn() } },
         { provide: PrismaService, useValue: prisma },
         { provide: FeedbackService, useValue: { getAll: jest.fn() } },
         { provide: SupportService, useValue: { getAll: jest.fn() } },

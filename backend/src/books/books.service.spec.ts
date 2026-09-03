@@ -8,6 +8,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { BookLookupService } from './book-lookup.service';
 import { ListingScoreService } from './listing-score.service';
 import { SavedSearchesService } from '../saved-searches/saved-searches.service';
+import { ReviewsService } from '../reviews/reviews.service';
 import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 
 describe('BooksService', () => {
@@ -16,7 +17,10 @@ describe('BooksService', () => {
     userBook: Record<string, jest.Mock>;
     priceOffer: Record<string, jest.Mock>;
     exchangeRequest: Record<string, jest.Mock>;
+    searchLog: Record<string, jest.Mock>;
+    $queryRaw: jest.Mock;
   };
+  let lookup: { searchByTitle: jest.Mock };
   let listingScore: { scoresFor: jest.Mock };
 
   beforeEach(async () => {
@@ -29,8 +33,11 @@ describe('BooksService', () => {
       },
       priceOffer: { findFirst: jest.fn().mockResolvedValue(null) },
       exchangeRequest: { findFirst: jest.fn().mockResolvedValue(null) },
+      searchLog: { create: jest.fn().mockResolvedValue(null) },
+      $queryRaw: jest.fn().mockResolvedValue([]),
     };
     listingScore = { scoresFor: jest.fn() };
+    lookup = { searchByTitle: jest.fn().mockResolvedValue([]) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -48,8 +55,9 @@ describe('BooksService', () => {
           },
         },
         { provide: FollowService, useValue: {} },
+        { provide: ReviewsService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
-        { provide: BookLookupService, useValue: {} },
+        { provide: BookLookupService, useValue: lookup },
         { provide: ListingScoreService, useValue: listingScore },
         {
           provide: SavedSearchesService,
@@ -316,6 +324,107 @@ describe('BooksService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].ownerId).toBe('u-ascuns');
       expect(result[0].ownerName).toBeNull();
+    });
+  });
+
+  describe('searchExternal - catalogul propriu, fara diacritice', () => {
+    /** Un rand din catalog, asa cum il intoarce $queryRaw din searchCatalog. */
+    const catalogRow = (over: Record<string, unknown> = {}) => ({
+      id: 'book-1',
+      isbn: null,
+      title: 'Stapanul Inelelor: Fratia Inelului',
+      author: 'J.R.R. Tolkien',
+      description: null,
+      coverUrl: null,
+      publisher: null,
+      publishedYear: 2001,
+      pageCount: null,
+      language: 'ro',
+      genre: null,
+      popularityScore: null,
+      ...over,
+    });
+
+    it('cauta in catalog cu termenii fara diacritice si prefix pe ultimul cuvant', async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      await service.searchCatalog('Stăpânul Inelelor');
+
+      // Prisma primeste template-ul; interogarea tsquery e primul parametru.
+      const params = prisma.$queryRaw.mock.calls[0].slice(1);
+      expect(params).toContain('stapanul & inelelor:*');
+    });
+
+    it('nu interogheaza deloc catalogul pentru o cautare fara litere sau cifre', async () => {
+      const results = await service.searchCatalog('   ---   ');
+
+      expect(results).toEqual([]);
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    });
+
+    it('intoarce cartea din catalog chiar cand sursele externe nu gasesc nimic', async () => {
+      prisma.$queryRaw.mockResolvedValue([catalogRow()]);
+      lookup.searchByTitle.mockResolvedValue([]);
+
+      const results = await service.searchExternal('Stapanul Inelelor');
+
+      expect(results).toHaveLength(1);
+      expect(results[0].title).toBe('Stapanul Inelelor: Fratia Inelului');
+      // `bookId` e ce leaga anuntul de opera existenta, in loc sa creeze un duplicat.
+      expect(results[0].bookId).toBe('book-1');
+      expect(results[0].source).toBe('catalog');
+    });
+
+    it('pune potrivirea de prefix din catalog inaintea rezultatelor externe', async () => {
+      prisma.$queryRaw.mockResolvedValue([catalogRow()]);
+      lookup.searchByTitle.mockResolvedValue([
+        {
+          isbn: null,
+          title: 'O carte fara legatura',
+          author: 'Altcineva',
+          description: null,
+          coverUrl: null,
+          publisher: null,
+          publishedYear: null,
+          pageCount: null,
+          language: null,
+          genre: null,
+          subjects: [],
+          source: 'google_books',
+        },
+      ]);
+
+      const results = await service.searchExternal('Stapanul Inelelor');
+
+      expect(results.map((r) => r.title)).toEqual([
+        'Stapanul Inelelor: Fratia Inelului',
+        'O carte fara legatura',
+      ]);
+    });
+
+    it('nu afiseaza de doua ori aceeasi carte gasita si in catalog, si extern', async () => {
+      prisma.$queryRaw.mockResolvedValue([catalogRow({ isbn: '9731234567' })]);
+      lookup.searchByTitle.mockResolvedValue([
+        {
+          isbn: '973-123-4567',
+          title: 'Stapanul Inelelor: Fratia Inelului',
+          author: 'J.R.R. Tolkien',
+          description: 'Din Google Books',
+          coverUrl: null,
+          publisher: null,
+          publishedYear: 2001,
+          pageCount: null,
+          language: 'ro',
+          genre: null,
+          subjects: [],
+          source: 'google_books',
+        },
+      ]);
+
+      const results = await service.searchExternal('Stapanul Inelelor');
+
+      expect(results).toHaveLength(1);
+      expect(results[0].source).toBe('catalog');
     });
   });
 });

@@ -5,6 +5,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { ReportPostDto } from './dto/report-post.dto';
 import { publicName } from '../common/utils/user-visibility';
+import { ReportsService } from '../reports/reports.service';
 
 const MEMBER_SELECT = {
   id: true,
@@ -17,6 +18,10 @@ const MEMBER_SELECT = {
 const WITH_DETAIL = {
   members: { include: { user: { select: MEMBER_SELECT } }, orderBy: { joinedAt: 'asc' as const } },
   posts: {
+    // Postările ascunse automat de moderare (vezi ReportsService.applyAutoHide)
+    // ies din grup, dar rămân în baza de date pentru moderatorul care judecă
+    // raportul - și pot fi repuse dacă raportul nu stă în picioare.
+    where: { hiddenAt: null },
     include: { author: { select: MEMBER_SELECT } },
     orderBy: { createdAt: 'desc' as const },
     take: 50,
@@ -29,7 +34,10 @@ const WITH_DETAIL = {
 /// Events într-o singură entitate: membri + discuții + evenimente opționale.
 @Injectable()
 export class GroupsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private reports: ReportsService,
+  ) {}
 
   private sanitizeMembers<T extends { user: { name: string | null; nameVisible: boolean } }>(
     members: T[],
@@ -141,14 +149,14 @@ export class GroupsService {
     if (post.authorId === reporterId) {
       throw new BadRequestException('Nu îți poți raporta propria postare');
     }
-    return this.prisma.report.create({
-      data: {
-        reporterId,
-        reportedUserId: post.authorId,
-        reason: dto.reason,
-        details: dto.details,
-        groupPostId: postId,
-      },
+    return this.reports.create({
+      reporterId,
+      reportedUserId: post.authorId,
+      targetType: 'GROUP_POST',
+      targetId: postId,
+      reason: dto.reason,
+      details: dto.details,
+      extra: { groupPostId: postId },
     });
   }
 

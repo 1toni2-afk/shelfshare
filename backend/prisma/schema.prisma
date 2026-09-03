@@ -196,11 +196,11 @@ model User {
   updatedAt DateTime @updatedAt
 
   userBooks                UserBook[]
-  sentExchangeRequests     ExchangeRequest[]   @relation("RequesterExchanges")
-  receivedExchangeRequests ExchangeRequest[]   @relation("OwnerExchanges")
-  conversationsAsUserA     Conversation[]      @relation("ConversationUserA")
-  conversationsAsUserB     Conversation[]      @relation("ConversationUserB")
-  messagesSent             Message[]           @relation("MessageSender")
+  sentExchangeRequests     ExchangeRequest[]         @relation("RequesterExchanges")
+  receivedExchangeRequests ExchangeRequest[]         @relation("OwnerExchanges")
+  conversationsAsUserA     Conversation[]            @relation("ConversationUserA")
+  conversationsAsUserB     Conversation[]            @relation("ConversationUserB")
+  messagesSent             Message[]                 @relation("MessageSender")
   wishlistItems            WishlistItem[]
   savedSearches            SavedSearch[]
   bookOfMonthVotes         BookOfMonthVote[]
@@ -208,26 +208,26 @@ model User {
   reviews                  Review[]
   notifications            Notification[]
   deviceTokens             DeviceToken[]
-  blocksMade               Block[]             @relation("BlockBlocker")
-  blocksReceived           Block[]             @relation("BlockBlocked")
-  reportsMade              Report[]            @relation("ReportReporter")
-  reportsReceived          Report[]            @relation("ReportReported")
-  reportsAssigned          Report[]            @relation("ReportAssignee")
+  blocksMade               Block[]                   @relation("BlockBlocker")
+  blocksReceived           Block[]                   @relation("BlockBlocked")
+  reportsMade              Report[]                  @relation("ReportReporter")
+  reportsReceived          Report[]                  @relation("ReportReported")
+  reportsAssigned          Report[]                  @relation("ReportAssignee")
   adminSupportConversation AdminSupportConversation?
-  adminSupportMessagesSent AdminSupportMessage[] @relation("AdminSupportMessageSender")
-  offersMade               PriceOffer[]        @relation("OfferBuyer")
-  offersReceived           PriceOffer[]        @relation("OfferOwner")
-  following                Follow[]            @relation("FollowFollower")
-  followers                Follow[]            @relation("FollowFollowing")
+  adminSupportMessagesSent AdminSupportMessage[]     @relation("AdminSupportMessageSender")
+  offersMade               PriceOffer[]              @relation("OfferBuyer")
+  offersReceived           PriceOffer[]              @relation("OfferOwner")
+  following                Follow[]                  @relation("FollowFollower")
+  followers                Follow[]                  @relation("FollowFollowing")
   feedback                 Feedback[]
   bookViews                BookView[]
   listingScoreEvents       ListingScoreEvent[]
   bookshelfEntries         BookshelfEntry[]
-  auctionBids              Bid[]               @relation("AuctionBidder")
-  auctionsWon              Auction[]           @relation("AuctionHighestBidder")
+  auctionBids              Bid[]                     @relation("AuctionBidder")
+  auctionsWon              Auction[]                 @relation("AuctionHighestBidder")
   auctionWatches           AuctionWatch[]
   collections              Collection[]
-  createdGroups            Group[]             @relation("GroupCreator")
+  createdGroups            Group[]                   @relation("GroupCreator")
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
   securityEvents           SecurityEvent[]
@@ -247,7 +247,7 @@ model Feedback {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  message String
+  message  String
   photoUrl String?
 
   createdAt DateTime @default(now())
@@ -301,12 +301,38 @@ model Block {
   @@map("blocks")
 }
 
+/// Motivele de raportare. Lista e una singura in baza de date, dar se ofera
+/// DIFERIT in functie de ce se raporteaza (vezi REPORT_REASONS_BY_TARGET din
+/// reports.constants.ts): pentru continut - spam / limbaj abuziv / continut
+/// fals / continut inadecvat / altul; pentru un user - comportament abuziv /
+/// frauda / profil fals / altul. Un singur enum, fiindca `Report` e un singur
+/// model, iar panoul de moderare filtreaza oricum dupa tipul tintei.
 enum ReportReason {
   SPAM
   SCAM
   INAPPROPRIATE
+  /// „Comportament abuziv" cand tinta e un user.
   HARASSMENT
   OTHER
+  ABUSIVE_LANGUAGE
+  FALSE_CONTENT
+  FAKE_PROFILE
+}
+
+/// Ce anume s-a raportat. Stocat pe langa cheile straine tipate de mai jos,
+/// nu in locul lor: cheile pastreaza integritatea referentiala si stergerea in
+/// cascada, iar perechea (targetType, targetId) da ce nu se poate face cu ele -
+/// numaratul rapoartelor pe aceeasi tinta, indiferent de tip (auto-hide) si
+/// unicitatea „un user raporteaza o tinta o singura data".
+enum ReportTargetType {
+  USER
+  LISTING
+  REVIEW
+  /// Raportarea unei conversatii pastreaza un snapshot al intregului
+  /// transcript (vezi Report.transcriptPath), nu un singur mesaj.
+  CONVERSATION
+  GROUP_POST
+  EXCHANGE
 }
 
 /// Coadă de moderare pentru Report (Batch "Report status & assignee") - fără
@@ -351,6 +377,13 @@ model Report {
   reviewId String?
   review   Review? @relation(fields: [reviewId], references: [id], onDelete: SetNull)
 
+  /// Tinta, in forma pe care se poate numara si filtra. Derivata din cheile
+  /// straine de mai sus la creare (vezi ReportsService.create) - nu se scrie
+  /// niciodata direct din afara serviciului, ca sa nu poata ajunge sa nu mai
+  /// corespunda cu ele.
+  targetType ReportTargetType
+  targetId   String
+
   status         ReportStatus @default(OPEN)
   assignedToId   String?
   assignedTo     User?        @relation("ReportAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
@@ -359,7 +392,13 @@ model Report {
 
   createdAt DateTime @default(now())
 
+  /// Un user poate raporta o tinta O SINGURA data. Fara asta, cineva putea
+  /// trimite acelasi raport de zece ori si declansa singur auto-hide-ul.
+  @@unique([reporterId, targetType, targetId])
   @@index([status])
+  /// Pragurile de auto-hide numara rapoartele distincte pe aceeasi tinta
+  /// intr-o fereastra de timp - vezi ReportsService.applyAutoHide.
+  @@index([targetType, targetId, createdAt])
   @@map("reports")
 }
 
@@ -534,6 +573,11 @@ model GroupPost {
 
   content String
 
+  /// Ascuns automat de sistemul de moderare dupa ce a strans destule rapoarte
+  /// (vezi ReportsService.applyAutoHide). Distinct de stergere: continutul
+  /// ramane in baza pentru moderatorul care il judeca, si poate fi repus.
+  hiddenAt DateTime?
+
   createdAt DateTime @default(now())
 
   reports Report[]
@@ -660,6 +704,11 @@ model Review {
   rating Int
   text   String?
 
+  /// Ascuns automat de sistemul de moderare dupa ce a strans destule rapoarte
+  /// (vezi ReportsService.applyAutoHide). Distinct de stergere: continutul
+  /// ramane in baza pentru moderatorul care il judeca, si poate fi repus.
+  hiddenAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -769,6 +818,12 @@ model UserBook {
 
   // Soft-delete cu grace de 7 zile (vezi migration + BooksService.softDelete).
   deletedAt DateTime?
+
+  /// Ascuns automat de sistemul de moderare după destule rapoarte (vezi
+  /// ReportsService.applyAutoHide). Distinct de `deletedAt`, care e decizia
+  /// proprietarului: anunțul ascuns iese din căutare, dar rămâne al lui și
+  /// poate fi repus de un moderator.
+  hiddenAt DateTime?
 
   // Setat true doar când un exchange se completează efectiv - blochează
   // „mark available" pe carte transferată. Vezi Milestone 10 + exchanges.

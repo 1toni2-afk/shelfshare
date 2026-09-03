@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ReportStatus } from '@prisma/client';
+import { ReportStatus, ReportTargetType } from '@prisma/client';
+import { ReportsService } from '../reports/reports.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeedbackService } from '../feedback/feedback.service';
 import { SupportService } from '../support/support.service';
@@ -20,6 +21,7 @@ export class AdminService {
     private feedback: FeedbackService,
     private support: SupportService,
     private listingScore: ListingScoreService,
+    private reports: ReportsService,
   ) {}
 
   async getStats() {
@@ -395,23 +397,87 @@ export class AdminService {
     });
   }
 
-  getUserReports() {
+  /**
+   * Coada de moderare, filtrabilă după tipul țintei și după status - un
+   * singur panou pentru toate tipurile de raport, nu câte unul per tip.
+   *
+   * `hiddenAt` vine cu fiecare țintă ascunzibilă: moderatorul trebuie să vadă
+   * dacă auto-hide-ul a apucat deja să acționeze (vezi ReportsService), altfel
+   * n-ar ști dacă mai are ceva de făcut.
+   */
+  getUserReports(filters?: {
+    targetType?: ReportTargetType;
+    status?: ReportStatus;
+  }) {
     return this.prisma.report.findMany({
+      where: {
+        targetType: filters?.targetType,
+        status: filters?.status,
+      },
       include: {
         reporter: { select: { id: true, email: true, name: true } },
         reportedUser: { select: { id: true, email: true, name: true } },
-        userBook: { include: { book: { select: { title: true } } } },
+        userBook: {
+          include: { book: { select: { title: true } } },
+        },
         assignedTo: { select: { id: true, email: true, name: true } },
         // Feature backlog #18: reports pot viza acum și o postare de grup
         // sau o recenzie, nu doar user/anunț/conversație.
-        groupPost: { select: { id: true, content: true, groupId: true } },
-        review: { select: { id: true, text: true, rating: true, bookId: true } },
+        groupPost: {
+          select: { id: true, content: true, groupId: true, hiddenAt: true },
+        },
+        review: {
+          select: {
+            id: true,
+            text: true,
+            rating: true,
+            bookId: true,
+            hiddenAt: true,
+          },
+        },
       },
       // OPEN/IN_PROGRESS întâi, ca un moderator să vadă coada de lucru
       // înaintea raportelor deja închise.
       orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
       take: 100,
     });
+  }
+
+  /**
+   * Câte rapoarte deschise are fiecare tip de țintă - alimentează contoarele
+   * de pe filtrele panoului, ca moderatorul să vadă unde s-a strâns treabă
+   * fără să deschidă fiecare filtru pe rând.
+   */
+  async getReportCounts() {
+    const grouped = await this.prisma.report.groupBy({
+      by: ['targetType', 'status'],
+      _count: { _all: true },
+    });
+    return grouped.map((row) => ({
+      targetType: row.targetType,
+      status: row.status,
+      count: row._count._all,
+    }));
+  }
+
+  /**
+   * Repune conținutul ascuns automat - „raportul nu stă în picioare".
+   * Ascunderea automată e provizorie prin definiție, deci drumul invers
+   * trebuie să existe în panou, nu doar în baza de date.
+   *
+   * Ia id-ul RAPORTULUI, nu perechea (tip, id): panoul are în mână rândul de
+   * raport, iar ținta se citește de pe el - un parametru mai puțin de pus
+   * corect în interfață.
+   */
+  async unhideReportById(reportId: string) {
+    const report = await this.prisma.report.findUnique({
+      where: { id: reportId },
+      select: { targetType: true, targetId: true },
+    });
+    if (!report) {
+      throw new NotFoundException('Raportul nu a fost găsit');
+    }
+    return this.reports.unhideTarget(report.targetType, report.targetId);
   }
 
   async deleteGroupPost(groupPostId: string) {
@@ -464,8 +530,18 @@ export class AdminService {
         reportedUser: { select: { id: true, email: true, name: true } },
         userBook: { include: { book: { select: { title: true } } } },
         assignedTo: { select: { id: true, email: true, name: true } },
-        groupPost: { select: { id: true, content: true, groupId: true } },
-        review: { select: { id: true, text: true, rating: true, bookId: true } },
+        groupPost: {
+          select: { id: true, content: true, groupId: true, hiddenAt: true },
+        },
+        review: {
+          select: {
+            id: true,
+            text: true,
+            rating: true,
+            bookId: true,
+            hiddenAt: true,
+          },
+        },
       },
     });
   }

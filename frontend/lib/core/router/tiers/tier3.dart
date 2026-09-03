@@ -37,3 +37,4 @@ export '../../../features/profile/presentation/pre_registration_screen.dart';
 export '../../../features/profile/presentation/roadmap_screen.dart';
 export '../../../features/profile/presentation/seller_analytics_screen.dart';
 export '../../../features/saved_searches/presentation/saved_searches_screen.dart';
+export '../../../features/admin/presentation/admin_reports_screen.dart';

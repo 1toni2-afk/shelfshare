@@ -9,6 +9,7 @@ import { FollowModule } from '../follow/follow.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ListingScoreModule } from './listing-score.module';
 import { SavedSearchesModule } from '../saved-searches/saved-searches.module';
+import { ReviewsModule } from '../reviews/reviews.module';
 
 @Module({
   imports: [
@@ -19,6 +20,8 @@ import { SavedSearchesModule } from '../saved-searches/saved-searches.module';
     FollowModule,
     NotificationsModule,
     SavedSearchesModule,
+    // Pagina operei adună recenziile peste toate edițiile - vezi getWork.
+    ReviewsModule,
   ],
   controllers: [BooksController],
   providers: [BooksService, BookLookupService],
