@@ -67,6 +67,12 @@ const MIN_ALLOWED_GENRES = 5;
 /// reîncearcă printr-o interogare exactă pe index (vezi `sampleCandidates`).
 const MIN_CANDIDATE_POOL = 60;
 
+/// Cât luăm din catalogul propriu, verificat manual. Peste mărimea lui de azi
+/// (~1900 de titluri, din care ~1560 cu copertă + descriere + gen) DINADINS:
+/// interogarea nu are `ORDER BY`, deci o limită mai mică decât catalogul ar
+/// întoarce mereu aceleași prime rânduri, iar restul n-ar fi văzute niciodată.
+const CURATED_POOL_LIMIT = 5000;
+
 /// Titluri populare, cross-gen, folosite ca pool de cold start atunci când
 /// userul nu a selectat niciun gen favorit la onboarding - fără el, primele
 /// carduri de Book Match ar fi complet random.
@@ -381,13 +387,75 @@ export class BookMatchService {
   }
 
   /**
-   * Bazinul de candidați pentru o coadă - vezi comentariul de la `getQueue`
-   * pentru de ce nu mai e un simplu `findMany`. Sub pragul de mărime, se
-   * comportă identic cu vechea implementare (catalog mic => îl luăm tot);
-   * peste prag, eșantionează fizic (TABLESAMPLE) în loc să sorteze random
-   * întreaga tabelă.
+   * Bazinul de candidați pentru o coadă: catalogul propriu întâi, restul
+   * doar ca să acopere ce lipsește.
    */
   private async sampleCandidates(
+    excludedIds: string[],
+    allowedGenres: string[] | null,
+  ): Promise<CandidateBook[]> {
+    // Catalogul PROPRIU, verificat manual (~1900 de titluri, vezi
+    // `curatedAt`), e prima sursă: are copertă de la editură, descriere în
+    // română și genul pus de om. Importul în masă din Open Library rămâne
+    // doar plasă de siguranță - de acolo veneau cardurile cu autor greșit
+    // („The Road" atribuit lui Jack London) și zecile de ediții ale aceleiași
+    // opere.
+    const curated = await this.curatedCandidates(excludedIds, allowedGenres);
+    if (curated.length >= MIN_CANDIDATE_POOL) return curated;
+
+    // Sub prag (user care a văzut aproape tot catalogul curat, sau un gen pe
+    // care catalogul propriu nu-l acoperă) completăm din restul catalogului,
+    // fără să renunțăm la ce am găsit curat.
+    const wider = await this.wideCatalogCandidates(excludedIds, allowedGenres);
+    return [...curated, ...wider];
+  }
+
+  /**
+   * Candidații din catalogul propriu, verificat manual. Ce ordine iese nu
+   * contează pentru rezultat: apelanții eșantionează oricum aleator din bazin
+   * (vezi `weightedSample`), iar limita e peste mărimea catalogului curat de
+   * azi, deci luăm practic tot ce e disponibil, nu un prim ecran fix.
+   *
+   * `orderBy` există totuși, și nu e cosmetic: la un `take` fără `orderBy`,
+   * Prisma adaugă singur `ORDER BY id ASC`, adică sortează după cheia primară
+   * un filtru care alege 1.562 de rânduri din 3,68M - măsurat 20 de SECUNDE
+   * per cerere. Sortat după `curatedAt`, planner-ul folosește indexul parțial
+   * `books_curated_idx` (vezi migrarea books_curated_index) și scoate aceleași
+   * rânduri în ~130ms.
+   *
+   * Predicatul de aici trebuie deci să rămână identic cu al indexului. Fără
+   * index (migrare neaplicată) interogarea rămâne corectă, dar redevine seq
+   * scan (~1,4s) - de aici regula migrare-înainte-de-cod.
+   */
+  private curatedCandidates(
+    excludedIds: string[],
+    allowedGenres: string[] | null,
+  ): Promise<CandidateBook[]> {
+    return this.prisma.book.findMany({
+      where: {
+        curatedAt: { not: null },
+        id: { notIn: excludedIds },
+        coverUrl: { not: null },
+        description: { not: null },
+        ...(allowedGenres
+          ? { genre: { in: allowedGenres } }
+          : { genre: { not: null } }),
+      },
+      orderBy: { curatedAt: 'asc' },
+      select: CARD_SELECT,
+      take: CURATED_POOL_LIMIT,
+    });
+  }
+
+  /**
+   * Bazinul din TOT catalogul (inclusiv importul în masă) - vezi
+   * `sampleCandidates` pentru când se mai ajunge aici, și comentariul de la
+   * `getQueue` pentru de ce nu e un simplu `findMany`. Sub pragul de mărime
+   * se comportă identic cu implementarea de dinainte de import (catalog mic
+   * => îl luăm tot); peste prag eșantionează fizic (TABLESAMPLE) în loc să
+   * sorteze random întreaga tabelă.
+   */
+  private async wideCatalogCandidates(
     excludedIds: string[],
     allowedGenres: string[] | null,
   ): Promise<CandidateBook[]> {
@@ -699,8 +767,14 @@ export class BookMatchService {
     // primea exact aceleași prime carduri. Luăm toate potrivirile (lista de
     // titluri e fixă și scurtă), le dedublăm pe operă (aceleași titluri
     // populare au zeci de ediții în catalog) și abia apoi eșantionăm.
+    // `curatedAt` obligatoriu, ca peste tot în Book Match: pe titlurile
+    // populare importul din Open Library are cele mai multe duplicate și cele
+    // mai multe atribuiri greșite de autor, adică exact cardurile care arătau
+    // rupt. Ce nu găsim curat se completează mai jos din `candidates`, care
+    // vine oricum din catalogul propriu.
     const fallbackBooks = await this.prisma.book.findMany({
       where: {
+        curatedAt: { not: null },
         id: { notIn: excludedIds },
         coverUrl: { not: null },
         title: { in: [...COLD_START_FALLBACK_TITLES], mode: 'insensitive' },

@@ -79,6 +79,17 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   bool _initialLoading = true;
   bool _fetching = false;
   bool _exhausted = false;
+
+  /// Câte loturi la rând ne-au venit doar cu cărți deja văzute. Un lot care
+  /// repetă tot ce am arătat NU mai închide coada definitiv: asta a fost
+  /// exact modul de eșec raportat („după 10-12 cărți zice că nu mai are
+  /// nimic"), unde un singur răspuns nefericit oprea pentru totdeauna
+  /// cererile, deși catalogul avea mii de titluri neatinse. Închidem coada
+  /// doar când serverul chiar întoarce zero carduri, sau după
+  /// [_maxDuplicateBatches] loturi de duplicate la rând.
+  int _duplicateBatches = 0;
+  static const _maxDuplicateBatches = 3;
+
   Object? _loadError;
 
   // Starea gestului
@@ -122,6 +133,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       _initialLoading = true;
       _loadError = null;
       _exhausted = false;
+      _duplicateBatches = 0;
     });
     await _fetchBatch();
     if (!mounted) return;
@@ -148,12 +160,27 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       ];
       setState(() {
         _cards.addAll(fresh);
-        // Catalogul e mic: o coadă goală (sau doar duplicate) înseamnă că
-        // userul a văzut tot ce aveam - nu mai insistăm cu request-uri.
-        if (fresh.isEmpty) _exhausted = true;
+        if (queue.cards.isEmpty) {
+          // Serverul n-a mai găsit nimic servibil - aici chiar nu mai are
+          // rost să insistăm.
+          _exhausted = true;
+        } else if (fresh.isEmpty) {
+          _duplicateBatches++;
+          if (_duplicateBatches >= _maxDuplicateBatches) _exhausted = true;
+        } else {
+          _duplicateBatches = 0;
+        }
         _loadError = null;
       });
       _precacheUpcomingCovers();
+      // Lot numai cu duplicate și fără carduri pe ecran: nimic nu ar mai
+      // declanșa o cerere (prefetch-ul pornește doar la un swipe), deci userul
+      // ar rămâne cu mesajul „asta a fost tot" până apasă manual Retry.
+      if (fresh.isEmpty && !_exhausted && _cards.isEmpty) {
+        _fetching = false;
+        await _fetchBatch();
+        return;
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -352,6 +379,7 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
       _cards.clear();
       _seenIds.clear();
       _exhausted = false;
+      _duplicateBatches = 0;
       await _loadInitial();
     } on RecalibrationCooldownException catch (e) {
       messenger.showSnackBar(
