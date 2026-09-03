@@ -12,6 +12,7 @@ import '../../books/presentation/add_book_screen.dart';
 import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../data/models/book.dart';
+import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
@@ -51,6 +52,7 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   final _usernameController = TextEditingController();
   bool _nameVisible = true;
   bool _savingStep0 = false;
+  bool _step0Prefilled = false;
   String? _step0Error;
 
   // Pasul 1 - genuri
@@ -82,10 +84,18 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
   void initState() {
     super.initState();
     // Dacă username-ul e deja setat (ex. userul a închis aplicația la mijlocul
-    // wizard-ului și a revenit), pornim direct de la pasul următor - fără
-    // panelul de bun venit (pasul -1), care are sens doar la prima intrare.
+    // wizard-ului și a revenit), sărim panelul de bun venit (pasul -1), care
+    // are sens doar la prima intrare - dar NU și pasul de nume + username.
+    //
+    // Trecerea direct la genuri făcea ca același wizard să arate diferit de la
+    // un cont la altul: pe un cont nou primul ecran cerea numele, pe unul care
+    // trecuse deja de pasul 0 nu-l mai cerea niciodată - se citea ca o
+    // diferență între platforme, deși era doar starea contului. Acum pasul
+    // există mereu, cu câmpurile precompletate: cine revine dă un Continue,
+    // fără să retasteze nimic, și își poate corecta numele pus în grabă.
     final user = ref.read(profileControllerProvider).value;
-    _step = user?.username != null ? 1 : -1;
+    _step = user?.username != null ? 0 : -1;
+    if (user != null) _prefillStep0(user);
     // Book Match e pasul 5, la câteva zeci de secunde de aici. Citirea
     // providerului pornește aducerea primului lot de carduri ACUM, în paralel
     // cu completarea datelor, ca pasul de swipe să nu mai deschidă cu spinner.
@@ -98,6 +108,31 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     _lastNameController.dispose();
     _usernameController.dispose();
     super.dispose();
+  }
+
+  /// Numele e stocat ca un singur șir („Prenume Nume"), așa cum îl compune
+  /// pasul 0 - îl despărțim înapoi la PRIMUL spațiu, ca un nume de familie din
+  /// două cuvinte să rămână întreg în al doilea câmp.
+  ///
+  /// O SINGURĂ dată, și doar pentru un cont care chiar a trecut prin pasul 0:
+  /// profilul poate ajunge de pe rețea după ce ecranul s-a construit (vezi
+  /// `ref.listen` din build), iar atunci userul poate fi deja în mijlocul
+  /// tastatului - n-avem voie să-i rescriem câmpurile sub degete.
+  void _prefillStep0(AppUser user) {
+    if (_step0Prefilled || user.username == null) return;
+    _step0Prefilled = true;
+    final name = user.name?.trim() ?? '';
+    if (name.isNotEmpty) {
+      final space = name.indexOf(' ');
+      if (space < 0) {
+        _firstNameController.text = name;
+      } else {
+        _firstNameController.text = name.substring(0, space);
+        _lastNameController.text = name.substring(space + 1).trim();
+      }
+    }
+    _usernameController.text = user.username ?? '';
+    _nameVisible = user.nameVisible;
   }
 
   void _back() => setState(() => _step--);
@@ -182,6 +217,16 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Profilul e cerut de `profileControllerProvider` la prima citire, deci la
+    // intrarea în wizard poate fi încă în zbor - `initState` vede atunci un
+    // `null` și n-are ce precompleta. Ascultăm și răspunsul: dacă sosește un
+    // cont care trecuse deja de pasul 0, îi punem numele și username-ul în
+    // câmpuri. Fără asta, cine revine în wizard le retasta degeaba.
+    ref.listen(profileControllerProvider, (previous, next) {
+      final user = next.value;
+      if (user != null) _prefillStep0(user);
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
