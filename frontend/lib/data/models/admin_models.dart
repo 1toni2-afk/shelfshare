@@ -95,20 +95,196 @@ class MarketplaceStats {
   }
 }
 
-class ActiveZone {
+/// Un oraș pe heat map-ul din panoul de admin, cu cele trei măsuri pe care le
+/// putem atribui unui oraș: câți useri au orașul în profil, câte anunțuri
+/// active au ei și câte cereri de schimb au pornit de acolo.
+class HeatmapZone {
   final String city;
-  final int count;
+  final int users;
+  final int listings;
+  final int exchanges;
   final double lat;
   final double lng;
 
-  const ActiveZone({required this.city, required this.count, required this.lat, required this.lng});
+  const HeatmapZone({
+    required this.city,
+    required this.users,
+    required this.listings,
+    required this.exchanges,
+    required this.lat,
+    required this.lng,
+  });
 
-  factory ActiveZone.fromJson(Map<String, dynamic> json) {
-    return ActiveZone(
+  int valueFor(HeatmapMetric metric) => switch (metric) {
+        HeatmapMetric.users => users,
+        HeatmapMetric.listings => listings,
+        HeatmapMetric.exchanges => exchanges,
+      };
+
+  factory HeatmapZone.fromJson(Map<String, dynamic> json) {
+    return HeatmapZone(
       city: json['city'] as String,
-      count: json['count'] as int,
+      users: (json['users'] as num?)?.toInt() ?? 0,
+      listings: (json['listings'] as num?)?.toInt() ?? 0,
+      exchanges: (json['exchanges'] as num?)?.toInt() ?? 0,
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
+    );
+  }
+}
+
+enum HeatmapMetric { users, listings, exchanges }
+
+/// O zi din seria de folosire a aplicației. `activeUsers` și `actions` vin din
+/// jurnalul de activitate (fișiere), restul din baza de date - vezi
+/// AdminService.getUsageStats.
+class UsageDay {
+  final String date;
+  final int activeUsers;
+  final int actions;
+  final int newUsers;
+  final int listings;
+  final int swipes;
+  final int searches;
+  final int messages;
+  final int offers;
+  final int exchanges;
+
+  const UsageDay({
+    required this.date,
+    required this.activeUsers,
+    required this.actions,
+    required this.newUsers,
+    required this.listings,
+    required this.swipes,
+    required this.searches,
+    required this.messages,
+    required this.offers,
+    required this.exchanges,
+  });
+
+  int valueFor(UsageSeries series) => switch (series) {
+        UsageSeries.activeUsers => activeUsers,
+        UsageSeries.actions => actions,
+        UsageSeries.newUsers => newUsers,
+        UsageSeries.listings => listings,
+        UsageSeries.swipes => swipes,
+        UsageSeries.searches => searches,
+        UsageSeries.messages => messages,
+        UsageSeries.offers => offers,
+        UsageSeries.exchanges => exchanges,
+      };
+
+  factory UsageDay.fromJson(Map<String, dynamic> json) {
+    int at(String key) => (json[key] as num?)?.toInt() ?? 0;
+    return UsageDay(
+      date: json['date'] as String,
+      activeUsers: at('activeUsers'),
+      actions: at('actions'),
+      newUsers: at('newUsers'),
+      listings: at('listings'),
+      swipes: at('swipes'),
+      searches: at('searches'),
+      messages: at('messages'),
+      offers: at('offers'),
+      exchanges: at('exchanges'),
+    );
+  }
+}
+
+enum UsageSeries {
+  activeUsers,
+  actions,
+  newUsers,
+  listings,
+  swipes,
+  searches,
+  messages,
+  offers,
+  exchanges,
+}
+
+class UsageActionCount {
+  final String action;
+  final int count;
+
+  const UsageActionCount({required this.action, required this.count});
+
+  factory UsageActionCount.fromJson(Map<String, dynamic> json) {
+    return UsageActionCount(
+      action: json['action'] as String,
+      count: (json['count'] as num).toInt(),
+    );
+  }
+}
+
+/// Câți useri au folosit măcar o dată fiecare funcție - praguri independente,
+/// nu o pâlnie (vezi [ConversionFunnel] pentru pâlnie).
+class UsageAdoption {
+  final int totalUsers;
+  final int withListing;
+  final int withSwipe;
+  final int withWishlist;
+  final int withShelf;
+  final int withMessage;
+
+  const UsageAdoption({
+    required this.totalUsers,
+    required this.withListing,
+    required this.withSwipe,
+    required this.withWishlist,
+    required this.withShelf,
+    required this.withMessage,
+  });
+
+  factory UsageAdoption.fromJson(Map<String, dynamic> json) {
+    int at(String key) => (json[key] as num?)?.toInt() ?? 0;
+    return UsageAdoption(
+      totalUsers: at('totalUsers'),
+      withListing: at('withListing'),
+      withSwipe: at('withSwipe'),
+      withWishlist: at('withWishlist'),
+      withShelf: at('withShelf'),
+      withMessage: at('withMessage'),
+    );
+  }
+}
+
+class UsageStats {
+  final List<UsageDay> days;
+  final List<UsageActionCount> byAction;
+
+  /// Fals când nu există niciun fișier de jurnal în fereastra cerută - altfel
+  /// „0 useri activi" s-ar citi ca „nimeni n-a folosit aplicația", nu ca
+  /// „n-avem de unde ști".
+  final bool logAvailable;
+  final Map<String, int> totals;
+  final UsageAdoption adoption;
+
+  const UsageStats({
+    required this.days,
+    required this.byAction,
+    required this.logAvailable,
+    required this.totals,
+    required this.adoption,
+  });
+
+  factory UsageStats.fromJson(Map<String, dynamic> json) {
+    return UsageStats(
+      days: (json['days'] as List? ?? const [])
+          .map((e) => UsageDay.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      byAction: (json['byAction'] as List? ?? const [])
+          .map((e) => UsageActionCount.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      logAvailable: json['logAvailable'] == true,
+      totals: {
+        for (final entry in (json['totals'] as Map? ?? const {}).entries)
+          entry.key as String: (entry.value as num?)?.toInt() ?? 0,
+      },
+      adoption: UsageAdoption.fromJson(
+        (json['adoption'] as Map? ?? const {}).cast<String, dynamic>(),
+      ),
     );
   }
 }

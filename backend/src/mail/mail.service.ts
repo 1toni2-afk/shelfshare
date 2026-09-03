@@ -102,6 +102,53 @@ export class MailService {
   }
 
   /**
+   * Feedback trimis din aplicație (formularul din Setări). Rămâne salvat în
+   * DB și vizibil în panoul de admin - emailul e doar ca să nu depindă de
+   * cineva care intră în panou ca să vadă că a apărut ceva nou.
+   *
+   * Poza (dacă a fost trimisă) merge ca link, nu ca atașament: e deja urcată
+   * în storage și publică, iar un atașament ar dubla degeaba 8MB pe email.
+   */
+  async sendFeedbackNotification(data: {
+    feedbackId: string;
+    name?: string | null;
+    email?: string | null;
+    message: string;
+    photoUrl?: string | null;
+  }) {
+    const to = this.config.get<string>(
+      'SUPPORT_NOTIFICATION_EMAIL',
+      SUPPORT_NOTIFICATION_EMAIL_DEFAULT,
+    );
+
+    const { error } = await this.resend.emails.send({
+      from: this.fromEmail,
+      to,
+      subject: 'FEEDBACK SHELFSHARE',
+      html: `
+        <p><strong>De la:</strong> ${escapeHtml(data.name || 'utilizator fără nume')}</p>
+        <p><strong>Email:</strong> ${data.email ? escapeHtml(data.email) : '-'}</p>
+        <p><strong>Mesaj:</strong></p>
+        <p>${escapeHtml(data.message).replace(/\n/g, '<br>')}</p>
+        ${
+          data.photoUrl
+            ? `<p><strong>Poză:</strong> <a href="${escapeHtml(data.photoUrl)}">${escapeHtml(data.photoUrl)}</a></p>`
+            : ''
+        }
+        <p style="color:#888;font-size:12px;">Feedback #${escapeHtml(data.feedbackId)}</p>
+      `,
+    });
+
+    if (error) {
+      this.logger.error(
+        `Eroare trimitere notificare feedback (${data.feedbackId})`,
+        error,
+      );
+      throw new Error('Nu am putut trimite notificarea de feedback');
+    }
+  }
+
+  /**
    * Notificare de moderare pentru o conversație raportată din chat.
    * Transcriptul complet e deja salvat în storage (vezi
    * ConversationsService#reportConversation) - aici trimitem doar linkul plus

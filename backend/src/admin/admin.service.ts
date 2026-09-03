@@ -13,6 +13,25 @@ import {
 } from '../common/constants/feature-flags';
 import { FeatureFlagValueDto } from './dto/set-feature-flags.dto';
 import { ListingScoreService } from '../books/listing-score.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
+
+/// Tabelele din care se scoate seria pe zile a statisticilor de folosire.
+/// Numele sunt cele DIN BAZA (`@@map` din schema.prisma), nu ale modelelor
+/// Prisma - interogarea e SQL brut. Lista e inchisa aici tocmai ca numele sa
+/// nu poata veni niciodata din exterior.
+const USAGE_TABLES = [
+  'users',
+  'user_books',
+  'book_swipes',
+  'search_logs',
+  'messages',
+  'price_offers',
+  'exchange_requests',
+] as const;
+
+/// Acelasi fus ca al jurnalului de activitate - altfel seria din DB si cea din
+/// fisiere ar taia zilele in locuri diferite si n-ar mai fi comparabile.
+const USAGE_TIME_ZONE = process.env.ACTIVITY_LOG_TZ || 'Europe/Bucharest';
 
 @Injectable()
 export class AdminService {
@@ -22,6 +41,7 @@ export class AdminService {
     private support: SupportService,
     private listingScore: ListingScoreService,
     private reports: ReportsService,
+    private activityLog: ActivityLogService,
   ) {}
 
   async getStats() {
@@ -691,6 +711,218 @@ export class AdminService {
    * coordonată per user, doar per oraș (vezi ROMANIAN_CITY_COORDINATES,
    * aceleași coordonate aproximative folosite și la calculul de distanță).
    */
+  /**
+   * "Cum folosesc userii aplicatia" - o serie pe zile, nu doar totaluri.
+   *
+   * Doua surse, fiindca niciuna singura nu spune povestea:
+   *  - jurnalul de activitate (fisiere, vezi ActivityLogService) da userii
+   *    activi pe zi si defalcarea pe verbe (schimburi, oferte, follow...);
+   *  - baza de date da ce nu trece prin jurnal, fiindca nu e o interactiune
+   *    intre doi useri: inscrieri, anunturi postate, swipe-uri de Book Match,
+   *    cautari, mesaje.
+   *
+   * `logAvailable` e fals cand nu exista niciun fisier de jurnal in fereastra
+   * ceruta (jurnalul a pornit mai tarziu decat fereastra, sau e dezactivat) -
+   * UI-ul poate atunci sa spuna asta, in loc sa deseneze o linie plata la 0 ca
+   * si cum n-ar fi fost activitate.
+   */
+  async getUsageStats(days: number) {
+    const window = Math.max(1, Math.min(days, 365));
+    const since = new Date(Date.now() - (window - 1) * 24 * 60 * 60 * 1000);
+    since.setHours(0, 0, 0, 0);
+
+    const [
+      log,
+      newUsers,
+      listings,
+      swipes,
+      searches,
+      messages,
+      offers,
+      exchanges,
+    ] = await Promise.all([
+      this.activityLog.readUsage(window),
+      this.countPerDay('users', since),
+      this.countPerDay('user_books', since),
+      this.countPerDay('book_swipes', since),
+      this.countPerDay('search_logs', since),
+      this.countPerDay('messages', since),
+      this.countPerDay('price_offers', since),
+      this.countPerDay('exchange_requests', since),
+    ]);
+
+    const series = log.days.map((day) => ({
+      date: day.date,
+      activeUsers: day.activeUsers,
+      actions: day.actions,
+      newUsers: newUsers.get(day.date) ?? 0,
+      listings: listings.get(day.date) ?? 0,
+      swipes: swipes.get(day.date) ?? 0,
+      searches: searches.get(day.date) ?? 0,
+      messages: messages.get(day.date) ?? 0,
+      offers: offers.get(day.date) ?? 0,
+      exchanges: exchanges.get(day.date) ?? 0,
+    }));
+
+    const sum = (key: keyof (typeof series)[number]) =>
+      series.reduce((total, day) => total + (day[key] as number), 0);
+
+    return {
+      days: series,
+      byAction: log.byAction,
+      logAvailable: log.available,
+      totals: {
+        peakActiveUsers: series.reduce(
+          (max, day) => (day.activeUsers > max ? day.activeUsers : max),
+          0,
+        ),
+        actions: sum('actions'),
+        newUsers: sum('newUsers'),
+        listings: sum('listings'),
+        swipes: sum('swipes'),
+        searches: sum('searches'),
+        messages: sum('messages'),
+        offers: sum('offers'),
+        exchanges: sum('exchanges'),
+      },
+      adoption: await this.getAdoption(),
+    };
+  }
+
+  /**
+   * Cate randuri s-au creat pe zi intr-o tabela, in fusul aplicatiei.
+   *
+   * `$queryRawUnsafe` doar pentru NUMELE tabelei, care vine exclusiv din
+   * literalii din USAGE_TABLES - niciodata din input de user. Data si fusul
+   * sunt parametri legati, deci nu se poate injecta prin ele.
+   */
+  private async countPerDay(
+    table: (typeof USAGE_TABLES)[number],
+    since: Date,
+  ): Promise<Map<string, number>> {
+    const rows = await this.prisma.$queryRawUnsafe<
+      { day: string; count: bigint }[]
+    >(
+      `SELECT to_char("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE $2, 'YYYY-MM-DD') AS day,
+              count(*) AS count
+         FROM "${table}"
+        WHERE "createdAt" >= $1
+        GROUP BY 1`,
+      since,
+      USAGE_TIME_ZONE,
+    );
+    return new Map(rows.map((row) => [row.day, Number(row.count)]));
+  }
+
+  /**
+   * Cati useri au folosit macar o data fiecare functie. Spre deosebire de
+   * funnel-ul de conversie (o palnie cu pasi ficsi), astea sunt praguri
+   * independente - exact intrebarea la care totalurile brute nu raspund.
+   */
+  private async getAdoption() {
+    const [
+      totalUsers,
+      withListing,
+      withSwipe,
+      withWishlist,
+      withShelf,
+      withMessage,
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.userBook.findMany({
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      this.prisma.bookSwipe.findMany({
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      this.prisma.wishlistItem.findMany({
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      this.prisma.bookshelfEntry.findMany({
+        distinct: ['userId'],
+        select: { userId: true },
+      }),
+      this.prisma.message.findMany({
+        distinct: ['senderId'],
+        select: { senderId: true },
+      }),
+    ]);
+
+    return {
+      totalUsers,
+      withListing: withListing.length,
+      withSwipe: withSwipe.length,
+      withWishlist: withWishlist.length,
+      withShelf: withShelf.length,
+      withMessage: withMessage.length,
+    };
+  }
+
+  /**
+   * Datele pentru heat map-ul din panoul de admin: pe oras, cati useri, cate
+   * anunturi active si cate schimburi au pornit de acolo.
+   *
+   * Orasul e cel din profilul userului - singurul pe care il avem; anunturile
+   * si schimburile se atribuie orasului proprietarului, respectiv al celui
+   * care a cerut schimbul. Orasele fara coordonate cunoscute
+   * (ROMANIAN_CITY_COORDINATES) se sar: n-au unde sa fie desenate.
+   */
+  async getHeatmap() {
+    const [users, listings, exchanges] = await Promise.all([
+      this.prisma.user.groupBy({
+        by: ['city'],
+        where: { city: { not: null }, isBanned: false },
+        _count: true,
+      }),
+      this.prisma.userBook.findMany({
+        where: {
+          deletedAt: null,
+          OR: [
+            { isForSale: true },
+            { isAuction: true },
+            { availableForSwap: true },
+          ],
+        },
+        select: { user: { select: { city: true } } },
+      }),
+      this.prisma.exchangeRequest.findMany({
+        select: { requester: { select: { city: true } } },
+      }),
+    ]);
+
+    const cities = new Map<
+      string,
+      { users: number; listings: number; exchanges: number }
+    >();
+    const bump = (
+      city: string | null | undefined,
+      key: 'users' | 'listings' | 'exchanges',
+      by = 1,
+    ) => {
+      if (!city) return;
+      const entry = cities.get(city) ?? { users: 0, listings: 0, exchanges: 0 };
+      entry[key] += by;
+      cities.set(city, entry);
+    };
+
+    for (const row of users) bump(row.city, 'users', row._count);
+    for (const row of listings) bump(row.user?.city, 'listings');
+    for (const row of exchanges) bump(row.requester?.city, 'exchanges');
+
+    return [...cities.entries()]
+      .map(([city, counts]) => {
+        const coords = ROMANIAN_CITY_COORDINATES[city as RomanianCity];
+        return coords
+          ? { city, ...counts, lat: coords.lat, lng: coords.lng }
+          : null;
+      })
+      .filter((zone) => zone !== null)
+      .sort((a, b) => b.users - a.users);
+  }
+
   async getActiveZones() {
     const grouped = await this.prisma.userBook.groupBy({
       by: ['userId'],

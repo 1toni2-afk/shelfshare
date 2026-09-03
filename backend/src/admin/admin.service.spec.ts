@@ -6,6 +6,7 @@ import { FeedbackService } from '../feedback/feedback.service';
 import { SupportService } from '../support/support.service';
 import { ListingScoreService } from '../books/listing-score.service';
 import { ReportsService } from '../reports/reports.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -43,6 +44,10 @@ describe('AdminService', () => {
         { provide: FeedbackService, useValue: { getAll: jest.fn() } },
         { provide: SupportService, useValue: { getAll: jest.fn() } },
         { provide: ListingScoreService, useValue: { getBreakdown: jest.fn() } },
+        {
+          provide: ActivityLogService,
+          useValue: { record: jest.fn(), readUsage: jest.fn() },
+        },
       ],
     }).compile();
 

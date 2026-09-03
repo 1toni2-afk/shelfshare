@@ -31,10 +31,21 @@ class AdminRepository {
     return ConversionFunnel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<List<ActiveZone>> getActiveZones() async {
+  /// Heat map-ul: aceleași orașe ca `getActiveZones`, dar cu toate cele trei
+  /// măsuri deodată, ca schimbarea metricii din UI să nu ceară alt request.
+  Future<List<HeatmapZone>> getHeatmap() async {
     final dio = _ref.read(apiClientProvider).dio;
-    final response = await dio.get('/admin/stats/active-zones');
-    return (response.data as List).map((e) => ActiveZone.fromJson(e as Map<String, dynamic>)).toList();
+    final response = await dio.get('/admin/stats/heatmap');
+    return (response.data as List)
+        .map((e) => HeatmapZone.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<UsageStats> getUsageStats({int days = 30}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response =
+        await dio.get('/admin/stats/usage', queryParameters: {'days': days});
+    return UsageStats.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<AdminUsersPage> getUsers({int limit = 50, int offset = 0}) async {

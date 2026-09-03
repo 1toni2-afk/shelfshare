@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -140,7 +142,22 @@ class _AdminContent extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
         ),
         const SizedBox(height: 12),
-        _ActiveZonesMap(zones: data.activeZones),
+        _HeatmapSection(zones: data.heatmap),
+        const SizedBox(height: 28),
+        // Statisticile de folosire au ecran propriu: seria pe zile citeste
+        // fisierele de jurnal, deci n-are ce cauta pe drumul critic al
+        // dashboard-ului (vezi adminUsageStatsProvider).
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.insights_outlined),
+            title: const Text('Cum e folosita aplicatia'),
+            subtitle: const Text(
+                'Useri activi pe zi, anunturi, swipe-uri, cautari, mesaje'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/usage'),
+          ),
+        ),
         const SizedBox(height: 28),
         // Utilizatori și anunțuri fără cerere: liste care pot ajunge la sute
         // de rânduri (66 useri + 100 anunțuri inactive într-un caz real) - nu
@@ -659,48 +676,200 @@ class _MarketplaceStatsGrid extends StatelessWidget {
 
 const _romaniaCenterAdmin = LatLng(45.9432, 24.9668);
 
-/// "Heatmap" simplificat - cercuri semi-transparente pe hartă, raza/opacitatea
-/// scalate relativ la cel mai activ oraș, fără o dependință nouă de heatmap
-/// (flutter_map_heatmap etc.) - suficient ca semnal vizual la scara aplicației.
-class _ActiveZonesMap extends StatelessWidget {
-  const _ActiveZonesMap({required this.zones});
-  final List<ActiveZone> zones;
+/// Heat map pe orase, cu selector de metrica (useri / anunturi / schimburi).
+///
+/// Cercuri, nu un strat de heatmap dintr-un pachet nou (flutter_map_heatmap):
+/// datele sunt cateva zeci de puncte cu coordonate fixe de oras, nu un nor de
+/// mii de evenimente, deci gradientul continuu n-ar arata nimic in plus - dar
+/// ar aduce o dependinta si un shader in bundle-ul web.
+///
+/// Ce s-a schimbat fata de varianta veche: culoarea urmeaza intensitatea (nu
+/// mai e totul portocaliu), scara e vizibila, si se poate comuta metrica -
+/// „unde sunt userii" si „de unde pleaca schimburile" sunt intrebari
+/// diferite, iar harta veche raspundea doar la „unde sunt anunturile".
+class _HeatmapSection extends StatefulWidget {
+  const _HeatmapSection({required this.zones});
+  final List<HeatmapZone> zones;
+
+  @override
+  State<_HeatmapSection> createState() => _HeatmapSectionState();
+}
+
+class _HeatmapSectionState extends State<_HeatmapSection> {
+  HeatmapMetric _metric = HeatmapMetric.users;
+
+  static const _labels = {
+    HeatmapMetric.users: 'Useri',
+    HeatmapMetric.listings: 'Anunturi active',
+    HeatmapMetric.exchanges: 'Schimburi',
+  };
+
+  /// Rece -> cald. Trecerea prin portocaliul de brand tine harta in paleta
+  /// aplicatiei, nu intr-un curcubeu generic.
+  static const _scale = [
+    Color(0xFF3B6EA5),
+    Color(0xFF5BA88A),
+    Color(0xFFC8A03A),
+    Color(0xFFC8783A),
+    Color(0xFFB03A2E),
+  ];
+
+  Color _colorFor(double intensity) {
+    final position = (intensity.clamp(0.0, 1.0)) * (_scale.length - 1);
+    final low = position.floor();
+    final high = position.ceil();
+    return Color.lerp(_scale[low], _scale[high], position - low)!;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (zones.isEmpty) {
+    if (widget.zones.isEmpty) {
       return Text(context.l10n.adminActiveZonesEmpty);
     }
-    final maxCount = zones.map((z) => z.count).reduce((a, b) => a > b ? a : b);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        height: 320,
-        child: FlutterMap(
-          options: const MapOptions(initialCenter: _romaniaCenterAdmin, initialZoom: 6.0),
+    final ranked = [...widget.zones]
+      ..sort((a, b) => b.valueFor(_metric).compareTo(a.valueFor(_metric)));
+    final maxValue = ranked.first.valueFor(_metric);
+    // Fara nicio valoare pe metrica aleasa (ex. zero schimburi inca) harta ar
+    // fi goala; spunem asta in loc sa desenam cercuri de raza zero.
+    final hasData = maxValue > 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
           children: [
-            TileLayer(
-              urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-              subdomains: const ['a', 'b', 'c', 'd'],
-              userAgentPackageName: 'com.shelfshare.app',
-              maxZoom: 20,
-            ),
-            CircleLayer(
-              circles: [
-                for (final zone in zones)
-                  CircleMarker(
-                    point: LatLng(zone.lat, zone.lng),
-                    radius: 10 + (zone.count / maxCount) * 40,
-                    color: AppColors.accent.withValues(alpha: 0.35),
-                    borderColor: AppColors.accent,
-                    borderStrokeWidth: 1.5,
+            for (final metric in HeatmapMetric.values)
+              ChoiceChip(
+                label: Text(_labels[metric]!),
+                selected: _metric == metric,
+                showCheckmark: false,
+                onSelected: (_) => setState(() => _metric = metric),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 320,
+            child: FlutterMap(
+              options: const MapOptions(
+                initialCenter: _romaniaCenterAdmin,
+                initialZoom: 6.0,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                  subdomains: const ['a', 'b', 'c', 'd'],
+                  userAgentPackageName: 'com.shelfshare.app',
+                  maxZoom: 20,
+                ),
+                if (hasData)
+                  CircleLayer(
+                    circles: [
+                      for (final zone in ranked)
+                        if (zone.valueFor(_metric) > 0)
+                          _circleFor(zone, maxValue),
+                    ],
                   ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        if (!hasData)
+          Text(
+            'Nicio valoare pe metrica asta inca.',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: AppColors.mutedForeground),
+          )
+        else ...[
+          _HeatmapLegend(max: maxValue, colorFor: _colorFor),
+          const SizedBox(height: 12),
+          for (final zone in ranked.take(5))
+            if (zone.valueFor(_metric) > 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _colorFor(zone.valueFor(_metric) / maxValue),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(zone.city)),
+                    Text(
+                      '${zone.valueFor(_metric)}',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ],
+    );
+  }
+
+  /// Raza creste cu radacina patrata a intensitatii, nu liniar: aria cercului
+  /// e cea pe care ochiul o citeste ca „cantitate", iar aria creste cu patratul
+  /// razei - liniar, un oras de doua ori mai mare parea de patru ori mai mare.
+  CircleMarker _circleFor(HeatmapZone zone, int maxValue) {
+    final intensity = zone.valueFor(_metric) / maxValue;
+    final color = _colorFor(intensity);
+    return CircleMarker(
+      point: LatLng(zone.lat, zone.lng),
+      radius: 8 + 34 * math.sqrt(intensity.clamp(0.0, 1.0)),
+      useRadiusInMeter: false,
+      color: color.withValues(alpha: 0.35),
+      borderColor: color,
+      borderStrokeWidth: 1.5,
+    );
+  }
+}
+
+class _HeatmapLegend extends StatelessWidget {
+  const _HeatmapLegend({required this.max, required this.colorFor});
+  final int max;
+  final Color Function(double) colorFor;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context)
+        .textTheme
+        .labelSmall
+        ?.copyWith(color: AppColors.mutedForeground);
+    return Row(
+      children: [
+        Text('0', style: style),
+        const SizedBox(width: 6),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              height: 8,
+              child: Row(
+                children: [
+                  for (var step = 0; step < 20; step++)
+                    Expanded(
+                      child: ColoredBox(color: colorFor(step / 19)),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text('$max', style: style),
+      ],
     );
   }
 }

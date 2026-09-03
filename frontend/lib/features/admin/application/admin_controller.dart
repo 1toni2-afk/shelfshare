@@ -8,7 +8,7 @@ class AdminData {
     required this.stats,
     required this.statsHistory,
     required this.marketplaceStats,
-    required this.activeZones,
+    required this.heatmap,
     required this.users,
     required this.inactiveListings,
     required this.userReports,
@@ -20,7 +20,7 @@ class AdminData {
   final AdminStats stats;
   final List<StatsSnapshotPoint> statsHistory;
   final MarketplaceStats marketplaceStats;
-  final List<ActiveZone> activeZones;
+  final List<HeatmapZone> heatmap;
   final AdminUsersPage users;
   final List<InactiveListing> inactiveListings;
   final List<UserReport> userReports;
@@ -39,7 +39,7 @@ class AdminData {
       stats: stats,
       statsHistory: statsHistory,
       marketplaceStats: marketplaceStats,
-      activeZones: activeZones,
+      heatmap: heatmap,
       users: users ?? this.users,
       inactiveListings: inactiveListings ?? this.inactiveListings,
       userReports: userReports ?? this.userReports,
@@ -60,7 +60,7 @@ class AdminController extends AsyncNotifier<AdminData> {
     final results = await Future.wait([
       repository.getStats(),
       repository.getMarketplaceStats(),
-      repository.getActiveZones(),
+      repository.getHeatmap(),
       repository.getUsers(),
       repository.getInactiveListings(),
       repository.getUserReports(),
@@ -73,7 +73,7 @@ class AdminController extends AsyncNotifier<AdminData> {
     return AdminData(
       stats: results[0] as AdminStats,
       marketplaceStats: results[1] as MarketplaceStats,
-      activeZones: results[2] as List<ActiveZone>,
+      heatmap: results[2] as List<HeatmapZone>,
       users: results[3] as AdminUsersPage,
       inactiveListings: results[4] as List<InactiveListing>,
       userReports: results[5] as List<UserReport>,
@@ -193,3 +193,12 @@ class AdminController extends AsyncNotifier<AdminData> {
 final adminControllerProvider = AsyncNotifierProvider<AdminController, AdminData>(
   AdminController.new,
 );
+
+/// Statisticile de folosire stau într-un provider separat, nu în `AdminData`:
+/// dashboard-ul se încarcă la fiecare intrare în panou, iar seria pe zile
+/// citește fișiere de jurnal - n-are ce căuta pe drumul critic al unui ecran
+/// pe care îl deschizi ca să banezi un user.
+final adminUsageStatsProvider =
+    FutureProvider.family<UsageStats, int>((ref, days) {
+  return ref.read(adminRepositoryProvider).getUsageStats(days: days);
+});

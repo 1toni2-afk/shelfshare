@@ -116,4 +116,56 @@ describe('ActivityLogService', () => {
       'necunoscut (cccccccc) FOLLOW',
     );
   });
+
+  describe('readUsage', () => {
+    it('numara actiunile si actorii distincti ai zilei', async () => {
+      const service = build();
+
+      service.record({ action: 'FOLLOW', actorId: 'aaaaaaaa-1111' });
+      service.record({ action: 'FOLLOW', actorId: 'aaaaaaaa-1111' });
+      service.record({ action: 'OFFER_CREATED', actorId: 'bbbbbbbb-2222' });
+      await service.flush();
+
+      const usage = await service.readUsage(3);
+
+      expect(usage.available).toBe(true);
+      expect(usage.days).toHaveLength(3);
+      const today = usage.days[usage.days.length - 1];
+      expect(today.actions).toBe(3);
+      expect(today.activeUsers).toBe(2);
+      expect(usage.byAction).toEqual([
+        { action: 'FOLLOW', count: 2 },
+        { action: 'OFFER_CREATED', count: 1 },
+      ]);
+    });
+
+    it('citeste verbul chiar daca detaliile contin paranteze si majuscule', async () => {
+      const service = build();
+
+      service.record({
+        action: 'EXCHANGE_ACCEPTED',
+        actorId: 'aaaaaaaa-1111',
+        targetId: 'bbbbbbbb-2222',
+        details: { carte: 'Ion (roman) DESPRE VIATA' },
+      });
+      await service.flush();
+
+      const usage = await service.readUsage(1);
+
+      expect(usage.byAction).toEqual([
+        { action: 'EXCHANGE_ACCEPTED', count: 1 },
+      ]);
+      expect(usage.days[0].activeUsers).toBe(1);
+    });
+
+    it('zilele fara fisier de jurnal sunt zero, nu eroare', async () => {
+      const service = build();
+
+      const usage = await service.readUsage(2);
+
+      expect(usage.available).toBe(false);
+      expect(usage.days.map((day) => day.actions)).toEqual([0, 0]);
+      expect(usage.byAction).toEqual([]);
+    });
+  });
 });

@@ -44,6 +44,21 @@ export class AdminController {
     return this.adminService.getActiveZones();
   }
 
+  /// Heat map-ul din panou: pe oras, useri / anunturi active / schimburi.
+  /// Inlocuieste `stats/active-zones` (care da doar anunturi) - ala ramane
+  /// pentru compatibilitate cu build-urile de app deja publicate.
+  @Get('stats/heatmap')
+  getHeatmap() {
+    return this.adminService.getHeatmap();
+  }
+
+  /// Statistici de folosire pe zile. `days` e plafonat in service (1..365).
+  @Get('stats/usage')
+  getUsageStats(@Query('days') days?: string) {
+    const parsed = days ? parseInt(days, 10) : NaN;
+    return this.adminService.getUsageStats(Number.isFinite(parsed) ? parsed : 30);
+  }
+
   @Get('stats/security')
   getSecurityStats() {
     return this.adminService.getSecurityStats();

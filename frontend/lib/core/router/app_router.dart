@@ -285,6 +285,9 @@ final routerProvider = Provider<GoRouter>((ref) {
               (context, state) => tier3.AdminReportsScreen()),
           _deferredRoute('/admin/users', tier3.loadLibrary,
               (context, state) => tier3.AdminUsersScreen()),
+          // Statistici de folosire (useri activi pe zi, adoptie pe functii).
+          _deferredRoute('/admin/usage', tier3.loadLibrary,
+              (context, state) => tier3.AdminUsageScreen()),
           _deferredRoute('/admin/listings/inactive', tier3.loadLibrary,
               (context, state) => tier3.AdminInactiveListingsScreen()),
           _deferredRoute('/admin/feature-access', tier3.loadLibrary,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { appendFile, mkdir } from 'fs/promises';
+import { appendFile, mkdir, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
@@ -171,5 +171,97 @@ export class ActivityLogService {
   /** Golește coada - folosit de teste ca să aștepte scrierile în curs. */
   async flush() {
     await this.queue;
+  }
+
+  /**
+   * Agregat pe zile al jurnalului de activitate, pentru panoul de admin.
+   *
+   * Citim fișierele, nu o tabelă: jurnalul E fișierele (vezi comentariul de
+   * la începutul clasei). Un fișier lipsă înseamnă o zi fără interacțiuni sau
+   * o zi de dinaintea pornirii jurnalului - în ambele cazuri, zero, nu eroare.
+   *
+   * `activeUsers` numără actorii DISTINCȚI ai zilei, după id-ul scurt din
+   * etichetă (8 caractere de uuid - suficient de unic la scara aplicației).
+   */
+  async readUsage(days: number): Promise<{
+    days: { date: string; activeUsers: number; actions: number }[];
+    byAction: { action: string; count: number }[];
+    available: boolean;
+  }> {
+    const dates = this.recentDates(days);
+    const byAction = new Map<string, number>();
+    let available = false;
+
+    const results = await Promise.all(
+      dates.map(async (date) => {
+        const [year, month] = date.split('-');
+        const file = join(this.root, 'activity', year, month, `${date}.log`);
+        let raw: string;
+        try {
+          raw = await readFile(file, 'utf8');
+        } catch {
+          return { date, activeUsers: 0, actions: 0 };
+        }
+        available = true;
+
+        const actors = new Set<string>();
+        let actions = 0;
+        for (const line of raw.split('\n')) {
+          const parsed = this.parseLine(line);
+          if (!parsed) continue;
+          actions++;
+          if (parsed.actorId) actors.add(parsed.actorId);
+          byAction.set(parsed.action, (byAction.get(parsed.action) ?? 0) + 1);
+        }
+        return { date, activeUsers: actors.size, actions };
+      }),
+    );
+
+    return {
+      days: results,
+      byAction: [...byAction.entries()]
+        .map(([action, count]) => ({ action, count }))
+        .sort((a, b) => b.count - a.count),
+      available,
+    };
+  }
+
+  /**
+   * O linie de jurnal -> actor + verb.
+   *
+   * Tăiem întâi `details`-ul JSON de la final (începe la primul „ {"): acolo
+   * pot sta paranteze și cuvinte cu majuscule din titluri de cărți, care ar
+   * păcăli orice căutare a verbului pornită de la coada liniei. Ce rămâne se
+   * termină mereu cu verbul. Liniile de antet („# 2026-09-03 (activity)") și
+   * orice linie care nu se termină cu un verb valid se sar.
+   */
+  private parseLine(
+    line: string,
+  ): { actorId: string | null; action: string } | null {
+    if (!line || line.startsWith('#')) return null;
+    const timestampEnd = line.indexOf(']');
+    if (timestampEnd < 0) return null;
+
+    const body = line.slice(timestampEnd + 1);
+    const detailsStart = body.indexOf(' {');
+    const head = (detailsStart >= 0 ? body.slice(0, detailsStart) : body).trim();
+    const tokens = head.split(/\s+/);
+    const action = tokens[tokens.length - 1];
+    if (!/^[A-Z][A-Z0-9_]*$/.test(action)) return null;
+
+    const actor = head.match(/\(([0-9a-fA-F-]{8})\)/);
+    return { actorId: actor ? actor[1] : null, action };
+  }
+
+  /** Ultimele `days` zile calendaristice, în fusul jurnalului, crescător. */
+  private recentDates(days: number): string[] {
+    const count = Math.max(1, Math.min(days, 365));
+    const out: string[] = [];
+    for (let i = count - 1; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const { year, month, day } = this.parts(date);
+      out.push(`${year}-${month}-${day}`);
+    }
+    return out;
   }
 }
