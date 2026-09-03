@@ -107,6 +107,7 @@ class ChatRepository {
     final response = await dio.post(
       '/conversations/$conversationId/photos',
       data: formData,
+      options: imageUploadOptions(),
     );
     return ChatMessage.fromJson(response.data as Map<String, dynamic>);
   }

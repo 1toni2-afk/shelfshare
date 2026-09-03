@@ -94,7 +94,7 @@ class ProfileRepository {
     final formData = FormData.fromMap({
       'photo': imageMultipartFile(bytes, filename),
     });
-    await dio.post('/profile/me/photo', data: formData);
+    await dio.post('/profile/me/photo', data: formData, options: imageUploadOptions());
     return getMyProfile();
   }
 

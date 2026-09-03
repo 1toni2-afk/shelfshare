@@ -20,6 +20,7 @@ import '../../safety/data/safety_repository.dart';
 import '../application/exchanges_controller.dart';
 import '../data/exchanges_repository.dart';
 import 'meeting_sheet.dart';
+import '../../../shared/utils/image_upload.dart';
 
 /// Hub-ul schimbului "în desfășurare" (punctul 6 din flow) - concentrează
 /// programarea, partajarea contactului, safety ack și acțiunile finale
@@ -396,27 +397,45 @@ class _DealStatusBanner extends StatelessWidget {
   }
 }
 
+/// Rezumatul schimbului: ce dai (coperți + titlu) vs. cui dai (avatar + nume).
+///
+/// Titlul stă SUB coperți, nu lângă ele: pe un telefon îngust coloana din
+/// dreapta („You receive" + numele + orașul) își lua lățimea din textul
+/// orașului, iar ce rămânea pentru titlu erau ~30px - suficient pentru o
+/// literă pe rând, deci titlul se afișa vertical, literă cu literă. Acum
+/// coloana din dreapta are lățime fixă, iar titlul primește toată lățimea
+/// coloanei din stânga.
 class _BookSummaryCard extends StatelessWidget {
   const _BookSummaryCard({required this.exchange, required this.other});
   final ExchangeRequest exchange;
   final PublicUser other;
 
+  /// Lățimea coloanei „You receive" - cât să încapă avatarul de 56px plus un
+  /// nume pe două rânduri, fără ca orașul să o poată lăți oricât.
+  static const double _receiverColumnWidth = 96;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
     final offeredBook = exchange.offeredBook;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Row(
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.readyYouGive,
+                    style: theme.textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       BookCover(
@@ -445,86 +464,81 @@ class _BookSummaryCard extends StatelessWidget {
                             if (exchange.additionalOfferedBooks.isNotEmpty)
                               Text(
                                 '+${exchange.additionalOfferedBooks.length}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
+                                style: theme.textTheme.labelSmall
                                     ?.copyWith(color: AppColors.mutedForeground),
                               ),
                           ],
                         ),
                       ],
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.readyYouGive,
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
-                            ),
-                            Text(exchange.requestedBook.book.title, style: Theme.of(context).textTheme.titleSmall),
-                            if (exchange.requestedBook.book.author != null)
-                              Text(
-                                exchange.requestedBook.book.author!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: AppColors.mutedForeground),
-                              ),
-                            if (exchange.offeredAmount != null)
-                              Text(
-                                l10n.exchangeOffersAmount(exchange.offeredAmount!.toStringAsFixed(0)),
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(color: AppColors.muted, shape: BoxShape.circle),
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Icon(Icons.swap_horiz, size: 20, color: AppColors.mutedForeground),
-                    ),
+                  const SizedBox(height: 10),
+                  Text(
+                    exchange.requestedBook.book.title,
+                    style: theme.textTheme.titleSmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                  if (exchange.requestedBook.book.author != null)
                     Text(
-                      l10n.readyYouReceive,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
+                      exchange.requestedBook.book.author!,
+                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundImage:
-                          other.profileImage != null ? NetworkImage(other.profileImage!) : null,
-                      child: other.profileImage == null ? const Icon(Icons.person, size: 28) : null,
+                  if (exchange.offeredAmount != null)
+                    Text(
+                      l10n.exchangeOffersAmount(exchange.offeredAmount!.toStringAsFixed(0)),
+                      style: theme.textTheme.bodySmall,
                     ),
-                    const SizedBox(height: 6),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 90),
-                      child: Text(
-                        other.name ?? l10n.commonAnonymousUser,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (other.city != null)
-                      Text(
-                        l10n.readyFromCity(other.city!),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-                      ),
-                  ],
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: AppColors.muted, shape: BoxShape.circle),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.swap_horiz, size: 20, color: AppColors.mutedForeground),
                 ),
-              ],
+              ),
+            ),
+            SizedBox(
+              width: _receiverColumnWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.readyYouReceive,
+                    style: theme.textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundImage:
+                        other.profileImage != null ? NetworkImage(other.profileImage!) : null,
+                    child: other.profileImage == null ? const Icon(Icons.person, size: 28) : null,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    other.name ?? l10n.commonAnonymousUser,
+                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (other.city != null)
+                    Text(
+                      l10n.readyFromCity(other.city!),
+                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
             ),
           ],
         ),
@@ -674,8 +688,23 @@ class _ContactSection extends ConsumerStatefulWidget {
 }
 
 class _ContactSectionState extends ConsumerState<_ContactSection> {
+  /// Înălțimea comună a perechii „Mai bine nu" / „Trimite numărul" - fixată
+  /// ca butoanele să rămână identice indiferent pe câte rânduri cade textul.
+  static const double _contactButtonHeight = 52;
+
   final _phoneController = TextEditingController();
   bool _editing = false;
+
+  /// Etichetă de buton îngustă: text mai mic, centrat, maxim două rânduri.
+  Widget _contactButtonLabel(String text) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontSize: 13, height: 1.15),
+    );
+  }
 
   @override
   void dispose() {
@@ -731,6 +760,10 @@ class _ContactSectionState extends ConsumerState<_ContactSection> {
                 ),
               ),
               const SizedBox(height: 8),
+              // Ambele butoane pe aceeași înălțime fixă, cu eticheta la un
+              // corp de literă mai mic: „Trimite numărul de telefon" e lung
+              // și, lăsat la stilul implicit, se rupea pe trei rânduri, iar
+              // butonul creștea de trei ori față de „Mai bine nu" de lângă el.
               Row(
                 children: [
                   Expanded(
@@ -738,19 +771,25 @@ class _ContactSectionState extends ConsumerState<_ContactSection> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.destructive,
                         side: const BorderSide(color: AppColors.destructive),
+                        minimumSize: const Size.fromHeight(_contactButtonHeight),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       onPressed: () => _share(null),
-                      child: Text(l10n.readyContactSkip),
+                      child: _contactButtonLabel(l10n.readyContactSkip),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.lock_outline, size: 16),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(_contactButtonHeight),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
                       onPressed: () => _share(
                         _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
                       ),
-                      label: Text(l10n.readyContactShare),
+                      label: _contactButtonLabel(l10n.readyContactShare),
                     ),
                   ),
                 ],
@@ -840,12 +879,15 @@ class _SafetySection extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             if (!myAck)
-              Align(
-                alignment: Alignment.centerLeft,
+              // Pe toată lățimea, nu lipit de marginea din stânga: era
+              // singurul buton din pagină aliniat altfel decât restul.
+              SizedBox(
+                width: double.infinity,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.accent,
                     side: const BorderSide(color: AppColors.accent),
+                    minimumSize: const Size.fromHeight(48),
                   ),
                   onPressed: () => onRun(() => ref.read(exchangesRepositoryProvider).acknowledgeSafety(exchange.id)),
                   child: Text(l10n.readySafetyAck),
@@ -884,7 +926,12 @@ class _ConditionPhotosSectionState extends ConsumerState<_ConditionPhotosSection
   bool _uploading = false;
 
   Future<void> _pickAndUpload() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: kContentPhotoMaxDimension.toDouble(),
+      maxHeight: kContentPhotoMaxDimension.toDouble(),
+      imageQuality: kContentPhotoQuality,
+    );
     if (picked == null) return;
     setState(() => _uploading = true);
     try {
@@ -931,29 +978,40 @@ class _ConditionPhotosSectionState extends ConsumerState<_ConditionPhotosSection
               subtitle: l10n.readyConditionPhotosSubtitle,
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final url in mine) _thumb(url),
-                if (mine.length < _maxPhotos)
-                  InkWell(
-                    onTap: _uploading ? null : _pickAndUpload,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.border),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: _uploading
-                          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-                          : Icon(Icons.add_a_photo_outlined, color: AppColors.mutedForeground),
+            if (mine.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [for (final url in mine) _thumb(url)],
+              ),
+              const SizedBox(height: 12),
+            ],
+            // Buton pe toată lățimea, în accentul temei - înainte era un
+            // pătrat de 64px lipit de marginea din stânga, care nu semăna cu
+            // niciun alt buton din pagină și nu se citea ca acțiune.
+            if (mine.length < _maxPhotos)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _uploading ? null : _pickAndUpload,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.accent,
+                    side: BorderSide(
+                      color: _uploading ? AppColors.border : AppColors.accent,
                     ),
+                    minimumSize: const Size.fromHeight(48),
                   ),
-              ],
-            ),
+                  icon: _uploading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.add_a_photo_outlined, size: 18),
+                  label: Text(l10n.readyConditionPhotosAdd),
+                ),
+              ),
             if (theirs.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(l10n.readyConditionPhotosOther, style: Theme.of(context).textTheme.bodySmall),

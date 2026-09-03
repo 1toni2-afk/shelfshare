@@ -96,11 +96,17 @@ class OwnedBook {
   final int currentPage;
   final int? totalPages;
 
+  /// Cartea are deja un anunț activ. Rămâne în secțiune doar cât e „în curs
+  /// de citire" (progresul nu se vede nicăieri în grila de listări), dar
+  /// cardul nu-i mai propune să o listeze - o are deja listată.
+  final bool listed;
+
   const OwnedBook({
     required this.book,
     required this.status,
     this.currentPage = 0,
     this.totalPages,
+    this.listed = false,
   });
 
   /// Fracție 0..1 pentru bara de progres. Null când nu știm totalul - atunci
@@ -125,6 +131,7 @@ class OwnedBook {
       status: BookshelfStatusX.fromJson(json['status'] as String),
       currentPage: (json['currentPage'] as num?)?.toInt() ?? 0,
       totalPages: (json['totalPages'] as num?)?.toInt(),
+      listed: json['listed'] == true,
     );
   }
 }

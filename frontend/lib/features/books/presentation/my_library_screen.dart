@@ -507,16 +507,24 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           },
           child: state.when(
             data: (books) {
+              // Fără NICIUN anunț, ecranul se oprea aici - deci și cărțile
+              // doar deținute (adăugate „în curs de citire", fără listare)
+              // dispăreau din My Shelf, deși exact ele sunt prim-planul lui.
+              // Acum starea goală arată secțiunea de cărți deținute deasupra
+              // mesajului, iar mesajul rămâne doar despre lipsa anunțurilor.
               if (books.isEmpty) {
-                return CenteredScrollable(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(l10n.libraryEmpty),
-                      const SizedBox(height: 12),
-                      const MottoText(),
-                    ],
-                  ),
+                return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    const OwnedBooksSection(),
+                    const SizedBox(height: 24),
+                    const Divider(height: 1),
+                    const SizedBox(height: 24),
+                    Text(l10n.libraryEmpty, textAlign: TextAlign.center),
+                    const SizedBox(height: 12),
+                    const Center(child: MottoText()),
+                  ],
                 );
               }
               final transferred = ref.watch(emptiedShelvesProvider).value ?? const [];

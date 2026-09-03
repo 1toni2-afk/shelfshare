@@ -28,6 +28,7 @@ import '../application/conversations_controller.dart';
 import '../data/chat_repository.dart';
 import '../data/places_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/utils/image_upload.dart';
 
 String _formatBubbleTime(DateTime dateTime) {
   final local = dateTime.toLocal();
@@ -301,7 +302,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   }
 
   Future<void> _attachPhoto() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: kContentPhotoMaxDimension.toDouble(),
+      maxHeight: kContentPhotoMaxDimension.toDouble(),
+      imageQuality: kContentPhotoQuality,
+    );
     if (picked == null) return;
     final bytes = await picked.readAsBytes();
     final ok = await ref

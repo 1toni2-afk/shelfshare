@@ -88,6 +88,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reportDialogTitle => 'Melden';
 
   @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonScam => 'Betrug / Tausch nicht eingehalten';
+
+  @override
+  String get reportReasonInappropriate => 'Unangemessene Inhalte';
+
+  @override
+  String get reportReasonHarassment => 'Missbräuchliches Verhalten';
+
+  @override
+  String get reportReasonOther => 'Sonstiges';
+
+  @override
+  String get reportReasonAbusiveLanguage => 'Beleidigende Sprache';
+
+  @override
+  String get reportReasonFalseContent => 'Falsche Angaben';
+
+  @override
+  String get reportReasonFakeProfile => 'Gefälschtes Profil';
+
+  @override
   String get trustScoreTitle => 'Vertrauens-Score';
 
   @override
@@ -1047,6 +1071,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String get browseEmpty => 'Keine Bücher gefunden.';
 
   @override
+  String get browseGlobalTitle => 'Alle Bücher';
+
+  @override
+  String get browseGlobalSubtitle =>
+      'Titel aus unserem Katalog und aus externen Quellen, auch wenn sie gerade niemand eingestellt hat.';
+
+  @override
+  String browseGlobalEmpty(String query) {
+    return 'Wir haben nirgends einen Treffer für „$query\" gefunden.';
+  }
+
+  @override
+  String get browseGlobalError =>
+      'Die Suche außerhalb der App hat gerade nicht geantwortet.';
+
+  @override
+  String get browseGlobalNotFound => 'Ist dein Buch nicht dabei?';
+
+  @override
+  String get browseAddTitleCta => 'Titel mit eigenem Foto hinzufügen';
+
+  @override
   String get filtersTitle => 'Filter';
 
   @override
@@ -1349,6 +1395,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get addBookGenericError =>
       'Das Buch konnte nicht hinzugefügt werden. Bitte versuche es erneut.';
+
+  @override
+  String get addBookPartialError =>
+      'Die Anzeige wurde gespeichert, aber nicht alles konnte hochgeladen werden (Fotos/Preis). Tippe erneut auf Veröffentlichen - wir machen dort weiter, wo wir aufgehört haben, ohne ein Duplikat anzulegen.';
 
   @override
   String get relistNeedPhoto =>
@@ -1837,6 +1887,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get readyConditionPhotosOther => 'Fotos der anderen Partei';
+
+  @override
+  String get readyConditionPhotosAdd => 'Foto hinzufügen';
 
   @override
   String get readyConditionPhotosError =>
@@ -2360,6 +2413,49 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get adminNoReports => 'Keine Meldungen.';
+
+  @override
+  String get adminReportsTitle => 'Moderationsliste';
+
+  @override
+  String get adminReportsDesc =>
+      'Alle Meldungen, filterbar nach Gemeldetem und nach Status';
+
+  @override
+  String get adminReportsFilterType => 'Was gemeldet wurde';
+
+  @override
+  String get adminReportsFilterStatus => 'Status';
+
+  @override
+  String get adminReportsFilterAll => 'Alle';
+
+  @override
+  String get adminReportTargetUser => 'Nutzer';
+
+  @override
+  String get adminReportTargetListing => 'Anzeige';
+
+  @override
+  String get adminReportTargetReview => 'Rezension';
+
+  @override
+  String get adminReportTargetConversation => 'Unterhaltung';
+
+  @override
+  String get adminReportTargetGroupPost => 'Gruppenbeitrag';
+
+  @override
+  String get adminReportTargetExchange => 'Tausch';
+
+  @override
+  String get adminReportAutoHidden => 'Automatisch ausgeblendet';
+
+  @override
+  String get adminReportUnhideAction => 'Inhalt wiederherstellen';
+
+  @override
+  String get adminContentRestored => 'Der Inhalt wurde wiederhergestellt.';
 
   @override
   String adminUpcomingReleasesCount(int count) {
@@ -4274,6 +4370,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Bücher, die du deinem Regal hinzufügst, erscheinen hier - zusammen mit deinem Lesefortschritt.';
 
   @override
+  String get shelfOwnedListedBadge => 'Eingestellt';
+
+  @override
   String get shelfOwnedAddCta => 'Ins Regal legen';
 
   @override
@@ -4330,6 +4429,96 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shelfListItNow => 'Inserieren';
+
+  @override
+  String get workTitle => 'Über das Buch';
+
+  @override
+  String get workLoadError => 'Die Buchseite konnte nicht geladen werden.';
+
+  @override
+  String get workAbout => 'Beschreibung';
+
+  @override
+  String workPages(int count) {
+    return '$count Seiten';
+  }
+
+  @override
+  String workEditions(int count) {
+    return '$count Ausgaben';
+  }
+
+  @override
+  String get workEditionUnnamed => 'Ausgabe ohne Angaben';
+
+  @override
+  String workRatingCount(int count) {
+    return '$count Rezensionen';
+  }
+
+  @override
+  String get workAddToShelf => 'Ins Regal';
+
+  @override
+  String get workWantToRead => 'Möchte ich lesen';
+
+  @override
+  String get workRequestSwap => 'Tausch anfragen';
+
+  @override
+  String get workAddedToShelf => 'Zu deinem Regal hinzugefügt.';
+
+  @override
+  String get workReviewsTitle => 'Rezensionen';
+
+  @override
+  String get workWriteReview => 'Rezension schreiben';
+
+  @override
+  String get workNoReviews =>
+      'Noch keine Rezensionen. Sag als Erste:r, was du davon hältst.';
+
+  @override
+  String get workDeleteReview => 'Rezension löschen';
+
+  @override
+  String get workReportReview => 'Rezension melden';
+
+  @override
+  String workListingsTitle(int count) {
+    return 'In der App ($count)';
+  }
+
+  @override
+  String get workNoListings =>
+      'Gerade hat sie niemand eingestellt. Du könntest die:der Erste sein.';
+
+  @override
+  String get reviewSheetTitle => 'Deine Rezension';
+
+  @override
+  String get reviewPromptTitle => 'Du hast das Buch beendet';
+
+  @override
+  String reviewPromptBody(String title) {
+    return 'Wie fandest du „$title\"? Eine Bewertung hilft allen, die sich das Buch ansehen.';
+  }
+
+  @override
+  String get reviewPromptNotNow => 'Jetzt nicht';
+
+  @override
+  String get reviewPromptWrite => 'Rezension schreiben';
+
+  @override
+  String get reviewNeedRating => 'Wähle eine Bewertung von 1 bis 5 Sternen.';
+
+  @override
+  String get reviewTextHint => 'Wie fandest du das Buch? (optional)';
+
+  @override
+  String get reviewSave => 'Speichern';
 
   @override
   String get shelfRemoveFromShelf => 'Aus dem Regal entfernen';

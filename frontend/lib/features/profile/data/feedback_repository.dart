@@ -14,7 +14,7 @@ class FeedbackRepository {
         'message': message,
         'photo': imageMultipartFile(photoBytes, photoFilename),
       });
-      await dio.post('/feedback', data: formData);
+      await dio.post('/feedback', data: formData, options: imageUploadOptions());
     } else {
       await dio.post('/feedback', data: {'message': message});
     }

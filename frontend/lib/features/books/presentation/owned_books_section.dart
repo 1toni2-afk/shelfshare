@@ -138,11 +138,21 @@ class _OwnedBookTile extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          owned.book.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                owned.book.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall,
+                              ),
+                            ),
+                            if (owned.listed) ...[
+                              const SizedBox(width: 6),
+                              _ListedBadge(label: l10n.shelfOwnedListedBadge),
+                            ],
+                          ],
                         ),
                         if (owned.book.author != null)
                           Text(
@@ -176,6 +186,8 @@ class _OwnedBookTile extends ConsumerWidget {
                       switch (value) {
                         case 'progress':
                           _editProgress(context, ref);
+                        case 'about':
+                          context.push('/work/${owned.book.id}');
                         case 'list':
                           OwnedBooksSection.listBook(context, owned.book);
                         case 'remove':
@@ -184,7 +196,10 @@ class _OwnedBookTile extends ConsumerWidget {
                     },
                     itemBuilder: (context) => [
                       PopupMenuItem(value: 'progress', child: Text(l10n.shelfUpdateProgress)),
-                      PopupMenuItem(value: 'list', child: Text(l10n.shelfListItNow)),
+                      PopupMenuItem(value: 'about', child: Text(l10n.workTitle)),
+                      // Deja listată: nu-i mai propunem s-o listeze încă o dată.
+                      if (!owned.listed)
+                        PopupMenuItem(value: 'list', child: Text(l10n.shelfListItNow)),
                       PopupMenuItem(value: 'remove', child: Text(l10n.shelfRemoveFromShelf)),
                     ],
                   ),
@@ -192,7 +207,7 @@ class _OwnedBookTile extends ConsumerWidget {
               ),
               // Cartea terminată e singurul moment în care propunerea de a o da
               // mai departe e la locul ei - până atunci userul încă o citește.
-              if (owned.isFinished) ...[
+              if (owned.isFinished && !owned.listed) ...[
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -215,6 +230,31 @@ class _OwnedBookTile extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Eticheta „Listată" de pe o carte care e și în curs de citire, și scoasă la
+/// schimb - apare în ambele locuri din My Shelf, deci merită spus care e care.
+class _ListedBadge extends StatelessWidget {
+  const _ListedBadge({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context)
+            .textTheme
+            .labelSmall
+            ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.w600),
       ),
     );
   }

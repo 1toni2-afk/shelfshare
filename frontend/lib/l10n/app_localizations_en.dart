@@ -87,6 +87,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportDialogTitle => 'Report';
 
   @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonScam => 'Fraud / not honouring the exchange';
+
+  @override
+  String get reportReasonInappropriate => 'Inappropriate content';
+
+  @override
+  String get reportReasonHarassment => 'Abusive behaviour';
+
+  @override
+  String get reportReasonOther => 'Other';
+
+  @override
+  String get reportReasonAbusiveLanguage => 'Abusive language';
+
+  @override
+  String get reportReasonFalseContent => 'False content';
+
+  @override
+  String get reportReasonFakeProfile => 'Fake profile';
+
+  @override
   String get trustScoreTitle => 'Trust Score';
 
   @override
@@ -1031,6 +1055,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get browseEmpty => 'No books found.';
 
   @override
+  String get browseGlobalTitle => 'All books';
+
+  @override
+  String get browseGlobalSubtitle =>
+      'Titles from our catalogue and from external sources, even when nobody has them listed right now.';
+
+  @override
+  String browseGlobalEmpty(String query) {
+    return 'We found no match for \"$query\" anywhere.';
+  }
+
+  @override
+  String get browseGlobalError =>
+      'The search outside the app did not respond just now.';
+
+  @override
+  String get browseGlobalNotFound => 'Not your book among these?';
+
+  @override
+  String get browseAddTitleCta => 'Add the title with your own photo';
+
+  @override
   String get filtersTitle => 'Filters';
 
   @override
@@ -1330,6 +1376,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get addBookGenericError =>
       'We couldn\'t add the book. Please try again.';
+
+  @override
+  String get addBookPartialError =>
+      'The listing was saved, but we could not finish uploading everything (photos/price). Tap publish again - we resume where we left off, without creating a duplicate.';
 
   @override
   String get relistNeedPhoto =>
@@ -1808,6 +1858,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readyConditionPhotosOther => 'The other party\'s photos';
+
+  @override
+  String get readyConditionPhotosAdd => 'Add photo';
 
   @override
   String get readyConditionPhotosError => 'Couldn\'t upload the photo.';
@@ -2320,6 +2373,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminNoReports => 'No reports.';
+
+  @override
+  String get adminReportsTitle => 'Moderation queue';
+
+  @override
+  String get adminReportsDesc =>
+      'Every report, filterable by what was reported and by status';
+
+  @override
+  String get adminReportsFilterType => 'What was reported';
+
+  @override
+  String get adminReportsFilterStatus => 'Status';
+
+  @override
+  String get adminReportsFilterAll => 'All';
+
+  @override
+  String get adminReportTargetUser => 'User';
+
+  @override
+  String get adminReportTargetListing => 'Listing';
+
+  @override
+  String get adminReportTargetReview => 'Review';
+
+  @override
+  String get adminReportTargetConversation => 'Conversation';
+
+  @override
+  String get adminReportTargetGroupPost => 'Group post';
+
+  @override
+  String get adminReportTargetExchange => 'Exchange';
+
+  @override
+  String get adminReportAutoHidden => 'Auto-hidden';
+
+  @override
+  String get adminReportUnhideAction => 'Restore content';
+
+  @override
+  String get adminContentRestored => 'The content was restored.';
 
   @override
   String adminUpcomingReleasesCount(int count) {
@@ -4203,6 +4299,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Books you add to your shelf show up here, together with your reading progress.';
 
   @override
+  String get shelfOwnedListedBadge => 'Listed';
+
+  @override
   String get shelfOwnedAddCta => 'Add to shelf';
 
   @override
@@ -4260,6 +4359,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shelfListItNow => 'List it';
+
+  @override
+  String get workTitle => 'About the book';
+
+  @override
+  String get workLoadError => 'We could not load this book page.';
+
+  @override
+  String get workAbout => 'Description';
+
+  @override
+  String workPages(int count) {
+    return '$count pages';
+  }
+
+  @override
+  String workEditions(int count) {
+    return '$count editions';
+  }
+
+  @override
+  String get workEditionUnnamed => 'Edition without details';
+
+  @override
+  String workRatingCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get workAddToShelf => 'Add to shelf';
+
+  @override
+  String get workWantToRead => 'Want to read';
+
+  @override
+  String get workRequestSwap => 'Request a swap';
+
+  @override
+  String get workAddedToShelf => 'Added to your shelf.';
+
+  @override
+  String get workReviewsTitle => 'Reviews';
+
+  @override
+  String get workWriteReview => 'Write a review';
+
+  @override
+  String get workNoReviews =>
+      'No reviews yet. Be the first to say what you thought.';
+
+  @override
+  String get workDeleteReview => 'Delete review';
+
+  @override
+  String get workReportReview => 'Report review';
+
+  @override
+  String workListingsTitle(int count) {
+    return 'In the app ($count)';
+  }
+
+  @override
+  String get workNoListings =>
+      'Nobody has it listed right now. You could be the first.';
+
+  @override
+  String get reviewSheetTitle => 'Your review';
+
+  @override
+  String get reviewPromptTitle => 'You finished the book';
+
+  @override
+  String reviewPromptBody(String title) {
+    return 'What did you think of \"$title\"? A rating helps anyone looking at this book.';
+  }
+
+  @override
+  String get reviewPromptNotNow => 'Not now';
+
+  @override
+  String get reviewPromptWrite => 'Write a review';
+
+  @override
+  String get reviewNeedRating => 'Pick a rating from 1 to 5 stars.';
+
+  @override
+  String get reviewTextHint => 'What did you think of the book? (optional)';
+
+  @override
+  String get reviewSave => 'Save';
 
   @override
   String get shelfRemoveFromShelf => 'Remove from shelf';

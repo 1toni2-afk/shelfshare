@@ -1,5 +1,7 @@
-/// Rezultat din căutarea externă (Open Library / Google Books), înainte
-/// să fie salvat ca [Book] în catalogul propriu.
+/// Rezultat de căutare la „adaugă carte": fie din catalogul propriu
+/// (`source == 'catalog'`, singurul care are și `bookId`), fie de la un
+/// provider extern (Open Library / Google Books), înainte să fie salvat ca
+/// [Book] în catalogul propriu.
 class ExternalBookResult {
   final String? isbn;
   final String title;
@@ -19,6 +21,11 @@ class ExternalBookResult {
   final List<String> subjects;
   final String source;
 
+  /// Id-ul cărții din catalogul propriu. Setat doar pentru
+  /// `source == 'catalog'`; anunțul se leagă atunci direct de opera existentă,
+  /// în loc să treacă din nou prin potrivirea după titlu+autor.
+  final String? bookId;
+
   const ExternalBookResult({
     this.isbn,
     required this.title,
@@ -32,6 +39,7 @@ class ExternalBookResult {
     this.genre,
     this.subjects = const [],
     required this.source,
+    this.bookId,
   });
 
   factory ExternalBookResult.fromJson(Map<String, dynamic> json) {
@@ -50,6 +58,7 @@ class ExternalBookResult {
           .map((e) => e as String)
           .toList(),
       source: json['source'] as String,
+      bookId: json['bookId'] as String?,
     );
   }
 }

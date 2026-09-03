@@ -87,6 +87,30 @@ class AppLocalizationsHu extends AppLocalizations {
   String get reportDialogTitle => 'Bejelentés';
 
   @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonScam => 'Csalás / nem tartja be a cserét';
+
+  @override
+  String get reportReasonInappropriate => 'Nem megfelelő tartalom';
+
+  @override
+  String get reportReasonHarassment => 'Bántalmazó viselkedés';
+
+  @override
+  String get reportReasonOther => 'Egyéb';
+
+  @override
+  String get reportReasonAbusiveLanguage => 'Bántó nyelvezet';
+
+  @override
+  String get reportReasonFalseContent => 'Hamis tartalom';
+
+  @override
+  String get reportReasonFakeProfile => 'Hamis profil';
+
+  @override
   String get trustScoreTitle => 'Megbízhatósági pontszám';
 
   @override
@@ -1036,6 +1060,27 @@ class AppLocalizationsHu extends AppLocalizations {
   String get browseEmpty => 'Nem található könyv.';
 
   @override
+  String get browseGlobalTitle => 'Minden könyv';
+
+  @override
+  String get browseGlobalSubtitle =>
+      'Címek a saját katalógusunkból és külső forrásokból, akkor is, ha épp senki nem hirdeti őket.';
+
+  @override
+  String browseGlobalEmpty(String query) {
+    return 'Sehol nem találtunk találatot erre: „$query\".';
+  }
+
+  @override
+  String get browseGlobalError => 'Az appon kívüli keresés most nem válaszolt.';
+
+  @override
+  String get browseGlobalNotFound => 'Nincs köztük a te könyved?';
+
+  @override
+  String get browseAddTitleCta => 'Cím hozzáadása saját fotóval';
+
+  @override
   String get filtersTitle => 'Szűrők';
 
   @override
@@ -1335,6 +1380,10 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get addBookGenericError =>
       'Nem sikerült hozzáadni a könyvet. Próbáld újra.';
+
+  @override
+  String get addBookPartialError =>
+      'A hirdetést elmentettük, de nem sikerült mindent feltölteni (fotók/ár). Nyomd meg újra a közzétételt - onnan folytatjuk, ahol abbahagytuk, másolat létrehozása nélkül.';
 
   @override
   String get relistNeedPhoto =>
@@ -1813,6 +1862,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get readyConditionPhotosOther => 'A másik fél fotói';
+
+  @override
+  String get readyConditionPhotosAdd => 'Fotó hozzáadása';
 
   @override
   String get readyConditionPhotosError => 'Nem sikerült feltölteni a fotót.';
@@ -2328,6 +2380,49 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get adminNoReports => 'Nincs bejelentés.';
+
+  @override
+  String get adminReportsTitle => 'Moderálási sor';
+
+  @override
+  String get adminReportsDesc =>
+      'Minden bejelentés, szűrhető a bejelentés tárgya és állapota szerint';
+
+  @override
+  String get adminReportsFilterType => 'Mit jelentettek';
+
+  @override
+  String get adminReportsFilterStatus => 'Állapot';
+
+  @override
+  String get adminReportsFilterAll => 'Mind';
+
+  @override
+  String get adminReportTargetUser => 'Felhasználó';
+
+  @override
+  String get adminReportTargetListing => 'Hirdetés';
+
+  @override
+  String get adminReportTargetReview => 'Értékelés';
+
+  @override
+  String get adminReportTargetConversation => 'Beszélgetés';
+
+  @override
+  String get adminReportTargetGroupPost => 'Csoportbejegyzés';
+
+  @override
+  String get adminReportTargetExchange => 'Csere';
+
+  @override
+  String get adminReportAutoHidden => 'Automatikusan elrejtve';
+
+  @override
+  String get adminReportUnhideAction => 'Tartalom visszaállítása';
+
+  @override
+  String get adminContentRestored => 'A tartalmat visszaállítottuk.';
 
   @override
   String adminUpcomingReleasesCount(int count) {
@@ -4227,6 +4322,9 @@ class AppLocalizationsHu extends AppLocalizations {
       'A polcodhoz adott könyvek itt jelennek meg, az olvasási haladásoddal együtt.';
 
   @override
+  String get shelfOwnedListedBadge => 'Meghirdetve';
+
+  @override
   String get shelfOwnedAddCta => 'Polcra teszem';
 
   @override
@@ -4283,6 +4381,96 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get shelfListItNow => 'Meghirdetem';
+
+  @override
+  String get workTitle => 'A könyvről';
+
+  @override
+  String get workLoadError => 'Nem sikerült betölteni a könyv oldalát.';
+
+  @override
+  String get workAbout => 'Leírás';
+
+  @override
+  String workPages(int count) {
+    return '$count oldal';
+  }
+
+  @override
+  String workEditions(int count) {
+    return '$count kiadás';
+  }
+
+  @override
+  String get workEditionUnnamed => 'Kiadás adatok nélkül';
+
+  @override
+  String workRatingCount(int count) {
+    return '$count értékelés';
+  }
+
+  @override
+  String get workAddToShelf => 'Polcra teszem';
+
+  @override
+  String get workWantToRead => 'El szeretném olvasni';
+
+  @override
+  String get workRequestSwap => 'Csere kérése';
+
+  @override
+  String get workAddedToShelf => 'Hozzáadtuk a polcodhoz.';
+
+  @override
+  String get workReviewsTitle => 'Értékelések';
+
+  @override
+  String get workWriteReview => 'Értékelés írása';
+
+  @override
+  String get workNoReviews =>
+      'Még nincs értékelés. Legyél te az első, aki elmondja a véleményét.';
+
+  @override
+  String get workDeleteReview => 'Értékelés törlése';
+
+  @override
+  String get workReportReview => 'Értékelés jelentése';
+
+  @override
+  String workListingsTitle(int count) {
+    return 'Az appban ($count)';
+  }
+
+  @override
+  String get workNoListings => 'Most senki nem hirdeti. Te lehetsz az első.';
+
+  @override
+  String get reviewSheetTitle => 'A te értékelésed';
+
+  @override
+  String get reviewPromptTitle => 'Befejezted a könyvet';
+
+  @override
+  String reviewPromptBody(String title) {
+    return 'Mit gondoltál erről: „$title\"? Egy értékelés mindenkinek segít, aki ránéz a könyvre.';
+  }
+
+  @override
+  String get reviewPromptNotNow => 'Most nem';
+
+  @override
+  String get reviewPromptWrite => 'Értékelés írása';
+
+  @override
+  String get reviewNeedRating =>
+      'Válassz 1-től 5 csillagig terjedő értékelést.';
+
+  @override
+  String get reviewTextHint => 'Mit gondoltál a könyvről? (opcionális)';
+
+  @override
+  String get reviewSave => 'Mentés';
 
   @override
   String get shelfRemoveFromShelf => 'Levétel a polcról';

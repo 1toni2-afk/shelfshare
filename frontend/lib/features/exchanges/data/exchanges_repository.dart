@@ -98,7 +98,11 @@ class ExchangesRepository {
     final formData = FormData.fromMap({
       'photo': imageMultipartFile(bytes, filename),
     });
-    final response = await dio.post('/exchanges/$id/condition-photos', data: formData);
+    final response = await dio.post(
+      '/exchanges/$id/condition-photos',
+      data: formData,
+      options: imageUploadOptions(),
+    );
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }
 

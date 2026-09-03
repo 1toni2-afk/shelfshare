@@ -240,11 +240,14 @@ class ChatController extends Notifier<ChatState> {
         filename: filename,
         replyToId: state.replyTo?.id,
       );
-      state = state.copyWith(
-        messages: [...state.messages, message],
-        isSendingPhoto: false,
-        clearReplyTo: true,
-      );
+      // Serverul difuzează poza pe `new_message` către TOATĂ camera, inclusiv
+      // expeditorul (vezi ChatGateway.broadcastMessage). Ecoul ajunge des
+      // înaintea răspunsului HTTP la upload, deci adăugarea necondiționată de
+      // aici punea aceeași poză a doua oară - expeditorul o vedea dublată,
+      // destinatarul o singură dată. `_appendSentMessage` sare peste id-urile
+      // deja prezente.
+      _appendSentMessage(message);
+      state = state.copyWith(isSendingPhoto: false, clearReplyTo: true);
       return true;
     } catch (_) {
       state = state.copyWith(isSendingPhoto: false);

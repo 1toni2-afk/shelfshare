@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
@@ -27,8 +28,9 @@ class BookMatchScreen extends ConsumerStatefulWidget {
   ConsumerState<BookMatchScreen> createState() => _BookMatchScreenState();
 }
 
-/// Câte carduri cerem per lot și pragul sub care prefetch-uim următorul lot.
-const _batchSize = 12;
+/// Pragul sub care prefetch-uim următorul lot. Dimensiunea lotului stă în
+/// repository (`kBookMatchBatchSize`) - o folosește și prefetch-ul de dinainte
+/// de deschiderea ecranului.
 const _prefetchThreshold = 3;
 
 /// Câte coperte ținem "calde" înainte de cardul curent - doar cardul de sus
@@ -55,8 +57,14 @@ enum _SwipeAction {
 class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
     with SingleTickerProviderStateMixin {
   /// Un singur sessionId pentru toată sesiunea de ecran (nu per swipe) - e ce
-  /// leagă între ele coada și swipe-urile pentru backend.
-  final String _sessionId = generateUuidV4();
+  /// leagă între ele coada și swipe-urile pentru backend. Vine din
+  /// `bookMatchPrefetchProvider`, ca lotul deja adus în fundal (în onboarding,
+  /// cât userul își completa datele) să corespundă swipe-urilor de aici.
+  late final String _sessionId;
+
+  /// Primul lot, adus în fundal înainte de deschiderea ecranului. Consumat o
+  /// singură dată: reîncercarea după eroare și recalibrarea cer coadă nouă.
+  BookMatchPrefetch? _prefetch;
 
   final List<BookMatchCard> _cards = [];
 
@@ -84,6 +92,16 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   @override
   void initState() {
     super.initState();
+    final prefetch = ref.read(bookMatchPrefetchProvider);
+    if (prefetch.claimed) {
+      // Prefetch-ul a fost deja consumat de un ecran anterior: pornim o
+      // sesiune proprie, cu coadă cerută normal la primul fetch.
+      _sessionId = generateUuidV4();
+    } else {
+      prefetch.claimed = true;
+      _sessionId = prefetch.sessionId;
+      _prefetch = prefetch;
+    }
     _animation = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 260),
@@ -114,9 +132,15 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
     if (_fetching || _exhausted) return;
     _fetching = true;
     try {
-      final queue = await ref
-          .read(bookMatchRepositoryProvider)
-          .getQueue(sessionId: _sessionId, size: _batchSize);
+      // Primul lot vine din prefetch, dacă a apucat să pornească; de la al
+      // doilea încolo (și la orice reîncercare) cerem normal.
+      final pending = _prefetch;
+      _prefetch = null;
+      final queue = pending != null
+          ? await pending.queue
+          : await ref
+              .read(bookMatchRepositoryProvider)
+              .getQueue(sessionId: _sessionId, size: kBookMatchBatchSize);
       if (!mounted) return;
       final fresh = [
         for (final card in queue.cards)
@@ -543,6 +567,22 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
                 const SizedBox(height: 16),
                 Text(card.description!, style: Theme.of(sheetContext).textTheme.bodyMedium),
               ],
+              const SizedBox(height: 16),
+              // Aceeași pagină „despre carte" ca din orice altă listare - de
+              // aici userul vede edițiile, recenziile și cine o are la schimb,
+              // fără să iasă din fluxul de swipe (sheet-ul se închide, ecranul
+              // de swipe rămâne dedesubt).
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    context.push('/work/${card.bookId}');
+                  },
+                  icon: const Icon(Icons.info_outline, size: 18),
+                  label: Text(context.l10n.workTitle),
+                ),
+              ),
             ],
           ),
         ),

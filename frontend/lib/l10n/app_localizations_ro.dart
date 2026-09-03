@@ -87,6 +87,30 @@ class AppLocalizationsRo extends AppLocalizations {
   String get reportDialogTitle => 'Raportează';
 
   @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonScam => 'Fraudă / nu respectă schimbul';
+
+  @override
+  String get reportReasonInappropriate => 'Conținut inadecvat';
+
+  @override
+  String get reportReasonHarassment => 'Comportament abuziv';
+
+  @override
+  String get reportReasonOther => 'Altul';
+
+  @override
+  String get reportReasonAbusiveLanguage => 'Limbaj abuziv';
+
+  @override
+  String get reportReasonFalseContent => 'Conținut fals';
+
+  @override
+  String get reportReasonFakeProfile => 'Profil fals';
+
+  @override
   String get trustScoreTitle => 'Scor de încredere';
 
   @override
@@ -1034,6 +1058,28 @@ class AppLocalizationsRo extends AppLocalizations {
   String get browseEmpty => 'Nu am găsit nicio carte.';
 
   @override
+  String get browseGlobalTitle => 'Toate cărțile';
+
+  @override
+  String get browseGlobalSubtitle =>
+      'Titluri din catalogul nostru și din surse externe, chiar dacă nu le are nimeni listate acum.';
+
+  @override
+  String browseGlobalEmpty(String query) {
+    return 'Nu am găsit „$query\" nicăieri.';
+  }
+
+  @override
+  String get browseGlobalError =>
+      'Căutarea în afara aplicației nu a răspuns acum.';
+
+  @override
+  String get browseGlobalNotFound => 'Nu e cartea ta printre ele?';
+
+  @override
+  String get browseAddTitleCta => 'Adaugă titlul cu poza ta';
+
+  @override
   String get filtersTitle => 'Filtre';
 
   @override
@@ -1334,6 +1380,10 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get addBookGenericError =>
       'Nu am putut adăuga cartea. Încearcă din nou.';
+
+  @override
+  String get addBookPartialError =>
+      'Anunțul a fost salvat, dar nu am reușit să încărcăm tot (poze/preț). Apasă din nou pe publicare - reluăm de unde am rămas, fără să dublăm anunțul.';
 
   @override
   String get relistNeedPhoto =>
@@ -1812,6 +1862,9 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get readyConditionPhotosOther => 'Pozele celeilalte părți';
+
+  @override
+  String get readyConditionPhotosAdd => 'Adaugă poză';
 
   @override
   String get readyConditionPhotosError => 'Nu am putut urca poza.';
@@ -2330,6 +2383,49 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get adminNoReports => 'Niciun raport.';
+
+  @override
+  String get adminReportsTitle => 'Coada de moderare';
+
+  @override
+  String get adminReportsDesc =>
+      'Toate rapoartele, filtrabile după ce s-a raportat și după status';
+
+  @override
+  String get adminReportsFilterType => 'Ce s-a raportat';
+
+  @override
+  String get adminReportsFilterStatus => 'Status';
+
+  @override
+  String get adminReportsFilterAll => 'Toate';
+
+  @override
+  String get adminReportTargetUser => 'User';
+
+  @override
+  String get adminReportTargetListing => 'Anunț';
+
+  @override
+  String get adminReportTargetReview => 'Recenzie';
+
+  @override
+  String get adminReportTargetConversation => 'Conversație';
+
+  @override
+  String get adminReportTargetGroupPost => 'Postare de grup';
+
+  @override
+  String get adminReportTargetExchange => 'Schimb';
+
+  @override
+  String get adminReportAutoHidden => 'Ascuns automat';
+
+  @override
+  String get adminReportUnhideAction => 'Repune conținutul';
+
+  @override
+  String get adminContentRestored => 'Conținutul a fost repus.';
 
   @override
   String adminUpcomingReleasesCount(int count) {
@@ -4227,6 +4323,9 @@ class AppLocalizationsRo extends AppLocalizations {
       'Cărțile pe care le adaugi în raft apar aici, împreună cu progresul tău la citit.';
 
   @override
+  String get shelfOwnedListedBadge => 'Listată';
+
+  @override
   String get shelfOwnedAddCta => 'Adaugă în raft';
 
   @override
@@ -4284,6 +4383,96 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get shelfListItNow => 'Listeaz-o';
+
+  @override
+  String get workTitle => 'Despre carte';
+
+  @override
+  String get workLoadError => 'Nu am putut încărca pagina cărții.';
+
+  @override
+  String get workAbout => 'Descriere';
+
+  @override
+  String workPages(int count) {
+    return '$count pagini';
+  }
+
+  @override
+  String workEditions(int count) {
+    return '$count ediții';
+  }
+
+  @override
+  String get workEditionUnnamed => 'Ediție fără detalii';
+
+  @override
+  String workRatingCount(int count) {
+    return '$count recenzii';
+  }
+
+  @override
+  String get workAddToShelf => 'Adaugă pe raft';
+
+  @override
+  String get workWantToRead => 'Vreau s-o citesc';
+
+  @override
+  String get workRequestSwap => 'Cere la schimb';
+
+  @override
+  String get workAddedToShelf => 'Am adăugat cartea pe raftul tău.';
+
+  @override
+  String get workReviewsTitle => 'Recenzii';
+
+  @override
+  String get workWriteReview => 'Scrie o recenzie';
+
+  @override
+  String get workNoReviews =>
+      'Nicio recenzie încă. Fii primul care spune ce a crezut.';
+
+  @override
+  String get workDeleteReview => 'Șterge recenzia';
+
+  @override
+  String get workReportReview => 'Raportează recenzia';
+
+  @override
+  String workListingsTitle(int count) {
+    return 'În aplicație ($count)';
+  }
+
+  @override
+  String get workNoListings =>
+      'Nimeni nu o are listată acum. Adaug-o tu la schimb.';
+
+  @override
+  String get reviewSheetTitle => 'Recenzia ta';
+
+  @override
+  String get reviewPromptTitle => 'Ai terminat cartea';
+
+  @override
+  String reviewPromptBody(String title) {
+    return 'Ce ai crezut despre „$title\"? O notă ajută pe oricine se uită la carte.';
+  }
+
+  @override
+  String get reviewPromptNotNow => 'Nu acum';
+
+  @override
+  String get reviewPromptWrite => 'Scrie o recenzie';
+
+  @override
+  String get reviewNeedRating => 'Alege o notă de la 1 la 5 steluțe.';
+
+  @override
+  String get reviewTextHint => 'Ce ai crezut despre carte? (opțional)';
+
+  @override
+  String get reviewSave => 'Salvează';
 
   @override
   String get shelfRemoveFromShelf => 'Scoate din raft';

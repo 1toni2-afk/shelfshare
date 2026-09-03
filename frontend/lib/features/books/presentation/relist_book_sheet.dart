@@ -6,6 +6,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../data/models/book.dart';
 import '../data/auctions_repository.dart';
 import '../data/books_repository.dart';
+import '../../../shared/utils/image_upload.dart';
 
 /// Deschide fluxul de re-listare a unei cărți primite printr-un schimb
 /// finalizat sau o ofertă acceptată - păstrează aceeași carte din catalog,
@@ -56,7 +57,12 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   Future<void> _pickPhotos() async {
     final remaining = _maxPhotos - _photos.length;
     if (remaining <= 0) return;
-    final picked = await ImagePicker().pickMultiImage(limit: remaining);
+    final picked = await ImagePicker().pickMultiImage(
+      limit: remaining,
+      maxWidth: kContentPhotoMaxDimension.toDouble(),
+      maxHeight: kContentPhotoMaxDimension.toDouble(),
+      imageQuality: kContentPhotoQuality,
+    );
     if (picked.isEmpty) return;
     setState(() => _photos.addAll(picked.take(remaining)));
   }

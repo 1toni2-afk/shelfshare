@@ -369,9 +369,15 @@ export class BookshelfService {
   }
 
   /**
-   * Cărțile pe care userul le DEȚINE dar nu le-a scos la listare - prim-planul
-   * din My Shelf. O carte care are deja un anunț activ (UserBook nesters) iese
-   * de aici: apare oricum în grila de listări de dedesubt, ar fi dublată.
+   * Cărțile pe care userul le DEȚINE - prim-planul din My Shelf.
+   *
+   * O carte care are deja un anunț activ (UserBook neșters) iese de aici cât
+   * timp NU e în curs de citire: apare oricum în grila de listări de dedesubt,
+   * ar fi dublată. Cea în curs de citire rămâne totuși, marcată `listed`:
+   * progresul la citit nu se vede nicăieri în grila de listări, deci
+   * filtrarea ei o făcea să dispară complet din My Shelf imediat ce userul o
+   * și lista - exact bugul raportat („am adăugat o carte ca fiind în curs de
+   * citire și nu apare deloc").
    */
   async getOwnedShelf(userId: string) {
     const [entries, listed, progress] = await Promise.all([
@@ -391,7 +397,7 @@ export class BookshelfService {
     const progressByBook = new Map(progress.map((p) => [p.bookId, p]));
 
     return entries
-      .filter((e) => !listedBookIds.has(e.bookId))
+      .filter((e) => e.status === 'READING' || !listedBookIds.has(e.bookId))
       .map((e) => {
         const p = progressByBook.get(e.bookId);
         return {
@@ -400,6 +406,9 @@ export class BookshelfService {
           book: e.book,
           currentPage: p?.currentPage ?? 0,
           totalPages: p?.totalPages ?? e.book.pageCount ?? null,
+          // Are deja anunț: cardul ascunde îndemnul „listeaz-o" și pune în
+          // loc o etichetă, ca să nu pară că mai e ceva de făcut cu ea.
+          listed: listedBookIds.has(e.bookId),
           updatedAt: e.updatedAt,
         };
       });

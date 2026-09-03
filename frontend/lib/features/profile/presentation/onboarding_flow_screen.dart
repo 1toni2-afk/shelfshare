@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
+import '../../book_match/data/book_match_repository.dart';
 import '../../book_match/presentation/book_match_screen.dart';
 import '../../books/presentation/add_book_screen.dart';
 import '../../../shared/utils/genre_localization.dart';
@@ -78,6 +79,10 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // panelul de bun venit (pasul -1), care are sens doar la prima intrare.
     final user = ref.read(profileControllerProvider).value;
     _step = user?.username != null ? 1 : -1;
+    // Book Match e pasul 5, la câteva zeci de secunde de aici. Citirea
+    // providerului pornește aducerea primului lot de carduri ACUM, în paralel
+    // cu completarea datelor, ca pasul de swipe să nu mai deschidă cu spinner.
+    ref.read(bookMatchPrefetchProvider);
   }
 
   @override

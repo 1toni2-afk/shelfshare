@@ -23,6 +23,7 @@ import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
 import '../data/genre_tag_suggestions.dart';
 import '../data/reading_progress_repository.dart';
+import '../../../shared/utils/image_upload.dart';
 
 /// Ecranul „+ Share" refăcut pe layout-ul din Milestone 10:
 ///
@@ -135,6 +136,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   String? _city;
   String? _isbnFromAutocomplete;
 
+  /// Id-ul cărții din catalogul propriu, când sugestia aleasă vine de acolo
+  /// (`ExternalBookResult.source == 'catalog'`). Are prioritate față de
+  /// `widget.prefillBookId`: e ce a ales userul acum, nu ce era precompletat.
+  String? _bookIdFromAutocomplete;
+
   Timer? _searchDebounce;
   final _genreFocus = FocusNode();
 
@@ -244,7 +250,16 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   Future<void> _pickPhotos() async {
     final remaining = _maxPhotos - _photos.length;
     if (remaining <= 0) return;
-    final picked = await ImagePicker().pickMultiImage(limit: remaining);
+    // Redimensionăm/recomprimăm încă la alegere: cei 8-12MB scoși de camera
+    // unui telefon modern depășesc limita backendului și, pe un uplink slab,
+    // și timeout-ul de upload - de acolo „am apăsat publish și nu s-a
+    // întâmplat nimic", cu anunțul creat totuși pe server.
+    final picked = await ImagePicker().pickMultiImage(
+      limit: remaining,
+      maxWidth: kContentPhotoMaxDimension.toDouble(),
+      maxHeight: kContentPhotoMaxDimension.toDouble(),
+      imageQuality: kContentPhotoQuality,
+    );
     if (picked.isEmpty) return;
     setState(() => _photos.addAll(picked.take(remaining)));
   }
@@ -472,6 +487,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       // ce răspunde `_fetchFullDetails`, dacă acela găsește mai multe.
       if (result.subjects.isNotEmpty) _subjectTags = result.subjects;
       _isbnFromAutocomplete = result.isbn;
+      // Rezultat din catalogul propriu: legăm anunțul direct de opera
+      // existentă, ca să nu creăm încă un rând de carte pentru un titlu pe
+      // care îl avem deja (potrivirea după titlu+autor ratează exact acolo
+      // unde catalogul e mai bun decât providerii externi - diacritice).
+      _bookIdFromAutocomplete = result.bookId;
       // Coperta ediției alese e preselectată, dar NU e neapărat cea mai
       // reprezentativă (poate fi un scan slab sau o ediție obscură) - alte
       // ediții ale aceluiași titlu au adesea coperte mai bune. Rămâne
@@ -650,9 +670,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 // Doar dacă userul n-a ales între timp altă carte din
                 // autocomplete - atunci prefillul nu mai descrie ce e în
                 // formular și l-am lista pe cel greșit.
-                bookId: _titleController.text.trim() == widget.prefillTitle
-                    ? widget.prefillBookId
-                    : null,
+                bookId: _bookIdFromAutocomplete ??
+                    (_titleController.text.trim() == widget.prefillTitle
+                        ? widget.prefillBookId
+                        : null),
                 isbn: _isbnFromAutocomplete,
                 title: title,
                 author: _authorController.text.trim().isEmpty
@@ -746,11 +767,18 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     } on DioException catch (e) {
       if (mounted) {
         final data = e.response?.data;
+        // Anunțul e deja creat pe server, a picat un pas de după (poze, preț).
+        // Mesajul generic „nu am putut adăuga cartea" era fals și dăunător:
+        // userul reîncerca de la zero sau renunța, deși cartea exista deja -
+        // vezi `_createdUserBook`, care face ca reîncercarea să reia exact de
+        // unde a rămas, fără să dubleze anunțul.
         final message = data is Map && data['message'] != null
             ? (data['message'] is List
                 ? (data['message'] as List).join(', ')
                 : data['message'].toString())
-            : l10n.addBookGenericError;
+            : _createdUserBook != null
+                ? l10n.addBookPartialError
+                : l10n.addBookGenericError;
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(message)));
       }

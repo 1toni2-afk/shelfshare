@@ -211,6 +211,49 @@ final bookMatchRepositoryProvider = Provider<BookMatchRepository>((ref) {
   return BookMatchRepository(ref);
 });
 
+/// Câte carduri cerem per lot. Aici, nu în ecran, fiindcă și prefetch-ul de
+/// mai jos cere primul lot - trebuie să fie aceeași dimensiune, altfel
+/// ecranul ar arunca lotul deja adus și ar mai face o cerere.
+const kBookMatchBatchSize = 12;
+
+/// Primul lot de carduri, pornit ÎNAINTE ca ecranul de swipe să fie deschis.
+///
+/// În onboarding, Book Match e pasul 5: până acolo userul își scrie numele,
+/// alege genuri, frecvență, oraș și scop - zeci de secunde în care nu cerem
+/// nimic, iar apoi ecranul de swipe pornea cererea abia la primul build și
+/// afișa spinner. `OnboardingFlowScreen` citește providerul la pornire, deci
+/// coada se aduce în paralel cu completarea datelor și e gata la pasul 5.
+///
+/// `sessionId` face parte din prefetch fiindcă backendul leagă coada de el:
+/// ecranul trebuie să continue pe ACELAȘI id, altfel lotul adus n-ar
+/// corespunde swipe-urilor trimise.
+class BookMatchPrefetch {
+  BookMatchPrefetch({required this.sessionId, required this.queue});
+
+  final String sessionId;
+  final Future<BookMatchQueue> queue;
+
+  /// Un prefetch e bun pentru UN ecran de swipe. Al doilea ecran deschis în
+  /// aceeași sesiune de aplicație trebuie să pornească o sesiune nouă,
+  /// altfel ar primi exact cardurile pe care primul le-a arătat deja.
+  /// Ecranul marchează aici preluarea în loc să invalideze providerul din
+  /// `initState` (unde modificarea unui provider e în cel mai bun caz
+  /// delicată, în cel mai rău o excepție).
+  bool claimed = false;
+}
+
+final bookMatchPrefetchProvider = Provider<BookMatchPrefetch>((ref) {
+  final sessionId = generateUuidV4();
+  final queue = ref
+      .read(bookMatchRepositoryProvider)
+      .getQueue(sessionId: sessionId, size: kBookMatchBatchSize);
+  // Fără asta, un eșec de rețea între prefetch și deschiderea ecranului ar fi
+  // raportat ca eroare neprinsă. Cine face `await` pe el mai târziu primește
+  // totuși excepția și cade pe reîncercare (vezi _BookMatchScreenState).
+  queue.ignore();
+  return BookMatchPrefetch(sessionId: sessionId, queue: queue);
+});
+
 /// UUID v4 fără dependință nouă în pubspec (proiectul nu are pachetul `uuid`).
 /// Formatul contează - backendul validează `sessionId` ca UUID.
 String generateUuidV4() {

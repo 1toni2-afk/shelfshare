@@ -40,3 +40,24 @@ String _subtypeFor(String filename) {
       return 'jpeg';
   }
 }
+
+/// Timeout-ul pe cererile de upload de imagini.
+///
+/// Clientul global are 10s (vezi api_client.dart) - potrivit pentru JSON, dar
+/// nu pentru câțiva MB de poză pe un uplink mobil. Depășirea lui arunca în
+/// client, DEȘI serverul termina upload-ul: la publicarea unui anunț asta
+/// însemna „nu s-a adăugat nimic" pe ecran, cu anunțul creat totuși pe server
+/// (bug raportat de pe web, unde toate încercările au apărut ulterior în app).
+Options imageUploadOptions() {
+  return Options(
+    sendTimeout: const Duration(seconds: 60),
+    receiveTimeout: const Duration(seconds: 60),
+  );
+}
+
+/// Limitele de redimensionare la alegerea unei poze de conținut (anunț, chat,
+/// starea cărții). Camera unui telefon modern scoate 8-12MB, peste limita de
+/// 8MB a backendului și oricum inutil pentru o poză afișată la câteva sute de
+/// px. Avatarul folosește limite proprii, mai strânse (vezi my_profile_screen).
+const int kContentPhotoMaxDimension = 1600;
+const int kContentPhotoQuality = 85;
