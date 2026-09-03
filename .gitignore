@@ -53,3 +53,11 @@ scripts/book-enrichment/debug_pages*/
 # Indexul libris (~8 MB, regenerabil cu enrich_libris.py --build-index)
 scripts/book-enrichment/libris_index.json
 scripts/book-enrichment/libris_*.txt
+# Catalogul scrapuit si copertile lui (~2,4 MB JSON + 1900 de fisiere, ~84 MB).
+# Regenerabile de nightly_run.py din enriched_all.json, deci intra in git doar
+# ca greutate permanenta in istoric si in fiecare clona. Aceeasi regula ca la
+# scripts/targulcartii/data/. Importul in prod nu citeste din git: catalogul e
+# montat read-only in container (vezi docker-compose.prod.yml) si incarcat cu
+# `docker exec shelfshare-backend-1 node prisma/import-scp-db.js`.
+scripts/book-enrichment/ShelfShare_SCP_DB.json
+scripts/book-enrichment/ShelfShare_SCP_DB_covers/
