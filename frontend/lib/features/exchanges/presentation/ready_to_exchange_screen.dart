@@ -448,9 +448,19 @@ class _BookSummaryCard extends StatelessWidget {
                         height: 78,
                       ),
                       if (offeredBook != null) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(Icons.swap_horiz, size: 18, color: AppColors.mutedForeground),
+                        // Înălțimea copertei (78) fixată explicit: rândul e
+                        // aliniat la vârf (coperta + eventualul „+N" de sub
+                        // ea), deci fără asta iconița stătea lipită de
+                        // marginea de sus, nu la mijlocul copertei.
+                        SizedBox(
+                          height: 78,
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              child: Icon(Icons.swap_horiz,
+                                  size: 18, color: AppColors.mutedForeground),
+                            ),
+                          ),
                         ),
                         Column(
                           children: [
@@ -494,16 +504,25 @@ class _BookSummaryCard extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: AppColors.muted, shape: BoxShape.circle),
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(Icons.swap_horiz, size: 20, color: AppColors.mutedForeground),
+            // Un singur semn de schimb pe card. Când oferta include o carte,
+            // iconița dintre cele două coperte (mai sus) spune deja ce se
+            // schimbă cu ce; pastila de aici mai însemna o a doua iconiță
+            // identică, la altă înălțime. Fără carte oferită (ofertă doar în
+            // bani) nu există iconiță între coperte, deci rolul de separator
+            // îl preia asta.
+            if (offeredBook == null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: AppColors.muted, shape: BoxShape.circle),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.swap_horiz, size: 20, color: AppColors.mutedForeground),
+                  ),
                 ),
-              ),
-            ),
+              )
+            else
+              const SizedBox(width: 16),
             SizedBox(
               width: _receiverColumnWidth,
               child: Column(

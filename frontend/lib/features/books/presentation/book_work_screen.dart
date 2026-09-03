@@ -16,6 +16,7 @@ import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../safety/data/safety_repository.dart';
+import '../application/book_detail_controller.dart';
 import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
 import '../data/reviews_repository.dart';
@@ -347,6 +348,9 @@ class _WorkActionsState extends ConsumerState<_WorkActions> {
           );
       ref.invalidate(myOwnedShelfProvider);
       ref.invalidate(myBookshelfProvider);
+      // Semnul de carte de pe buton se colorează pe baza acestui provider -
+      // fără invalidare ar rămâne gol până la un refresh de pagină.
+      ref.invalidate(bookshelfStatusProvider(widget.work.book.id));
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.workAddedToShelf)));
@@ -365,6 +369,9 @@ class _WorkActionsState extends ConsumerState<_WorkActions> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final listings = widget.work.listings;
+    final wantToRead =
+        ref.watch(bookshelfStatusProvider(widget.work.book.id)).value ==
+            BookshelfStatus.wantToRead;
 
     return Wrap(
       spacing: 8,
@@ -378,7 +385,14 @@ class _WorkActionsState extends ConsumerState<_WorkActions> {
         OutlinedButton.icon(
           onPressed:
               _saving ? null : () => _addToShelf(BookshelfStatus.wantToRead),
-          icon: const Icon(Icons.bookmark_border, size: 18),
+          // Semn de carte plin și portocaliu când cartea e deja pe raftul
+          // „vreau s-o citesc": butonul rămâne pe ecran după tap, deci fără
+          // marcaj vizual userul nu putea ști dacă apăsarea a prins.
+          icon: Icon(
+            wantToRead ? Icons.bookmark : Icons.bookmark_border,
+            size: 18,
+            color: wantToRead ? AppColors.accent : null,
+          ),
           label: Text(l10n.workWantToRead),
         ),
         if (listings.isNotEmpty)

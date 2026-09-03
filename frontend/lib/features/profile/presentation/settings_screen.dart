@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/locale/locale_controller.dart';
@@ -256,6 +257,8 @@ class _SettingsList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   _DeleteAccountSection(user: user),
+                  const SizedBox(height: 12),
+                  const _AppVersionLabel(),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -784,6 +787,56 @@ class _ReferralCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Versiunea instalată, sub butonul de ștergere cont. Citită din platformă
+/// (`package_info_plus`), nu scrisă de mână: pe web vine din `version.json`,
+/// pe Android din `versionName`/`versionCode`, deci nu poate rămâne în urmă
+/// față de pubspec. Utilă la rapoartele de bug - altfel nu se putea afla ce
+/// build are userul pe telefon.
+class _AppVersionLabel extends StatefulWidget {
+  const _AppVersionLabel();
+
+  @override
+  State<_AppVersionLabel> createState() => _AppVersionLabelState();
+}
+
+class _AppVersionLabelState extends State<_AppVersionLabel> {
+  String? _label;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      final build = info.buildNumber;
+      if (!mounted) return;
+      setState(() => _label = build.isEmpty
+          ? 'ShelfShare ${info.version}'
+          : 'ShelfShare ${info.version} ($build)');
+    } catch (_) {
+      // Fără versiune e doar o informație lipsă, nu un ecran rupt.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = _label;
+    if (label == null) return const SizedBox.shrink();
+    return Center(
+      child: Text(
+        label,
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: AppColors.mutedForeground),
       ),
     );
   }

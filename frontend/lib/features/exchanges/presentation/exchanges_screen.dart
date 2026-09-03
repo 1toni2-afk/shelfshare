@@ -344,8 +344,11 @@ class _Actions extends ConsumerWidget {
     final l10n = context.l10n;
 
     if (exchange.status == ExchangeStatus.pending && isReceived) {
+      // Butoanele stau centrate, nu lipite de marginea din dreapta: cardul e
+      // lat (până la maxWidth-ul listei), iar pe telefon un rând de acțiuni
+      // aliniat la dreapta arată decalat față de restul cardului.
       return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           OutlinedButton(
             onPressed: () => notifier.reject(exchange.id),
@@ -362,7 +365,7 @@ class _Actions extends ConsumerWidget {
 
     if (exchange.status == ExchangeStatus.pending && !isReceived) {
       return Align(
-        alignment: Alignment.centerRight,
+        alignment: Alignment.center,
         child: OutlinedButton(
           onPressed: () => notifier.cancel(exchange.id),
           child: Text(l10n.exchangeCancelRequest),
@@ -372,7 +375,7 @@ class _Actions extends ConsumerWidget {
 
     if (exchange.status == ExchangeStatus.accepted) {
       return Align(
-        alignment: Alignment.centerRight,
+        alignment: Alignment.center,
         child: ElevatedButton.icon(
           icon: const Icon(Icons.handshake_outlined, size: 18),
           label: Text(l10n.exchangeGoToReady),
@@ -383,7 +386,7 @@ class _Actions extends ConsumerWidget {
 
     if (exchange.status == ExchangeStatus.completed) {
       return Wrap(
-        alignment: WrapAlignment.end,
+        alignment: WrapAlignment.center,
         spacing: 8,
         runSpacing: 8,
         children: [
@@ -688,7 +691,7 @@ class _OfferCard extends ConsumerWidget {
             if (offer.status == OfferStatus.accepted) ...[
               const SizedBox(height: 12),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: Alignment.center,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.handshake_outlined, size: 18),
                   label: Text(l10n.exchangeGoToReady),
@@ -699,7 +702,7 @@ class _OfferCard extends ConsumerWidget {
             if (offer.status == OfferStatus.completed && !isReceived) ...[
               const SizedBox(height: 12),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: Alignment.center,
                 child: OutlinedButton(
                   onPressed: () => showRelistBookSheet(
                     context,
@@ -752,7 +755,7 @@ class _OfferActions extends ConsumerWidget {
 
     if (isReceived) {
       return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           OutlinedButton(
             onPressed: () => notifier.reject(offer.id),
@@ -768,7 +771,7 @@ class _OfferActions extends ConsumerWidget {
     }
 
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: Alignment.center,
       child: OutlinedButton(
         onPressed: () => notifier.cancel(offer.id),
         child: Text(l10n.offerCancel),
