@@ -465,10 +465,12 @@ class _CoverPanel extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Flexible(child: _AddToCollectionButton(bookId: book.book.id)),
-            if (book.book.description != null && book.book.description!.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              Flexible(child: _AboutBookButton(book: book.book)),
-            ],
+            const SizedBox(width: 8),
+            // NU mai depinde de existența unei descrieri: butonul deschidea
+            // un sheet cu descrierea (fără ea n-avea ce arăta), dar acum e
+            // singura cale de la un anunț spre pagina cărții - iar acolo sunt
+            // edițiile, recenziile și cine o mai are, utile și fără descriere.
+            Flexible(child: _AboutBookButton(book: book.book)),
           ],
         ),
         if (canPromote) ...[
@@ -663,20 +665,7 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
             ),
           ),
         ],
-        const SizedBox(height: 10),
-        // Puntea spre pagina OPEREI: aici e un exemplar anume (starea lui,
-        // prețul lui, proprietarul lui), acolo e cartea în sine - ediții,
-        // recenzii, cine altcineva o are. Aceeași rută din orice listare.
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: () => context.push('/work/${book.book.id}'),
-            icon: const Icon(Icons.info_outline, size: 18),
-            label: Text(l10n.workTitle),
-            style: TextButton.styleFrom(padding: EdgeInsets.zero),
-          ),
-        ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         // Rând de badge-uri: gen + stare. (Cartea nu are rating agregat, deci
         // nu inventăm unul - vezi cardul „Owned by" pentru reputația userului.)
         Wrap(
@@ -1512,9 +1501,14 @@ class _AddToCollectionButton extends ConsumerWidget {
   }
 }
 
-/// Buton dedicat lângă "Add to collection" care arată descrierea din catalog
-/// (ISBN) într-un bottom sheet - fără să oblige userul să deruleze pagina
-/// până jos, unde secțiunea "Descriere" oricum apare (dacă e destul de lungă).
+/// Puntea spre pagina OPEREI, de lângă „Add to collection": aici suntem pe un
+/// exemplar anume (starea lui, prețul lui, proprietarul lui), acolo e cartea
+/// în sine - ediții, recenzii, cine altcineva o are.
+///
+/// Deschidea un bottom sheet cu descrierea din catalog. Pagina operei arată
+/// aceeași descriere și încă tot ce lipsea din sheet, deci sheet-ul devenise
+/// o versiune mai săracă a aceleiași informații, la un al doilea buton
+/// „Despre carte" pe aceeași pagină.
 class _AboutBookButton extends StatelessWidget {
   const _AboutBookButton({required this.book});
   final Book book;
@@ -1522,62 +1516,9 @@ class _AboutBookButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
-      onPressed: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => _AboutBookSheet(book: book),
-      ),
+      onPressed: () => context.push('/work/${book.id}'),
       icon: const Icon(Icons.info_outline, size: 18),
       label: Text(context.l10n.bookDetailAboutButton),
-    );
-  }
-}
-
-class _AboutBookSheet extends StatelessWidget {
-  const _AboutBookSheet({required this.book});
-  final Book book;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.3,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollController) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-        child: ListView(
-          controller: scrollController,
-          children: [
-            Text(book.title, style: Theme.of(context).textTheme.titleLarge),
-            if (book.author != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                book.author!,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.mutedForeground),
-              ),
-            ],
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                if (book.genre != null) _MetaItem(icon: Icons.category_outlined, text: book.genre!),
-                if (book.publishedYear != null)
-                  _MetaItem(icon: Icons.calendar_today_outlined, text: '${book.publishedYear}'),
-                if (book.pageCount != null)
-                  _MetaItem(
-                    icon: Icons.description_outlined,
-                    text: '${l10n.bookDetailPagesLabel}: ${book.pageCount}',
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(book.description ?? '', style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5)),
-          ],
-        ),
-      ),
     );
   }
 }
