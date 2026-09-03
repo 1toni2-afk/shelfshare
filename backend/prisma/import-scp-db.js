@@ -69,6 +69,23 @@ function pick(scraped, existing) {
   return scraped;
 }
 
+/**
+ * Un `coverUrl` scrapuit e bun doar dacă e o adresă absolută ȘI nu e
+ * placeholder-ul „fără imagine" al librăriei.
+ *
+ * Fără verificarea asta, `pick` accepta `/assets/.../img/noimg.jpg` ca valoare
+ * validă (e un string ne-gol) și suprascria coperta care funcționa cu o cale
+ * relativă care nu se încarcă nicăieri - exact ce s-a întâmplat la prima
+ * rulare, pe 8 cărți.
+ */
+function usableCoverUrl(url) {
+  if (typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!/^https?:\/\//i.test(trimmed)) return null;
+  if (/noimg|no-image|placeholder/i.test(trimmed)) return null;
+  return trimmed;
+}
+
 async function main() {
   const { PrismaClient } = require('@prisma/client');
   const { PrismaPg } = require('@prisma/adapter-pg');
@@ -137,8 +154,9 @@ async function main() {
         }
         stats.coversUploaded += 1;
       } else {
-        // Fără fișier local cade pe URL-ul scrapuit, apoi pe ce era deja.
-        coverUrl = pick(scraped.coverUrl, existing.coverUrl);
+        // Fără fișier local cade pe URL-ul scrapuit DOAR dacă e utilizabil,
+        // apoi pe ce era deja - vezi usableCoverUrl.
+        coverUrl = usableCoverUrl(scraped.coverUrl) || existing.coverUrl;
         stats.coversMissing += 1;
       }
 
