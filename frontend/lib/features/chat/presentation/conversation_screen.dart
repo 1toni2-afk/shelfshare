@@ -435,6 +435,14 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             message.id,
             accept ? 'ACCEPTED' : 'REJECTED',
           );
+      // Banda „ai un schimb în curs" de sub titlu citește
+      // `offersControllerProvider` (vezi _OngoingExchangeStrip), iar
+      // controllerul se reface singur DOAR pe notificare live - notificarea de
+      // acceptare pleacă însă către celălalt, nu către cine a apăsat Accept.
+      // Deci exact userul care tocmai a acceptat rămânea fără bandă și fără
+      // nicio cale spre pagina de finalizare, până la o repornire de
+      // aplicație. Îl refacem noi, pentru el.
+      unawaited(ref.read(offersControllerProvider.notifier).refresh());
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -459,6 +467,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             message.id,
             accept ? 'ACCEPTED' : 'REJECTED',
           );
+      // Vezi _handleOfferAction: același motiv, altă listă.
+      unawaited(ref.read(exchangesControllerProvider.notifier).refresh());
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context)
