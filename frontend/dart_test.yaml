@@ -1,0 +1,6 @@
+# Generatorul de capturi pentru DealSummaryCard nu e un test de regresie: scrie
+# fisiere PNG. Il excludem din rularea normala, ca `flutter test` sa nu modifice
+# fisiere pe disc; se ruleaza explicit, pe fisier, cu --update-goldens.
+tags:
+  demo:
+    skip: "generator de capturi - ruleaza-l pe fisier, cu --update-goldens"

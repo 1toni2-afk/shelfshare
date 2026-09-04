@@ -140,9 +140,13 @@ class DealSummaryCard extends StatelessWidget {
   }
 }
 
-/// O coloană a târgului. Cărțile se afișează cu copertă + titlu, banii ca sumă
-/// mare cu iconiță - suficient de diferite vizual cât să se vadă dintr-o
-/// privire ce fel de lucru trece în fiecare direcție.
+/// O coloană a târgului.
+///
+/// Cărțile curg de sus în jos (copertă, titlu, autor), fiindcă au trei rânduri
+/// de conținut. O parte care e DOAR bani are un singur lucru de arătat, așa că
+/// se centrează pe verticală, la înălțimea săgeții dintre coloane, și se scrie
+/// mare: lipită de marginea de sus, lângă o copertă de 78, sumă mică arăta ca
+/// o notă de subsol, nu ca jumătatea celuilalt om din târg.
 class _Side extends StatelessWidget {
   const _Side({required this.label, required this.payload});
 
@@ -154,17 +158,32 @@ class _Side extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final book = payload.books.isNotEmpty ? payload.books.first : null;
+    final amount = payload.amount;
+    final amountText =
+        amount == null ? null : l10n.priceLei(amount.toStringAsFixed(0));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.labelSmall
-              ?.copyWith(color: AppColors.mutedForeground),
+    final Widget body;
+    if (book == null) {
+      // Doar bani (sau nimic): un singur bloc, centrat pe toată înălțimea
+      // rândului - `Expanded` funcționează fiindcă părintele e IntrinsicHeight.
+      body = Expanded(
+        child: Center(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: amountText == null
+                ? Text(
+                    '-',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(color: AppColors.mutedForeground),
+                  )
+                : _Amount(text: amountText, big: true),
+          ),
         ),
-        const SizedBox(height: 8),
-        if (book != null) ...[
+      );
+    } else {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -202,35 +221,68 @@ class _Side extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+          // Schimb cu diferență în bani: suma stă sub carte, mai discretă -
+          // aici cartea e lucrul principal, banii doar completează.
+          if (amountText != null) ...[
+            const SizedBox(height: 6),
+            _Amount(text: amountText, big: false),
+          ],
         ],
-        // Banii pot veni și singuri (vânzare), și peste cărți (schimb cu
-        // diferență) - de asta nu sunt pe ramura `else`.
-        if (payload.amount != null) ...[
-          if (book != null) const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(Icons.payments_outlined, size: 18, color: AppColors.accent),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  l10n.priceLei(payload.amount!.toStringAsFixed(0)),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.accent,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelSmall
+              ?.copyWith(color: AppColors.mutedForeground),
+        ),
+        const SizedBox(height: 8),
+        body,
+      ],
+    );
+  }
+}
+
+/// Suma, cu bancnota lângă ea. `big` o duce de la „detaliu sub o carte" la
+/// „ce primești/dai, punct".
+class _Amount extends StatelessWidget {
+  const _Amount({required this.text, required this.big});
+
+  final String text;
+  final bool big;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.payments_outlined,
+          size: big ? 26 : 18,
+          color: AppColors.accent,
+        ),
+        SizedBox(width: big ? 10 : 6),
+        Flexible(
+          child: Text(
+            text,
+            // Pornim MEREU de la titleMedium, nu de la headlineSmall: în tema
+            // aplicației, tot ce e headline*/title-large e Playfair Display,
+            // fontul serif de titlu. Un preț scris cu el ar ieși din familia
+            // în care sunt scrise toate celelalte prețuri (DM Sans), deci
+            // creștem doar corpul literei.
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: big ? 26 : null,
+              fontWeight: FontWeight.w700,
+              color: AppColors.accent,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-        if (payload.isEmpty)
-          Text(
-            '-',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(color: AppColors.mutedForeground),
-          ),
+        ),
       ],
     );
   }

@@ -61,3 +61,9 @@ scripts/book-enrichment/libris_*.txt
 # `docker exec shelfshare-backend-1 node prisma/import-scp-db.js`.
 scripts/book-enrichment/ShelfShare_SCP_DB.json
 scripts/book-enrichment/ShelfShare_SCP_DB_covers/
+
+# Capturile generate de test/deal_summary_card_demo_test.dart - artefacte, nu
+# fisiere golden de regresie (testul e marcat `demo` si sarit la o rulare
+# normala). Se regenereaza cu:
+#   flutter test test/deal_summary_card_demo_test.dart --update-goldens --run-skipped
+frontend/test/demo/
