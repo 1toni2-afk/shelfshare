@@ -10,7 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/support_pages.dart';
 import '../../../data/models/exchange_request.dart';
 import '../../../data/models/user.dart';
-import '../../../shared/widgets/book_cover.dart';
+import '../../../shared/widgets/deal_summary_card.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../auth/application/auth_controller.dart';
@@ -175,7 +175,15 @@ class _ReadyBody extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
             ],
-            _BookSummaryCard(exchange: exchange, other: other),
+            // Cine a cerut schimbul dă ce a oferit (carte, bani, sau ambele)
+            // și primește cartea cerută; proprietarul, invers. Cardul vechi
+            // punea AMBELE cărți pe partea de „dai", indiferent de rol, iar la
+            // „primești" arăta celălalt user - vezi DealSummaryCard.
+            DealSummaryCard(
+              give: isRequester ? _offeredPayload(exchange) : _requestedPayload(exchange),
+              receive: isRequester ? _requestedPayload(exchange) : _offeredPayload(exchange),
+              other: other,
+            ),
             if (!isTerminal) ...[
               const SizedBox(height: 16),
               _MeetingSection(exchange: exchange, myUserId: myUserId, other: other, onRun: onRun),
@@ -216,6 +224,21 @@ class _ReadyBody extends ConsumerWidget {
       ),
     );
   }
+
+  /// Ce a pus pe masă cel care a cerut schimbul: cartea oferită (plus
+  /// eventualele cărți suplimentare, numărate ca „+N") și/sau o sumă.
+  static DealPayload _offeredPayload(ExchangeRequest exchange) {
+    final offered = exchange.offeredBook;
+    return DealPayload(
+      books: offered == null ? const [] : [offered],
+      extraBooks: exchange.additionalOfferedBooks.length,
+      amount: exchange.offeredAmount,
+    );
+  }
+
+  /// Cartea cerută - cea listată de proprietar, care a pornit tot schimbul.
+  static DealPayload _requestedPayload(ExchangeRequest exchange) =>
+      DealPayload(books: [exchange.requestedBook]);
 
   Future<void> _reportIssue(BuildContext context, WidgetRef ref, String otherUserId) async {
     final reason = await showDialog<ReportReason>(
@@ -405,167 +428,6 @@ class _DealStatusBanner extends StatelessWidget {
 /// literă pe rând, deci titlul se afișa vertical, literă cu literă. Acum
 /// coloana din dreapta are lățime fixă, iar titlul primește toată lățimea
 /// coloanei din stânga.
-class _BookSummaryCard extends StatelessWidget {
-  const _BookSummaryCard({required this.exchange, required this.other});
-  final ExchangeRequest exchange;
-  final PublicUser other;
-
-  /// Lățimea coloanei „You receive" - cât să încapă avatarul de 56px plus un
-  /// nume pe două rânduri, fără ca orașul să o poată lăți oricât.
-  static const double _receiverColumnWidth = 96;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final offeredBook = exchange.offeredBook;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.readyYouGive,
-                    style: theme.textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BookCover(
-                        url: exchange.requestedBook.book.coverUrl,
-                        fallbackUrl: exchange.requestedBook.photos.isNotEmpty
-                            ? exchange.requestedBook.photos.first
-                            : null,
-                        title: exchange.requestedBook.book.title,
-                        width: 56,
-                        height: 78,
-                      ),
-                      if (offeredBook != null) ...[
-                        // Înălțimea copertei (78) fixată explicit: rândul e
-                        // aliniat la vârf (coperta + eventualul „+N" de sub
-                        // ea), deci fără asta iconița stătea lipită de
-                        // marginea de sus, nu la mijlocul copertei.
-                        SizedBox(
-                          height: 78,
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              child: Icon(Icons.swap_horiz,
-                                  size: 18, color: AppColors.mutedForeground),
-                            ),
-                          ),
-                        ),
-                        Column(
-                          children: [
-                            BookCover(
-                              url: offeredBook.book.coverUrl,
-                              fallbackUrl: offeredBook.photos.isNotEmpty ? offeredBook.photos.first : null,
-                              title: offeredBook.book.title,
-                              width: 56,
-                              height: 78,
-                            ),
-                            if (exchange.additionalOfferedBooks.isNotEmpty)
-                              Text(
-                                '+${exchange.additionalOfferedBooks.length}',
-                                style: theme.textTheme.labelSmall
-                                    ?.copyWith(color: AppColors.mutedForeground),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    exchange.requestedBook.book.title,
-                    style: theme.textTheme.titleSmall,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (exchange.requestedBook.book.author != null)
-                    Text(
-                      exchange.requestedBook.book.author!,
-                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  if (exchange.offeredAmount != null)
-                    Text(
-                      l10n.exchangeOffersAmount(exchange.offeredAmount!.toStringAsFixed(0)),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                ],
-              ),
-            ),
-            // Un singur semn de schimb pe card. Când oferta include o carte,
-            // iconița dintre cele două coperte (mai sus) spune deja ce se
-            // schimbă cu ce; pastila de aici mai însemna o a doua iconiță
-            // identică, la altă înălțime. Fără carte oferită (ofertă doar în
-            // bani) nu există iconiță între coperte, deci rolul de separator
-            // îl preia asta.
-            if (offeredBook == null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: AppColors.muted, shape: BoxShape.circle),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(Icons.swap_horiz, size: 20, color: AppColors.mutedForeground),
-                  ),
-                ),
-              )
-            else
-              const SizedBox(width: 16),
-            SizedBox(
-              width: _receiverColumnWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.readyYouReceive,
-                    style: theme.textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundImage:
-                        other.profileImage != null ? NetworkImage(other.profileImage!) : null,
-                    child: other.profileImage == null ? const Icon(Icons.person, size: 28) : null,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    other.name ?? l10n.commonAnonymousUser,
-                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (other.city != null)
-                    Text(
-                      l10n.readyFromCity(other.city!),
-                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _MeetingSection extends StatelessWidget {
   const _MeetingSection({
     required this.exchange,

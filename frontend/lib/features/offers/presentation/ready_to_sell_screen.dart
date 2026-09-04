@@ -9,7 +9,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/support_pages.dart';
 import '../../../data/models/price_offer.dart';
 import '../../../data/models/user.dart';
-import '../../../shared/widgets/book_cover.dart';
+import '../../../shared/widgets/deal_summary_card.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/report_reason_dialog.dart';
 import '../../auth/application/auth_controller.dart';
@@ -163,7 +163,19 @@ class _ReadySellBody extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
             ],
-            _OfferSummaryCard(offer: offer, other: other),
+            // Cumpărătorul dă banii și primește cartea; vânzătorul, invers.
+            // Cardul vechi arăta același lucru amândurora („dai cartea"), cu
+            // suma tot pe partea de „dai" și cu celălalt user afișat ca fiind
+            // ce primești - vezi DealSummaryCard.
+            DealSummaryCard(
+              give: isBuyer
+                  ? DealPayload(amount: offer.amount)
+                  : DealPayload(books: [offer.userBook]),
+              receive: isBuyer
+                  ? DealPayload(books: [offer.userBook])
+                  : DealPayload(amount: offer.amount),
+              other: other,
+            ),
             if (!isTerminal) ...[
               const SizedBox(height: 16),
               _SellMeetingSection(offer: offer, myUserId: myUserId, other: other, onRun: onRun),
@@ -345,108 +357,6 @@ class _SaleStatusBanner extends StatelessWidget {
                 ?.copyWith(color: color, fontWeight: FontWeight.bold, letterSpacing: 0.5),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _OfferSummaryCard extends StatelessWidget {
-  const _OfferSummaryCard({required this.offer, required this.other});
-  final PriceOffer offer;
-  final PublicUser other;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  BookCover(
-                    url: offer.userBook.book.coverUrl,
-                    fallbackUrl: offer.userBook.photos.isNotEmpty ? offer.userBook.photos.first : null,
-                    title: offer.userBook.book.title,
-                    width: 56,
-                    height: 78,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.readyYouGive,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
-                        ),
-                        Text(offer.userBook.book.title, style: Theme.of(context).textTheme.titleSmall),
-                        if (offer.userBook.book.author != null)
-                          Text(
-                            offer.userBook.book.author!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-                          ),
-                        Text(
-                          l10n.priceLei(offer.amount.toStringAsFixed(0)),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600, color: AppColors.accent),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: AppColors.muted, shape: BoxShape.circle),
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(Icons.swap_horiz, size: 20, color: AppColors.mutedForeground),
-                ),
-              ),
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.readyYouReceive,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.mutedForeground),
-                ),
-                const SizedBox(height: 4),
-                CircleAvatar(
-                  radius: 28,
-                  backgroundImage: other.profileImage != null ? NetworkImage(other.profileImage!) : null,
-                  child: other.profileImage == null ? const Icon(Icons.person, size: 28) : null,
-                ),
-                const SizedBox(height: 6),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 90),
-                  child: Text(
-                    other.name ?? l10n.commonAnonymousUser,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (other.city != null)
-                  Text(
-                    l10n.readyFromCity(other.city!),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
-                  ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
