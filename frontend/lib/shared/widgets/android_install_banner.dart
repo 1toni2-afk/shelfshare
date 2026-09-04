@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/providers.dart';
+import '../../core/utils/support_pages.dart';
 import '../../core/theme/app_theme.dart';
 import 'analytics_consent.dart';
 
@@ -120,12 +120,9 @@ class _AndroidInstallBannerState extends ConsumerState<AndroidInstallBanner> {
               ),
               const SizedBox(width: 8),
               FilledButton(
-                onPressed: () {
-                  // Aplicația nu e încă publică pe Play, deci trimitem spre
-                  // pagina de pre-înscriere. Cand ajunge in magazin, aici intra
-                  // linkul de Play.
-                  context.push('/pre-register');
-                },
+                // Aplicația e publicată, deci butonul duce direct în magazin,
+                // nu la pagina de pre-înscriere.
+                onPressed: () => openPlayStore(context),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   visualDensity: VisualDensity.compact,
@@ -168,13 +165,14 @@ bool get canPromoteAndroidApp => kIsWeb && !canOfferAndroidInstall;
 /// din ea, deci nu le mai expunem ca parametri separați:
 ///
 ///  * `true` - în meniul din stânga, pe desktop. Îl vede doar cine NU e deja
-///    pe Android (aceia primesc banda de jos), se poate închide definitiv, și
-///    duce la `/pre-register`, ruta din shell-ul autentificat.
-///  * `false` - pe pagina de creare a contului. O văd toți vizitatorii de web,
-///    n-are „×" (pagina se vede o singură dată, n-are rost să consumăm
-///    alegerea de „nu mai arăta") și duce la `/get-the-app`, varianta publică
-///    a aceluiași ecran - altfel router-ul ar trimite la login un vizitator
-///    care încă nu are cont.
+///    pe Android (aceia primesc banda de jos) și se poate închide definitiv.
+///  * `false` - pe pagina de creare a contului. O văd toți vizitatorii de web
+///    și n-are „×" (pagina se vede o singură dată, n-are rost să consumăm
+///    alegerea de „nu mai arăta").
+///
+/// Butonul duce în ambele cazuri la pagina din Google Play. Înainte mergea la
+/// `/pre-register`, respectiv `/get-the-app` - ecrane de pre-înscriere, de pe
+/// vremea când aplicația nu era încă publicată.
 class AndroidInstallCard extends ConsumerStatefulWidget {
   const AndroidInstallCard({super.key, required this.inSidebar});
 
@@ -298,8 +296,7 @@ class _AndroidInstallCardState extends ConsumerState<AndroidInstallCard> {
             // Aplicația nu e încă în Play Store: pre-înscrierea e singurul
             // lucru care poate fi făcut acum. Cand ajunge in magazin, aici
             // intra linkul de Play.
-            onPressed: () =>
-                context.push(widget.inSidebar ? '/pre-register' : '/get-the-app'),
+            onPressed: () => openPlayStore(context),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 10),
               visualDensity: VisualDensity.compact,
