@@ -5788,6 +5788,84 @@ abstract class AppLocalizations {
   /// **'Biblioteca mea'**
   String get profileGroupLibrary;
 
+  /// No description provided for @profileGroupNotifications.
+  ///
+  /// In ro, this message translates to:
+  /// **'Notificări'**
+  String get profileGroupNotifications;
+
+  /// No description provided for @profileListingPrivacyTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vizibilitatea anunțurilor'**
+  String get profileListingPrivacyTitle;
+
+  /// No description provided for @notificationPrefTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce notificări primesc'**
+  String get notificationPrefTitle;
+
+  /// No description provided for @notificationPrefSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oprește ce nu te interesează. Se aplică peste tot: în aplicație, pe e-mail și pe telefon.'**
+  String get notificationPrefSubtitle;
+
+  /// No description provided for @notificationPrefFollowedNewBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cineva pe care îl urmăresc listează o carte'**
+  String get notificationPrefFollowedNewBook;
+
+  /// No description provided for @notificationPrefFollowedFinishedBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cineva pe care îl urmăresc termină o carte'**
+  String get notificationPrefFollowedFinishedBook;
+
+  /// No description provided for @notificationPrefMessages.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mesaje noi'**
+  String get notificationPrefMessages;
+
+  /// No description provided for @notificationPrefExchanges.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimburi și întâlniri'**
+  String get notificationPrefExchanges;
+
+  /// No description provided for @notificationPrefOffers.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oferte și schimbări de preț'**
+  String get notificationPrefOffers;
+
+  /// No description provided for @notificationPrefAuctions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Licitații'**
+  String get notificationPrefAuctions;
+
+  /// No description provided for @notificationPrefDiscovery.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți care te-ar putea interesa'**
+  String get notificationPrefDiscovery;
+
+  /// No description provided for @notificationPrefSaveError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut salva preferința.'**
+  String get notificationPrefSaveError;
+
+  /// No description provided for @notificationPrefLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca preferințele de notificare.'**
+  String get notificationPrefLoadError;
+
   /// No description provided for @profileGroupPrivacy.
   ///
   /// In ro, this message translates to:

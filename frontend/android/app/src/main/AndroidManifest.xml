@@ -64,9 +64,13 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="shelfshare_default" />
+        <!-- Iconita din bara de notificari: Android ii foloseste DOAR canalul
+             alfa si o deseneaza in alb. `@mipmap/ic_launcher` are fundalul
+             opac, deci ca iconita de notificare iesea un patrat alb plin -
+             de-aia are o silueta proprie (vezi app_icon_demo_test.dart). -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher" />
+            android:resource="@drawable/ic_stat_shelfshare" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

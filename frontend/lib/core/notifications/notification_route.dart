@@ -77,6 +77,15 @@ String? routeForNotification(NotificationType type, Map<String, dynamic>? data) 
       final followedUserId = at('userId');
       return followedUserId == null ? null : '/users/$followedUserId';
 
+    case NotificationType.followedUserFinishedBook:
+      // Aici `bookId` e o carte din CATALOG, nu un anunț: statusul de citit
+      // stă pe BookshelfEntry, iar userul poate marca drept citită și o carte
+      // pe care n-o listează (vezi BookshelfService.setStatus).
+      final finishedBookId = at('bookId');
+      if (finishedBookId != null) return '/work/$finishedBookId';
+      final readerId = at('userId');
+      return readerId == null ? null : '/users/$readerId';
+
     case NotificationType.nearbyBookListed:
     case NotificationType.interestBookListed:
     case NotificationType.seriesVolumeAvailable:

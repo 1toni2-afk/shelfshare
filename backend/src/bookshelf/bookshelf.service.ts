@@ -7,6 +7,7 @@ import { Book, BookshelfStatus } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookDescriptionService } from '../books/book-description.service';
+import { FollowService } from '../follow/follow.service';
 import { AddOwnedBookDto } from './dto/add-owned-book.dto';
 
 export type BookshelfImportSource = 'goodreads' | 'storygraph';
@@ -31,6 +32,7 @@ export class BookshelfService {
   constructor(
     private prisma: PrismaService,
     private bookDescriptions: BookDescriptionService,
+    private follow: FollowService,
   ) {}
 
   /**
@@ -195,6 +197,13 @@ export class BookshelfService {
       throw new NotFoundException('Cartea nu a fost găsită');
     }
 
+    // Citit ÎNAINTE de upsert: după el n-am mai ști dacă tocmai s-a schimbat
+    // ceva sau userul a reapăsat „Citită" pe o carte deja citită.
+    const before = await this.prisma.bookshelfEntry.findUnique({
+      where: { userId_bookId: { userId, bookId } },
+      select: { status: true },
+    });
+
     const entry = await this.prisma.bookshelfEntry.upsert({
       where: { userId_bookId: { userId, bookId } },
       // `owned` absent din request => nu îl atingem pe o intrare existentă
@@ -204,6 +213,17 @@ export class BookshelfService {
       update: { status, ...(owned === undefined ? {} : { owned }) },
       include: { book: true },
     });
+
+    // Doar la TRECEREA în FINISHED, nu la fiecare salvare cu același status -
+    // altfel followerii ar primi aceeași notificare de câte ori userul atinge
+    // butonul. Best-effort, ca la adăugarea unei cărți noi.
+    if (status === 'FINISHED' && before?.status !== 'FINISHED') {
+      void this.follow.notifyFollowersOfFinishedBook(
+        userId,
+        entry.book.title,
+        bookId,
+      );
+    }
 
     // Din momentul asta cartea e vizibila pentru cineva, deci merita descriere.
     // Fire and forget: raspunsul nu asteapta dupa Google Books.

@@ -3203,6 +3203,49 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileGroupLibrary => 'Könyvtáram';
 
   @override
+  String get profileGroupNotifications => 'Értesítések';
+
+  @override
+  String get profileListingPrivacyTitle => 'Hirdetések láthatósága';
+
+  @override
+  String get notificationPrefTitle => 'Milyen értesítéseket kapok';
+
+  @override
+  String get notificationPrefSubtitle =>
+      'Kapcsold ki, ami nem érdekel. Mindenhol érvényes: az appban, e-mailben és a telefonon.';
+
+  @override
+  String get notificationPrefFollowedNewBook =>
+      'Akit követek, feltölt egy könyvet';
+
+  @override
+  String get notificationPrefFollowedFinishedBook =>
+      'Akit követek, kiolvas egy könyvet';
+
+  @override
+  String get notificationPrefMessages => 'Új üzenetek';
+
+  @override
+  String get notificationPrefExchanges => 'Cserék és találkozók';
+
+  @override
+  String get notificationPrefOffers => 'Ajánlatok és árváltozások';
+
+  @override
+  String get notificationPrefAuctions => 'Aukciók';
+
+  @override
+  String get notificationPrefDiscovery => 'Könyvek, amik tetszhetnek';
+
+  @override
+  String get notificationPrefSaveError => 'Nem sikerült menteni a beállítást.';
+
+  @override
+  String get notificationPrefLoadError =>
+      'Nem sikerült betölteni az értesítési beállításokat.';
+
+  @override
   String get profileGroupPrivacy => 'Adatvédelem';
 
   @override

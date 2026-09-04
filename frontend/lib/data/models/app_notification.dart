@@ -9,6 +9,7 @@ enum NotificationType {
   priceOfferAccepted,
   priceOfferRejected,
   followedUserNewBook,
+  followedUserFinishedBook,
   nearbyBookListed,
   interestBookListed,
   priceChanged,
@@ -59,6 +60,8 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.priceOfferRejected;
       case 'FOLLOWED_USER_NEW_BOOK':
         return NotificationType.followedUserNewBook;
+      case 'FOLLOWED_USER_FINISHED_BOOK':
+        return NotificationType.followedUserFinishedBook;
       case 'NEARBY_BOOK_LISTED':
         return NotificationType.nearbyBookListed;
       case 'INTEREST_BOOK_LISTED':

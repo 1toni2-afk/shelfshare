@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationType, Prisma } from '@prisma/client';
+import { NOTIFICATION_TYPES } from './notification-types';
 import { RealtimeService } from '../common/realtime/realtime.service';
 import { PushService } from './push.service';
 
@@ -38,12 +39,33 @@ export class NotificationsService {
       });
   }
 
+  /**
+   * Preferința userului pentru un tip de notificare. ABSENȚA unui rând
+   * înseamnă „pornit" (vezi NotificationPreference în schema.prisma), deci
+   * userii care n-au atins niciodată setările primesc tot, ca înainte.
+   */
+  async isEnabledFor(userId: string, type: NotificationType) {
+    const preference = await this.prisma.notificationPreference.findUnique({
+      where: { userId_type: { userId, type } },
+      select: { enabled: true },
+    });
+    return preference?.enabled ?? true;
+  }
+
+  /**
+   * Întoarce `null` dacă userul a oprit tipul ăsta de notificare. Filtrul stă
+   * aici, nu în fiecare apelant, fiindcă ASTA e singura poartă prin care se
+   * naște o notificare (împreună cu `upsertUnread`) - orice funcție nouă care
+   * notifică primește respectarea preferințelor pe gratis.
+   */
   async create(
     userId: string,
     type: NotificationType,
     message: string,
     data?: Record<string, unknown>,
   ) {
+    if (!(await this.isEnabledFor(userId, type))) return null;
+
     const notification = await this.prisma.notification.create({
       data: {
         userId,
@@ -76,6 +98,8 @@ export class NotificationsService {
     data: Record<string, unknown>,
     dedupeField: string,
   ) {
+    if (!(await this.isEnabledFor(userId, type))) return null;
+
     const dedupeValue = data[dedupeField];
     const existing = await this.prisma.notification.findFirst({
       where: {
@@ -105,6 +129,42 @@ export class NotificationsService {
     // consecutive ar da 10 push-uri, exact ce dedup-ul ăsta încearcă să evite.
     if (!existing) this.sendPushSafe(userId, message, type, data);
     return notification;
+  }
+
+  /**
+   * Toate tipurile, cu valoarea efectivă pentru user - inclusiv cele fără rând
+   * în DB (implicit `true`). Frontend-ul primește astfel o hartă completă și
+   * n-are nevoie să știe convenția „lipsă = pornit".
+   */
+  async getPreferences(userId: string) {
+    const rows = await this.prisma.notificationPreference.findMany({
+      where: { userId },
+      select: { type: true, enabled: true },
+    });
+    const byType = new Map(rows.map((r) => [r.type, r.enabled]));
+    return Object.fromEntries(
+      NOTIFICATION_TYPES.map((type) => [type, byType.get(type) ?? true]),
+    ) as Record<NotificationType, boolean>;
+  }
+
+  async setPreferences(
+    userId: string,
+    preferences: Partial<Record<NotificationType, boolean>>,
+  ) {
+    const entries = Object.entries(preferences) as [
+      NotificationType,
+      boolean,
+    ][];
+    await this.prisma.$transaction(
+      entries.map(([type, enabled]) =>
+        this.prisma.notificationPreference.upsert({
+          where: { userId_type: { userId, type } },
+          create: { userId, type, enabled },
+          update: { enabled },
+        }),
+      ),
+    );
+    return this.getPreferences(userId);
   }
 
   getMine(userId: string) {

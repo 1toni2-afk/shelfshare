@@ -1,8 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { NotificationsService } from './notifications.service';
 import { PushService } from './push.service';
 import { RegisterDeviceTokenDto } from './dto/register-device-token.dto';
+import { SetNotificationPreferencesDto } from './dto/set-notification-preferences.dto';
+import { NotificationType } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -27,6 +39,27 @@ export class NotificationsController {
   @Delete('device-token/:token')
   unregisterDeviceToken(@Param('token') token: string) {
     return this.pushService.unregisterToken(token);
+  }
+
+  /** Harta completă tip -> pornit/oprit, inclusiv tipurile fără rând în DB. */
+  @Get('preferences')
+  getPreferences(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.notificationsService.getPreferences(userId!);
+  }
+
+  @Put('preferences')
+  setPreferences(
+    @Req() req: Request,
+    @Body() dto: SetNotificationPreferencesDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.notificationsService.setPreferences(
+      userId!,
+      Object.fromEntries(
+        dto.preferences.map((p) => [p.type, p.enabled]),
+      ) as Partial<Record<NotificationType, boolean>>,
+    );
   }
 
   @Get()

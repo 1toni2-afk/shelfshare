@@ -39,6 +39,8 @@ IconData notificationIcon(NotificationType type) {
       return Icons.favorite;
     case NotificationType.followedUserNewBook:
       return Icons.person;
+    case NotificationType.followedUserFinishedBook:
+      return Icons.auto_stories;
     case NotificationType.nearbyBookListed:
       return Icons.place;
     case NotificationType.savedSearchMatch:

@@ -29,6 +29,13 @@ class AppUser {
   final bool isEmailVerified;
   final bool isAdmin;
   final bool isPremium;
+
+  /// Dacă userul are voie la „Advanced Analytics" - Premium, admin sau
+  /// flag-ul `advanced_statistics` acordat din panoul de admin. Vine
+  /// calculat de la backend (ProfileService.hasAdvancedStatsAccess), ca
+  /// să nu arătăm o intrare care duce garantat într-un 403.
+  final bool canAccessAdvancedStats;
+
   final bool showAcquisitionHistory;
 
   /// Preferință per-admin: badge de scor pe TOATE cardurile de carte, nu
@@ -97,6 +104,7 @@ class AppUser {
     this.isEmailVerified = false,
     this.isAdmin = false,
     this.isPremium = false,
+    this.canAccessAdvancedStats = false,
     this.showAcquisitionHistory = false,
     this.showAllListingScores = false,
     this.hideSwapListingsPublic = false,
@@ -141,6 +149,9 @@ class AppUser {
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isAdmin: json['isAdmin'] as bool? ?? false,
       isPremium: json['isPremium'] as bool? ?? false,
+      canAccessAdvancedStats: json['canAccessAdvancedStats'] as bool? ??
+          ((json['isPremium'] as bool? ?? false) ||
+              (json['isAdmin'] as bool? ?? false)),
       showAcquisitionHistory: json['showAcquisitionHistory'] as bool? ?? false,
       showAllListingScores: json['showAllListingScores'] as bool? ?? false,
       hideSwapListingsPublic: json['hideSwapListingsPublic'] as bool? ?? false,

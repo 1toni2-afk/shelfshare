@@ -14,12 +14,6 @@ class RoadmapScreen extends StatelessWidget {
     final l10n = context.l10n;
     final items = [
       _RoadmapItem(
-        icon: Icons.menu_book_outlined,
-        title: l10n.roadmapBookOfMonthTitle,
-        body: l10n.roadmapBookOfMonthBody,
-        live: true,
-      ),
-      _RoadmapItem(
         icon: Icons.event_outlined,
         title: l10n.roadmapUpcomingReleasesTitle,
         body: l10n.roadmapUpcomingReleasesBody,
@@ -35,12 +29,6 @@ class RoadmapScreen extends StatelessWidget {
         icon: Icons.storefront_outlined,
         title: l10n.roadmapBookstoreIntegrationsTitle,
         body: l10n.roadmapBookstoreIntegrationsBody,
-        live: false,
-      ),
-      _RoadmapItem(
-        icon: Icons.payments_outlined,
-        title: l10n.roadmapPaymentsTitle,
-        body: l10n.roadmapPaymentsBody,
         live: false,
       ),
       _RoadmapItem(

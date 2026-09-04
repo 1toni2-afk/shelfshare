@@ -155,6 +155,41 @@ export class FollowService {
     bookTitle: string,
     userBookId: string,
   ) {
+    await this.notifyFollowers(
+      userId,
+      'FOLLOWED_USER_NEW_BOOK',
+      (name) => `${name} a adăugat o carte nouă: "${bookTitle}"`,
+      // userBookId - ca la tap să ducem direct la anunț, nu la profilul
+      // proprietarului (vezi notification_routing.dart pe frontend).
+      { userId, userBookId },
+    );
+  }
+
+  /**
+   * La fel, dar pentru „a terminat de citit". `bookId`, nu `userBookId`:
+   * statusul de citit trăiește pe BookshelfEntry, care e legat de o carte din
+   * catalog, nu de un anunț - userul poate marca drept citită o carte pe care
+   * n-o listează deloc.
+   */
+  async notifyFollowersOfFinishedBook(
+    userId: string,
+    bookTitle: string,
+    bookId: string,
+  ) {
+    await this.notifyFollowers(
+      userId,
+      'FOLLOWED_USER_FINISHED_BOOK',
+      (name) => `${name} a terminat de citit „${bookTitle}"`,
+      { userId, bookId },
+    );
+  }
+
+  private async notifyFollowers(
+    userId: string,
+    type: 'FOLLOWED_USER_NEW_BOOK' | 'FOLLOWED_USER_FINISHED_BOOK',
+    message: (authorName: string) => string,
+    data: Record<string, unknown>,
+  ) {
     try {
       const follows = await this.prisma.follow.findMany({
         where: { followingId: userId },
@@ -163,16 +198,10 @@ export class FollowService {
       const author = await this.prisma.user.findUnique({
         where: { id: userId },
       });
+      const name = author?.name ?? 'Un utilizator pe care îl urmărești';
       await Promise.all(
         follows.map((f) =>
-          this.notifications.create(
-            f.followerId,
-            'FOLLOWED_USER_NEW_BOOK',
-            `${author?.name ?? 'Un utilizator pe care îl urmărești'} a adăugat o carte nouă: "${bookTitle}"`,
-            // userBookId - ca la tap să ducem direct la anunț, nu la profilul
-            // proprietarului (vezi notification_routing.dart pe frontend).
-            { userId, userBookId },
-          ),
+          this.notifications.create(f.followerId, type, message(name), data),
         ),
       );
     } catch (error) {

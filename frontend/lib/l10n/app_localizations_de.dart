@@ -3247,6 +3247,50 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileGroupLibrary => 'Meine Bibliothek';
 
   @override
+  String get profileGroupNotifications => 'Benachrichtigungen';
+
+  @override
+  String get profileListingPrivacyTitle => 'Sichtbarkeit der Anzeigen';
+
+  @override
+  String get notificationPrefTitle => 'Welche Benachrichtigungen ich bekomme';
+
+  @override
+  String get notificationPrefSubtitle =>
+      'Schalte ab, was dich nicht interessiert. Gilt überall: in der App, per E-Mail und auf dem Handy.';
+
+  @override
+  String get notificationPrefFollowedNewBook =>
+      'Jemand, dem ich folge, stellt ein Buch ein';
+
+  @override
+  String get notificationPrefFollowedFinishedBook =>
+      'Jemand, dem ich folge, liest ein Buch zu Ende';
+
+  @override
+  String get notificationPrefMessages => 'Neue Nachrichten';
+
+  @override
+  String get notificationPrefExchanges => 'Tausch und Treffen';
+
+  @override
+  String get notificationPrefOffers => 'Angebote und Preisänderungen';
+
+  @override
+  String get notificationPrefAuctions => 'Auktionen';
+
+  @override
+  String get notificationPrefDiscovery => 'Bücher, die dir gefallen könnten';
+
+  @override
+  String get notificationPrefSaveError =>
+      'Die Einstellung konnte nicht gespeichert werden.';
+
+  @override
+  String get notificationPrefLoadError =>
+      'Die Benachrichtigungseinstellungen konnten nicht geladen werden.';
+
+  @override
   String get profileGroupPrivacy => 'Datenschutz';
 
   @override

@@ -700,7 +700,11 @@ export class AdminService {
       gmv,
       completedSalesCount,
       completedAuctionsCount,
-      averageSalePrice: acceptedOffers._avg.amount ?? 0,
+      // Number(), ca la gmv: `amount` e Decimal, iar un Prisma.Decimal se
+      // serializeaza in JSON ca STRING. Clientul citeste campul ca numar, deci
+      // fara conversie tot panoul de admin pica in eroare de parsare de indata
+      // ce exista macar o oferta acceptata (cand nu exista, _avg e null -> 0).
+      averageSalePrice: Number(acceptedOffers._avg.amount ?? 0),
       topGenresByListings,
     };
   }

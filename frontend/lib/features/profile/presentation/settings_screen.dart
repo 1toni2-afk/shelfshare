@@ -15,6 +15,8 @@ import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/language_picker.dart';
 import '../../../shared/widgets/profile_qr_dialog.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../notifications/application/notification_preferences_controller.dart';
+import '../../../data/models/notification_preferences.dart';
 import '../application/profile_controller.dart';
 import '../data/feedback_repository.dart';
 import '../data/profile_repository.dart';
@@ -136,6 +138,10 @@ class _SettingsList extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
 
+                  _SettingsGroupLabel(l10n.profileGroupNotifications),
+                  const _NotificationPrefsCard(),
+                  const SizedBox(height: 20),
+
                   _SettingsGroupLabel(l10n.profileGroupPrivacy),
                   _ListingPrivacyCard(user: user),
                   const SizedBox(height: 20),
@@ -155,12 +161,16 @@ class _SettingsList extends ConsumerWidget {
                           icon: Icons.bar_chart_outlined,
                           label: l10n.profileGlobalStats,
                           onTap: () => context.push('/global-stats')),
-                      _SettingsTile(
-                        icon: Icons.insights_outlined,
-                        iconColor: user.isPremium ? AppColors.warning : null,
-                        label: l10n.premiumAnalyticsTitle,
-                        onTap: () => context.push('/seller-analytics'),
-                      ),
+                      // Ecranul întoarce 403 pentru cine nu e Premium/admin
+                      // și n-are flag-ul `advanced_statistics` - deci nici
+                      // rândul n-are ce căuta aici pentru ei.
+                      if (user.canAccessAdvancedStats)
+                        _SettingsTile(
+                          icon: Icons.insights_outlined,
+                          iconColor: user.isPremium ? AppColors.warning : null,
+                          label: l10n.premiumAnalyticsTitle,
+                          onTap: () => context.push('/seller-analytics'),
+                        ),
                       _SettingsTile(
                           icon: Icons.compare_arrows_outlined,
                           label: l10n.profileSmartMatches,
@@ -181,15 +191,6 @@ class _SettingsList extends ConsumerWidget {
                   // trebuie să fie primul lucru pe care-l vezi în Setări.
                   _SettingsGroupLabel(l10n.profileGroupSupportApp),
                   _KeepAliveCard(onTap: () => openSupportPage(context, '/about-dev')),
-                  const SizedBox(height: 8),
-                  _SettingsGroup(
-                    children: [
-                      _SettingsTile(
-                          icon: Icons.android,
-                          label: l10n.profilePreRegister,
-                          onTap: () => context.push('/pre-register')),
-                    ],
-                  ),
                   const SizedBox(height: 20),
 
                   _SettingsGroupLabel(l10n.profileGroupHelpLegal),
@@ -522,6 +523,110 @@ class _ScoreBadgeToggleState extends ConsumerState<_ScoreBadgeToggle> {
 /// donațiile devin private). Un anunț poate fi simultan de mai multe tipuri
 /// (ex. și la schimb, și la vânzare) - vezi comentariul din User (schema.prisma):
 /// dispare din public doar dacă TOATE tipurile lui sunt ascunse.
+/// Card care se deschide/închide la tap - antetul rămâne vizibil, conținutul
+/// apare doar când e cerut. Setările au ajuns la destule comutatoare încât
+/// două secțiuni întregi (notificări, confidențialitate) să împingă restul
+/// listei mult sub ecran dacă stau mereu desfășurate.
+class _DropdownCard extends StatelessWidget {
+  const _DropdownCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.children,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Theme(
+        // ExpansionTile își desenează singur liniile de sus/jos când e
+        // deschis, peste marginea cardului - le scoatem, cardul are deja ramă.
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Icon(icon, color: AppColors.mutedForeground, size: 20),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          children: children,
+        ),
+      ),
+    );
+  }
+}
+
+/// „Ce notificări primesc" - un comutator per categorie (vezi
+/// [kNotificationCategories]; serverul ține preferința pe tip, nu pe
+/// categorie). Se încarcă la prima construcție a cardului, deci și când
+/// grupul e încă închis - lista e mică, iar altfel primul tap ar arăta un
+/// spinner exact peste comutatoare.
+class _NotificationPrefsCard extends ConsumerWidget {
+  const _NotificationPrefsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final async = ref.watch(notificationPreferencesControllerProvider);
+
+    return _DropdownCard(
+      icon: Icons.notifications_none,
+      title: l10n.notificationPrefTitle,
+      subtitle: l10n.notificationPrefSubtitle,
+      children: [
+        switch (async) {
+          AsyncData(:final value) => Column(
+              children: [
+                for (final category in kNotificationCategories)
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    secondary: Icon(category.icon,
+                        size: 20, color: AppColors.mutedForeground),
+                    title: Text(category.labelOf(l10n),
+                        style: const TextStyle(fontSize: 14)),
+                    value: value.isCategoryEnabled(category),
+                    onChanged: (enabled) async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      try {
+                        await ref
+                            .read(notificationPreferencesControllerProvider
+                                .notifier)
+                            .setCategory(category, enabled);
+                      } catch (_) {
+                        messenger.showSnackBar(SnackBar(
+                            content: Text(l10n.notificationPrefSaveError)));
+                      }
+                    },
+                  ),
+              ],
+            ),
+          AsyncError() => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(l10n.notificationPrefLoadError,
+                  style: TextStyle(color: AppColors.mutedForeground)),
+            ),
+          _ => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        },
+      ],
+    );
+  }
+}
+
 class _ListingPrivacyCard extends ConsumerStatefulWidget {
   const _ListingPrivacyCard({required this.user});
   final AppUser user;
@@ -587,18 +692,14 @@ class _ListingPrivacyCardState extends ConsumerState<_ListingPrivacyCard> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final user = widget.user;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-        child: Column(
+    return _DropdownCard(
+      icon: Icons.visibility_outlined,
+      title: l10n.profileListingPrivacyTitle,
+      subtitle: l10n.profileListingPrivacySubtitle,
+      children: [
+        Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l10n.profileListingPrivacySubtitle,
-              style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
-            ),
-            const SizedBox(height: 12),
             OutlinedButton.icon(
               icon: const Icon(Icons.lock_outline, size: 18),
               label: Text(l10n.profileHideAllListingsButton),
@@ -641,7 +742,7 @@ class _ListingPrivacyCardState extends ConsumerState<_ListingPrivacyCard> {
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

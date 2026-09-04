@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/providers.dart';
+import '../../features/auth/application/auth_controller.dart';
+import '../../features/auth/application/auth_state.dart';
+import '../../features/profile/application/profile_controller.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Toate scurtăturile disponibile pentru sidebar. Enum-ul e sursa unică de
@@ -21,7 +24,6 @@ enum SidebarShortcut {
   map,
   groups,
   sellerAnalytics,
-  preRegister,
   trash,
 }
 
@@ -137,13 +139,6 @@ final List<SidebarShortcutSpec> kSidebarShortcutSpecs = [
     labelOf: (l) => l.shortcutSellerAnalytics,
   ),
   SidebarShortcutSpec(
-    key: SidebarShortcut.preRegister,
-    icon: Icons.event_available_outlined,
-    activeIcon: Icons.event_available,
-    route: '/pre-register',
-    labelOf: (l) => l.shortcutPreRegister,
-  ),
-  SidebarShortcutSpec(
     key: SidebarShortcut.trash,
     icon: Icons.delete_outline,
     activeIcon: Icons.delete,
@@ -154,6 +149,22 @@ final List<SidebarShortcutSpec> kSidebarShortcutSpecs = [
 
 SidebarShortcutSpec specFor(SidebarShortcut key) =>
     kSidebarShortcutSpecs.firstWhere((s) => s.key == key);
+
+/// Scurtăturile pe care userul curent chiar le poate deschide. Singura
+/// condiționată e „Advanced Analytics": ecranul întoarce 403 pentru cine nu
+/// e Premium/admin și n-are flag-ul `advanced_statistics`, deci n-are rost
+/// nici în sidebar, nici în modalul de „adaugă scurtătură".
+final availableSidebarShortcutSpecsProvider =
+    Provider<List<SidebarShortcutSpec>>((ref) {
+  final authState = ref.watch(authControllerProvider);
+  final user = ref.watch(profileControllerProvider).value ??
+      (authState is AuthAuthenticated ? authState.user : null);
+  final canSeeAnalytics = user?.canAccessAdvancedStats ?? false;
+  return [
+    for (final spec in kSidebarShortcutSpecs)
+      if (canSeeAnalytics || spec.key != SidebarShortcut.sellerAnalytics) spec,
+  ];
+});
 
 /// Setul afișat implicit celor care nu au personalizat sidebar-ul. Redus la
 /// 3 (Milestone 23) - Collections a rămas în afara setului implicit, dar e
@@ -233,7 +244,8 @@ final sidebarShortcutsProvider =
 /// deja în sidebar. Închis fără selecție = nicio modificare.
 Future<void> showAddShortcutSheet(BuildContext context, WidgetRef ref) {
   final current = ref.read(sidebarShortcutsProvider);
-  final available = kSidebarShortcutSpecs
+  final available = ref
+      .read(availableSidebarShortcutSpecsProvider)
       .where((s) => !current.contains(s.key))
       .toList();
 

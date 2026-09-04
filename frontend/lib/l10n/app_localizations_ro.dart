@@ -3208,6 +3208,49 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileGroupLibrary => 'Biblioteca mea';
 
   @override
+  String get profileGroupNotifications => 'Notificări';
+
+  @override
+  String get profileListingPrivacyTitle => 'Vizibilitatea anunțurilor';
+
+  @override
+  String get notificationPrefTitle => 'Ce notificări primesc';
+
+  @override
+  String get notificationPrefSubtitle =>
+      'Oprește ce nu te interesează. Se aplică peste tot: în aplicație, pe e-mail și pe telefon.';
+
+  @override
+  String get notificationPrefFollowedNewBook =>
+      'Cineva pe care îl urmăresc listează o carte';
+
+  @override
+  String get notificationPrefFollowedFinishedBook =>
+      'Cineva pe care îl urmăresc termină o carte';
+
+  @override
+  String get notificationPrefMessages => 'Mesaje noi';
+
+  @override
+  String get notificationPrefExchanges => 'Schimburi și întâlniri';
+
+  @override
+  String get notificationPrefOffers => 'Oferte și schimbări de preț';
+
+  @override
+  String get notificationPrefAuctions => 'Licitații';
+
+  @override
+  String get notificationPrefDiscovery => 'Cărți care te-ar putea interesa';
+
+  @override
+  String get notificationPrefSaveError => 'Nu am putut salva preferința.';
+
+  @override
+  String get notificationPrefLoadError =>
+      'Nu am putut încărca preferințele de notificare.';
+
+  @override
   String get profileGroupPrivacy => 'Confidențialitate';
 
   @override

@@ -163,6 +163,9 @@ export class ProfileService {
       // public îl afișa de mult).
       readingStats: await this.getReadingStats(userId),
       gamification: this.getGamificationStats(user),
+      // Frontend-ul ascunde intrarea catre „Advanced Analytics" cand e
+      // false - altfel ar arata un rand care duce garantat intr-un 403.
+      canAccessAdvancedStats: await this.hasAdvancedStatsAccess(userId),
     };
   }
 
@@ -464,7 +467,10 @@ export class ProfileService {
    * cărora li s-a acordat manual flag-ul „advanced_statistics" din panoul de
    * admin (acces beta / preferențial) - vezi UserFeatureFlag.
    */
-  async getSellerAnalytics(userId: string) {
+  /** Regula de acces la „Advanced Analytics", intr-un singur loc: Premium,
+   * admin sau flag-ul manual din panoul de admin. O foloseste si profilul
+   * propriu, ca frontend-ul sa stie daca are voie sa arate intrarea. */
+  async hasAdvancedStatsAccess(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -477,10 +483,16 @@ export class ProfileService {
         },
       },
     });
-    const hasAccess =
-      user?.isPremium || user?.isAdmin || (user?.featureFlags.length ?? 0) > 0;
-    if (!hasAccess) {
-      throw new ForbiddenException('Statisticile avansate sunt o funcție Premium');
+    return Boolean(
+      user?.isPremium || user?.isAdmin || (user?.featureFlags.length ?? 0) > 0,
+    );
+  }
+
+  async getSellerAnalytics(userId: string) {
+    if (!(await this.hasAdvancedStatsAccess(userId))) {
+      throw new ForbiddenException(
+        'Statisticile avansate sunt o funcție Premium',
+      );
     }
 
     const [listings, offersReceived, acceptedOffers] = await Promise.all([

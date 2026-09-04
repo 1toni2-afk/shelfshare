@@ -8,6 +8,7 @@ describe('NotificationsService', () => {
   let service: NotificationsService;
   let prisma: {
     notification: Record<string, jest.Mock>;
+    notificationPreference: Record<string, jest.Mock>;
   };
   let realtime: { emitToUser: jest.Mock };
   let push: { sendToUser: jest.Mock };
@@ -18,6 +19,11 @@ describe('NotificationsService', () => {
         create: jest.fn(),
         findMany: jest.fn(),
         updateMany: jest.fn(),
+      },
+      // Lipsa unui rând = notificarea e pornită (vezi NotificationPreference
+      // în schema.prisma), deci `null` e cazul implicit al testelor.
+      notificationPreference: {
+        findUnique: jest.fn().mockResolvedValue(null),
       },
     };
     realtime = { emitToUser: jest.fn() };
@@ -114,5 +120,22 @@ describe('NotificationsService', () => {
       where: { userId: 'user-1', isRead: false },
       data: { isRead: true },
     });
+  });
+
+  it('nu creeaza notificarea daca userul a oprit tipul respectiv', async () => {
+    prisma.notificationPreference.findUnique.mockResolvedValue({
+      enabled: false,
+    });
+
+    const result = await service.create(
+      'user-1',
+      'FOLLOWED_USER_FINISHED_BOOK',
+      'X a terminat o carte',
+    );
+
+    expect(result).toBeNull();
+    expect(prisma.notification.create).not.toHaveBeenCalled();
+    expect(realtime.emitToUser).not.toHaveBeenCalled();
+    expect(push.sendToUser).not.toHaveBeenCalled();
   });
 });

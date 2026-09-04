@@ -320,6 +320,8 @@ class _NotificationRow extends ConsumerWidget {
         return Icons.sell_outlined;
       case NotificationType.followedUserNewBook:
         return Icons.person_add_alt_outlined;
+      case NotificationType.followedUserFinishedBook:
+        return Icons.auto_stories_outlined;
       case NotificationType.nearbyBookListed:
         return Icons.location_on_outlined;
       case NotificationType.interestBookListed:

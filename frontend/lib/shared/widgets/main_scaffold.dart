@@ -229,7 +229,17 @@ class _SidebarState extends ConsumerState<_Sidebar> {
     // Lista de scurtături e alegerea userului (persistată în secure storage).
     // Ordinea corespunde cu ordinea de adăugare - noile scurtături apar la
     // capăt, nu se re-sortează după enum.
-    final shortcutKeys = ref.watch(sidebarShortcutsProvider);
+    // Filtrate prin `availableSidebarShortcutSpecsProvider`: o scurtătură
+    // salvată cândva în storage poate să nu mai fie accesibilă acum (ex.
+    // „Advanced Analytics" după ce expiră Premium-ul).
+    final allowedKeys = ref
+        .watch(availableSidebarShortcutSpecsProvider)
+        .map((s) => s.key)
+        .toSet();
+    final shortcutKeys = ref
+        .watch(sidebarShortcutsProvider)
+        .where(allowedKeys.contains)
+        .toList();
     final shortcuts = [
       for (final key in shortcutKeys)
         () {

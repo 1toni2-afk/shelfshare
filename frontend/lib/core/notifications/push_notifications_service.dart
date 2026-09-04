@@ -77,7 +77,11 @@ class PushNotificationsService {
   }
 
   Future<void> _initLocalNotifications() async {
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // Silueta monocroma, nu `@mipmap/ic_launcher`: Android pastreaza doar
+    // alfa iconitei de notificare, iar launcher-ul e complet opac - ar
+    // aparea ca un patrat alb in bara de stare. Vezi AndroidManifest.xml.
+    const androidInit =
+        AndroidInitializationSettings('@drawable/ic_stat_shelfshare');
     await _localNotifications.initialize(
       settings: const InitializationSettings(android: androidInit),
       // Notificările afișate cât timp aplicația e în foreground sunt randate

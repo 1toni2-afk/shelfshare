@@ -207,6 +207,7 @@ model User {
   readingProgress          ReadingProgress[]
   reviews                  Review[]
   notifications            Notification[]
+  notificationPreferences  NotificationPreference[]
   deviceTokens             DeviceToken[]
   blocksMade               Block[]                   @relation("BlockBlocker")
   blocksReceived           Block[]                   @relation("BlockBlocked")
@@ -1557,6 +1558,8 @@ enum NotificationType {
   PRICE_OFFER_ACCEPTED
   PRICE_OFFER_REJECTED
   FOLLOWED_USER_NEW_BOOK
+  // Un user pe care îl urmărești a terminat de citit o carte.
+  FOLLOWED_USER_FINISHED_BOOK
   NEARBY_BOOK_LISTED
   // Carte listată într-un gen pe care userul l-a bifat în profilul de cititor.
   INTEREST_BOOK_LISTED
@@ -1615,6 +1618,28 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@map("notifications")
+}
+
+/// Preferințele de notificare, per user și per tip.
+///
+/// ABSENȚA unui rând înseamnă „pornit". Așa userii existenți n-au nevoie de
+/// niciun backfill la migrare, iar un tip NOU de notificare e activ din start
+/// pentru toată lumea - altfel ar trebui scris un rând pentru fiecare
+/// (user × tip), adică zeci de mii de rânduri care aproape toate spun „da".
+/// Se scrie un rând doar când userul oprește ceva (sau repornește ceva oprit).
+model NotificationPreference {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  enabled Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, type])
+  @@map("notification_preferences")
 }
 
 /// Pre-înscriere pentru lansarea Android. Simplu email opt-in cu deduplicare

@@ -3192,6 +3192,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileGroupLibrary => 'My Library';
 
   @override
+  String get profileGroupNotifications => 'Notifications';
+
+  @override
+  String get profileListingPrivacyTitle => 'Listing visibility';
+
+  @override
+  String get notificationPrefTitle => 'Which notifications I get';
+
+  @override
+  String get notificationPrefSubtitle =>
+      'Turn off what you don\'t care about. Applies everywhere: in the app, by email and on your phone.';
+
+  @override
+  String get notificationPrefFollowedNewBook => 'Someone I follow lists a book';
+
+  @override
+  String get notificationPrefFollowedFinishedBook =>
+      'Someone I follow finishes a book';
+
+  @override
+  String get notificationPrefMessages => 'New messages';
+
+  @override
+  String get notificationPrefExchanges => 'Exchanges and meetings';
+
+  @override
+  String get notificationPrefOffers => 'Offers and price changes';
+
+  @override
+  String get notificationPrefAuctions => 'Auctions';
+
+  @override
+  String get notificationPrefDiscovery => 'Books you might like';
+
+  @override
+  String get notificationPrefSaveError => 'We couldn\'t save that preference.';
+
+  @override
+  String get notificationPrefLoadError =>
+      'We couldn\'t load your notification preferences.';
+
+  @override
   String get profileGroupPrivacy => 'Privacy';
 
   @override
