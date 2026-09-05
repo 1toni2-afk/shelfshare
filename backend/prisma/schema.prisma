@@ -467,6 +467,18 @@ model Book {
   /// providerii externi când găsește o potrivire curată.
   curatedAt DateTime?
 
+  /// Poziția în lista de onboarding (1 = primul), sau `null` dacă titlul nu e
+  /// în ea. Lista e curatoriată manual - vezi
+  /// `scripts/targulcartii/onboarding_books.txt` și importul din
+  /// `prisma/import-onboarding-db.js`.
+  ///
+  /// Book Match servește EXCLUSIV din cărțile astea cât timp userul e în
+  /// onboarding (`onboardingSwipesCount < ONBOARDING_SWIPES_TARGET`), fiindcă
+  /// primele swipe-uri decid dacă omul înțelege la ce se uită: un titlu
+  /// obscur din cele 3,68M importate în vrac nu spune nimic despre gusturile
+  /// lui. După onboarding nu mai are niciun efect - poolul redevine cel curat.
+  onboardingRank Int?
+
   /// Book Match: cât de „cunoscută" e cartea, folosită doar ca multiplicator
   /// la cold start (primele 50 de swipe-uri), unde încă nu avem semnal de la
   /// user și vrem ca titlurile mari să tragă mai tare profilul într-o direcție.

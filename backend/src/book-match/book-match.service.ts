@@ -268,17 +268,17 @@ export class BookMatchService {
       ? this.allowedGenres(scores, excluded.genreSwipeCounts)
       : null;
 
-    let candidates = this.dedupeWorks(
-      await this.sampleCandidates([...excluded.all], allowed),
-      excluded.workKeys,
+    let sampled = await this.sampleCandidates(
+      [...excluded.all],
+      allowed,
+      coldStart,
     );
+    let candidates = this.dedupeWorks(sampled.books, excluded.workKeys);
     // Plasă de siguranță: dacă genurile rămase permise nu mai au nimic de
     // servit, mai bine o carte dintr-un gen respins decât un ecran gol.
     if (candidates.length === 0 && allowed != null) {
-      candidates = this.dedupeWorks(
-        await this.sampleCandidates([...excluded.all], null),
-        excluded.workKeys,
-      );
+      sampled = await this.sampleCandidates([...excluded.all], null, coldStart);
+      candidates = this.dedupeWorks(sampled.books, excluded.workKeys);
     }
     if (candidates.length === 0) {
       return { sessionId, cards: [] };
@@ -293,6 +293,7 @@ export class BookMatchService {
           user.favoriteGenres,
           [...excluded.all],
           excluded.workKeys,
+          sampled.fromList,
         ),
       };
     }
@@ -393,7 +394,21 @@ export class BookMatchService {
   private async sampleCandidates(
     excludedIds: string[],
     allowedGenres: string[] | null,
-  ): Promise<CandidateBook[]> {
+    onboarding = false,
+  ): Promise<{ books: CandidateBook[]; fromList: boolean }> {
+    // Cât timp userul e în onboarding servim EXCLUSIV din lista curatoriată
+    // manual (vezi `Book.onboardingRank`). Primele swipe-uri decid dacă omul
+    // înțelege la ce se uită, iar un titlu obscur nu spune nimic despre
+    // gusturile lui - de-aia lista bate aici chiar și catalogul curat.
+    //
+    // Dacă lista nu e încă importată, `onboardingCandidates` întoarce gol și
+    // cădem pe comportamentul de dinainte. Asta nu e doar politețe: codul
+    // ajunge în producție înaintea datelor.
+    if (onboarding) {
+      const fromList = await this.onboardingCandidates(excludedIds);
+      if (fromList.length > 0) return { books: fromList, fromList: true };
+    }
+
     // Catalogul PROPRIU, verificat manual (~1900 de titluri, vezi
     // `curatedAt`), e prima sursă: are copertă de la editură, descriere în
     // română și genul pus de om. Importul în masă din Open Library rămâne
@@ -401,13 +416,15 @@ export class BookMatchService {
     // („The Road" atribuit lui Jack London) și zecile de ediții ale aceleiași
     // opere.
     const curated = await this.curatedCandidates(excludedIds, allowedGenres);
-    if (curated.length >= MIN_CANDIDATE_POOL) return curated;
+    if (curated.length >= MIN_CANDIDATE_POOL) {
+      return { books: curated, fromList: false };
+    }
 
     // Sub prag (user care a văzut aproape tot catalogul curat, sau un gen pe
     // care catalogul propriu nu-l acoperă) completăm din restul catalogului,
     // fără să renunțăm la ce am găsit curat.
     const wider = await this.wideCatalogCandidates(excludedIds, allowedGenres);
-    return [...curated, ...wider];
+    return { books: [...curated, ...wider], fromList: false };
   }
 
   /**
@@ -444,6 +461,36 @@ export class BookMatchService {
       orderBy: { curatedAt: 'asc' },
       select: CARD_SELECT,
       take: CURATED_POOL_LIMIT,
+    });
+  }
+
+  /**
+   * Lista de onboarding, în ordinea ei (`onboardingRank` 1, 2, 3...). Ordinea
+   * contează mai puțin decât la catalogul curat - apelanții eșantionează
+   * oricum din bazin - dar `orderBy` rămâne obligatoriu: fără el Prisma pune
+   * `ORDER BY id ASC` peste un `take` și sortează cheia primară pe 3,68M de
+   * rânduri (vezi comentariul de la `curatedCandidates`). Sortat după
+   * `onboardingRank`, planner-ul folosește indexul parțial
+   * `books_onboarding_idx`, iar predicatul de aici trebuie să rămână identic
+   * cu al lui.
+   *
+   * Filtrăm pe copertă, dar NU pe descriere sau gen, spre deosebire de
+   * catalogul curat: lista are ~200 de titluri, deci fiecare exclus doare, iar
+   * un card de swipe are nevoie de copertă ca să fie de recunoscut - restul e
+   * bonus. Genul lipsă nu strică nimic: `coldStartBatch` îl tratează ca
+   * wildcard.
+   */
+  private onboardingCandidates(
+    excludedIds: string[],
+  ): Promise<CandidateBook[]> {
+    return this.prisma.book.findMany({
+      where: {
+        onboardingRank: { not: null },
+        id: { notIn: excludedIds },
+        coverUrl: { not: null },
+      },
+      orderBy: { onboardingRank: 'asc' },
+      select: CARD_SELECT,
     });
   }
 
@@ -665,6 +712,7 @@ export class BookMatchService {
     favoriteGenres: string[],
     excludedIds: string[],
     excludedWorkKeys: Set<string>,
+    fromOnboardingList = false,
   ): Promise<BookMatchCard[]> {
     if (favoriteGenres.length === 0) {
       return this.coldStartFallbackBatch(
@@ -672,6 +720,7 @@ export class BookMatchService {
         size,
         excludedIds,
         excludedWorkKeys,
+        fromOnboardingList,
       );
     }
 
@@ -761,7 +810,21 @@ export class BookMatchService {
     size: number,
     excludedIds: string[],
     excludedWorkKeys: Set<string>,
+    fromOnboardingList = false,
   ): Promise<BookMatchCard[]> {
+    // Când bazinul vine deja din lista de onboarding, e chiar lista pe care o
+    // vrem - nu mai căutăm `COLD_START_FALLBACK_TITLES`, care ar amesteca în
+    // ea titlurile hardcodate de dinainte de listă.
+    if (fromOnboardingList) {
+      return weightedSample(
+        this.dedupeWorks(candidates, excludedWorkKeys).map((item) => ({
+          item,
+          weight: 1,
+        })),
+        size,
+      ).map((book) => this.toCard(book, false));
+    }
+
     // `take` era `size`, fără nicio ordonare: Postgres întoarce aceleași
     // rânduri, în aceeași ordine, la fiecare apel - deci fiecare cont nou
     // primea exact aceleași prime carduri. Luăm toate potrivirile (lista de

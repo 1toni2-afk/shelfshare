@@ -76,6 +76,9 @@ services:
       # fiecare noapte de scraping, fara `docker cp` inainte:
       #   docker exec shelfshare-backend-1 node prisma/import-scp-db.js
       - ./scripts/book-enrichment:/scp:ro
+      # Lista de onboarding (~200 de titluri alese manual):
+      #   docker exec shelfshare-backend-1 node prisma/import-onboarding-db.js
+      - ./scripts/targulcartii:/onboarding:ro
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
