@@ -78,7 +78,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   image_path: "assets/icon/icon-square.png"
-  adaptive_icon_background: "#7C3A1E"
+  adaptive_icon_background: "#34271E"
   adaptive_icon_foreground: "assets/icon/icon-foreground.png"
   # Desenul din icon-foreground.png ocupÃ„Æ’ ~67% din pÃƒÂ¢nzÃ„Æ’, adicÃ„Æ’ exact cÃƒÂ¢t zona
   # sigurÃ„Æ’ a unei iconiÃˆâ€ºe adaptive Android (72dp din 108dp = 66,7%). La limita
@@ -88,13 +88,17 @@ flutter_launcher_icons:
   adaptive_icon_foreground_inset: 12
 
 flutter_native_splash:
-  color: "#F8F4EC"
+  # Acelasi brun inchis ca fundalul iconitei de launcher: la pornire ecranul
+  # de splash si iconita din launcher sunt acelasi desen, deci tranzitia nu
+  # mai arata ca doua imagini diferite. Inainte era crema (#F8F4EC), pe care
+  # statea vechea carte desenata de mana.
+  color: "#34271E"
   image: "assets/icon/icon-splash.png"
   android: true
   ios: false
   web: false
   android_12:
-    color: "#F8F4EC"
+    color: "#34271E"
     image: "assets/icon/icon-splash.png"
 
 # For information on the generic Dart part of this file, see the

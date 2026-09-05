@@ -21,10 +21,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// După rulare, vezi comentariul de la finalul fișierului pentru pașii de
 /// copiere + `dart run flutter_launcher_icons`.
 void main() {
-  /// Aceleași două culori ca înainte: fundalul adaptive din
-  /// `android/app/src/main/res/values/colors.xml` și crema din temă.
-  const brown = Color(0xFF7C3A1E);
-  const cream = Color(0xFFF8F4EC);
+  /// Paleta iconiței, luată din imaginea trimisă de utilizator: fundal brun
+  /// închis, glifă portocalie. Portocaliul e `AppColors.accent` (#C8783A), nu
+  /// #C27237 cât măsoară imaginea - diferența e sub pragul vizibil și vine din
+  /// compresie, iar accentul de brand ține iconița identică cu sigla din
+  /// aplicație (vezi app_logo_demo_test.dart).
+  const darkBrown = Color(0xFF34271E);
+  const accent = Color(0xFFC8783A);
 
   setUpAll(() async {
     // Fără fontul de iconițe încărcat explicit, `Icon` randează un pătrat gol
@@ -92,7 +95,7 @@ void main() {
   // stă la ~52% - vezi comentariul de acolo.
   testWidgets('adaptive foreground', (tester) async {
     await shoot(tester, 'app_icon_foreground',
-        canvas: 1024, glyphRatio: 0.66, glyph: cream);
+        canvas: 1024, glyphRatio: 0.66, glyph: accent);
   });
 
   // `image_path`: iconița pătrată (legacy, pre-Android 8 și Play Store). N-are
@@ -100,7 +103,27 @@ void main() {
   // de respirație, fiindcă launcherele o rotunjesc.
   testWidgets('iconita patrata', (tester) async {
     await shoot(tester, 'app_icon_square',
-        canvas: 1024, glyphRatio: 0.56, glyph: cream, background: brown);
+        canvas: 1024, glyphRatio: 0.56, glyph: accent, background: darkBrown);
+  });
+
+  // Iconița pentru fișa din Google Play: 512x512, fără transparență, aceeași
+  // compoziție ca cea pătrată. Se încarcă manual în Play Console, nu intră în
+  // APK - de-aia e un fișier separat, nu ceva ce generează flutter_launcher_icons.
+  testWidgets('iconita Google Play', (tester) async {
+    await shoot(tester, 'app_icon_playstore',
+        canvas: 512, glyphRatio: 0.56, glyph: accent, background: darkBrown);
+  });
+
+  // Imaginea de splash (`flutter_native_splash`). Glifă pe TRANSPARENT, nu pe
+  // fundal propriu: fundalul îl pune `color:` din pubspec.yaml, iar pe Android
+  // 12+ sistemul decupează imaginea într-un cerc și ar tăia colțurile unui
+  // dreptunghi colorat.
+  //
+  // 1152 px pânză cu glifa la 55% (~634 px) încape în cercul de 768 px pe care
+  // îl cere Android 12 - vezi documentația flutter_native_splash.
+  testWidgets('imagine de splash', (tester) async {
+    await shoot(tester, 'app_icon_splash',
+        canvas: 1152, glyphRatio: 0.55, glyph: accent);
   });
 
   // ---------- Iconița din bara de notificări ----------
@@ -131,7 +154,10 @@ void main() {
 //
 //   cp test/demo/app_icon_foreground.png assets/icon/icon-foreground.png
 //   cp test/demo/app_icon_square.png     assets/icon/icon-square.png
+//   cp test/demo/app_icon_splash.png     assets/icon/icon-splash.png
+//   cp test/demo/app_icon_playstore.png  assets/icon/icon-playstore.png
 //   for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do \
 //     cp test/demo/ic_stat_shelfshare_$d.png \
 //        android/app/src/main/res/drawable-$d/ic_stat_shelfshare.png; done
 //   dart run flutter_launcher_icons
+//   dart run flutter_native_splash:create
