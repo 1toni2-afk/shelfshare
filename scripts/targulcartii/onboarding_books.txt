@@ -1,0 +1,213 @@
+# Lista de onboarding - 197 de titluri (din cele 200 cerute; 3 erau duplicate).
+# Format:  titlu | autor | nota
+# "nota" e completata doar unde am schimbat ceva fata de lista primita.
+# Titlurile sunt cele romanesti, ca sa se potriveasca cu catalogul site-ului.
+
+# --- Clasici universali ---
+Război și pace | Lev Tolstoi |
+Anna Karenina | Lev Tolstoi |
+Crimă și pedeapsă | F.M. Dostoievski |
+Frații Karamazov | F.M. Dostoievski |
+Idiotul | F.M. Dostoievski |
+Mândrie și prejudecată | Jane Austen |
+Jane Eyre | Charlotte Brontë |
+La răscruce de vânturi | Emily Brontë |
+Marile speranțe | Charles Dickens |
+Oliver Twist | Charles Dickens |
+David Copperfield | Charles Dickens |
+Poveste despre două orașe | Charles Dickens |
+Don Quijote | Miguel de Cervantes |
+Divina Comedie | Dante Alighieri |
+Odiseea | Homer |
+Iliada | Homer |
+Faust | J.W. Goethe |
+Suferințele tânărului Werther | J.W. Goethe |
+Madame Bovary | Gustave Flaubert |
+Roșu și negru | Stendhal |
+Mizerabilii | Victor Hugo |
+Notre-Dame de Paris | Victor Hugo |
+Contele de Monte Cristo | Alexandre Dumas |
+Cei trei mușchetari | Alexandre Dumas |
+Frankenstein | Mary Shelley |
+Dracula | Bram Stoker |
+Portretul lui Dorian Gray | Oscar Wilde |
+1984 | George Orwell |
+Ferma animalelor | George Orwell |
+Minunata lume nouă | Aldous Huxley |
+Ulise | James Joyce |
+Portret al artistului în tinerețe | James Joyce |
+Doamna Dalloway | Virginia Woolf | ai scris "Vraja marilor de sud"; titlul romanesc al Mrs Dalloway e "Doamna Dalloway"
+Către far | Virginia Woolf |
+Marele Gatsby | F. Scott Fitzgerald |
+Bătrânul și marea | Ernest Hemingway |
+Pentru cine bat clopotele | Ernest Hemingway |
+Adio, arme! | Ernest Hemingway |
+Fructele mâniei | John Steinbeck |
+Șoareci și oameni | John Steinbeck |
+Sula | Toni Morrison | ai scris "Pravalia papusilor"; romanul se numeste "Sula"
+Preaiubita | Toni Morrison | "Beloved" a aparut in romana ca "Preaiubita"
+Să ucizi o pasăre cântătoare | Harper Lee | ai scris "Sub aripa mea"; titlul romanesc e acesta
+Procesul | Franz Kafka |
+Metamorfoza | Franz Kafka |
+Castelul | Franz Kafka |
+Străinul | Albert Camus |
+Ciuma | Albert Camus |
+Greața | Jean-Paul Sartre |
+Numele trandafirului | Umberto Eco |
+Zbor deasupra unui cuib de cuci | Ken Kesey |
+Cronica unei morți anunțate | Gabriel García Márquez |
+Un veac de singurătate | Gabriel García Márquez |
+Dragoste în vremea holerei | Gabriel García Márquez |
+Casa spiritelor | Isabel Allende |
+
+# --- Literatura romana ---
+Ion | Liviu Rebreanu |
+Pădurea spânzuraților | Liviu Rebreanu |
+Răscoala | Liviu Rebreanu |
+Moromeții | Marin Preda |
+Cel mai iubit dintre pământeni | Marin Preda |
+Enigma Otiliei | George Călinescu |
+Baltagul | Mihail Sadoveanu |
+Frații Jderi | Mihail Sadoveanu |
+Creanga de aur | Mihail Sadoveanu |
+Ultima noapte de dragoste, întâia noapte de război | Camil Petrescu |
+Patul lui Procust | Camil Petrescu |
+Amintiri din copilărie | Ion Creangă |
+Povești | Ion Creangă |
+Poezii | Mihai Eminescu |
+Luceafărul | Mihai Eminescu |
+Scrisorile | Mihai Eminescu |
+Opere | I.L. Caragiale |
+O scrisoare pierdută | I.L. Caragiale |
+Nuvele | I.L. Caragiale |
+Maitreyi | Mircea Eliade |
+Noaptea de Sânziene | Mircea Eliade |
+Domnișoara Christina | Mircea Eliade |
+La țigănci | Mircea Eliade |
+Craii de Curtea-Veche | Mateiu Caragiale |
+Groapa | Eugen Barbu |
+Șoseaua Nordului | Eugen Barbu | ai scris "Cartea lui Manoe"; romanul e "Soseaua Nordului"
+Cel mai bun dintre lumile posibile | Petru Popescu | titlu nesigur, nu l-am putut confirma
+Nada Florilor | Mihail Sadoveanu |
+Desculț | Zaharia Stancu |
+Jocul de-a vacanța | Mihail Sebastian |
+Jurnal 1935-1944 | Mihail Sebastian |
+De două mii de ani | Mihail Sebastian |
+Femeia în roșu | Adriana Babeți, Mircea Nedelciu, Mircea Mihăieș | autorii corecti; nu Banulescu/Salcudeanu/Simion
+Cartea șoaptelor | Varujan Vosganian |
+Orbitor | Mircea Cărtărescu |
+Solenoid | Mircea Cărtărescu |
+Nostalgia | Mircea Cărtărescu |
+Levantul | Mircea Cărtărescu |
+Kir Ianulea | I.L. Caragiale |
+Hanu Ancuței | Mihail Sadoveanu |
+Cezar și Cleopatra | George Bernard Shaw | piesa e a lui Shaw, nu a lui Camil Petrescu
+Meșterul Manole | Lucian Blaga |
+Trilogia culturii | Lucian Blaga |
+Poemele luminii | Lucian Blaga |
+Un om între oameni | Camil Petrescu |
+
+# --- Bestselleruri si contemporan ---
+Harry Potter și Piatra Filozofală | J.K. Rowling |
+Harry Potter și Camera Secretelor | J.K. Rowling |
+Harry Potter și Prizonierul din Azkaban | J.K. Rowling |
+Harry Potter și Pocalul de Foc | J.K. Rowling |
+Harry Potter și Ordinul Phoenix | J.K. Rowling |
+Harry Potter și Prințul Semipur | J.K. Rowling |
+Harry Potter și Talismanele Morții | J.K. Rowling |
+Stăpânul Inelelor | J.R.R. Tolkien |
+Hobbitul | J.R.R. Tolkien |
+Cronicile din Narnia | C.S. Lewis |
+Amurg | Stephenie Meyer |
+Jocurile foamei | Suzanne Collins |
+Codul lui Da Vinci | Dan Brown |
+Îngeri și demoni | Dan Brown |
+Alchimistul | Paulo Coelho |
+1Q84 | Haruki Murakami |
+Pădurea norvegiană | Haruki Murakami | "Norwegian Wood" de la #116 e aceeasi carte, am pastrat-o o data
+Kafka pe malul mării | Haruki Murakami |
+Orașe de hârtie | John Green | "Femeia de hartie" e a lui Rabih Alameddine; "Paper Towns" al lui Green e "Orase de hartie"
+Sub aceeași stea | John Green | titlul romanesc al "The Fault in Our Stars"
+Și munții au răsunat | Khaled Hosseini |
+Vânătorul de zmeie | Khaled Hosseini |
+O mie de sori strălucitori | Khaled Hosseini |
+Fata care se juca cu focul | Stieg Larsson |
+Bărbați care urăsc femeile | Stieg Larsson |
+Fata dispărută | Gillian Flynn |
+Fata din tren | Paula Hawkins |
+Micul prinț | Antoine de Saint-Exupéry |
+Zbor de noapte | Antoine de Saint-Exupéry |
+Divergent | Veronica Roth |
+Cutia neagră | Michael Connelly |
+Shantaram | Gregory David Roberts |
+Shining | Stephen King |
+It | Stephen King |
+Misery | Stephen King |
+Cimitirul animalelor | Stephen King |
+Turnul Întunecat | Stephen King |
+Educated | Tara Westover |
+Sapiens | Yuval Noah Harari |
+Homo Deus | Yuval Noah Harari |
+21 de lecții pentru secolul XXI | Yuval Noah Harari |
+Puterea obișnuinței | Charles Duhigg |
+Gândire rapidă, gândire lentă | Daniel Kahneman |
+Cele 7 deprinderi ale persoanelor eficace | Stephen Covey |
+Cum să vă faceți prieteni și să deveniți influent | Dale Carnegie |
+Omul în căutarea sensului vieții | Viktor Frankl |
+Arta subtilă a nepăsării | Mark Manson |
+Atomic Habits | James Clear |
+
+# --- SF & Fantasy ---
+Dune | Frank Herbert |
+Fundația | Isaac Asimov |
+Eu, robotul | Isaac Asimov |
+Fahrenheit 451 | Ray Bradbury |
+Cronici marțiene | Ray Bradbury |
+Neuromantul | William Gibson |
+Jocul lui Ender | Orson Scott Card |
+Călătorie spre centrul Pământului | Jules Verne |
+Douăzeci de mii de leghe sub mări | Jules Verne |
+Ocolul Pământului în 80 de zile | Jules Verne |
+Mașina timpului | H.G. Wells |
+Războiul lumilor | H.G. Wells |
+Hyperion | Dan Simmons | "Jocul de-a exterminarea" nu e Simmons; romanul e "Hyperion"
+Cronicile Amberului | Roger Zelazny |
+Numele vântului | Patrick Rothfuss |
+Urzeala tronurilor | George R.R. Martin | #166 si #167 erau aceeasi carte; titlul romanesc e "Urzeala tronurilor"
+Zei americani | Neil Gaiman |
+Coraline | Neil Gaiman |
+Bunele prevestiri | Neil Gaiman, Terry Pratchett |
+Lumea Disc | Terry Pratchett |
+Solaris | Stanisław Lem |
+Noi | Evgheni Zamiatin |
+Povestea slujitoarei | Margaret Atwood |
+
+# --- Mister, thriller, crime ---
+Zece negri mititei | Agatha Christie |
+Crima din Orient Express | Agatha Christie |
+Moarte pe Nil | Agatha Christie |
+Aventurile lui Sherlock Holmes | Arthur Conan Doyle |
+Câinele din Baskerville | Arthur Conan Doyle |
+Tăcerea mieilor | Thomas Harris |
+Dragonul roșu | Thomas Harris |
+Insula închisorii | Dennis Lehane | "Shutter Island"
+Fata cu toate darurile | M.R. Carey |
+
+# --- Non-fictiune, filozofie, eseu ---
+Republica | Platon |
+Etica nicomahică | Aristotel |
+Meditații | Marcus Aurelius |
+Așa grăit-a Zarathustra | Friedrich Nietzsche |
+Dincolo de bine și de rău | Friedrich Nietzsche |
+Lumea ca voință și reprezentare | Arthur Schopenhauer |
+Discurs despre metodă | René Descartes |
+Critica rațiunii pure | Immanuel Kant |
+Scurtă istorie a timpului | Stephen Hawking |
+Cosmos | Carl Sagan |
+Gena egoistă | Richard Dawkins |
+Himera credinței în Dumnezeu | Richard Dawkins |
+Puterea prezentului | Eckhart Tolle |
+Stoicism zilnic | Ryan Holiday |
+Scrisori către Lucilius | Seneca |
+Jurnalul Annei Frank | Anne Frank |
+Noaptea | Elie Wiesel |

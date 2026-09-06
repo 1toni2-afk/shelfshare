@@ -42,9 +42,21 @@ Etape (rulabile separat, toate se pot relua din locul in care au ramas)
     python scrape_targulcartii.py --delay 1 covers
     python scrape_targulcartii.py export
 
-Reluarea nu tine de un flag: `scrape` citeste opere.jsonl si sare peste
-URL-urile deja scrise, `covers` citeste manifestul copertilor. Poti opri cu
-Ctrl+C oricand.
+Reluarea nu tine de un flag: `scrape` citeste opere.jsonl si sare peste operele
+deja luate, `covers` citeste manifestul copertilor. Poti opri cu Ctrl+C oricand.
+
+Cum arata blocajul (pentru ca l-am incasat deja o data)
+-------------------------------------------------------
+Site-ul nu raspunde 403 cand te opreste. Raspunde 200 cu corpul GOL, la orice
+pagina HTML, inclusiv pagina principala - doar robots.txt si imaginile continua
+sa vina normal. Prima rulare completa a mers ~4 ore bine, apoi a fost blocata,
+iar scriptul - care lua 200 drept succes - a mai cerut pagini inca ~13 ore si a
+scris 36.000 de inregistrari goale.
+
+De aceea acum: orice raspuns HTML sub MIN_HTML_BYTES ridica `Blocked` si
+opreste rularea pe loc, iar o pagina intreaga dar fara titlu si fara oferte
+nu se salveaza. Inregistrarile goale ramase in fisier nu conteaza ca "facute"
+(vezi is_usable), deci o reluare le reia singura.
 
 Exemple:
     # o singura carte, ca sa vezi ce iese
@@ -104,6 +116,16 @@ USER_AGENT = (
 ROBOTS_AGENT = "*"
 TIMEOUT = 30
 RETRIES = 3
+
+# Cand site-ul ne blocheaza, NU raspunde 403: raspunde 200 cu corpul gol. Prima
+# rulare completa a picat exact aici - am tratat 200 ca succes, am scris 36.000
+# de inregistrari goale si am continuat sa cerem pagini inca ~13 ore dupa ce nu
+# mai primeam nimic. Orice pagina HTML reala de pe site trece de 100 KB, deci
+# pragul e generos; orice sub el inseamna ca am fost opriti.
+MIN_HTML_BYTES = 2_000
+# Dupa atatea pagini la rand fara continut ne oprim de tot. Blocajul nu trece de
+# la sine in cateva cereri, si insistand doar il adancim.
+MAX_CONSECUTIVE_FAILURES = 5
 # Cate opere scriem inainte sa dam flush pe disc. Mic, ca o oprire cu Ctrl+C sa
 # nu piarda munca de o ora.
 FLUSH_EVERY = 20
@@ -161,6 +183,10 @@ def _normalize_isbn(value: str | None) -> str | None:
 # --------------------------------------------------------------------------
 # Client HTTP care respecta robots.txt
 # --------------------------------------------------------------------------
+
+class Blocked(RuntimeError):
+    """Site-ul ne serveste pagini goale - ne-a oprit. Nu are rost sa insistam."""
+
 
 @dataclass
 class Fetcher:
@@ -246,6 +272,14 @@ class Fetcher:
             if resp.status_code >= 400:
                 log_error(f"{url} -> HTTP {resp.status_code}")
                 return None
+            # 200 cu corp gol/ciuntit = blocaj soft, nu pagina valida (vezi
+            # MIN_HTML_BYTES). Imaginile sunt mici prin natura lor, deci pragul
+            # se aplica doar paginilor HTML.
+            if not binary and len(resp.content) < MIN_HTML_BYTES:
+                raise Blocked(
+                    f"{url} -> HTTP {resp.status_code} dar doar {len(resp.content)} octeti. "
+                    f"Site-ul serveste pagini goale: ne-a blocat."
+                )
             return resp
 
         log_error(f"{url} -> renuntat dupa {RETRIES} incercari")
@@ -261,6 +295,37 @@ def log_error(message: str) -> None:
 
 def eta(count: int, delay: float, label: str) -> None:
     print(f"[plan] {count} {label} x ~{delay:g}s = ~{count * delay / 3600:.1f}h")
+
+
+def is_usable(record: dict) -> bool:
+    """O opera scrisa in timp ce eram blocati n-are titlu si n-are oferte.
+
+    Le pastram in fisier (sunt urma a ce s-a intamplat), dar nu le numaram
+    nicaieri ca fiind facute - altfel reluarea le-ar sari pe veci.
+    """
+    return bool(record.get("title")) or bool(record.get("offers"))
+
+
+def load_records() -> dict[str, dict]:
+    """opere.jsonl -> {url: record}, pastrand varianta buna cand exista doua.
+
+    Fisierul e append-only si o reluare poate rescrie o opera pe care o rulare
+    blocata o salvase goala, deci acelasi URL poate aparea de doua ori.
+    """
+    records: dict[str, dict] = {}
+    if not OPERE_PATH.exists():
+        return records
+    with OPERE_PATH.open(encoding="utf-8") as handle:
+        for line in handle:
+            try:
+                record = json.loads(line)
+                url = record["url"]
+            except (json.JSONDecodeError, KeyError):
+                continue
+            previous = records.get(url)
+            if previous is None or (is_usable(record) and not is_usable(previous)):
+                records[url] = record
+    return records
 
 
 # --------------------------------------------------------------------------
@@ -464,15 +529,13 @@ def cmd_scrape(args: argparse.Namespace) -> None:
 
     urls = [u for u in URLS_PATH.read_text(encoding="utf-8").splitlines() if u.strip()]
 
-    done: set[str] = set()
-    if OPERE_PATH.exists():
-        with OPERE_PATH.open(encoding="utf-8") as handle:
-            for line in handle:
-                try:
-                    done.add(json.loads(line)["url"])
-                except (json.JSONDecodeError, KeyError):
-                    continue
-        print(f"[scrape] {len(done)} opere deja salvate, le sar")
+    existing = load_records()
+    done = {url for url, record in existing.items() if is_usable(record)}
+    empty = len(existing) - len(done)
+    if existing:
+        print(f"[scrape] {len(done)} opere bune deja salvate, le sar")
+    if empty:
+        print(f"[scrape] {empty} inregistrari goale (dintr-o rulare blocata) - le reiau")
 
     todo = [u for u in urls if u not in done]
     if args.limit:
@@ -487,12 +550,31 @@ def cmd_scrape(args: argparse.Namespace) -> None:
         f"cereri ({len(todo)} opere, --details {args.details})")
 
     saved = 0
+    consecutive_empty = 0
+    stopped = None
     with OPERE_PATH.open("a", encoding="utf-8") as out:
         for i, url in enumerate(todo, start=1):
-            resp = fetcher.get(url)
+            try:
+                resp = fetcher.get(url)
+            except Blocked as exc:
+                stopped = str(exc)
+                break
             if resp is None:
                 continue
+
             record = parse_opera(resp.text, url)
+            # Pagina a venit intreaga dar n-are nici titlu, nici oferte: fie e o
+            # varianta pe care n-o stim, fie e alt fel de blocaj. Oricum ar fi,
+            # nu o salvam si nu insistam la nesfarsit.
+            if not is_usable(record):
+                consecutive_empty += 1
+                log_error(f"{url} -> pagina fara titlu si fara oferte")
+                if consecutive_empty >= MAX_CONSECUTIVE_FAILURES:
+                    stopped = (f"{consecutive_empty} pagini la rand fara continut - "
+                               f"ma opresc in loc sa continui degeaba")
+                    break
+                continue
+            consecutive_empty = 0
 
             wanted = record["offers"]
             if args.details == "first":
@@ -502,9 +584,15 @@ def cmd_scrape(args: argparse.Namespace) -> None:
             for offer in wanted:
                 if not offer.get("url"):
                     continue
-                detail_resp = fetcher.get(offer["url"])
+                try:
+                    detail_resp = fetcher.get(offer["url"])
+                except Blocked as exc:
+                    stopped = str(exc)
+                    break
                 if detail_resp is not None:
                     offer["details"] = parse_offer(detail_resp.text, offer["url"])
+            if stopped:
+                break
 
             out.write(json.dumps(record, ensure_ascii=False) + "\n")
             saved += 1
@@ -515,6 +603,12 @@ def cmd_scrape(args: argparse.Namespace) -> None:
 
     print(f"[scrape] gata - {saved} opere adaugate in {OPERE_PATH.name} "
           f"(sarite de robots: {fetcher.blocked})")
+    if stopped:
+        raise SystemExit(
+            f"\n[STOP] {stopped}\n"
+            f"       S-au salvat {saved} opere inainte de oprire. Nu reporni imediat:\n"
+            f"       lasa site-ul in pace cateva ore si creste --delay la reluare."
+        )
 
 
 # --------------------------------------------------------------------------
@@ -540,19 +634,14 @@ def cmd_covers(args: argparse.Namespace) -> None:
     # varianta mare cand exista si descarcam fiecare URL o singura data.
     wanted: list[str] = []
     seen: set[str] = set()
-    with OPERE_PATH.open(encoding="utf-8") as handle:
-        for line in handle:
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            for offer in record.get("offers", []):
-                details = offer.get("details") or {}
-                url = details.get("coverUrlLarge") or offer.get("coverUrl")
-                if url and url not in seen:
-                    seen.add(url)
-                    if url not in manifest or not (COVERS_DIR / manifest[url]).exists():
-                        wanted.append(url)
+    for record in load_records().values():
+        for offer in record.get("offers", []):
+            details = offer.get("details") or {}
+            url = details.get("coverUrlLarge") or offer.get("coverUrl")
+            if url and url not in seen:
+                seen.add(url)
+                if url not in manifest or not (COVERS_DIR / manifest[url]).exists():
+                    wanted.append(url)
 
     print(f"[covers] {len(seen)} coperti distincte, {len(wanted)} de descarcat")
     if args.limit:
@@ -596,35 +685,30 @@ def cmd_export(args: argparse.Namespace) -> None:
         manifest = json.loads(COVERS_MANIFEST.read_text(encoding="utf-8"))
 
     books = []
-    with OPERE_PATH.open(encoding="utf-8") as handle:
-        for line in handle:
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
+    for record in load_records().values():
+        for offer in record.get("offers", []):
+            details = offer.get("details") or {}
+            cover = details.get("coverUrlLarge") or offer.get("coverUrl")
+            isbn = details.get("isbn")
+            if args.only_isbn and not isbn:
                 continue
-            for offer in record.get("offers", []):
-                details = offer.get("details") or {}
-                cover = details.get("coverUrlLarge") or offer.get("coverUrl")
-                isbn = details.get("isbn")
-                if args.only_isbn and not isbn:
-                    continue
-                books.append({
-                    "isbn": isbn,
-                    "title": record.get("title"),
-                    "author": record.get("author"),
-                    "publisher": details.get("publisher") or offer.get("publisher"),
-                    "publishedYear": details.get("publishedYear") or offer.get("year"),
-                    "pageCount": details.get("pageCount"),
-                    "language": details.get("language"),
-                    "coverType": details.get("coverType") or offer.get("coverType"),
-                    "collection": details.get("collection"),
-                    "price": offer.get("price"),
-                    "coverUrl": cover,
-                    "coverFile": f"covers/{manifest[cover]}" if cover in manifest else None,
-                    "productUrl": offer.get("url"),
-                    "operaUrl": record.get("url"),
-                    "source": "targulcartii",
-                })
+            books.append({
+                "isbn": isbn,
+                "title": record.get("title"),
+                "author": record.get("author"),
+                "publisher": details.get("publisher") or offer.get("publisher"),
+                "publishedYear": details.get("publishedYear") or offer.get("year"),
+                "pageCount": details.get("pageCount"),
+                "language": details.get("language"),
+                "coverType": details.get("coverType") or offer.get("coverType"),
+                "collection": details.get("collection"),
+                "price": offer.get("price"),
+                "coverUrl": cover,
+                "coverFile": f"covers/{manifest[cover]}" if cover in manifest else None,
+                "productUrl": offer.get("url"),
+                "operaUrl": record.get("url"),
+                "source": "targulcartii",
+            })
 
     payload = {
         "source": "targulcartii.ro",
