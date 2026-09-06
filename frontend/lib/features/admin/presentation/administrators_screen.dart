@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/admin_models.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../application/admin_roles_controller.dart';
+import 'admin_user_picker.dart';
 
 /// Ecran de admin pentru gestionarea administratorilor (Admin Control Panel,
 /// Milestone 19) - acordă/schimbă/elimină rolul unui utilizator. Regulile de
@@ -147,31 +148,25 @@ class _GrantRoleDialog extends ConsumerStatefulWidget {
 }
 
 class _GrantRoleDialogState extends ConsumerState<_GrantRoleDialog> {
-  final _userIdController = TextEditingController();
+  /// Userul ales din căutare. La editarea unui admin existent rămâne null:
+  /// userul e deja fixat (`widget.existingUserId`) și nu se poate schimba,
+  /// deci nu se caută nimic.
+  AdminUser? _selectedUser;
   String? _selectedRoleId;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.existingUserId != null) {
-      _userIdController.text = widget.existingUserId!;
-    }
     if (widget.roles.isNotEmpty) {
       _selectedRoleId = widget.roles.first.id;
     }
   }
 
-  @override
-  void dispose() {
-    _userIdController.dispose();
-    super.dispose();
-  }
-
   Future<void> _submit() async {
     final roleId = _selectedRoleId;
-    final userId = _userIdController.text.trim();
-    if (roleId == null || userId.isEmpty) return;
+    final userId = widget.existingUserId ?? _selectedUser?.id;
+    if (roleId == null || userId == null || userId.isEmpty) return;
 
     setState(() => _saving = true);
     final l10n = context.l10n;
@@ -199,14 +194,18 @@ class _GrantRoleDialogState extends ConsumerState<_GrantRoleDialog> {
 
     return AlertDialog(
       title: Text(isEdit ? l10n.adminAdministratorsChangeRole : l10n.adminAdministratorsAddTitle),
-      content: Column(
+      // Lățime fixă: fără ea dialogul se strânge pe lățimea celui mai lat rând
+      // de rezultat, deci sare de la îngust la lat pe măsură ce se tastează.
+      content: SizedBox(
+        width: 380,
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!isEdit)
-            TextField(
-              textAlignVertical: TextAlignVertical.center,
-              controller: _userIdController,
-              decoration: InputDecoration(hintText: l10n.adminAdministratorsUserIdHint),
+            AdminUserPicker(
+              autofocus: true,
+              selected: _selectedUser,
+              onSelected: (user) => setState(() => _selectedUser = user),
             ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
@@ -219,6 +218,7 @@ class _GrantRoleDialogState extends ConsumerState<_GrantRoleDialog> {
             onChanged: (value) => setState(() => _selectedRoleId = value),
           ),
         ],
+        ),
       ),
       actions: [
         TextButton(
@@ -226,7 +226,7 @@ class _GrantRoleDialogState extends ConsumerState<_GrantRoleDialog> {
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
-          onPressed: _saving ? null : _submit,
+          onPressed: _saving || (!isEdit && _selectedUser == null) ? null : _submit,
           child: _saving
               ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
               : Text(l10n.adminAdministratorsAddButton),

@@ -3919,7 +3919,8 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ausgewählten Nutzern frühen Zugriff auf Funktionen geben, die noch ausgerollt werden.';
 
   @override
-  String get adminFeatureAccessSearchHint => 'Nach Name oder E-Mail suchen';
+  String get adminFeatureAccessSearchHint =>
+      'Suche nach Name, @Username oder E-Mail';
 
   @override
   String get adminFeatureAccessSearchEmpty =>
@@ -4569,4 +4570,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shelfUpdateProgress => 'Fortschritt aktualisieren';
+
+  @override
+  String get adminUserPickerSearchHint =>
+      'Suche nach Name, @Username oder E-Mail';
+
+  @override
+  String get adminUserPickerNoResults => 'Kein Benutzer gefunden.';
+
+  @override
+  String get adminUserPickerEmpty =>
+      'Gib mindestens 2 Zeichen ein, um zu suchen.';
+
+  @override
+  String get adminUserPickerChange => 'Anderen Benutzer wählen';
 }

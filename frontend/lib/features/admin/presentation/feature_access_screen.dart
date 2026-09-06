@@ -184,7 +184,14 @@ class _FeatureAccessScreenState extends ConsumerState<FeatureAccessScreen> {
                   contentPadding: EdgeInsets.zero,
                   selected: result.id == user?.id,
                   title: Text(result.name ?? result.email, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(result.email, overflow: TextOverflow.ellipsis),
+                  // „@handle · email": numele nu e unic și poate lipsi, deci
+                  // fără handle două rânduri pot arăta identic.
+                  subtitle: Text(
+                    result.username == null || result.username!.isEmpty
+                        ? result.email
+                        : '@${result.username} · ${result.email}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: result.id == user?.id ? const Icon(Icons.check) : null,
                   onTap: () => _selectUser(result),
                 ),

@@ -121,7 +121,7 @@ final _recommendedProvider = FutureProvider<List<UserBook>>((ref) async {
   return ref.watch(booksRepositoryProvider).getRecommendedForYou();
 });
 final _nearYouProvider = FutureProvider<List<UserBook>>((ref) async {
-  final profile = ref.watch(profileControllerProvider).value;
+  final profile = ref.watch(currentUserProvider);
   final city = profile?.city;
   if (city == null || city.isEmpty) return const [];
   return ref.watch(booksRepositoryProvider).getNearbyToday(city);
@@ -491,7 +491,7 @@ class _NearYouSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_nearYouProvider);
-    final profile = ref.watch(profileControllerProvider).value;
+    final profile = ref.watch(currentUserProvider);
     return async.when(
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),

@@ -1206,7 +1206,7 @@
     "chatOfferCounterTitle": "Ellenajánlat küldése",
     "adminFeatureAccessTitle": "Funkciók hozzáférése",
     "adminFeatureAccessDesc": "Adj korai hozzáférést a még bevezetés alatt álló funkciókhoz kiválasztott felhasználóknak.",
-    "adminFeatureAccessSearchHint": "Keresés név vagy e-mail alapján",
+    "adminFeatureAccessSearchHint": "Keresés név, @felhasználónév vagy e-mail alapján",
     "adminFeatureAccessSearchEmpty": "Keress egy felhasználót a hozzáférés megtekintéséhez.",
     "adminFeatureAccessNoResults": "Nincs találat.",
     "adminFeatureAccessApply": "Alkalmaz",
@@ -1264,21 +1264,22 @@
             }
         }
     },
-
     "onboardingFlowStepLabel": "{step}. lépés / {total}",
     "@onboardingFlowStepLabel": {
         "placeholders": {
-            "step": { "type": "int" },
-            "total": { "type": "int" }
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
     },
     "onboardingFlowSkip": "Kihagyom",
     "onboardingFlowMoveForward": "Tovább",
     "onboardingFlowBackTooltip": "Vissza",
-
     "onboardingFlowGenresTitle": "Mit szeretsz olvasni?",
     "onboardingFlowGenresSubtitle": "Válassz néhány műfajt - ezekből állítjuk össze az első könyvajánlásaidat.",
-
     "onboardingFlowFrequencyTitle": "Milyen gyakran olvasol?",
     "onboardingFlowFrequencySubtitle": "Segít beállítani, milyen gyakran mutassunk új könyveket.",
     "onboardingFlowFrequencyLowTitle": "Keveset",
@@ -1287,11 +1288,9 @@
     "onboardingFlowFrequencyMidDesc": "Kb. egy könyv hetente",
     "onboardingFlowFrequencyHighTitle": "Sokat",
     "onboardingFlowFrequencyHighDesc": "Több könyv hetente",
-
     "onboardingFlowLocationTitle": "Hol találunk meg?",
     "onboardingFlowLocationSubtitle": "A helyszínedet arra használjuk, hogy valós, közeli cseréket mutassunk.",
     "onboardingFlowLanguagesLabel": "Nyelvek, amiken olvasol",
-
     "onboardingFlowPurposeTitle": "Mit keresel a ShelfShare-en?",
     "onboardingFlowPurposeSubtitle": "Segít személyre szabni a kezdőlapodat.",
     "onboardingFlowPurposeSwapTitle": "Könyvcsere",
@@ -1302,24 +1301,22 @@
     "onboardingFlowPurposeDiscoverDesc": "Ajánlásokat böngészek, cserék nélkül egyelőre",
     "onboardingFlowPurposeAllTitle": "Mindegyik a fentiek közül",
     "onboardingFlowPurposeAllDesc": "Mindenért itt vagyok",
-
     "onboardingFlowBookMatchTitle": "Nézzük, mi tetszik neked",
     "onboardingFlowBookMatchSubtitle": "Pörgess át néhány könyvet - ez segít jobb ajánlásokat készíteni már az elejétől.",
-
     "onboardingFlowAddBooksTitle": "Tedd fel az első könyveidet a polcra",
     "onboardingFlowAddBooksSubtitle": "Adj hozzá 2-3 könyvet, amelyek otthon vannak nálad - rögtön megjelennek a profilodban.",
     "onboardingFlowAddBooksCta": "Könyv hozzáadása",
     "onboardingFlowAddBooksCtaSubtitle": "Keress egy címet vagy szkenneld be a vonalkódot",
     "onboardingFlowAddBooksSkipNote": "Ezt a lépést kihagyhatod, és később a Polcomból is hozzáadhatsz könyveket.",
-
     "onboardingFlowFinish": "Belépés a ShelfShare-be",
     "onboardingFlowBookAdded": "Hozzáadva: {title}",
     "@onboardingFlowBookAdded": {
         "placeholders": {
-            "title": { "type": "String" }
+            "title": {
+                "type": "String"
+            }
         }
     },
-
     "genreFiction": "Szépirodalom",
     "genreNonFiction": "Ismeretterjesztő",
     "genreClassic": "Klasszikus",
@@ -1449,5 +1446,9 @@
     "reviewTextHint": "Mit gondoltál a könyvről? (opcionális)",
     "reviewSave": "Mentés",
     "shelfRemoveFromShelf": "Levétel a polcról",
-    "shelfUpdateProgress": "Haladás frissítése"
+    "shelfUpdateProgress": "Haladás frissítése",
+    "adminUserPickerSearchHint": "Keresés név, @felhasználónév vagy e-mail alapján",
+    "adminUserPickerNoResults": "Nincs találat.",
+    "adminUserPickerEmpty": "Írj be legalább 2 karaktert a kereséshez.",
+    "adminUserPickerChange": "Másik felhasználó választása"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/user.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../auth/application/auth_state.dart';
 import '../data/profile_repository.dart';
 
 class ProfileController extends AsyncNotifier<AppUser> {
@@ -95,3 +96,25 @@ class ProfileController extends AsyncNotifier<AppUser> {
 final profileControllerProvider = AsyncNotifierProvider<ProfileController, AppUser>(
   ProfileController.new,
 );
+
+/// Userul autentificat ACUM, cu datele complete de profil când sunt ale lui.
+///
+/// De ce nu se citește direct `profileControllerProvider.value`: providerul
+/// acela nu se resetează la logout, iar cât timp reîncarcă, `AsyncValue`
+/// păstrează valoarea PRECEDENTĂ (`copyWithPrevious`). Imediat după un login
+/// pe alt cont, acea valoare e profilul contului DINAINTE - footer-ul din
+/// sidebar arăta userul anterior până la prima reconstruire, iar `isAdmin`
+/// citit așa putea trimite un user obișnuit pe ruta de admin.
+///
+/// Starea de auth, în schimb, se schimbă atomic la login, cu userul din
+/// răspunsul serverului. Preferăm profilul (are poza și câmpurile actualizate
+/// după o editare) DOAR când e chiar al lui; altfel cădem pe userul din auth,
+/// care e mereu corect ca identitate.
+final currentUserProvider = Provider<AppUser?>((ref) {
+  final authState = ref.watch(authControllerProvider);
+  final authUser = authState is AuthAuthenticated ? authState.user : null;
+  if (authUser == null) return null;
+
+  final profile = ref.watch(profileControllerProvider).value;
+  return profile != null && profile.id == authUser.id ? profile : authUser;
+});

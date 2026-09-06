@@ -3872,7 +3872,8 @@ class AppLocalizationsHu extends AppLocalizations {
       'Adj korai hozzáférést a még bevezetés alatt álló funkciókhoz kiválasztott felhasználóknak.';
 
   @override
-  String get adminFeatureAccessSearchHint => 'Keresés név vagy e-mail alapján';
+  String get adminFeatureAccessSearchHint =>
+      'Keresés név, @felhasználónév vagy e-mail alapján';
 
   @override
   String get adminFeatureAccessSearchEmpty =>
@@ -4520,4 +4521,18 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get shelfUpdateProgress => 'Haladás frissítése';
+
+  @override
+  String get adminUserPickerSearchHint =>
+      'Keresés név, @felhasználónév vagy e-mail alapján';
+
+  @override
+  String get adminUserPickerNoResults => 'Nincs találat.';
+
+  @override
+  String get adminUserPickerEmpty =>
+      'Írj be legalább 2 karaktert a kereséshez.';
+
+  @override
+  String get adminUserPickerChange => 'Másik felhasználó választása';
 }

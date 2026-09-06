@@ -293,6 +293,11 @@ class AdminUser {
   final String id;
   final String email;
   final String? name;
+
+  /// Handle-ul public (`@nume`), afișat sub nume în listele de admin: e
+  /// singurul identificator scurt pe care un admin îl poate citi și tasta -
+  /// `id` e un UUID, iar `name` nu e unic.
+  final String? username;
   final String? city;
   final bool isEmailVerified;
   final bool isBanned;
@@ -306,6 +311,7 @@ class AdminUser {
     required this.id,
     required this.email,
     this.name,
+    this.username,
     this.city,
     required this.isEmailVerified,
     required this.isBanned,
@@ -321,6 +327,7 @@ class AdminUser {
       id: id,
       email: email,
       name: name,
+      username: username,
       city: city,
       isEmailVerified: isEmailVerified,
       isBanned: isBanned ?? this.isBanned,
@@ -337,6 +344,7 @@ class AdminUser {
       id: json['id'] as String,
       email: json['email'] as String,
       name: json['name'] as String?,
+      username: json['username'] as String?,
       city: json['city'] as String?,
       isEmailVerified: json['isEmailVerified'] as bool,
       isBanned: json['isBanned'] as bool,

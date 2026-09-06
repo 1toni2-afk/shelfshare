@@ -623,7 +623,13 @@
     "browseGlobalTitle": "Toate cărțile",
     "browseGlobalSubtitle": "Titluri din catalogul nostru și din surse externe, chiar dacă nu le are nimeni listate acum.",
     "browseGlobalEmpty": "Nu am găsit „{query}\" nicăieri.",
-    "@browseGlobalEmpty": {"placeholders": {"query": {"type": "String"}}},
+    "@browseGlobalEmpty": {
+        "placeholders": {
+            "query": {
+                "type": "String"
+            }
+        }
+    },
     "browseGlobalError": "Căutarea în afara aplicației nu a răspuns acum.",
     "browseGlobalNotFound": "Nu e cartea ta printre ele?",
     "browseAddTitleCta": "Adaugă titlul cu poza ta",
@@ -2101,7 +2107,7 @@
     "greetMottoCirculating": "Mai puține cărți noi tipărite, mai multe povești care circulă.",
     "adminFeatureAccessTitle": "Acces la funcții",
     "adminFeatureAccessDesc": "Acordă acces în avans la funcții aflate încă în lucru, pentru utilizatori aleși manual.",
-    "adminFeatureAccessSearchHint": "Caută după nume sau email",
+    "adminFeatureAccessSearchHint": "Caută după nume, @username sau email",
     "adminFeatureAccessSearchEmpty": "Caută un utilizator ca să îi vezi accesul.",
     "adminFeatureAccessNoResults": "Niciun utilizator găsit.",
     "adminFeatureAccessApply": "Aplică",
@@ -2159,21 +2165,22 @@
             }
         }
     },
-
     "onboardingFlowStepLabel": "Pasul {step} din {total}",
     "@onboardingFlowStepLabel": {
         "placeholders": {
-            "step": { "type": "int" },
-            "total": { "type": "int" }
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
     },
     "onboardingFlowSkip": "Sari peste",
     "onboardingFlowMoveForward": "Mergi mai departe",
     "onboardingFlowBackTooltip": "Înapoi",
-
     "onboardingFlowGenresTitle": "Ce-ți place să citești?",
     "onboardingFlowGenresSubtitle": "Alege câteva genuri - le folosim ca să-ți pregătim primele potriviri de cărți.",
-
     "onboardingFlowFrequencyTitle": "Cât de des citești?",
     "onboardingFlowFrequencySubtitle": "Ne ajută să calibrăm cât de des îți arătăm cărți noi.",
     "onboardingFlowFrequencyLowTitle": "Puțin",
@@ -2182,11 +2189,9 @@
     "onboardingFlowFrequencyMidDesc": "O carte pe săptămână",
     "onboardingFlowFrequencyHighTitle": "Mult",
     "onboardingFlowFrequencyHighDesc": "Câteva cărți pe săptămână",
-
     "onboardingFlowLocationTitle": "Unde te găsim?",
     "onboardingFlowLocationSubtitle": "Folosim locația ca să-ți arătăm schimburi realiste, în apropiere.",
     "onboardingFlowLanguagesLabel": "Limbi în care citești",
-
     "onboardingFlowPurposeTitle": "Ce cauți pe ShelfShare?",
     "onboardingFlowPurposeSubtitle": "Ne ajută să-ți personalizăm pagina principală.",
     "onboardingFlowPurposeSwapTitle": "Schimb cărți",
@@ -2197,24 +2202,22 @@
     "onboardingFlowPurposeDiscoverDesc": "Explorez recomandări, fără schimburi încă",
     "onboardingFlowPurposeAllTitle": "Toate de mai sus",
     "onboardingFlowPurposeAllDesc": "Sunt aici pentru tot",
-
     "onboardingFlowBookMatchTitle": "Hai să vedem ce-ți place",
     "onboardingFlowBookMatchSubtitle": "Dă swipe la câteva cărți - ne ajută să-ți pregătim recomandări mai bune chiar de la început.",
-
     "onboardingFlowAddBooksTitle": "Pune primele cărți pe raft",
     "onboardingFlowAddBooksSubtitle": "Adaugă 2-3 cărți pe care le ai acasă - apar direct în profilul tău.",
     "onboardingFlowAddBooksCta": "Adaugă o carte",
     "onboardingFlowAddBooksCtaSubtitle": "Caută titlu sau scanează",
     "onboardingFlowAddBooksSkipNote": "Poți sări peste pasul ăsta și să adaugi cărți mai târziu, din Raftul meu.",
-
     "onboardingFlowFinish": "Intră în ShelfShare",
     "onboardingFlowBookAdded": "Adăugată: {title}",
     "@onboardingFlowBookAdded": {
         "placeholders": {
-            "title": { "type": "String" }
+            "title": {
+                "type": "String"
+            }
         }
     },
-
     "genreFiction": "Ficțiune",
     "genreNonFiction": "Non-ficțiune",
     "genreClassic": "Clasic",
@@ -2235,15 +2238,6 @@
     "genreChildren": "Copii",
     "genreYoungAdult": "Young adult",
     "genreComics": "Benzi desenate",
-    "onboardingFlowMoveForward": "Mergi mai departe",
-    "onboardingFlowBookAdded": "Adăugată: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "onboardingWelcomeTitle": "Mulțumim că folosești ShelfShare.ro 🇷🇴🇪🇺",
     "onboardingWelcomeBullet1": "🌍 Produs european, găzduit local (self-hosted)",
     "onboardingWelcomeBullet2": "🌳 Creat ca să ajute mediul",
@@ -2275,9 +2269,24 @@
     "deleteAccountCancelFailed": "Nu am putut anula. Încearcă din nou.",
     "deleteAccountPendingTitle": "Contul tău va fi șters",
     "deleteAccountPendingIn": "Data ștergerii: {date} (peste {days} zile).\nPoți anula acum și contul va rămâne activ.",
-    "@deleteAccountPendingIn": {"placeholders": {"date": {"type": "String"}, "days": {"type": "int"}}},
+    "@deleteAccountPendingIn": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            },
+            "days": {
+                "type": "int"
+            }
+        }
+    },
     "deleteAccountPendingToday": "Data ștergerii: {date} (astăzi).\nPoți anula acum și contul va rămâne activ.",
-    "@deleteAccountPendingToday": {"placeholders": {"date": {"type": "String"}}},
+    "@deleteAccountPendingToday": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
     "deleteAccountCancelAction": "Anulează ștergerea",
     "installBannerText": "Primești notificări instant în aplicație",
     "installBannerAction": "Instalează",
@@ -2325,12 +2334,30 @@
     "workLoadError": "Nu am putut încărca pagina cărții.",
     "workAbout": "Descriere",
     "workPages": "{count} pagini",
-    "@workPages": {"placeholders": {"count": {"type": "int"}}},
+    "@workPages": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "workEditions": "{count} ediții",
-    "@workEditions": {"placeholders": {"count": {"type": "int"}}},
+    "@workEditions": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "workEditionUnnamed": "Ediție fără detalii",
     "workRatingCount": "{count} recenzii",
-    "@workRatingCount": {"placeholders": {"count": {"type": "int"}}},
+    "@workRatingCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "workAddToShelf": "Adaugă pe raft",
     "workWantToRead": "Vreau s-o citesc",
     "workRequestSwap": "Cere la schimb",
@@ -2341,17 +2368,45 @@
     "workDeleteReview": "Șterge recenzia",
     "workReportReview": "Raportează recenzia",
     "workListingsTitle": "În aplicație ({count})",
-    "@workListingsTitle": {"placeholders": {"count": {"type": "int"}}},
+    "@workListingsTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "workNoListings": "Nimeni nu o are listată acum. Adaug-o tu la schimb.",
     "reviewSheetTitle": "Recenzia ta",
     "reviewPromptTitle": "Ai terminat cartea",
     "reviewPromptBody": "Ce ai crezut despre „{title}\"? O notă ajută pe oricine se uită la carte.",
-    "@reviewPromptBody": {"placeholders": {"title": {"type": "String"}}},
+    "@reviewPromptBody": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
     "reviewPromptNotNow": "Nu acum",
     "reviewPromptWrite": "Scrie o recenzie",
     "reviewNeedRating": "Alege o notă de la 1 la 5 steluțe.",
     "reviewTextHint": "Ce ai crezut despre carte? (opțional)",
     "reviewSave": "Salvează",
     "shelfRemoveFromShelf": "Scoate din raft",
-    "shelfUpdateProgress": "Actualizează progresul"
+    "shelfUpdateProgress": "Actualizează progresul",
+    "adminUserPickerSearchHint": "Caută după nume, @username sau email",
+    "@adminUserPickerSearchHint": {
+        "description": "Hint in the admin user search field (name, @username or email)"
+    },
+    "adminUserPickerNoResults": "Niciun utilizator găsit.",
+    "@adminUserPickerNoResults": {
+        "description": "Shown when the admin user search returns nothing"
+    },
+    "adminUserPickerEmpty": "Scrie cel puțin 2 caractere ca să cauți.",
+    "@adminUserPickerEmpty": {
+        "description": "Shown before the admin has typed enough to search"
+    },
+    "adminUserPickerChange": "Alege alt utilizator",
+    "@adminUserPickerChange": {
+        "description": "Tooltip for clearing the picked user in the admin user picker"
+    }
 }

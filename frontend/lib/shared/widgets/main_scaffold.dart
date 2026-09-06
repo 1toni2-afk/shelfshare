@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
-import '../../features/auth/application/auth_controller.dart';
-import '../../features/auth/application/auth_state.dart';
 import '../../features/chat/application/conversations_controller.dart';
 import '../../features/notifications/application/notifications_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
@@ -543,10 +541,7 @@ class _ProfileFooter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(profileControllerProvider).value ??
-        (ref.watch(authControllerProvider) is AuthAuthenticated
-            ? (ref.watch(authControllerProvider) as AuthAuthenticated).user
-            : null);
+    final user = ref.watch(currentUserProvider);
     if (user == null) return const SizedBox.shrink();
 
     final isActive = currentLocation.startsWith('/profile');

@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/providers.dart';
-import '../../features/auth/application/auth_controller.dart';
-import '../../features/auth/application/auth_state.dart';
 import '../../features/profile/application/profile_controller.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -156,9 +154,7 @@ SidebarShortcutSpec specFor(SidebarShortcut key) =>
 /// nici în sidebar, nici în modalul de „adaugă scurtătură".
 final availableSidebarShortcutSpecsProvider =
     Provider<List<SidebarShortcutSpec>>((ref) {
-  final authState = ref.watch(authControllerProvider);
-  final user = ref.watch(profileControllerProvider).value ??
-      (authState is AuthAuthenticated ? authState.user : null);
+  final user = ref.watch(currentUserProvider);
   final canSeeAnalytics = user?.canAccessAdvancedStats ?? false;
   return [
     for (final spec in kSidebarShortcutSpecs)

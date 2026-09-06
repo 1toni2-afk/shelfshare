@@ -14,6 +14,8 @@ import '../../../shared/widgets/book_cover.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
 import '../../../data/models/user_book.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/application/auth_state.dart';
 import '../application/profile_controller.dart';
 import '../data/profile_repository.dart';
 import 'onboarding_illustrations.dart';
@@ -93,7 +95,14 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // diferență între platforme, deși era doar starea contului. Acum pasul
     // există mereu, cu câmpurile precompletate: cine revine dă un Continue,
     // fără să retasteze nimic, și își poate corecta numele pus în grabă.
-    final user = ref.read(profileControllerProvider).value;
+    //
+    // Sursa e userul din `authControllerProvider`, NU
+    // `profileControllerProvider`: pe al doilea, un `AsyncValue` aflat în
+    // reîncărcare păstrează valoarea precedentă în `.value`, iar imediat după
+    // un login pe alt cont valoarea aceea e a contului DINAINTE. Așa ajungeau
+    // numele și username-ul unui user în formularul altuia. Starea de auth se
+    // schimbă atomic la login, cu userul din răspunsul serverului.
+    final user = _authUser;
     _step = user?.username != null ? 0 : -1;
     if (user != null) _prefillStep0(user);
     // Book Match e pasul 5, la câteva zeci de secunde de aici. Citirea
@@ -133,6 +142,12 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     }
     _usernameController.text = user.username ?? '';
     _nameVisible = user.nameVisible;
+  }
+
+  /// Userul autentificat ACUM. Vezi `initState` pentru de ce nu citim profilul.
+  AppUser? get _authUser {
+    final state = ref.read(authControllerProvider);
+    return state is AuthAuthenticated ? state.user : null;
   }
 
   void _back() => setState(() => _step--);
@@ -222,9 +237,13 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
     // `null` și n-are ce precompleta. Ascultăm și răspunsul: dacă sosește un
     // cont care trecuse deja de pasul 0, îi punem numele și username-ul în
     // câmpuri. Fără asta, cine revine în wizard le retasta degeaba.
+    //
+    // `next.value` poate fi profilul contului precedent: cât timp providerul
+    // reîncarcă, `AsyncValue` păstrează valoarea veche (vezi `initState`).
+    // De aceea îl acceptăm doar dacă e chiar al userului autentificat acum.
     ref.listen(profileControllerProvider, (previous, next) {
       final user = next.value;
-      if (user != null) _prefillStep0(user);
+      if (user != null && user.id == _authUser?.id) _prefillStep0(user);
     });
 
     return Scaffold(

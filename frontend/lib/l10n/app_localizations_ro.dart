@@ -3877,7 +3877,8 @@ class AppLocalizationsRo extends AppLocalizations {
       'Acordă acces în avans la funcții aflate încă în lucru, pentru utilizatori aleși manual.';
 
   @override
-  String get adminFeatureAccessSearchHint => 'Caută după nume sau email';
+  String get adminFeatureAccessSearchHint =>
+      'Caută după nume, @username sau email';
 
   @override
   String get adminFeatureAccessSearchEmpty =>
@@ -4522,4 +4523,17 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get shelfUpdateProgress => 'Actualizează progresul';
+
+  @override
+  String get adminUserPickerSearchHint =>
+      'Caută după nume, @username sau email';
+
+  @override
+  String get adminUserPickerNoResults => 'Niciun utilizator găsit.';
+
+  @override
+  String get adminUserPickerEmpty => 'Scrie cel puțin 2 caractere ca să cauți.';
+
+  @override
+  String get adminUserPickerChange => 'Alege alt utilizator';
 }

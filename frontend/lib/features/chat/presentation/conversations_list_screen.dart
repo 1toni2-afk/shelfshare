@@ -424,7 +424,7 @@ class _ConversationsPane extends ConsumerWidget {
                   icon: Icons.shield_outlined,
                   onTap: () {
                     final isAdmin =
-                        ref.read(profileControllerProvider).value?.isAdmin ?? false;
+                        ref.read(currentUserProvider)?.isAdmin ?? false;
                     context.push(isAdmin ? '/admin/chat' : '/support/chat');
                   },
                 ),

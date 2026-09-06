@@ -30,7 +30,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final user = ref.watch(profileControllerProvider).value;
+    final user = ref.watch(currentUserProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.profileSettings)),
       body: SafeArea(

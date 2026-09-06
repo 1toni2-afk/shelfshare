@@ -7015,7 +7015,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminFeatureAccessSearchHint.
   ///
   /// In ro, this message translates to:
-  /// **'Caută după nume sau email'**
+  /// **'Caută după nume, @username sau email'**
   String get adminFeatureAccessSearchHint;
 
   /// No description provided for @adminFeatureAccessSearchEmpty.
@@ -8187,6 +8187,30 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Actualizează progresul'**
   String get shelfUpdateProgress;
+
+  /// Hint in the admin user search field (name, @username or email)
+  ///
+  /// In ro, this message translates to:
+  /// **'Caută după nume, @username sau email'**
+  String get adminUserPickerSearchHint;
+
+  /// Shown when the admin user search returns nothing
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun utilizator găsit.'**
+  String get adminUserPickerNoResults;
+
+  /// Shown before the admin has typed enough to search
+  ///
+  /// In ro, this message translates to:
+  /// **'Scrie cel puțin 2 caractere ca să cauți.'**
+  String get adminUserPickerEmpty;
+
+  /// Tooltip for clearing the picked user in the admin user picker
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege alt utilizator'**
+  String get adminUserPickerChange;
 }
 
 class _AppLocalizationsDelegate

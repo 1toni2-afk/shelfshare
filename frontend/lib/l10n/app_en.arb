@@ -1349,7 +1349,7 @@
     "greetMottoCirculating": "Fewer new books printed, more stories circulating.",
     "adminFeatureAccessTitle": "Feature access",
     "adminFeatureAccessDesc": "Give hand-picked users early access to features that are still rolling out.",
-    "adminFeatureAccessSearchHint": "Search by name or email",
+    "adminFeatureAccessSearchHint": "Search by name, @username or email",
     "adminFeatureAccessSearchEmpty": "Search for a user to see their access.",
     "adminFeatureAccessNoResults": "No users found.",
     "adminFeatureAccessApply": "Apply",
@@ -1407,21 +1407,22 @@
             }
         }
     },
-
     "onboardingFlowStepLabel": "Step {step} of {total}",
     "@onboardingFlowStepLabel": {
         "placeholders": {
-            "step": { "type": "int" },
-            "total": { "type": "int" }
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
     },
     "onboardingFlowSkip": "Skip",
     "onboardingFlowMoveForward": "Move forward",
     "onboardingFlowBackTooltip": "Back",
-
     "onboardingFlowGenresTitle": "What do you like to read?",
     "onboardingFlowGenresSubtitle": "Pick a few genres - we'll use them to line up your first book matches.",
-
     "onboardingFlowFrequencyTitle": "How often do you read?",
     "onboardingFlowFrequencySubtitle": "Helps us tune how often we show you new books.",
     "onboardingFlowFrequencyLowTitle": "Occasionally",
@@ -1430,11 +1431,9 @@
     "onboardingFlowFrequencyMidDesc": "About one book a week",
     "onboardingFlowFrequencyHighTitle": "A lot",
     "onboardingFlowFrequencyHighDesc": "Several books a week",
-
     "onboardingFlowLocationTitle": "Where can we find you?",
     "onboardingFlowLocationSubtitle": "We use your location to show you realistic, nearby exchanges.",
     "onboardingFlowLanguagesLabel": "Languages you read in",
-
     "onboardingFlowPurposeTitle": "What are you here for?",
     "onboardingFlowPurposeSubtitle": "Helps us personalize your home page.",
     "onboardingFlowPurposeSwapTitle": "Swap books",
@@ -1445,24 +1444,22 @@
     "onboardingFlowPurposeDiscoverDesc": "I'm exploring recommendations, no swaps yet",
     "onboardingFlowPurposeAllTitle": "All of the above",
     "onboardingFlowPurposeAllDesc": "I'm here for everything",
-
     "onboardingFlowBookMatchTitle": "Let's see what you like",
     "onboardingFlowBookMatchSubtitle": "Swipe through a few books - it helps us prepare better recommendations from the start.",
-
     "onboardingFlowAddBooksTitle": "Put your first books on the shelf",
     "onboardingFlowAddBooksSubtitle": "Add 2-3 books you have at home - they'll show up right on your profile.",
     "onboardingFlowAddBooksCta": "Add a book",
     "onboardingFlowAddBooksCtaSubtitle": "Search a title or scan the barcode",
     "onboardingFlowAddBooksSkipNote": "You can skip this step and add books later, from My Shelf.",
-
     "onboardingFlowFinish": "Enter ShelfShare",
     "onboardingFlowBookAdded": "Added: {title}",
     "@onboardingFlowBookAdded": {
         "placeholders": {
-            "title": { "type": "String" }
+            "title": {
+                "type": "String"
+            }
         }
     },
-
     "genreFiction": "Fiction",
     "genreNonFiction": "Non-fiction",
     "genreClassic": "Classic",
@@ -1483,15 +1480,6 @@
     "genreChildren": "Children",
     "genreYoungAdult": "Young Adult",
     "genreComics": "Comics",
-    "onboardingFlowMoveForward": "Move forward",
-    "onboardingFlowBookAdded": "Added: {title}",
-    "@onboardingFlowBookAdded": {
-        "placeholders": {
-            "title": {
-                "type": "String"
-            }
-        }
-    },
     "onboardingWelcomeTitle": "Thank you for using ShelfShare.ro 🇷🇴🇪🇺",
     "onboardingWelcomeBullet1": "🌍 European product, self-hosted",
     "onboardingWelcomeBullet2": "🌳 Made to help the environment",
@@ -1594,5 +1582,9 @@
     "reviewTextHint": "What did you think of the book? (optional)",
     "reviewSave": "Save",
     "shelfRemoveFromShelf": "Remove from shelf",
-    "shelfUpdateProgress": "Update progress"
+    "shelfUpdateProgress": "Update progress",
+    "adminUserPickerSearchHint": "Search by name, @username or email",
+    "adminUserPickerNoResults": "No user found.",
+    "adminUserPickerEmpty": "Type at least 2 characters to search.",
+    "adminUserPickerChange": "Pick a different user"
 }
