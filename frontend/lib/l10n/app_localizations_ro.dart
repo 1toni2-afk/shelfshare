@@ -3254,6 +3254,20 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileGroupPrivacy => 'Confidențialitate';
 
   @override
+  String get settingsAnalyticsTitle => 'Statistici de folosire';
+
+  @override
+  String get settingsAnalyticsSubtitle =>
+      'Ne ajută să vedem ce funcții sunt folosite';
+
+  @override
+  String get settingsAnalyticsSwitch => 'Trimite statistici anonime';
+
+  @override
+  String get settingsAnalyticsHelp =>
+      'Trimitem către Google Analytics doar ecranele pe care intri și acțiuni de tipul „a listat o carte”. Niciodată numele, adresa de email sau ce scrii în chat. Poți opri oricând, iar aplicația funcționează la fel.';
+
+  @override
   String get profileListingPrivacySubtitle =>
       'Alege ce tipuri de anunțuri apar în căutare și discover, publice pentru ceilalți useri.';
 

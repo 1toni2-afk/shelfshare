@@ -3237,6 +3237,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileGroupPrivacy => 'Privacy';
 
   @override
+  String get settingsAnalyticsTitle => 'Usage statistics';
+
+  @override
+  String get settingsAnalyticsSubtitle =>
+      'Helps us see which features get used';
+
+  @override
+  String get settingsAnalyticsSwitch => 'Send anonymous statistics';
+
+  @override
+  String get settingsAnalyticsHelp =>
+      'We send Google Analytics only the screens you open and actions such as “listed a book”. Never your name, your email address or anything you write in chat. You can turn this off at any time and the app works exactly the same.';
+
+  @override
   String get profileListingPrivacySubtitle =>
       'Choose which listing types show up in public search and discover for other users.';
 

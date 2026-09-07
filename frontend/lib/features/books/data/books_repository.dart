@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
@@ -175,6 +176,27 @@ class BooksRepository {
         .map((e) => UserBook.fromJson(e as Map<String, dynamic>))
         .toList();
 
+    // Doar prima pagină: `browse` e apelat din nou la fiecare scroll infinit,
+    // iar fără condiția asta o singură căutare răsfoită până la capăt ar
+    // apărea ca zece căutări. Și doar dacă userul chiar a cerut ceva - o
+    // deschidere goală a ecranului de răsfoire nu e o căutare.
+    final hasQuery = [title, author, genre, city, listingType]
+        .any((value) => value != null && value.isNotEmpty);
+    if (offset == 0 && hasQuery) {
+      _ref.read(analyticsProvider).event(AnalyticsEvents.search, {
+        // `search_term` e parametrul standard GA4 pentru `search`. E singurul
+        // loc din tot fișierul unde trimitem text scris de user, și e un
+        // titlu/autor de carte - nu o dată personală.
+        if (title != null && title.isNotEmpty) 'search_term': title,
+        if (author != null && author.isNotEmpty) 'author': author,
+        if (genre != null && genre.isNotEmpty) 'genre': genre,
+        if (listingType != null && listingType.isNotEmpty) 'listing_type': listingType,
+        // Doar DACĂ a filtrat după oraș, nu și care e orașul: combinat cu
+        // restul, un oraș mic ar începe să restrângă neplăcut cine e userul.
+        'has_city_filter': city != null && city.isNotEmpty,
+        'result_count': response.data['total'] as int,
+      });
+    }
     return BrowseResult(items: items, total: response.data['total'] as int);
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'core/analytics/analytics.dart';
 import 'core/locale/locale_controller.dart';
 import 'core/notifications/push_gateway.dart';
 import 'core/router/app_router.dart';
@@ -60,6 +61,18 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
     // logat - abonarea/dezabonarea efectivă a tokenului se face mai jos, în
     // build(), pe baza stării de autentificare.
     Future.microtask(() => ref.read(pushGatewayProvider).initialize());
+    // Analytics: mai întâi `initialize()`, abia apoi legarea de router.
+    // Ordinea contează - `initialize()` e cel care citește consimțământul
+    // salvat, iar `attachAnalyticsToRouter` raportează imediat ecranul curent.
+    // Invers, primul ecran al fiecărei sesiuni ar fi evaluat cu un
+    // consimțământ încă necitit, adică pierdut chiar și pentru userii care
+    // și-au dat acordul.
+    Future.microtask(() async {
+      final analytics = ref.read(analyticsProvider);
+      await analytics.initialize();
+      if (!mounted) return;
+      attachAnalyticsToRouter(ref.read(routerProvider), analytics);
+    });
   }
 
   @override

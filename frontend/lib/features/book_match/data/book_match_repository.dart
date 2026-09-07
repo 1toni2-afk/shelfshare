@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/analytics/analytics.dart';
 import '../../../core/network/providers.dart';
 
 /// O carte din coada de „Book Match" (ecranul de swipe). `isDiscovery` vine de
@@ -175,6 +176,15 @@ class BookMatchRepository {
       'action': action,
       'sessionId': sessionId,
       'isDiscovery': isDiscovery,
+    });
+    // Instrumentat aici, nu în ecranul de swipe: repository-ul e singurul
+    // drum către endpoint, deci un al doilea apelant adăugat mâine e numărat
+    // fără să fie nevoie să-și amintească cineva. `bookId` NU se trimite -
+    // ar face un rând în raport pentru fiecare carte din catalog, fără să
+    // răspundă la vreo întrebare pe care ne-o punem.
+    _ref.read(analyticsProvider).event(AnalyticsEvents.bookMatchSwipe, {
+      'action': action,
+      'is_discovery': isDiscovery,
     });
     return BookMatchSwipeResult.fromJson(response.data as Map<String, dynamic>);
   }

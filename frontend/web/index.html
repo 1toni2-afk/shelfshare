@@ -37,7 +37,12 @@
        Acum nu se face nicio cerere către googletagmanager.com până când
        bannerul din <body> nu primește un „Accept" - vezi loadAnalytics()
        acolo. Un refuz, sau lipsa unei alegeri, înseamnă zero trafic spre
-       Google. Doar web: pe Android/iOS nu există GA în aplicație. -->
+       Google.
+
+       Pe Android/iOS NU rulează gtag.js - acolo măsurarea se face prin
+       Firebase Analytics, tot după un consimțământ explicit și cu colectarea
+       oprită implicit din AndroidManifest.xml. Vezi
+       lib/core/analytics/analytics_backend_io.dart. -->
 
   <meta name="description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.">
   <meta name="theme-color" content="#7C3A1E">
@@ -406,8 +411,23 @@
         window.dataLayer = window.dataLayer || [];
         window.gtag = function () { window.dataLayer.push(arguments); };
         window.gtag('js', new Date());
-        window.gtag('config', GA_ID);
+        // send_page_view: false - page_view-urile le trimite aplicatia
+        // Flutter, la fiecare schimbare de ruta (vezi
+        // lib/core/analytics/analytics.dart). Daca l-am lasa pe cel automat,
+        // ruta de intrare ar fi numarata de doua ori: o data de gtag la
+        // incarcare, o data de router imediat dupa.
+        window.gtag('config', GA_ID, { send_page_view: false });
+        // Semnal pentru Dart ca gtag.js chiar a pornit. Conteaza pentru cazul
+        // „userul apasa Accept dupa ce aplicatia e deja deschisa": pana in
+        // acel moment nu s-a trimis nimic, deci ecranul pe care sta chiar
+        // acum n-ar aparea niciodata in rapoarte fara o retrimitere.
+        window.dispatchEvent(new Event('ss-analytics-ready'));
       }
+
+      // Expusa global ca sa poata porni analytics-ul si un comutator din
+      // aplicatie (Setari), nu doar butonul din bannerul de mai jos. ID-ul de
+      // masurare ramane definit doar aici, intr-un singur loc.
+      window.shelfShareLoadAnalytics = loadAnalytics;
 
       function remember(value) {
         try { localStorage.setItem(KEY, value); } catch (e) {}

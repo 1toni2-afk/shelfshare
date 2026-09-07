@@ -5872,6 +5872,30 @@ abstract class AppLocalizations {
   /// **'Confidențialitate'**
   String get profileGroupPrivacy;
 
+  /// No description provided for @settingsAnalyticsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Statistici de folosire'**
+  String get settingsAnalyticsTitle;
+
+  /// No description provided for @settingsAnalyticsSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ne ajută să vedem ce funcții sunt folosite'**
+  String get settingsAnalyticsSubtitle;
+
+  /// No description provided for @settingsAnalyticsSwitch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite statistici anonime'**
+  String get settingsAnalyticsSwitch;
+
+  /// No description provided for @settingsAnalyticsHelp.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimitem către Google Analytics doar ecranele pe care intri și acțiuni de tipul „a listat o carte”. Niciodată numele, adresa de email sau ce scrii în chat. Poți opri oricând, iar aplicația funcționează la fel.'**
+  String get settingsAnalyticsHelp;
+
   /// No description provided for @profileListingPrivacySubtitle.
   ///
   /// In ro, this message translates to:

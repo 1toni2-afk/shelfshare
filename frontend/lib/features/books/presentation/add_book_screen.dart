@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
@@ -594,6 +595,9 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             currentPage: _progressUnit == _ProgressUnit.pages ? progress : null,
             percentRead: _progressUnit == _ProgressUnit.percent ? progress : null,
           );
+      ref.read(analyticsProvider).event(AnalyticsEvents.bookAddedToShelf, {
+        'finished': isFinished,
+      });
       ref.invalidate(myOwnedShelfProvider);
       ref.invalidate(myBookshelfProvider);
       ref.invalidate(myReadingProgressProvider);
@@ -759,6 +763,15 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               isNegotiable: false,
             );
       }
+      // Aici, nu în `updateListing` din repository: aceeași metodă e folosită
+      // și pentru EDITAREA unui anunț existent, iar fiecare corectură de preț
+      // ar fi fost numărată ca o listare nouă. Punctul ăsta e atins o
+      // singură dată per anunț - un retry după un pas eșuat reia de la
+      // `_createdUserBook`, fără să recreeze anunțul.
+      ref.read(analyticsProvider).event(AnalyticsEvents.bookListed, {
+        'listing_type': _listingMode.name,
+        'photo_count': _photos.length,
+      });
       ref.invalidate(myLibraryControllerProvider);
       if (mounted) {
         ScaffoldMessenger.of(context)

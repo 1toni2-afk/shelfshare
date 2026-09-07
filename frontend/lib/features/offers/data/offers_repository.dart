@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/price_offer.dart';
@@ -21,6 +22,13 @@ class OffersRepository {
       if (message != null && message.isNotEmpty) 'message': message,
     });
     final data = response.data as Map<String, dynamic>;
+    // `value` + `currency` sunt numele standard GA4 pentru sume - așa apar
+    // direct în rapoartele de monetizare, fără configurare suplimentară.
+    _ref.read(analyticsProvider).event(AnalyticsEvents.priceOfferSent, {
+      'value': amount,
+      'currency': 'RON',
+      'has_message': message != null && message.isNotEmpty,
+    });
     return (PriceOffer.fromJson(data), data['conversationId'] as String?);
   }
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/exchange_request.dart';
@@ -29,6 +30,13 @@ class ExchangesRepository {
       if (message != null && message.isNotEmpty) 'message': message,
     });
     final data = response.data as Map<String, dynamic>;
+    // Ce ne interesează e FORMA cererii (carte contra carte, cu sau fără
+    // diferență de bani), nu ce carte anume - de aceea niciun id aici.
+    _ref.read(analyticsProvider).event(AnalyticsEvents.exchangeRequested, {
+      'has_offered_book': offeredBookId != null,
+      'has_amount': offeredAmount != null,
+      'has_message': message != null && message.isNotEmpty,
+    });
     return (ExchangeRequest.fromJson(data), data['conversationId'] as String?);
   }
 

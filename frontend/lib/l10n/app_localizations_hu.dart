@@ -3249,6 +3249,20 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileGroupPrivacy => 'Adatvédelem';
 
   @override
+  String get settingsAnalyticsTitle => 'Használati statisztikák';
+
+  @override
+  String get settingsAnalyticsSubtitle =>
+      'Segít látnunk, mely funkciókat használják';
+
+  @override
+  String get settingsAnalyticsSwitch => 'Névtelen statisztikák küldése';
+
+  @override
+  String get settingsAnalyticsHelp =>
+      'A Google Analytics felé csak a megnyitott képernyőket és az olyan műveleteket küldjük, mint a „könyvet hirdetett meg”. Soha nem a nevedet, az e-mail-címedet vagy azt, amit a csevegésbe írsz. Bármikor kikapcsolhatod, az alkalmazás ugyanúgy működik.';
+
+  @override
   String get profileListingPrivacySubtitle =>
       'Válaszd ki, mely hirdetéstípusok jelenjenek meg a nyilvános keresésben és a felfedezésben mások számára.';
 

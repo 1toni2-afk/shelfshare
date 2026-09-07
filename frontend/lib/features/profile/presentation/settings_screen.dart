@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/locale/locale_controller.dart';
@@ -144,6 +145,8 @@ class _SettingsList extends ConsumerWidget {
 
                   _SettingsGroupLabel(l10n.profileGroupPrivacy),
                   _ListingPrivacyCard(user: user),
+                  const SizedBox(height: 12),
+                  const _AnalyticsConsentCard(),
                   const SizedBox(height: 20),
 
                   // Descoperirea, statisticile și activitatea recentă erau trei
@@ -783,6 +786,62 @@ class _ListingTypeToggle extends StatelessWidget {
       ),
       value: hidden,
       onChanged: saving ? null : onChanged,
+    );
+  }
+}
+
+/// Comutatorul pentru statistici. Pornește OPRIT peste tot: pe web până când
+/// userul apasă „Accept" în bannerul din index.html, pe Android/iOS până când
+/// bifează aici. Cardul e locul unic din care alegerea poate fi și retrasă,
+/// pe ambele platforme - un banner care apare o singură dată nu e o cale de
+/// întoarcere.
+///
+/// Starea nu vine dintr-un provider reactiv pentru că nu se schimbă din altă
+/// parte cât timp ecranul e deschis: sursa de adevăr e localStorage (web),
+/// respectiv secure storage (mobil), citită o dată la construcție.
+class _AnalyticsConsentCard extends ConsumerStatefulWidget {
+  const _AnalyticsConsentCard();
+
+  @override
+  ConsumerState<_AnalyticsConsentCard> createState() => _AnalyticsConsentCardState();
+}
+
+class _AnalyticsConsentCardState extends ConsumerState<_AnalyticsConsentCard> {
+  late bool _granted = ref.read(analyticsProvider).consentGranted;
+  bool _saving = false;
+
+  Future<void> _set(bool value) async {
+    setState(() => _saving = true);
+    await ref.read(analyticsProvider).setConsent(value);
+    if (!mounted) return;
+    setState(() {
+      _granted = value;
+      _saving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return _DropdownCard(
+      icon: Icons.query_stats_outlined,
+      title: l10n.settingsAnalyticsTitle,
+      subtitle: l10n.settingsAnalyticsSubtitle,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.settingsAnalyticsSwitch),
+          value: _granted,
+          onChanged: _saving ? null : _set,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            l10n.settingsAnalyticsHelp,
+            style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
+          ),
+        ),
+      ],
     );
   }
 }

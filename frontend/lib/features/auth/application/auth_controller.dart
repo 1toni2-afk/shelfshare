@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/user.dart';
 import '../../support/data/support_repository.dart' show CaptchaChallenge;
@@ -45,6 +46,10 @@ class AuthController extends Notifier<AuthState> {
         captchaAnswer: captchaAnswer,
       );
       state = AuthAuthenticated(user);
+      // Doar autentificările reale, nu și `_restoreSession` - altfel fiecare
+      // redeschidere a aplicației ar arăta ca un login nou și rata de
+      // revenire ar fi complet falsă.
+      ref.read(analyticsProvider).event(AnalyticsEvents.login, {'method': 'password'});
     } on DioException catch (e) {
       final data = e.response?.data;
       if (data is Map && data['requiresCaptcha'] == true && data['captcha'] is Map) {
@@ -72,6 +77,7 @@ class AuthController extends Notifier<AuthState> {
     try {
       final user = await _repository.completeExternalLogin(code: code);
       state = AuthAuthenticated(user);
+      ref.read(analyticsProvider).event(AnalyticsEvents.login, {'method': 'google'});
     } catch (_) {
       state = const AuthUnauthenticated();
     }
@@ -90,6 +96,13 @@ class AuthController extends Notifier<AuthState> {
         referralCode: referralCode,
       );
       state = const AuthUnauthenticated();
+      // `referral` e un simplu indicator dacă a existat sau nu un cod, NU
+      // codul în sine: acela identifică userul care a invitat, deci ar fi o
+      // dată personală trimisă spre Google.
+      ref.read(analyticsProvider).event(AnalyticsEvents.signUp, {
+        'method': 'password',
+        'referral': referralCode != null && referralCode.isNotEmpty,
+      });
     } on DioException catch (e) {
       state = AuthError(_extractMessage(e));
     }

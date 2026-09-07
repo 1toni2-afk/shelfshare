@@ -71,6 +71,15 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_stat_shelfshare" />
+        <!-- Analytics OPRIT la instalare. Valoarea asta e singura care
+             acopera intervalul dintre pornirea procesului si primul cod Dart
+             executat; fara ea, SDK-ul apuca sa trimita un `first_open` inainte
+             sa fi intrebat pe cineva ceva. Se porneste la runtime, din
+             core/analytics/analytics_backend_io.dart, doar dupa ce userul isi
+             da acordul. -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
