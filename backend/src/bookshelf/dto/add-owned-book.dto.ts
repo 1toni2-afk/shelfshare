@@ -60,7 +60,9 @@ export class AddOwnedBookDto {
   /// Paginile ediției pe care o are userul - poate diferi de cea din catalog.
   @IsOptional()
   @IsInt()
-  @Min(1)
+  // La fel ca `pageCount` din add-book.dto.ts: 0 e acceptat, ca o ediție fără
+  // numerotare să nu blocheze adăugarea în raft.
+  @Min(0)
   @Max(30000)
   totalPages?: number;
 

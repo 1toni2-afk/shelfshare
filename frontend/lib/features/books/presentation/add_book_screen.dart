@@ -1616,6 +1616,19 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   }
 }
 
+/// Octeții deja citiți, o singură dată per poză aleasă.
+///
+/// `photo.readAsBytes()` chemat direct în `itemBuilder` producea un Future NOU
+/// la fiecare rebuild al ecranului: thumbnail-ul cădea înapoi pe placeholder
+/// (de acolo „pozele își tot dau refresh"), iar pe web fiecare rebuild
+/// însemna un fetch nou al blob-ului. Cu câteva poze alese și tastare în
+/// câmpul de titlu, fetch-urile astea ocupau conexiunile browserului, așa că
+/// cererea de autocomplete rămânea la coadă și căutarea părea blocată.
+final Expando<Future<Uint8List>> _photoBytesCache = Expando<Future<Uint8List>>();
+
+Future<Uint8List> _photoBytes(XFile photo) =>
+    _photoBytesCache[photo] ??= photo.readAsBytes();
+
 /// Placeholder mare cu „+" + thumbnails cu poze urcate + „X" de ștergere.
 class _PhotoPicker extends StatelessWidget {
   const _PhotoPicker({
@@ -1689,7 +1702,7 @@ class _PhotoPicker extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: FutureBuilder<Uint8List>(
-                        future: photo.readAsBytes(),
+                        future: _photoBytes(photo),
                         builder: (context, snap) {
                           if (!snap.hasData) {
                             return Container(

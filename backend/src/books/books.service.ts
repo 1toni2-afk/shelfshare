@@ -464,8 +464,65 @@ export class BooksService {
     return this.lookup.lookupFullDetails(params);
   }
 
+  /**
+   * Escape pentru textul liber dintr-un `ILIKE`: `%` și `_` tastate de user
+   * sunt caractere literale, nu jokeri.
+   */
+  private static escapeLike(value: string): string {
+    return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+  }
+
+  /**
+   * ID-urile cărților CU anunțuri care se potrivesc pe titlu/autor, ignorând
+   * diacriticele de ambele părți.
+   *
+   * `contains` din Prisma compară text brut: „Spatiul Revelatiei" nu găsea
+   * „Spațiul Revelației", și nici invers - iar userii scriu de regulă amestecat
+   * (un cuvânt cu diacritice, altul fără). Filtrul se mută deci în SQL, peste
+   * `immutable_unaccent` (aceeași funcție ca la `searchCatalog`).
+   *
+   * Interogarea pleacă din `user_books`, nu din `books`: tabela de cărți are
+   * milioane de rânduri importate, iar un `ILIKE` peste toate ar însemna scan
+   * complet. Anunțurile sunt puține, iar cartea fiecăruia se ia după cheia
+   * primară.
+   */
+  private async findListedBookIdsUnaccented(
+    title?: string,
+    author?: string,
+  ): Promise<string[]> {
+    const conditions: Prisma.Sql[] = [];
+    const cleanTitle = title?.trim();
+    const cleanAuthor = author?.trim();
+    if (cleanTitle) {
+      conditions.push(
+        Prisma.sql`immutable_unaccent(coalesce(b."title", '')) ILIKE immutable_unaccent(${`%${BooksService.escapeLike(cleanTitle)}%`})`,
+      );
+    }
+    if (cleanAuthor) {
+      conditions.push(
+        Prisma.sql`immutable_unaccent(coalesce(b."author", '')) ILIKE immutable_unaccent(${`%${BooksService.escapeLike(cleanAuthor)}%`})`,
+      );
+    }
+
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>`
+      SELECT DISTINCT ub."bookId" AS id
+      FROM "user_books" ub
+      JOIN "books" b ON b.id = ub."bookId"
+      WHERE ub."deletedAt" IS NULL
+        AND ${Prisma.join(conditions, ' AND ')}
+    `;
+    return rows.map((row) => row.id);
+  }
+
   async searchLibrary(filters: SearchLibraryDto) {
     if (filters.title) this.logSearch(filters.title);
+
+    // Când nu s-a cerut nici titlu, nici autor, rămâne `null` - adică „fără
+    // filtru", nu „zero potriviri".
+    const matchedBookIds =
+      filters.title?.trim() || filters.author?.trim()
+        ? await this.findListedBookIdsUnaccented(filters.title, filters.author)
+        : null;
 
     const where: Prisma.UserBookWhereInput = {
       // Cărțile din coșul de gunoi al proprietarului (soft-delete) NU trebuie
@@ -500,13 +557,10 @@ export class BooksService {
       language: filters.language
         ? { equals: filters.language, mode: 'insensitive' }
         : undefined,
+      // Titlul și autorul sunt deja rezolvate mai sus, insensibil la
+      // diacritice - vezi findListedBookIdsUnaccented.
+      bookId: matchedBookIds ? { in: matchedBookIds } : undefined,
       book: {
-        title: filters.title
-          ? { contains: filters.title, mode: 'insensitive' }
-          : undefined,
-        author: filters.author
-          ? { contains: filters.author, mode: 'insensitive' }
-          : undefined,
         genre: filters.genre
           ? { contains: filters.genre, mode: 'insensitive' }
           : undefined,

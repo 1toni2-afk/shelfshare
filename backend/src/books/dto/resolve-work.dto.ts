@@ -49,7 +49,10 @@ export class ResolveWorkDto {
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  // 0 e permis intenționat: broșuri, cărți de artă sau ediții fără numerotare
+  // n-au un număr de pagini de trecut, iar `@Min(1)` respingea listarea cu o
+  // eroare de validare în loc s-o lase să treacă fără informația asta.
+  @Min(0)
   @Max(30000)
   pageCount?: number;
 
