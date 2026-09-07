@@ -176,6 +176,19 @@ class _PriceBadge extends StatelessWidget {
         color: AppColors.accent,
       );
     }
+    // Anunț de tip Schimb pe care proprietarul a bifat „sau vinde cu X lei"
+    // (UserBook.swapSalePrice): `isForSale` rămâne false, dar prețul cerut
+    // există și trebuie să se vadă - altfel cardul arăta doar iconița de swap,
+    // iar prețul introdus la listare nu apărea nicăieri.
+    if (userBook.swapSalePrice != null) {
+      return _badge(
+        context,
+        icon: Icons.swap_horiz,
+        label: context.l10n
+            .priceLei(userBook.swapSalePrice!.toStringAsFixed(0)),
+        color: AppColors.primary,
+      );
+    }
     if (userBook.availableForSwap) {
       return _badge(
         context,

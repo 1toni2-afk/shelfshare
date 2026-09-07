@@ -803,7 +803,12 @@ class _MyLibraryListRow extends StatelessWidget {
               if (userBook.book.author != null) userBook.book.author!,
               userBook.condition.label(context.l10n),
               if (userBook.isForSale && userBook.salePrice != null)
-                context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0)),
+                context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0))
+              // „Sau vinde cu X lei" pe un anunț de Schimb - preț real, doar
+              // ținut în altă coloană (UserBook.swapSalePrice).
+              else if (userBook.swapSalePrice != null)
+                context.l10n
+                    .priceLei(userBook.swapSalePrice!.toStringAsFixed(0)),
             ].join(' · '),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

@@ -460,6 +460,23 @@ class _CoverPanel extends ConsumerWidget {
                 : _PriceBlock(book: book),
           ),
         ],
+        // Anunț de Schimb cu „sau vinde cu X lei": prețul e în altă coloană
+        // (UserBook.swapSalePrice), deci blocul de mai sus îl sărea și pagina
+        // nu arăta nicăieri suma cerută - deși sheet-ul de ofertă o
+        // precompleta.
+        if (!book.isForSale && book.swapSalePrice != null) ...[
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              '${l10n.shareSwapAlsoSell} '
+              '${l10n.priceLei(book.swapSalePrice!.toStringAsFixed(0))}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

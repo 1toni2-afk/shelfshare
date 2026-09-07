@@ -618,6 +618,7 @@ class BooksRepository {
     required bool isForSale,
     double? salePrice,
     required bool isNegotiable,
+    double? swapSalePrice,
     String? description,
     List<String>? tags,
     String? city,
@@ -632,6 +633,9 @@ class BooksRepository {
       'isForSale': isForSale,
       if (isForSale) 'salePrice': salePrice,
       'isNegotiable': isNegotiable,
+      // Trimis mereu, inclusiv `null`: așa se poate și dezactiva „sau vinde
+      // cu X lei" de pe un anunț de Schimb.
+      'swapSalePrice': swapSalePrice,
       // Trimise mereu (chiar și goale) ca ștergerea unui câmp să se propage:
       // string gol -> câmp golit. Backend-ul le tratează opțional.
       'description': description ?? '',

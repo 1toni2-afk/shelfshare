@@ -35,6 +35,16 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
   late final _priceController = TextEditingController(
     text: widget.userBook.salePrice?.toStringAsFixed(0) ?? '',
   );
+
+  /// „Sau vinde cu X lei" de pe un anunț de tip Schimb - preț real, dar ținut
+  /// în `UserBook.swapSalePrice`, nu în `salePrice` (anunțul rămâne de Schimb,
+  /// `isForSale` false). Foaia asta nu-l arăta deloc: userul care bifase
+  /// opțiunea la listare găsea aici „la vânzare" stins și niciun preț, deși
+  /// îl introdusese.
+  late bool _sellOnSwap = widget.userBook.swapSalePrice != null;
+  late final _swapSalePriceController = TextEditingController(
+    text: widget.userBook.swapSalePrice?.toStringAsFixed(0) ?? '',
+  );
   late final _descriptionController =
       TextEditingController(text: widget.userBook.description);
   late String? _city = widget.userBook.city;
@@ -49,6 +59,7 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
     _languageController.dispose();
     _editionController.dispose();
     _priceController.dispose();
+    _swapSalePriceController.dispose();
     _descriptionController.dispose();
     _tagsController.dispose();
     super.dispose();
@@ -86,6 +97,18 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
           .showSnackBar(SnackBar(content: Text(l10n.addBookNeedPhoto)));
       return;
     }
+    // Prețul de pe Schimb are sens doar cât timp anunțul NU e trecut pe
+    // vânzare: acolo `salePrice` e prețul cerut, iar două prețuri simultan ar
+    // fi ambigue și pe card, și pe pagina anunțului.
+    final swapSalePrice = _isForSale || !_sellOnSwap
+        ? null
+        : double.tryParse(
+            _swapSalePriceController.text.trim().replaceAll(',', '.'));
+    if (!_isForSale && _sellOnSwap && swapSalePrice == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.addBookInvalidPrice)));
+      return;
+    }
 
     setState(() => _isSubmitting = true);
     try {
@@ -99,6 +122,7 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
             isForSale: _isForSale,
             salePrice: _isForSale ? salePrice : null,
             isNegotiable: _isNegotiable,
+            swapSalePrice: swapSalePrice,
             description: _trimmedOrNull(_descriptionController.text),
             tags: _parseTags(),
             city: _city,
@@ -209,6 +233,26 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
               value: _isForSale,
               onChanged: (value) => setState(() => _isForSale = value),
             ),
+            // Alternativa pentru anunțurile care rămân de Schimb - același
+            // comutator ca la listare (add_book_screen#_priceFields).
+            if (!_isForSale) ...[
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.shareSwapAlsoSell),
+                value: _sellOnSwap,
+                onChanged: (value) => setState(() => _sellOnSwap = value),
+              ),
+              if (_sellOnSwap)
+                TextField(
+                  textAlignVertical: TextAlignVertical.center,
+                  controller: _swapSalePriceController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                      hintText: l10n.shareSwapAlsoSellPrice,
+                      suffixText: 'lei'),
+                ),
+            ],
             if (_isForSale) ...[
               const SizedBox(height: 8),
               TextField(
