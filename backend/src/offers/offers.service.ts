@@ -238,12 +238,26 @@ export class OffersService {
         );
       }
 
+      // Aceeași regulă ca la `createOffer`: un anunț de Schimb cu „sau vinde
+      // cu X lei" acceptă oferte în bani, deși `isForSale` rămâne false (vezi
+      // UserBook.swapSalePrice). Fără ramura a doua, exact ofertele acelea se
+      // puteau face, dar nu se puteau accepta niciodată - acceptarea pica pe
+      // „Cartea nu mai este de vânzare", deși cartea era chiar disponibilă.
+      //
+      // Rămâne o revendicare atomică: ambele steaguri trec pe false, deci o a
+      // doua acceptare concurentă nu mai potrivește niciun rând.
       const bookClaim = await tx.userBook.updateMany({
-        where: { id: offer.userBookId, isForSale: true },
+        where: {
+          id: offer.userBookId,
+          OR: [
+            { isForSale: true },
+            { availableForSwap: true, swapSalePrice: { not: null } },
+          ],
+        },
         data: { isForSale: false, availableForSwap: false },
       });
       if (bookClaim.count === 0) {
-        throw new BadRequestException('Cartea nu mai este de vânzare');
+        throw new BadRequestException('Cartea nu mai este disponibilă');
       }
 
       return tx.priceOffer.findUniqueOrThrow({
@@ -407,9 +421,21 @@ export class OffersService {
         throw new BadRequestException('Această vânzare nu mai este în desfășurare');
       }
 
+      // Anunțul redevine ce era ÎNAINTE de acceptare, nu automat unul de
+      // vânzare: pentru un anunț de Schimb cu „sau vinde cu X lei",
+      // `isForSale: true` neconditionat îl muta în categoria Vânzare, fără ca
+      // proprietarul să fi cerut asta. Un anunț e de vânzare doar dacă are
+      // preț de vânzare (`salePrice`).
+      const listing = await tx.userBook.findUnique({
+        where: { id: offer.userBookId },
+        select: { salePrice: true },
+      });
       await tx.userBook.updateMany({
         where: { id: offer.userBookId },
-        data: { isForSale: true, availableForSwap: true },
+        data: {
+          isForSale: listing?.salePrice != null,
+          availableForSwap: true,
+        },
       });
 
       return tx.priceOffer.findUniqueOrThrow({
