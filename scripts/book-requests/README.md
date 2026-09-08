@@ -56,7 +56,18 @@ python nightly_book_requests.py --dry-run --sources targulcartii-local
 python nightly_book_requests.py --sources libris,carturesti --delay 4
 ```
 
-`run_nightly.cmd` e învelișul pentru Task Scheduler (loghează în `nightly.log`).
+`run_nightly.cmd` e învelișul pentru Task Scheduler: își ia singur tokenul din
+`.env`-ul de producție (o singură copie a secretului), folosește calea completă
+către `python.exe` — un task programat n-are neapărat același PATH ca o consolă
+— și loghează în `nightly.log`.
+
+Taskul e înregistrat ca **`ShelfShareBookRequests`**, zilnic la 03:30, sub
+contul userului (rulează doar când e logat, la fel ca taskul de enrichment):
+
+```powershell
+Get-ScheduledTaskInfo -TaskName ShelfShareBookRequests   # ultima rulare + rezultat
+Start-ScheduledTask   -TaskName ShelfShareBookRequests   # rulare la cerere
+```
 
 ### De ce nu scrie direct în DB
 
