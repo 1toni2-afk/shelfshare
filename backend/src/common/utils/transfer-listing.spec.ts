@@ -9,6 +9,9 @@ function makeTx(original: Record<string, unknown> | null, existing: unknown = nu
       update: jest.fn().mockResolvedValue(original),
       create: jest.fn().mockImplementation(({ data }) => ({ id: 'nou', ...data })),
     },
+    bookshelfEntry: {
+      upsert: jest.fn().mockResolvedValue({}),
+    },
   };
 }
 
@@ -56,6 +59,23 @@ describe('transferListingOwnership', () => {
     });
   });
 
+  it('pune cartea primita si in raftul personal, ca detinuta', async () => {
+    const tx = makeTx(original);
+
+    await transferListingOwnership(tx as never, 'ub-1', 'requester-1');
+
+    expect(tx.bookshelfEntry.upsert).toHaveBeenCalledWith({
+      where: { userId_bookId: { userId: 'requester-1', bookId: 'book-1' } },
+      create: {
+        userId: 'requester-1',
+        bookId: 'book-1',
+        status: 'WANT_TO_READ',
+        owned: true,
+      },
+      update: { owned: true },
+    });
+  });
+
   it('nu creeaza un al doilea exemplar daca deja exista (retry / dublu Done)', async () => {
     const tx = makeTx(original, { id: 'ub-copie', userId: 'requester-1' });
 
@@ -63,6 +83,8 @@ describe('transferListingOwnership', () => {
 
     expect(tx.userBook.create).not.toHaveBeenCalled();
     expect(result).toEqual({ id: 'ub-copie', userId: 'requester-1' });
+    // ...dar se asigura ca intrarea de raft exista (transferuri mai vechi).
+    expect(tx.bookshelfEntry.upsert).toHaveBeenCalled();
   });
 
   it('nu face nimic daca anuntul nu mai exista', async () => {

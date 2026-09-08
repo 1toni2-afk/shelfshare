@@ -41,9 +41,14 @@ export async function transferListingOwnership(
   const existing = await tx.userBook.findFirst({
     where: { previousListingId: userBookId, userId: newOwnerId },
   });
-  if (existing) return existing;
+  if (existing) {
+    // Retry / dublu „Done": exemplarul e deja creat, dar intrarea de raft
+    // poate lipsi (transferuri făcute înainte de schimbarea asta).
+    await addToNewOwnerShelf(tx, newOwnerId, original.bookId);
+    return existing;
+  }
 
-  return tx.userBook.create({
+  const copy = await tx.userBook.create({
     data: {
       userId: newOwnerId,
       bookId: original.bookId,
@@ -63,5 +68,31 @@ export async function transferListingOwnership(
       isAuction: false,
       previousListingId: userBookId,
     },
+  });
+
+  await addToNewOwnerShelf(tx, newOwnerId, original.bookId);
+
+  return copy;
+}
+
+/**
+ * Cartea primită intră și în raftul personal al noului proprietar, exact ca
+ * una adăugată manual prin „Add a book" > „Add to shelf" (`owned: true`).
+ * Fără asta, exemplarul primit exista doar ca anunț nelistat și nu apărea
+ * deloc în „Cărțile mele" din My Shelf.
+ *
+ * Statusul e „vreau să citesc" doar la creare - dacă userul avea deja cartea
+ * pe raft (ex. o marcase „citesc"), nu îi rescriem statusul, doar o marcăm
+ * ca deținută.
+ */
+async function addToNewOwnerShelf(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  bookId: string,
+) {
+  await tx.bookshelfEntry.upsert({
+    where: { userId_bookId: { userId, bookId } },
+    create: { userId, bookId, status: 'WANT_TO_READ', owned: true },
+    update: { owned: true },
   });
 }

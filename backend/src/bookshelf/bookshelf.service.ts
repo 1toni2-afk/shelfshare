@@ -408,12 +408,43 @@ export class BookshelfService {
       }),
       this.prisma.userBook.findMany({
         where: { userId, deletedAt: null },
-        select: { bookId: true },
+        select: {
+          bookId: true,
+          previousListingId: true,
+          availableForSwap: true,
+          isForSale: true,
+          isAuction: true,
+        },
       }),
       this.prisma.readingProgress.findMany({ where: { userId } }),
     ]);
 
-    const listedBookIds = new Set(listed.map((l) => l.bookId));
+    // Exemplarul primit printr-un schimb/vânzare (`previousListingId`) și
+    // nescos încă în piață NU e un anunț: e o carte deținută ca oricare alta,
+    // deci stă aici, nu în grila de listări (vezi getMyLibrary, care îl scoate
+    // din ea) - altfel cartea primită nu apărea nicăieri în „Cărțile mele".
+    const isMarketListing = (l: {
+      previousListingId: string | null;
+      availableForSwap: boolean;
+      isForSale: boolean;
+      isAuction: boolean;
+    }) =>
+      l.previousListingId == null ||
+      l.availableForSwap ||
+      l.isForSale ||
+      l.isAuction;
+
+    const listedBookIds = new Set(
+      listed.filter(isMarketListing).map((l) => l.bookId),
+    );
+    // Cartea primită are deja un exemplar al noului proprietar, legat de
+    // anunțul original: butonul „listeaz-o" îl re-listează pe acela (vezi
+    // relistBook), nu creează un al doilea rând.
+    const relistSourceByBook = new Map(
+      listed
+        .filter((l) => !isMarketListing(l))
+        .map((l) => [l.bookId, l.previousListingId as string]),
+    );
     const progressByBook = new Map(progress.map((p) => [p.bookId, p]));
 
     return entries
@@ -429,6 +460,7 @@ export class BookshelfService {
           // Are deja anunț: cardul ascunde îndemnul „listeaz-o" și pune în
           // loc o etichetă, ca să nu pară că mai e ceva de făcut cu ea.
           listed: listedBookIds.has(e.bookId),
+          relistSourceId: relistSourceByBook.get(e.bookId) ?? null,
           updatedAt: e.updatedAt,
         };
       });

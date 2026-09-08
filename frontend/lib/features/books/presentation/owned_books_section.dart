@@ -5,9 +5,11 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../application/my_library_controller.dart';
 import '../data/bookshelf_repository.dart';
 import '../data/reading_progress_repository.dart';
 import 'reading_progress_sheet.dart';
+import 'relist_book_sheet.dart';
 
 /// Prim-planul din My Shelf: cărțile pe care userul le DEȚINE dar nu le-a scos
 /// la listare. Sunt majoritatea rafturilor reale - cineva are acasă zeci de
@@ -106,6 +108,27 @@ class _OwnedBookTile extends ConsumerWidget {
     );
   }
 
+  /// Listarea dintr-un singur click, direct din „Cărțile mele".
+  ///
+  /// Cartea primită printr-un schimb are deja un exemplar al userului, doar
+  /// nescos în piață - pe aceea o re-listăm (foaia de re-listare), altfel am
+  /// crea un al doilea rând pentru aceeași carte. Restul merg pe fluxul
+  /// normal de listare, cu datele precompletate.
+  Future<void> _listNow(BuildContext context, WidgetRef ref) async {
+    final relistSourceId = owned.relistSourceId;
+    if (relistSourceId == null) {
+      OwnedBooksSection.listBook(context, owned.book);
+      return;
+    }
+    await showRelistBookSheet(
+      context,
+      originalUserBookId: relistSourceId,
+      bookTitle: owned.book.title,
+    );
+    ref.invalidate(myOwnedShelfProvider);
+    ref.invalidate(myLibraryControllerProvider);
+  }
+
   Future<void> _remove(BuildContext context, WidgetRef ref) async {
     await ref.read(bookshelfRepositoryProvider).removeFromShelf(owned.book.id);
     ref.invalidate(myOwnedShelfProvider);
@@ -180,6 +203,14 @@ class _OwnedBookTile extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  // Listarea e acțiunea cea mai cerută de aici, deci stă la
+                  // vedere, la un singur click - nu ascunsă în meniu.
+                  if (!owned.listed)
+                    IconButton(
+                      icon: const Icon(Icons.storefront_outlined),
+                      tooltip: l10n.shelfListItNow,
+                      onPressed: () => _listNow(context, ref),
+                    ),
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert),
                     onSelected: (value) {
@@ -189,7 +220,7 @@ class _OwnedBookTile extends ConsumerWidget {
                         case 'about':
                           context.push('/work/${owned.book.id}');
                         case 'list':
-                          OwnedBooksSection.listBook(context, owned.book);
+                          _listNow(context, ref);
                         case 'remove':
                           _remove(context, ref);
                       }
@@ -220,7 +251,7 @@ class _OwnedBookTile extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     FilledButton.tonalIcon(
-                      onPressed: () => OwnedBooksSection.listBook(context, owned.book),
+                      onPressed: () => _listNow(context, ref),
                       icon: const Icon(Icons.storefront_outlined, size: 18),
                       label: Text(l10n.shelfListItNow),
                     ),

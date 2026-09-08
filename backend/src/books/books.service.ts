@@ -1133,7 +1133,21 @@ export class BooksService {
       // transferListingOwnership) - aici nu mai au ce căuta deloc. Istoricul
       // lor rămâne în „Schimburile mele" și pe pagina cărții (lanțul de
       // proveniență); nu-l dublăm în pagina unde userul își listează cărțile.
-      where: { userId, deletedAt: null, permanentlyTransferred: false },
+      // Exemplarul primit printr-un schimb/vânzare și încă nescos în piață nu
+      // e un anunț: e o carte deținută, deci apare în „Cărțile mele" din My
+      // Shelf (vezi getOwnedShelf). Aici ar fi apărut ca listare
+      // „indisponibilă", adică aceeași carte în două locuri.
+      where: {
+        userId,
+        deletedAt: null,
+        permanentlyTransferred: false,
+        NOT: {
+          previousListingId: { not: null },
+          availableForSwap: false,
+          isForSale: false,
+          isAuction: false,
+        },
+      },
       include: { book: true },
       orderBy: { createdAt: 'desc' },
     });

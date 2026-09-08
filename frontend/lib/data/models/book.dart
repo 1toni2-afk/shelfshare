@@ -100,12 +100,18 @@ class OwnedBook {
   /// cardul nu-i mai propune să o listeze - o are deja listată.
   final bool listed;
 
+  /// Cartea a venit printr-un schimb/vânzare finalizat: exemplarul ei există
+  /// deja, nelistat, legat de anunțul original prin acest id. „Listeaz-o"
+  /// re-listează exemplarul acela, nu creează un al doilea.
+  final String? relistSourceId;
+
   const OwnedBook({
     required this.book,
     required this.status,
     this.currentPage = 0,
     this.totalPages,
     this.listed = false,
+    this.relistSourceId,
   });
 
   /// Fracție 0..1 pentru bara de progres. Null când nu știm totalul - atunci
@@ -131,6 +137,7 @@ class OwnedBook {
       currentPage: (json['currentPage'] as num?)?.toInt() ?? 0,
       totalPages: (json['totalPages'] as num?)?.toInt(),
       listed: json['listed'] == true,
+      relistSourceId: json['relistSourceId'] as String?,
     );
   }
 }
