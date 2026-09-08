@@ -110,7 +110,6 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
 
   bool _isSubmitting = false;
   bool _showMoreInfo = false;
-  BookCondition _condition = BookCondition.buna;
   bool _isHardcover = false;
   _ListingMode _listingMode = _ListingMode.swap;
   int _auctionDurationHours = 24;
@@ -499,7 +498,6 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       if (book.seriesNumber != null) {
         _seriesNumberController.text = book.seriesNumber!.toString();
       }
-      _condition = userBook.condition;
       _isHardcover = userBook.isHardcover;
       _isbnFromAutocomplete = book.isbn;
       final cover = userBook.primaryImageUrl;
@@ -730,7 +728,6 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 author: _authorController.text.trim().isEmpty
                     ? null
                     : _authorController.text.trim(),
-                condition: _condition,
                 isHardcover: _isHardcover,
                 genre: _genreController.text.trim().isEmpty
                     ? null
@@ -859,7 +856,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         title: Text(_mode == AddBookMode.shelf
             ? l10n.shelfAddModeShelf
             : l10n.shelfAddModeListing),
-        actions: isDesktop && _mode == AddBookMode.listing
+        // Aceleasi actiuni in antet in ambele moduri: pe web pagina de „add to
+        // shelf" arata acum la fel cu cea de listare, nu ca un formular mobil
+        // intins pe toata latimea.
+        actions: isDesktop
             ? [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -875,7 +875,9 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                             width: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Text(l10n.shareSubmit),
+                        : Text(_mode == AddBookMode.shelf
+                            ? l10n.shelfOwnedAddCta
+                            : l10n.shareSubmit),
                   ),
                 ),
               ]
@@ -886,7 +888,9 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1180),
             child: _mode == AddBookMode.shelf
-                ? _buildShelfForm(context)
+                ? (isDesktop
+                    ? _buildShelfDesktop(context)
+                    : _buildShelfForm(context))
                 : (isDesktop ? _buildDesktop(context) : _buildMobile(context)),
           ),
         ),
@@ -964,11 +968,10 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   }
 
   /// Formularul scurt pentru „add to shelf": doar ce ține de CARTE și de
-  /// progresul la citit. Fără poze, stare, oraș sau preț - nimeni în afară de
-  /// proprietar nu vede exemplarul, deci n-are cui să-i descrie starea.
+  /// progresul la citit. Fără poze, oraș sau preț - nimeni în afară de
+  /// proprietar nu vede exemplarul.
   Widget _buildShelfForm(BuildContext context) {
     final l10n = context.l10n;
-    final total = int.tryParse(_pageCountController.text.trim());
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -990,62 +993,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         ),
         _genreField(context),
         const SizedBox(height: 20),
-        // Numărul de pagini e precompletat din autocomplete, dar rămâne
-        // editabil: tirajul din mâna userului poate avea alt număr decât
-        // ediția din catalog, iar progresul se măsoară pe ediția LUI.
-        FieldLabel(l10n.shelfProgressTotalPages),
-        TextField(
-          textAlignVertical: TextAlignVertical.center,
-          controller: _pageCountController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (_) => setState(() {}),
-          decoration: InputDecoration(
-            hintText: l10n.shelfProgressTotalPages,
-            suffixIcon: _detailsLoading ? const _FieldSpinner() : null,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SegmentedButton<_ProgressUnit>(
-          segments: [
-            ButtonSegment(
-                value: _ProgressUnit.pages, label: Text(l10n.shelfProgressUnitPages)),
-            ButtonSegment(
-                value: _ProgressUnit.percent, label: Text(l10n.shelfProgressUnitPercent)),
-          ],
-          selected: {_progressUnit},
-          onSelectionChanged: (selection) {
-            final unit = selection.first;
-            // Procentul fără total n-are cum să devină pagini - vezi
-            // saveProgress din bookshelf.service.ts, care refuză exact asta.
-            if (unit == _ProgressUnit.percent && total == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.shelfProgressNeedTotal)),
-              );
-              return;
-            }
-            setState(() => _progressUnit = unit);
-          },
-        ),
-        const SizedBox(height: 12),
-        FieldLabel(_progressUnit == _ProgressUnit.pages
-            ? l10n.shelfProgressPagesRead
-            : l10n.shelfProgressPercentRead),
-        TextField(
-          textAlignVertical: TextAlignVertical.center,
-          controller: _progressController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            hintText: _progressUnit == _ProgressUnit.pages
-                ? l10n.shelfProgressPagesRead
-                : l10n.shelfProgressPercentRead,
-            suffixText: _progressUnit == _ProgressUnit.percent ? '%' : null,
-            helperText: _progressUnit == _ProgressUnit.pages && total != null
-                ? l10n.bookshelfProgressFieldOfTotal(total)
-                : null,
-          ),
-        ),
+        ..._progressFields(context),
         const SizedBox(height: 28),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
@@ -1059,6 +1007,148 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         ),
       ],
     );
+  }
+
+  /// Varianta de desktop/web a formularului „add to shelf" - aceeași
+  /// structură cu cea de listare (copertă în stânga, formular pe două
+  /// coloane în dreapta, butoanele în antet), ca cele două pagini să nu mai
+  /// arate ca două aplicații diferite pe ecran lat.
+  Widget _buildShelfDesktop(BuildContext context) {
+    final l10n = context.l10n;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 954),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 220,
+                child: _CoverPicker(
+                  selectedUrl: _selectedCoverUrl,
+                  recommended: _recommendedCovers,
+                  onSelect: (url) => setState(() => _selectedCoverUrl = url),
+                  onClear: () => setState(() => _selectedCoverUrl = null),
+                ),
+              ),
+              const SizedBox(width: 34),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _modePicker(context),
+                    const SizedBox(height: 20),
+                    Text(l10n.shareSectionBook,
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelLarge
+                            ?.copyWith(color: AppColors.mutedForeground)),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: _titleFieldWithMyBooksButton(context)),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: TextField(
+                            textAlignVertical: TextAlignVertical.center,
+                            controller: _authorController,
+                            decoration:
+                                InputDecoration(hintText: l10n.shareAuthorHint),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(child: _genreField(context)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Text(l10n.bookshelfProgressDialogTitle,
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelLarge
+                            ?.copyWith(color: AppColors.mutedForeground)),
+                    const SizedBox(height: 12),
+                    ..._progressFields(context),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Câmpurile de progres la citit, comune ambelor variante de „add to
+  /// shelf". Numărul de pagini e precompletat din autocomplete, dar rămâne
+  /// editabil: tirajul din mâna userului poate avea alt număr decât ediția
+  /// din catalog, iar progresul se măsoară pe ediția LUI.
+  List<Widget> _progressFields(BuildContext context) {
+    final l10n = context.l10n;
+    final total = int.tryParse(_pageCountController.text.trim());
+    return [
+      FieldLabel(l10n.shelfProgressTotalPages),
+      TextField(
+        textAlignVertical: TextAlignVertical.center,
+        controller: _pageCountController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: l10n.shelfProgressTotalPages,
+          suffixIcon: _detailsLoading ? const _FieldSpinner() : null,
+        ),
+      ),
+      const SizedBox(height: 12),
+      SegmentedButton<_ProgressUnit>(
+        segments: [
+          ButtonSegment(
+              value: _ProgressUnit.pages,
+              label: Text(l10n.shelfProgressUnitPages)),
+          ButtonSegment(
+              value: _ProgressUnit.percent,
+              label: Text(l10n.shelfProgressUnitPercent)),
+        ],
+        selected: {_progressUnit},
+        onSelectionChanged: (selection) {
+          final unit = selection.first;
+          // Procentul fără total n-are cum să devină pagini - vezi
+          // saveProgress din bookshelf.service.ts, care refuză exact asta.
+          if (unit == _ProgressUnit.percent && total == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.shelfProgressNeedTotal)),
+            );
+            return;
+          }
+          setState(() => _progressUnit = unit);
+        },
+      ),
+      const SizedBox(height: 12),
+      FieldLabel(_progressUnit == _ProgressUnit.pages
+          ? l10n.shelfProgressPagesRead
+          : l10n.shelfProgressPercentRead),
+      TextField(
+        textAlignVertical: TextAlignVertical.center,
+        controller: _progressController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          hintText: _progressUnit == _ProgressUnit.pages
+              ? l10n.shelfProgressPagesRead
+              : l10n.shelfProgressPercentRead,
+          suffixText: _progressUnit == _ProgressUnit.percent ? '%' : null,
+          helperText: _progressUnit == _ProgressUnit.pages && total != null
+              ? l10n.bookshelfProgressFieldOfTotal(total)
+              : null,
+        ),
+      ),
+    ];
   }
 
   Widget _buildMobile(BuildContext context) {
@@ -1159,21 +1249,6 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               emptyLabel: l10n.shareCityUnknown,
               onChanged: (value) => setState(() => _city = value),
             ),
-            const SizedBox(height: 12),
-
-            // Stare (obligatoriu, dar nu în lista explicită a userului -
-            // păstrat pentru că backend-ul îl cere).
-            DropdownButtonFormField<BookCondition>(
-              initialValue: _condition,
-              decoration:
-                  InputDecoration(hintText: l10n.filtersCondition),
-              items: [
-                for (final c in BookCondition.values)
-                  DropdownMenuItem(value: c, child: Text(c.label(l10n))),
-              ],
-              onChanged: (v) => setState(() => _condition = v ?? _condition),
-            ),
-
             const SizedBox(height: 20),
 
             ..._moreInfoSection(context),
@@ -1318,30 +1393,11 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 ),
                 ..._priceFields(context),
                 const SizedBox(height: 18),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<BookCondition>(
-                        initialValue: _condition,
-                        decoration: InputDecoration(hintText: l10n.filtersCondition),
-                        items: [
-                          for (final c in BookCondition.values)
-                            DropdownMenuItem(value: c, child: Text(c.label(l10n))),
-                        ],
-                        onChanged: (v) => setState(() => _condition = v ?? _condition),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: CityAutocomplete(
-                        value: _city,
-                        label: l10n.shareCityHint,
-                        emptyLabel: l10n.shareCityUnknown,
-                        onChanged: (value) => setState(() => _city = value),
-                      ),
-                    ),
-                  ],
+                CityAutocomplete(
+                  value: _city,
+                  label: l10n.shareCityHint,
+                  emptyLabel: l10n.shareCityUnknown,
+                  onChanged: (value) => setState(() => _city = value),
                 ),
                 const SizedBox(height: 12),
                 ..._moreInfoSection(context),

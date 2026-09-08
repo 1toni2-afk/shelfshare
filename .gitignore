@@ -70,3 +70,4 @@ frontend/test/demo/
 
 # Mediul de test (docker-compose.test.yml) - valori fictive, dar tot un fisier de mediu.
 .env.test
+.env.backup-*

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/locale/l10n_extensions.dart';
-import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
 import '../application/my_library_controller.dart';
@@ -23,7 +22,6 @@ class EditListingSheet extends ConsumerStatefulWidget {
 }
 
 class _EditListingSheetState extends ConsumerState<EditListingSheet> {
-  late BookCondition _condition = widget.userBook.condition;
   late final _languageController =
       TextEditingController(text: widget.userBook.language);
   late final _editionController =
@@ -114,7 +112,6 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
     try {
       await ref.read(myLibraryControllerProvider.notifier).editListing(
             widget.userBook.id,
-            condition: _condition,
             language: _trimmedOrNull(_languageController.text),
             edition: _trimmedOrNull(_editionController.text),
             isHardcover: _isHardcover,
@@ -166,19 +163,6 @@ class _EditListingSheetState extends ConsumerState<EditListingSheet> {
             Text(l10n.libraryEditListingTitle,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 20),
-            DropdownButtonFormField<BookCondition>(
-              initialValue: _condition,
-              decoration: InputDecoration(labelText: l10n.filtersCondition),
-              items: [
-                for (final condition in BookCondition.values)
-                  DropdownMenuItem(
-                      value: condition, child: Text(condition.label(l10n))),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _condition = value);
-              },
-            ),
-            const SizedBox(height: 16),
             TextField(
               textAlignVertical: TextAlignVertical.center,
               controller: _languageController,

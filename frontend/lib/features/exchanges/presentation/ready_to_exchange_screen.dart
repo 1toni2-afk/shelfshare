@@ -740,9 +740,31 @@ class _SafetySection extends ConsumerWidget {
     final myAck = exchange.mySafetyAck(myUserId);
     final otherAck = exchange.otherSafetyAck(myUserId);
 
-    return Card(
+    // Cat timp nu am bifat, cardul e scos in evidenta cu chenar rosu si un
+    // glow subtil: bifa e obligatorie (backendul refuza „Done" fara ea), deci
+    // trebuie sa se vada ca e o actiune ramasa, nu un text informativ.
+    return DecoratedBox(
+      decoration: myAck
+          ? const BoxDecoration()
+          : BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.destructive.withValues(alpha: 0.28),
+                  blurRadius: 14,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+      child: Card(
       margin: EdgeInsets.zero,
       color: myAck && otherAck ? AppColors.success.withValues(alpha: 0.08) : null,
+      shape: myAck
+          ? null
+          : RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: AppColors.destructive, width: 1.5),
+            ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -783,6 +805,7 @@ class _SafetySection extends ConsumerWidget {
               ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -935,7 +958,9 @@ class _ActionRow extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => _confirmDone(context, repository),
+                    onPressed: exchange.mySafetyAck(myUserId)
+                        ? () => _confirmDone(context, repository)
+                        : null,
                     child: Text(l10n.readyConfirmDone),
                   ),
                 ),
@@ -979,7 +1004,11 @@ class _ActionRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed: () => _markDone(context, repository),
+              // Fara bifa de siguranta schimbul nu se poate incheia - vezi
+              // markDone din exchanges.service.ts, care refuza si el.
+              onPressed: exchange.mySafetyAck(myUserId)
+                  ? () => _markDone(context, repository)
+                  : null,
               child: Text(l10n.readyDone),
             ),
           ),

@@ -538,6 +538,10 @@ export class BooksService {
       // iese din căutare, dar rămâne al proprietarului.
       deletedAt: null,
       hiddenAt: null,
+      // Cartea deja dată mai departe printr-un schimb/vânzare finalizat nu
+      // mai e a nimănui de aici: anunțul rămâne doar ca istoric (vezi
+      // transferListingOwnership), nu ca rezultat de căutare.
+      permanentlyTransferred: false,
       availableForSwap:
         filters.listingType != null
           ? filters.listingType === 'swap'
@@ -784,7 +788,7 @@ export class BooksService {
   async bulkAddToLibrary(
     userId: string,
     isbns: string[],
-    condition: BookCondition,
+    condition: BookCondition | undefined,
     language?: string,
   ) {
     const created: { isbn: string; userBookId: string; title: string }[] = [];
@@ -864,12 +868,14 @@ export class BooksService {
         failed.push({ title: '(fără titlu)', reason: 'Lipsește titlul' });
         continue;
       }
+      // Coloana „condition" din CSV rămâne acceptată pentru fișierele vechi,
+      // dar nu mai e completată automat: starea nu mai apare nicăieri în app.
       const conditionRaw = row['condition']?.trim().toUpperCase();
-      const condition: BookCondition =
+      const condition =
         conditionRaw &&
         (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
           ? (conditionRaw as BookCondition)
-          : 'BUNA';
+          : undefined;
 
       try {
         const userBook = await this.addToLibrary(userId, {
@@ -1122,7 +1128,12 @@ export class BooksService {
     const items = await this.prisma.userBook.findMany({
       // Coșul de gunoi (soft-delete) e listat separat prin
       // /books/library/deleted; aici afișăm doar cărțile „vii".
-      where: { userId, deletedAt: null },
+      // Cărțile date deja mai departe printr-un schimb/vânzare finalizat au
+      // trecut, ca exemplar, în biblioteca celui care le-a primit (vezi
+      // transferListingOwnership) - aici nu mai au ce căuta deloc. Istoricul
+      // lor rămâne în „Schimburile mele" și pe pagina cărții (lanțul de
+      // proveniență); nu-l dublăm în pagina unde userul își listează cărțile.
+      where: { userId, deletedAt: null, permanentlyTransferred: false },
       include: { book: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -1712,7 +1723,6 @@ export class BooksService {
         hiddenAt: null,
         availableForSwap: true,
         bookId: { in: wished.map((w) => w.bookId) },
-        condition: { in: ['NOUA', 'FOARTE_BUNA', 'BUNA'] },
       },
       include: { book: true, user: { select: OWNER_SELECT } },
       orderBy: { createdAt: 'desc' },
@@ -2025,7 +2035,6 @@ export class BooksService {
           isCurrent: listing.id === userBookId,
           ownerId: listing.user.id,
           ownerName: publicName(listing.user),
-          condition: listing.condition,
           photos: listing.photos.map((p) => this.storage.getPublicUrl(p)),
           listedAt: listing.createdAt,
           transferredAt: transfers[index].transferredAt,
@@ -2103,11 +2112,21 @@ export class BooksService {
           buyerId: userId,
         },
       }),
+      // Ambele sensuri ale schimbului: cine a cerut primește cartea cerută,
+      // iar proprietarul primește cartea oferită (sau una din bundle).
       this.prisma.exchangeRequest.findFirst({
         where: {
-          requestedBookId: originalUserBookId,
           status: 'COMPLETED',
-          requesterId: userId,
+          OR: [
+            { requestedBookId: originalUserBookId, requesterId: userId },
+            { offeredBookId: originalUserBookId, ownerId: userId },
+            {
+              ownerId: userId,
+              additionalOfferedBooks: {
+                some: { userBookId: originalUserBookId },
+              },
+            },
+          ],
         },
       }),
     ]);
@@ -2117,18 +2136,33 @@ export class BooksService {
       );
     }
 
-    const alreadyRelisted = await this.prisma.userBook.findFirst({
+    // La finalizarea schimbului/vânzării exemplarul e deja creat automat în
+    // biblioteca noului proprietar (transferListingOwnership). „Re-listarea"
+    // nu mai creează un al doilea rând, ci îl aduce pe acela în piață.
+    const existing = await this.prisma.userBook.findFirst({
       where: { previousListingId: originalUserBookId, userId },
     });
-    if (alreadyRelisted) {
-      throw new BadRequestException('Ai re-listat deja această carte');
+    if (existing) {
+      if (existing.availableForSwap || existing.isForSale || existing.isAuction) {
+        throw new BadRequestException('Ai re-listat deja această carte');
+      }
+      const relisted = await this.prisma.userBook.update({
+        where: { id: existing.id },
+        data: {
+          language: dto.language ?? existing.language,
+          edition: dto.edition ?? existing.edition,
+          isHardcover: dto.isHardcover ?? existing.isHardcover,
+          availableForSwap: true,
+        },
+        include: { book: true },
+      });
+      return this.toPublicPhotos(relisted);
     }
 
     const userBook = await this.prisma.userBook.create({
       data: {
         userId,
         bookId: original.bookId,
-        condition: dto.condition,
         language: dto.language,
         edition: dto.edition,
         isHardcover: dto.isHardcover ?? false,
@@ -2443,20 +2477,6 @@ export class BooksService {
   }
 
   /**
-   * „Emptied Shelves" - cărțile deja transferate (permanentlyTransferred).
-   * Rămân vizibile în bibliotecă ca istoric, marcate ca „schimbată/vândută" -
-   * user cerea să apară „permanent ca fiind indisponibilă în acea listare".
-   */
-  async getEmptiedShelves(userId: string) {
-    const items = await this.prisma.userBook.findMany({
-      where: { userId, permanentlyTransferred: true, deletedAt: null },
-      include: { book: true },
-      orderBy: { updatedAt: 'desc' },
-    });
-    return items.map((i) => this.toPublicPhotos(i));
-  }
-
-  /**
    * Rulează zilnic la 03:15 - șterge definitiv rândurile din user_books cu
    * `deletedAt` mai vechi de 7 zile, plus pozele lor din storage. Decuplat
    * de `deleteUserBook` (unde am făcut soft-delete) tocmai ca ștergerea reală
@@ -2532,6 +2552,17 @@ export class BooksService {
   async addPhotoUrl(userId: string, userBookId: string, url: string) {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
+
+    // `photos` sunt căi brute în storage; le trecem prin `getPublicUrl` ca
+    // să le comparăm cu URL-ul primit. Coperta aleasă în ecranul de listare
+    // poate fi chiar o poză existentă a anunțului (cazul re-listării), iar
+    // fără verificare ajungea a doua oară în galerie și consuma un slot.
+    const alreadyInGallery = userBook.photos.some(
+      (p) => this.storage.getPublicUrl(p) === url,
+    );
+    if (alreadyInGallery) {
+      return this.toPublicPhotos(userBook);
+    }
 
     if (userBook.photos.length >= MAX_PHOTOS_PER_LISTING) {
       throw new BadRequestException(

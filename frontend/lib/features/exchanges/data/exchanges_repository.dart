@@ -130,7 +130,6 @@ class ExchangesRepository {
     String? comment,
     int? communication,
     int? punctuality,
-    int? condition,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/exchanges/$id/rate', data: {
@@ -138,7 +137,6 @@ class ExchangesRepository {
       if (comment != null && comment.isNotEmpty) 'comment': comment,
       'communication': ?communication,
       'punctuality': ?punctuality,
-      'condition': ?condition,
     });
     return ExchangeRequest.fromJson(response.data as Map<String, dynamic>);
   }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../data/models/book.dart';
 import '../../../data/models/external_book_result.dart';
 import '../application/my_library_controller.dart';
 import '../data/books_repository.dart';
@@ -31,7 +30,6 @@ class _BulkAddScreenState extends ConsumerState<BulkAddScreen> {
   final _manualController = TextEditingController();
   final MobileScannerController _scannerController = MobileScannerController();
   bool _showScanner = false;
-  BookCondition _condition = BookCondition.buna;
   bool _isSubmitting = false;
   BulkAddResult? _result;
 
@@ -85,7 +83,6 @@ class _BulkAddScreenState extends ConsumerState<BulkAddScreen> {
     try {
       final result = await ref.read(booksRepositoryProvider).bulkAdd(
             _queue.map((q) => q.isbn).toList(),
-            condition: _condition,
           );
       ref.invalidate(myLibraryControllerProvider);
       if (mounted) setState(() => _result = result);
@@ -169,20 +166,6 @@ class _BulkAddScreenState extends ConsumerState<BulkAddScreen> {
                   ],
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: DropdownButtonFormField<BookCondition>(
-                initialValue: _condition,
-                decoration: InputDecoration(labelText: l10n.filtersCondition),
-                items: [
-                  for (final condition in BookCondition.values)
-                    DropdownMenuItem(value: condition, child: Text(condition.label(l10n))),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _condition = value);
-                },
-              ),
-            ),
             Expanded(
               child: _queue.isEmpty
                   ? Center(child: Text(l10n.bulkAddQueueEmpty))

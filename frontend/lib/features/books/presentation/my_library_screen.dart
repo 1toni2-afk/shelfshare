@@ -7,7 +7,6 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
@@ -28,7 +27,7 @@ class MyLibraryScreen extends ConsumerStatefulWidget {
   ConsumerState<MyLibraryScreen> createState() => _MyLibraryScreenState();
 }
 
-enum _StatusFilter { all, available, unavailable, transferred }
+enum _StatusFilter { all, available, unavailable }
 
 /// Categoria de anunț - derivată din câmpurile UserBook, nu stocată separat
 /// (nu există coloană `listingType`; vezi și add_book_screen.dart#_ListingMode,
@@ -220,15 +219,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
             userBook: item.userBook,
             status: item.status,
             selected: _selectedIds.contains(item.userBook.id),
-            onTap: item.status == _StatusFilter.transferred
-                ? () => context.push('/books/${item.userBook.id}')
-                : () => _handleTap(item.userBook),
-            onLongPress: item.status == _StatusFilter.transferred
-                ? null
-                : () => _toggleSelected(item.userBook.id),
-            onMenu: item.status == _StatusFilter.transferred
-                ? null
-                : () => _openActions(item.userBook),
+            onTap: () => _handleTap(item.userBook),
+            onLongPress: () => _toggleSelected(item.userBook.id),
+            onMenu: () => _openActions(item.userBook),
           );
         },
       );
@@ -253,15 +246,9 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
           userBook: item.userBook,
           status: item.status,
           selected: _selectedIds.contains(item.userBook.id),
-          onTap: item.status == _StatusFilter.transferred
-              ? () => context.push('/books/${item.userBook.id}')
-              : () => _handleTap(item.userBook),
-          onLongPress: item.status == _StatusFilter.transferred
-              ? null
-              : () => _toggleSelected(item.userBook.id),
-          onMenu: item.status == _StatusFilter.transferred
-              ? null
-              : () => _openActions(item.userBook),
+          onTap: () => _handleTap(item.userBook),
+          onLongPress: () => _toggleSelected(item.userBook.id),
+          onMenu: () => _openActions(item.userBook),
         );
       },
     );
@@ -323,7 +310,6 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       [
         l10n.csvHeaderTitle,
         l10n.filtersAuthor,
-        l10n.filtersCondition,
         l10n.filtersLanguage,
         l10n.csvHeaderAvailableForSwap,
         l10n.csvHeaderForSale,
@@ -333,7 +319,6 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         [
           _csvEscape(b.book.title),
           _csvEscape(b.book.author ?? ''),
-          b.condition.label(l10n),
           b.language ?? '',
           b.availableForSwap ? l10n.commonYes : l10n.commonNo,
           b.isForSale ? l10n.commonYes : l10n.commonNo,
@@ -527,29 +512,24 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   ],
                 );
               }
-              final transferred = ref.watch(emptiedShelvesProvider).value ?? const [];
               final available = [
                 for (final b in books) if (b.availableForSwap) _ShelfItem(b, _StatusFilter.available),
               ];
+              // Cărțile date deja mai departe (schimb/vânzare finalizate) NU
+              // mai apar deloc aici: exemplarul a trecut la noul proprietar
+              // (vezi transferListingOwnership), iar schimbul rămâne vizibil în
+              // „Schimburile mele". Le mai arătam ca istoric („Rafturi golite"),
+              // dar aceeași carte în două locuri, dintre care unul e chiar
+              // pagina unde îți listezi cărțile, ducea în eroare.
               final unavailable = [
                 for (final b in books)
-                  if (!b.availableForSwap && !b.permanentlyTransferred) _ShelfItem(b, _StatusFilter.unavailable),
+                  if (!b.availableForSwap) _ShelfItem(b, _StatusFilter.unavailable),
               ];
-              final transferredItems = [
-                for (final b in transferred) _ShelfItem(b, _StatusFilter.transferred),
-              ];
-              // Indisponibile ȘI transferate erau două categorii separate care,
-              // pentru user, arătau ca „aceleași cărți" (ambele sunt cărți pe care
-              // nu le mai poate schimba acum) - unificate într-un singur grup,
-              // afișat restrâns by default (vezi ExpansionTile mai jos), fiecare
-              // carte păstrându-și eticheta proprie (Indisponibilă/Transferată).
-              final unavailableOrTransferred = [...unavailable, ...transferredItems];
-              final all = [...available, ...unavailableOrTransferred];
+              final all = [...available, ...unavailable];
               final filtered = switch (_filter) {
                 _StatusFilter.all => all,
                 _StatusFilter.available => available,
-                _StatusFilter.unavailable => unavailableOrTransferred,
-                _StatusFilter.transferred => unavailableOrTransferred,
+                _StatusFilter.unavailable => unavailable,
               };
 
               final showCollapsedUnavailable = _filter == _StatusFilter.all;
@@ -587,7 +567,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                         ),
                         const SizedBox(width: 8),
                         _StatusPill(
-                          label: l10n.libraryFilterUnavailable(unavailableOrTransferred.length),
+                          label: l10n.libraryFilterUnavailable(unavailable.length),
                           selected: _filter == _StatusFilter.unavailable,
                           onTap: () => setState(() => _filter = _StatusFilter.unavailable),
                         ),
@@ -599,11 +579,11 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   const SizedBox(height: 18),
                   if (showCollapsedUnavailable) ...[
                     _categorizedView(available, trailingAdd: true),
-                    if (unavailableOrTransferred.isNotEmpty) ...[
+                    if (unavailable.isNotEmpty) ...[
                       const SizedBox(height: 18),
                       _UnavailableSection(
-                        count: unavailableOrTransferred.length,
-                        child: _categorizedView(unavailableOrTransferred),
+                        count: unavailable.length,
+                        child: _categorizedView(unavailable),
                       ),
                     ],
                   ] else
@@ -643,7 +623,6 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                             total: all.length,
                             available: available.length,
                             unavailable: unavailable.length,
-                            transferred: transferredItems.length,
                           ),
                           const SizedBox(height: 16),
                           const GenreRadarCard(),
@@ -740,11 +719,6 @@ class _StatusChipLabel extends StatelessWidget {
           AppColors.mutedForeground,
           dense ? AppColors.muted.withValues(alpha: 0.9) : AppColors.muted,
         ),
-      _StatusFilter.transferred => (
-          l10n.inventoryTransferred,
-          AppColors.accent,
-          AppColors.accent.withValues(alpha: dense ? 0.9 : 0.15),
-        ),
       _StatusFilter.all => (l10n.libraryAvailable, AppColors.accent, AppColors.accent.withValues(alpha: 0.15)),
     };
     return Container(
@@ -801,7 +775,6 @@ class _MyLibraryListRow extends StatelessWidget {
           subtitle: Text(
             [
               if (userBook.book.author != null) userBook.book.author!,
-              userBook.condition.label(context.l10n),
               if (userBook.isForSale && userBook.salePrice != null)
                 context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0))
               // „Sau vinde cu X lei" pe un anunț de Schimb - preț real, doar
@@ -903,12 +876,10 @@ class _ShelfOverviewCard extends StatelessWidget {
     required this.total,
     required this.available,
     required this.unavailable,
-    required this.transferred,
   });
   final int total;
   final int available;
   final int unavailable;
-  final int transferred;
 
   @override
   Widget build(BuildContext context) {
@@ -920,7 +891,7 @@ class _ShelfOverviewCard extends StatelessWidget {
           // Fără asta, Column-ul (implicit MainAxisSize.max) se întindea pe
           // toată înălțimea disponibilă în coloana dreaptă a layout-ului de
           // desktop - cardul ajungea cât tot ecranul, cu mult gol dedesubtul
-          // conținutului real (Available/Unavailable/Transferred/Total).
+          // conținutului real (Available/Unavailable/Total).
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -930,9 +901,6 @@ class _ShelfOverviewCard extends StatelessWidget {
             const SizedBox(height: 10),
             _OverviewRow(
                 color: AppColors.mutedForeground, label: l10n.libraryUnavailable, count: unavailable, total: total),
-            const SizedBox(height: 10),
-            _OverviewRow(
-                color: AppColors.primary, label: l10n.inventoryTransferred, count: transferred, total: total),
             const Divider(height: 28),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

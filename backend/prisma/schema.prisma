@@ -775,7 +775,10 @@ model UserBook {
   bookId String
   book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
-  condition        BookCondition
+  /// Depreciat (2026-09-08): starea declarată a exemplarului a fost scoasă
+  /// din toate formularele - pozele din anunț și cele din chat spun mai mult
+  /// decât un enum. Coloana rămâne nullable doar pentru anunțurile vechi.
+  condition        BookCondition?
   language         String?
   edition          String?
   isHardcover      Boolean       @default(false)
@@ -1651,7 +1654,7 @@ model NotificationPreference {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   type    NotificationType
-  enabled Boolean @default(true)
+  enabled Boolean          @default(true)
 
   updatedAt DateTime @updatedAt
 

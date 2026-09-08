@@ -20,6 +20,7 @@ import { CancelExchangeDto } from './dto/cancel-exchange.dto';
 import { ShareContactDto } from './dto/share-contact.dto';
 import { DoneExchangeDto } from './dto/done-exchange.dto';
 import { publicName } from '../common/utils/user-visibility';
+import { transferListingOwnership } from '../common/utils/transfer-listing';
 import {
   awardXp,
   XP_EXCHANGE_COMPLETED,
@@ -693,6 +694,18 @@ export class ExchangesService {
     this.assertStatus(request, 'ACCEPTED');
     const isRequester = userId === request.requesterId;
 
+    // Recomandările de siguranță erau obligatorii doar pe hârtie: butonul
+    // „Done" mergea și fără bifă, deci schimbul se putea încheia fără ca
+    // vreuna dintre părți să le fi citit. Fiecare parte răspunde de bifa ei.
+    const myAck = isRequester
+      ? request.requesterSafetyAckAt
+      : request.ownerSafetyAckAt;
+    if (!myAck) {
+      throw new BadRequestException(
+        'Confirmă întâi că ai citit recomandările de siguranță',
+      );
+    }
+
     let updated = await this.prisma.exchangeRequest.update({
       where: { id },
       data: isRequester
@@ -720,22 +733,24 @@ export class ExchangesService {
           },
         });
 
-        await tx.userBook.update({
-          where: { id: updated.requestedBookId },
-          data: { permanentlyTransferred: true, availableForSwap: false },
-        });
+        // Cărțile chiar își schimbă proprietarul: cea cerută pleacă de la
+        // owner la requester, cea oferită (plus bundle-ul) invers. Vezi
+        // transferListingOwnership - anunțul vechi rămâne doar ca istoric.
+        await transferListingOwnership(
+          tx,
+          updated.requestedBookId,
+          updated.requesterId,
+        );
         if (updated.offeredBookId) {
-          await tx.userBook.update({
-            where: { id: updated.offeredBookId },
-            data: { permanentlyTransferred: true, availableForSwap: false },
-          });
+          await transferListingOwnership(
+            tx,
+            updated.offeredBookId,
+            updated.ownerId,
+          );
         }
         const bundleBookIds = await this.getBundleBookIds(id, tx);
-        if (bundleBookIds.length > 0) {
-          await tx.userBook.updateMany({
-            where: { id: { in: bundleBookIds } },
-            data: { permanentlyTransferred: true, availableForSwap: false },
-          });
+        for (const bundleBookId of bundleBookIds) {
+          await transferListingOwnership(tx, bundleBookId, updated.ownerId);
         }
 
         return tx.exchangeRequest.update({

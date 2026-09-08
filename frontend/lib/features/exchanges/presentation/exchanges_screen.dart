@@ -432,7 +432,6 @@ class _Actions extends ConsumerWidget {
             comment: result.comment,
             communication: result.communication,
             punctuality: result.punctuality,
-            condition: result.condition,
           );
     }
   }
@@ -445,13 +444,11 @@ class RatingResult {
     this.comment,
     this.communication,
     this.punctuality,
-    this.condition,
   });
   final int value;
   final String? comment;
   final int? communication;
   final int? punctuality;
-  final int? condition;
 }
 
 class _RatingDialog extends StatefulWidget {
@@ -466,7 +463,6 @@ class _RatingDialogState extends State<_RatingDialog> {
   int _selected = 5;
   int? _communication;
   int? _punctuality;
-  int? _condition;
   final _commentController = TextEditingController();
 
   @override
@@ -518,11 +514,6 @@ class _RatingDialogState extends State<_RatingDialog> {
               _punctuality,
               (v) => setState(() => _punctuality = v),
             ),
-            _starRow(
-              l10n.exchangeRatingCondition,
-              _condition,
-              (v) => setState(() => _condition = v),
-            ),
             TextField(
               controller: _commentController,
               maxLines: 3,
@@ -543,7 +534,6 @@ class _RatingDialogState extends State<_RatingDialog> {
               comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
               communication: _communication,
               punctuality: _punctuality,
-              condition: _condition,
             ),
           ),
           child: Text(l10n.commonSubmit),

@@ -1,5 +1,4 @@
 import '../../l10n/app_localizations.dart';
-import 'book.dart';
 import 'user.dart';
 import 'user_book.dart';
 
@@ -187,7 +186,6 @@ class ListingHistoryEntry {
   final bool isCurrent;
   final String ownerId;
   final String? ownerName;
-  final BookCondition condition;
   final List<String> photos;
   final DateTime listedAt;
   final DateTime? transferredAt;
@@ -198,7 +196,6 @@ class ListingHistoryEntry {
     required this.isCurrent,
     required this.ownerId,
     this.ownerName,
-    required this.condition,
     this.photos = const [],
     required this.listedAt,
     this.transferredAt,
@@ -211,7 +208,6 @@ class ListingHistoryEntry {
       isCurrent: json['isCurrent'] as bool,
       ownerId: json['ownerId'] as String,
       ownerName: json['ownerName'] as String?,
-      condition: BookConditionX.fromJson(json['condition'] as String),
       photos: (json['photos'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
       listedAt: DateTime.parse(json['listedAt'] as String),
       transferredAt:

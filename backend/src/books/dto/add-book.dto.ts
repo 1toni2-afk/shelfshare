@@ -44,8 +44,12 @@ export class AddBookDto {
   @MaxLength(200)
   author?: string;
 
+  /// Depreciat - starea exemplarului nu mai e cerută nicăieri în aplicație.
+  /// Rămâne acceptat (opțional) doar ca versiunile vechi de app, care încă îl
+  /// trimit, să nu pice pe `forbidNonWhitelisted`.
+  @IsOptional()
   @IsEnum(BookCondition, { message: 'Stare invalidă' })
-  condition: BookCondition;
+  condition?: BookCondition;
 
   @IsOptional()
   @IsString()

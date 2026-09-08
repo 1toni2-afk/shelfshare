@@ -18,6 +18,7 @@ import { SetMeetingDto } from '../exchanges/dto/set-meeting.dto';
 import { CancelExchangeDto } from '../exchanges/dto/cancel-exchange.dto';
 import { ShareContactDto } from '../exchanges/dto/share-contact.dto';
 import { publicName } from '../common/utils/user-visibility';
+import { transferListingOwnership } from '../common/utils/transfer-listing';
 import { XP_SALE_COMPLETED } from '../common/utils/xp';
 
 // Offer Expiration (Milestone 3) - vezi comentariul din exchanges.service.ts.
@@ -535,10 +536,9 @@ export class OffersService {
           where: { id: updated.buyerId },
           data: { booksReceivedCount: { increment: 1 } },
         });
-        await tx.userBook.update({
-          where: { id: updated.userBookId },
-          data: { permanentlyTransferred: true, isForSale: false, availableForSwap: false },
-        });
+        // Cartea trece efectiv în biblioteca cumpărătorului, la fel ca la
+        // schimb - vezi transferListingOwnership.
+        await transferListingOwnership(tx, updated.userBookId, updated.buyerId);
 
         return tx.priceOffer.update({
           where: { id },

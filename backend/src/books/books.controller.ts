@@ -306,19 +306,12 @@ export class BooksController {
 
   /// Coșul de gunoi (Milestone 10): cărțile șterse recent (< 7 zile).
   /// Rutele mai specifice trebuie declarate ÎNAINTE de `:userBookId`, altfel
-  /// „deleted" / „emptied" ar fi capturate ca id de anunț.
+  /// „deleted" ar fi capturat ca id de anunț.
   @UseGuards(JwtAuthGuard)
   @Get('my-library/deleted')
   getDeletedUserBooks(@Req() req: Request) {
     const { userId } = req.user as AuthenticatedUser;
     return this.booksService.getDeletedUserBooks(userId!);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('my-library/emptied')
-  getEmptiedShelves(@Req() req: Request) {
-    const { userId } = req.user as AuthenticatedUser;
-    return this.booksService.getEmptiedShelves(userId!);
   }
 
   @UseGuards(JwtAuthGuard)

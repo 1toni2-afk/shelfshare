@@ -256,6 +256,10 @@ describe('ExchangesService', () => {
       ...pendingRequest,
       status: 'ACCEPTED',
       requestedBook: { book: { title: 'Cartea Cerută' } },
+      // Ambele părți au bifat recomandările de siguranță - fără asta,
+      // markDone refuză (vezi testul dedicat mai jos).
+      ownerSafetyAckAt: new Date(),
+      requesterSafetyAckAt: new Date(),
     };
 
     it('respinge daca nu esti parte in schimb', async () => {
@@ -272,6 +276,18 @@ describe('ExchangesService', () => {
       await expect(service.markDone('ex-1', 'owner-1', {})).rejects.toThrow(
         BadRequestException,
       );
+    });
+
+    it('respinge daca nu ai bifat recomandarile de siguranta', async () => {
+      prisma.exchangeRequest.findUnique.mockResolvedValue({
+        ...acceptedRequest,
+        ownerSafetyAckAt: null,
+      });
+
+      await expect(service.markDone('ex-1', 'owner-1', {})).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.exchangeRequest.update).not.toHaveBeenCalled();
     });
 
     it('doar seteaza doneAt si notifica cealalta parte cand doar unul a apasat Done', async () => {

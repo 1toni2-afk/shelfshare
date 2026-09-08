@@ -186,12 +186,6 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             label: Text('${l10n.exchangeRatingPunctuality}: ${t.avgPunctualityRating}'),
             visualDensity: VisualDensity.compact,
           ),
-        if (t.avgConditionRating != null)
-          Chip(
-            avatar: const Icon(Icons.auto_stories_outlined, size: 16),
-            label: Text('${l10n.exchangeRatingCondition}: ${t.avgConditionRating}'),
-            visualDensity: VisualDensity.compact,
-          ),
       ],
     );
   }

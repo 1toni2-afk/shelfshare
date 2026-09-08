@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
@@ -12,7 +11,6 @@ class BrowseFilters {
     this.genre,
     this.language,
     this.city,
-    this.condition,
     this.maxDistanceKm,
     this.listingType,
     this.sort,
@@ -23,7 +21,6 @@ class BrowseFilters {
   final String? genre;
   final String? language;
   final String? city;
-  final BookCondition? condition;
   final int? maxDistanceKm;
   final String? listingType;
 
@@ -38,7 +35,6 @@ class BrowseFilters {
       genre != null ||
       language != null ||
       city != null ||
-      condition != null ||
       maxDistanceKm != null ||
       listingType != null ||
       (sort != null && sort != 'popularity');
@@ -50,7 +46,6 @@ class BrowseFilters {
       genre: genre,
       language: language,
       city: city,
-      condition: condition,
       maxDistanceKm: maxDistanceKm,
       listingType: listingType,
       sort: sort,
@@ -131,7 +126,6 @@ class BrowseController extends Notifier<BrowseState> {
       genre: f.genre,
       language: f.language,
       city: f.city,
-      condition: f.condition?.toJson(),
       sort: sortingByDistance
           ? 'distance'
           : (f.sort == 'distance' ? null : f.sort),
