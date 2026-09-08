@@ -476,13 +476,39 @@ describe('BooksService', () => {
       source: 'google_books',
     });
 
-    it('nu mai cheama sursele externe cand exista o potrivire curata', async () => {
+    it('cheama sursele externe si cand exista o potrivire curata, dar o pune dupa ea', async () => {
+      // Externul e alternativa pentru ce lipseste din catalogul curat, nu un
+      // inlocuitor: randul curat ramane primul.
       prisma.$queryRaw.mockResolvedValue([curatedRow()]);
+      lookup.searchByTitle.mockResolvedValue([externalResult('Alta carte')]);
 
       const results = await service.searchExternal('Anne Frank');
 
-      expect(lookup.searchByTitle).not.toHaveBeenCalled();
+      expect(lookup.searchByTitle).toHaveBeenCalled();
+      expect(results.map((r) => r.title)).toEqual([
+        'Cine a tradat-o pe Anne Frank?',
+        'Alta carte',
+      ]);
+      expect(results[0].isCurated).toBe(true);
+    });
+
+    it('nu arata varianta externa a unei carti curate, ca sa ramana coperta noastra', async () => {
+      // Aceeasi carte, alt ISBN la Google (alt tiraj): fara dedupe pe
+      // titlu+autor ar fi aparut a doua fisa, cu miniatura de la Google.
+      prisma.$queryRaw.mockResolvedValue([curatedRow()]);
+      lookup.searchByTitle.mockResolvedValue([
+        {
+          ...externalResult('Cine a tradat-o pe Anne Frank?'),
+          author: 'Rosemary Sullivan',
+          isbn: '9780063212442',
+          coverUrl: 'https://books.google.com/coperta.jpg',
+        },
+      ]);
+
+      const results = await service.searchExternal('Anne Frank');
+
       expect(results).toHaveLength(1);
+      expect(results[0].source).toBe('catalog');
       expect(results[0].isCurated).toBe(true);
     });
 

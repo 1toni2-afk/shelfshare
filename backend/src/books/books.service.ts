@@ -116,38 +116,38 @@ export class BooksService {
     // venită gratis în răspunsul de căutare rămâne. `suggestCovers` folosește
     // varianta completă separat, pentru selectorul de coperte.
     //
-    // Catalogul propriu se caută ÎN PARALEL cu providerii externi: e singura
-    // sursă care are edițiile românești, iar căutarea lui e insensibilă la
-    // diacritice - „Stapanul Inelelor" nu întorcea nimic nici de la Google
+    // Catalogul propriu și providerii externi se caută ÎN PARALEL. Catalogul
+    // e singura sursă cu edițiile românești, iar căutarea lui e insensibilă
+    // la diacritice - „Stapanul Inelelor" nu întorcea nimic nici de la Google
     // Books (`intitle:` e potrivire de frază exactă), nici de la Open Library
     // (n-are edițiile românești), deși cartea era la noi în bază.
+    //
+    // Externul e chemat inclusiv când avem o potrivire curată: catalogul
+    // verificat manual are găuri (titluri străine, ediții noi), iar Google
+    // Books/Open Library rămân alternativa care le umple. Costă o singură
+    // cerere per interogare (fără completarea de copertă per rezultat),
+    // cache-uită 5 minute în BookLookupService.
+    //
+    // Ce NU se schimbă: rândurile curate rămân primele, iar un rezultat
+    // extern care e aceeași carte ca una din catalog cade la dedupe (vezi
+    // `mergeSearchResults`) - deci coperta afișată e mereu cea din catalogul
+    // nostru, nu miniatura de la Google.
+    //
     // Căutarea în catalog depinde de `immutable_unaccent` și de indexul FTS
     // create de migrarea books_diacritic_search. Dacă serverul pornește
     // înaintea migrării, cererea pică pe „function does not exist" - fără
-    // prinderea de aici, ar lua cu ea și rezultatele externe, adică tot
+    // prinderea de mai jos, ar lua cu ea și rezultatele externe, adică tot
     // autocomplete-ul de la „adaugă carte", care mergea și înainte.
-    const catalog = await this.searchCatalog(query).catch((error) => {
-      this.logger.warn(
-        `Căutarea în catalog a eșuat (migrarea books_diacritic_search e aplicată?): ${error}`,
-      );
-      return [] as ExternalBookResult[];
-    });
+    const [catalog, external] = await Promise.all([
+      this.searchCatalog(query).catch((error) => {
+        this.logger.warn(
+          `Căutarea în catalog a eșuat (migrarea books_diacritic_search e aplicată?): ${error}`,
+        );
+        return [] as ExternalBookResult[];
+      }),
+      this.lookup.searchByTitle(query, { skipCoverFallback: true }),
+    ]);
 
-    // Catalogul PROPRIU, verificat manual, e sursa principală: descrieri în
-    // română, editura reală, coperta de la editură. Când găsim cartea acolo,
-    // providerii externi n-au ce adăuga - deci nici nu-i mai chemăm. Asta
-    // scutește și cota zilnică de Google Books, care se epuizează des.
-    const hasCurated = catalog.some((result) => result.isCurated);
-    if (hasCurated) {
-      return this.mergeSearchResults(query, catalog, []);
-    }
-
-    // Restul catalogului sunt rânduri din importul în masă Open Library: des
-    // doar titlu + autor, fără descriere sau copertă. O potrivire acolo NU e
-    // motiv să sărim externul - el chiar poate completa ce lipsește.
-    const external = await this.lookup.searchByTitle(query, {
-      skipCoverFallback: true,
-    });
     return this.mergeSearchResults(query, catalog, external);
   }
 
@@ -267,14 +267,21 @@ export class BooksService {
       ...rest.filter((result) => !startsWithQuery(result)),
     ];
 
+    // Dedupe pe AMBELE chei (ISBN și titlu+autor), nu doar pe prima
+    // disponibilă: aceeași carte apare des cu ISBN-uri diferite în catalogul
+    // nostru și la Google (ediții/tiraje diferite), iar o cheie de ISBN
+    // nepotrivită lăsa a doua fișă să treacă - cu miniatura de la Google
+    // lângă coperta noastră, pentru aceeași carte. Cum rândurile din catalog
+    // sunt primele în `ordered`, ele câștigă mereu locul.
     const seen = new Set<string>();
     const merged: ExternalBookResult[] = [];
     for (const result of ordered) {
-      const key = result.isbn
-        ? `isbn:${result.isbn.replace(/[-\s]/g, '')}`
-        : `ta:${this.toSearchTerms(result.title).join(' ')}|${this.toSearchTerms(result.author ?? '').join(' ')}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
+      const keys: string[] = [
+        `ta:${this.toSearchTerms(result.title).join(' ')}|${this.toSearchTerms(result.author ?? '').join(' ')}`,
+      ];
+      if (result.isbn) keys.push(`isbn:${result.isbn.replace(/[-\s]/g, '')}`);
+      if (keys.some((key) => seen.has(key))) continue;
+      for (const key of keys) seen.add(key);
       merged.push(result);
       if (merged.length >= BooksService._searchResultLimit) break;
     }
