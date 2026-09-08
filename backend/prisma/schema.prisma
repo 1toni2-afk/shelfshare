@@ -775,9 +775,9 @@ model UserBook {
   bookId String
   book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
-  /// Depreciat (2026-09-08): starea declarată a exemplarului a fost scoasă
-  /// din toate formularele - pozele din anunț și cele din chat spun mai mult
-  /// decât un enum. Coloana rămâne nullable doar pentru anunțurile vechi.
+  /// Nullable: câmpul a lipsit o vreme din formulare (2026-09-08), deci
+  /// anunțurile create atunci n-au stare declarată. Formularele o cer din
+  /// nou, dar orice citire trebuie să trateze `null`.
   condition        BookCondition?
   language         String?
   edition          String?
@@ -1213,12 +1213,11 @@ model ExchangeRequest {
   requesterSafetyAckAt DateTime?
   ownerSafetyAckAt     DateTime?
 
-  // "Condition Photos" (feature backlog #14) - fiecare parte fotografiază
-  // cartea ÎNAINTE de predare (în starea ACCEPTED, alături de safety-ack/
-  // contact), ca dovadă a stării reale la momentul schimbului - închide
-  // disputele de tip "mi-a venit deteriorată" fără să depindă doar de
-  // cuvântul cuiva. Distinct de rating-ul de după (Condition 1-5), care
-  // vine abia la finalul schimbului și nu documentează nimic vizual.
+  /// Depreciate (2026-09-08): „Condition Photos" a fost scoasă din aplicație -
+  /// endpointul, secțiunea din „Ready to exchange" și câmpurile din model nu
+  /// mai există. Pozele se trimit pe chat, unde oricum ajungeau. Coloanele
+  /// rămân doar ca să nu pierdem pozele urcate până acum; nimic nu le mai
+  /// scrie și nu le mai citește.
   requesterConditionPhotos String[] @default([])
   ownerConditionPhotos     String[] @default([])
 

@@ -1854,22 +1854,6 @@ class AppLocalizationsRo extends AppLocalizations {
   String get readySafetyBothReady => 'Sunteți gata de schimb';
 
   @override
-  String get readyConditionPhotosTitle => 'Poze cu starea cărții';
-
-  @override
-  String get readyConditionPhotosSubtitle =>
-      'Fotografiază cartea înainte de predare, ca dovadă a stării ei';
-
-  @override
-  String get readyConditionPhotosOther => 'Pozele celeilalte părți';
-
-  @override
-  String get readyConditionPhotosAdd => 'Adaugă poză';
-
-  @override
-  String get readyConditionPhotosError => 'Nu am putut urca poza.';
-
-  @override
   String get readyReportIssue => 'Raportează o problemă';
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../data/models/book.dart';
 import '../../../data/models/user_book.dart';
 import '../data/books_repository.dart';
 
@@ -26,6 +27,7 @@ class MyLibraryController extends AsyncNotifier<List<UserBook>> {
 
   Future<void> editListing(
     String userBookId, {
+    required BookCondition condition,
     String? language,
     String? edition,
     required bool isHardcover,
@@ -40,6 +42,7 @@ class MyLibraryController extends AsyncNotifier<List<UserBook>> {
   }) async {
     final updated = await ref.read(booksRepositoryProvider).updateListing(
           userBookId,
+          condition: condition,
           language: language,
           edition: edition,
           isHardcover: isHardcover,
@@ -105,7 +108,6 @@ class MyLibraryController extends AsyncNotifier<List<UserBook>> {
 final deletedBooksProvider = FutureProvider<List<UserBook>>((ref) {
   return ref.watch(booksRepositoryProvider).getDeletedBooks();
 });
-
 
 final myLibraryControllerProvider =
     AsyncNotifierProvider<MyLibraryController, List<UserBook>>(

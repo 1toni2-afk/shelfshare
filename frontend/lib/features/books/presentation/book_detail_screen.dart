@@ -691,6 +691,13 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             if (book.book.genre != null) _GenrePill(label: book.book.genre!),
+            // Anunțurile create cât timp starea a fost scoasă din formulare
+            // n-au niciuna - atunci pilula lipsește, nu arată „necunoscut".
+            if (book.condition != null)
+              _OutlinePill(
+                icon: Icons.auto_stories_outlined,
+                label: book.condition!.label(l10n),
+              ),
             if (book.isHardcover)
               _OutlinePill(
                 icon: Icons.menu_book_outlined,
@@ -1623,7 +1630,7 @@ class _HistoryHop extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  '${l10n.bookDetailHistoryListedOn(_formatDate(entry.listedAt))}'
+                  '${entry.condition != null ? '${entry.condition!.label(l10n)} · ' : ''}${l10n.bookDetailHistoryListedOn(_formatDate(entry.listedAt))}'
                   '${entry.transferredAt != null ? l10n.bookDetailHistoryTransferredOn(entry.transferType == 'sale' ? l10n.bookDetailHistorySold : l10n.bookDetailHistoryExchanged, _formatDate(entry.transferredAt!)) : entry.isCurrent ? l10n.bookDetailHistoryCurrentlyOwned : ''}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
                 ),

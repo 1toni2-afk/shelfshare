@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../data/models/book.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/browser_download.dart';
 import '../../../l10n/app_localizations.dart';
@@ -310,6 +311,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       [
         l10n.csvHeaderTitle,
         l10n.filtersAuthor,
+        l10n.filtersCondition,
         l10n.filtersLanguage,
         l10n.csvHeaderAvailableForSwap,
         l10n.csvHeaderForSale,
@@ -319,6 +321,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         [
           _csvEscape(b.book.title),
           _csvEscape(b.book.author ?? ''),
+          b.condition?.label(l10n) ?? '',
           b.language ?? '',
           b.availableForSwap ? l10n.commonYes : l10n.commonNo,
           b.isForSale ? l10n.commonYes : l10n.commonNo,
@@ -775,6 +778,7 @@ class _MyLibraryListRow extends StatelessWidget {
           subtitle: Text(
             [
               if (userBook.book.author != null) userBook.book.author!,
+              if (userBook.condition != null) userBook.condition!.label(context.l10n),
               if (userBook.isForSale && userBook.salePrice != null)
                 context.l10n.priceLei(userBook.salePrice!.toStringAsFixed(0))
               // „Sau vinde cu X lei" pe un anunț de Schimb - preț real, doar

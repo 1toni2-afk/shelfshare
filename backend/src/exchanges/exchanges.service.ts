@@ -37,7 +37,6 @@ const EXCHANGE_TIMEOUT_DAYS = 7;
 
 // "Condition Photos" (feature backlog #14) - suficient să documenteze coperta
 // + eventuale defecte, fără să transforme asta într-o galerie foto.
-const MAX_CONDITION_PHOTOS = 4;
 
 const CANCEL_REASON_MESSAGES: Record<string, string> = {
   no_show: 'cealaltă persoană nu s-a prezentat',
@@ -113,20 +112,12 @@ export class ExchangesService {
     T extends {
       requester: { name: string | null; nameVisible: boolean };
       owner: { name: string | null; nameVisible: boolean };
-      requesterConditionPhotos: string[];
-      ownerConditionPhotos: string[];
     },
   >(request: T): T {
     return {
       ...request,
       requester: { ...request.requester, name: publicName(request.requester) },
       owner: { ...request.owner, name: publicName(request.owner) },
-      requesterConditionPhotos: request.requesterConditionPhotos.map((p) =>
-        this.storage.getPublicUrl(p),
-      ),
-      ownerConditionPhotos: request.ownerConditionPhotos.map((p) =>
-        this.storage.getPublicUrl(p),
-      ),
     };
   }
 
@@ -1069,38 +1060,6 @@ export class ExchangesService {
         exchangeRequestId: id,
       });
     }
-
-    return this.sanitizeParties(updated);
-  }
-
-  /**
-   * "Condition Photos" (feature backlog #14) - fiecare parte urcă poze cu
-   * starea cărții înainte de predare. Gate pe ACCEPTED, ca la safety-ack/
-   * contact - nu are sens după ce schimbul e deja finalizat sau anulat.
-   */
-  async addConditionPhoto(id: string, userId: string, fileBuffer: Buffer) {
-    const request = await this.findOwnedRequest(id, userId);
-    this.assertStatus(request, 'ACCEPTED');
-    const isRequester = userId === request.requesterId;
-    const existing = isRequester
-      ? request.requesterConditionPhotos
-      : request.ownerConditionPhotos;
-
-    if (existing.length >= MAX_CONDITION_PHOTOS) {
-      throw new BadRequestException(
-        `Poți adăuga maximum ${MAX_CONDITION_PHOTOS} poze`,
-      );
-    }
-
-    const path = await this.storage.uploadImage(fileBuffer, 'exchange-condition');
-
-    const updated = await this.prisma.exchangeRequest.update({
-      where: { id },
-      data: isRequester
-        ? { requesterConditionPhotos: { push: path } }
-        : { ownerConditionPhotos: { push: path } },
-      include: INCLUDE_FULL,
-    });
 
     return this.sanitizeParties(updated);
   }

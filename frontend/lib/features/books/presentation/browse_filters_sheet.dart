@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/widgets/city_autocomplete.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../data/models/book.dart';
 import '../application/browse_controller.dart';
 import '../data/books_repository.dart';
 
@@ -33,6 +34,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
   late final _genreController = TextEditingController(text: widget.initial.genre);
   late final _languageController = TextEditingController(text: widget.initial.language);
   late String? _city = widget.initial.city;
+  late BookCondition? _condition = widget.initial.condition;
   late int? _maxDistanceKm = widget.initial.maxDistanceKm;
   late String? _listingType = widget.initial.listingType;
 
@@ -125,6 +127,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
       _genreController.clear();
       _languageController.clear();
       _city = null;
+      _condition = null;
       _maxDistanceKm = null;
       _listingType = null;
     });
@@ -138,6 +141,7 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
         genre: _genreController.text.trim().isEmpty ? null : _genreController.text.trim(),
         language: _languageController.text.trim().isEmpty ? null : _languageController.text.trim(),
         city: _city,
+        condition: _condition,
         maxDistanceKm: _maxDistanceKm,
         listingType: _listingType,
         // Sortarea nu se editează din acest sheet - o păstrăm pe cea aleasă
@@ -228,6 +232,17 @@ class _BrowseFiltersSheetState extends ConsumerState<_BrowseFiltersSheet> {
               label: l10n.filtersAnyCity,
               emptyLabel: l10n.shareCityUnknown,
               onChanged: (value) => setState(() => _city = value),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<BookCondition?>(
+              initialValue: _condition,
+              decoration: InputDecoration(labelText: l10n.filtersCondition),
+              items: [
+                DropdownMenuItem(value: null, child: Text(l10n.filtersAnyCondition)),
+                for (final condition in BookCondition.values)
+                  DropdownMenuItem(value: condition, child: Text(condition.label(l10n))),
+              ],
+              onChanged: (value) => setState(() => _condition = value),
             ),
             const SizedBox(height: 8),
             SwitchListTile(

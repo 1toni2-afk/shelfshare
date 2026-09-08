@@ -1879,23 +1879,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get readySafetyBothReady => 'Ihr seid bereit für den Tausch';
 
   @override
-  String get readyConditionPhotosTitle => 'Fotos zum Buchzustand';
-
-  @override
-  String get readyConditionPhotosSubtitle =>
-      'Fotografiere das Buch vor der Übergabe als Nachweis seines Zustands';
-
-  @override
-  String get readyConditionPhotosOther => 'Fotos der anderen Partei';
-
-  @override
-  String get readyConditionPhotosAdd => 'Foto hinzufügen';
-
-  @override
-  String get readyConditionPhotosError =>
-      'Das Foto konnte nicht hochgeladen werden.';
-
-  @override
   String get readyReportIssue => 'Problem melden';
 
   @override

@@ -868,14 +868,12 @@ export class BooksService {
         failed.push({ title: '(fără titlu)', reason: 'Lipsește titlul' });
         continue;
       }
-      // Coloana „condition" din CSV rămâne acceptată pentru fișierele vechi,
-      // dar nu mai e completată automat: starea nu mai apare nicăieri în app.
       const conditionRaw = row['condition']?.trim().toUpperCase();
-      const condition =
+      const condition: BookCondition =
         conditionRaw &&
         (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
           ? (conditionRaw as BookCondition)
-          : undefined;
+          : 'BUNA';
 
       try {
         const userBook = await this.addToLibrary(userId, {
@@ -1737,6 +1735,13 @@ export class BooksService {
         hiddenAt: null,
         availableForSwap: true,
         bookId: { in: wished.map((w) => w.bookId) },
+        // Nu propunem cărți uzate ca potrivire pentru wishlist. `null` intră
+        // în listă: anunțurile create cât timp starea a lipsit din formulare
+        // n-au cum să fie judecate, iar excluderea lor le-ar ascunde de tot.
+        OR: [
+          { condition: { in: ['NOUA', 'FOARTE_BUNA', 'BUNA'] } },
+          { condition: null },
+        ],
       },
       include: { book: true, user: { select: OWNER_SELECT } },
       orderBy: { createdAt: 'desc' },
@@ -2049,6 +2054,7 @@ export class BooksService {
           isCurrent: listing.id === userBookId,
           ownerId: listing.user.id,
           ownerName: publicName(listing.user),
+          condition: listing.condition,
           photos: listing.photos.map((p) => this.storage.getPublicUrl(p)),
           listedAt: listing.createdAt,
           transferredAt: transfers[index].transferredAt,
@@ -2163,6 +2169,7 @@ export class BooksService {
       const relisted = await this.prisma.userBook.update({
         where: { id: existing.id },
         data: {
+          condition: dto.condition ?? existing.condition,
           language: dto.language ?? existing.language,
           edition: dto.edition ?? existing.edition,
           isHardcover: dto.isHardcover ?? existing.isHardcover,
@@ -2177,6 +2184,7 @@ export class BooksService {
       data: {
         userId,
         bookId: original.bookId,
+        condition: dto.condition,
         language: dto.language,
         edition: dto.edition,
         isHardcover: dto.isHardcover ?? false,

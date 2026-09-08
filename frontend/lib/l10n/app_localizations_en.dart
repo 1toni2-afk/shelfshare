@@ -1850,22 +1850,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readySafetyBothReady => 'You are ready to exchange';
 
   @override
-  String get readyConditionPhotosTitle => 'Book condition photos';
-
-  @override
-  String get readyConditionPhotosSubtitle =>
-      'Photograph the book before handoff, as proof of its condition';
-
-  @override
-  String get readyConditionPhotosOther => 'The other party\'s photos';
-
-  @override
-  String get readyConditionPhotosAdd => 'Add photo';
-
-  @override
-  String get readyConditionPhotosError => 'Couldn\'t upload the photo.';
-
-  @override
   String get readyReportIssue => 'Report an issue';
 
   @override

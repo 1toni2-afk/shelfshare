@@ -1854,22 +1854,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get readySafetyBothReady => 'Készen álltok a cserére';
 
   @override
-  String get readyConditionPhotosTitle => 'Fotók a könyv állapotáról';
-
-  @override
-  String get readyConditionPhotosSubtitle =>
-      'Fényképezd le a könyvet átadás előtt, az állapotának bizonyítékaként';
-
-  @override
-  String get readyConditionPhotosOther => 'A másik fél fotói';
-
-  @override
-  String get readyConditionPhotosAdd => 'Fotó hozzáadása';
-
-  @override
-  String get readyConditionPhotosError => 'Nem sikerült feltölteni a fotót.';
-
-  @override
   String get readyReportIssue => 'Probléma bejelentése';
 
   @override

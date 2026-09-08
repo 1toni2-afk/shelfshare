@@ -22,6 +22,7 @@ void main() {
         id: 'ub-${value.id}',
         userId: owner,
         book: value,
+        condition: BookCondition.buna,
         createdAt: DateTime(2026, 9, 1),
       );
 

@@ -2,13 +2,17 @@ import 'book.dart';
 import 'user.dart';
 import 'wishlist_item.dart';
 
-/// Exemplarul concret al unei cărți deținut de un utilizator - pozele
-/// reale, disponibilitatea pentru schimb.
+/// Exemplarul concret al unei cărți deținut de un utilizator - starea
+/// fizică, pozele reale, disponibilitatea pentru schimb.
 class UserBook {
   final String id;
   final String userId;
   final Book book;
   final PublicUser? owner; // prezent doar în /books/browse
+  /// Starea declarată a exemplarului. Null pentru anunțurile create cât
+  /// timp câmpul a fost scos din formulare (coloana a rămas nullable), deci
+  /// orice afișare trebuie să trateze cazul.
+  final BookCondition? condition;
   final String? language;
   final String? edition;
   final bool isHardcover;
@@ -78,6 +82,7 @@ class UserBook {
     required this.userId,
     required this.book,
     this.owner,
+    this.condition,
     this.language,
     this.edition,
     this.isHardcover = false,
@@ -114,6 +119,7 @@ class UserBook {
       owner: json['user'] != null
           ? PublicUser.fromJson(json['user'] as Map<String, dynamic>)
           : null,
+      condition: BookConditionX.fromJsonOrNull(json['condition'] as String?),
       language: json['language'] as String?,
       edition: json['edition'] as String?,
       isHardcover: json['isHardcover'] as bool? ?? false,

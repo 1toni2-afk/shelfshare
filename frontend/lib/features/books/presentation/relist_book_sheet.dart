@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/locale/l10n_extensions.dart';
+import '../../../data/models/book.dart';
 import '../data/auctions_repository.dart';
 import '../data/books_repository.dart';
 import '../../../shared/utils/image_upload.dart';
@@ -37,6 +38,7 @@ class _RelistBookSheet extends ConsumerStatefulWidget {
 
 class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
   final _priceController = TextEditingController();
+  BookCondition _condition = BookCondition.buna;
   bool _isForSale = false;
   bool _isNegotiable = true;
   bool _isAuction = false;
@@ -81,9 +83,10 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
     }
     setState(() => _isSubmitting = true);
     try {
-      final userBook = await ref
-          .read(booksRepositoryProvider)
-          .relistBook(widget.originalUserBookId);
+      final userBook = await ref.read(booksRepositoryProvider).relistBook(
+            widget.originalUserBookId,
+            condition: _condition,
+          );
       for (final photo in _photos) {
         await ref.read(booksRepositoryProvider).addPhoto(
               userBook.id,
@@ -144,6 +147,17 @@ class _RelistBookSheetState extends ConsumerState<_RelistBookSheet> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 20),
+            DropdownButtonFormField<BookCondition>(
+              initialValue: _condition,
+              decoration: InputDecoration(labelText: l10n.filtersCondition),
+              items: [
+                for (final condition in BookCondition.values)
+                  DropdownMenuItem(value: condition, child: Text(condition.label(l10n))),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => _condition = value);
+              },
+            ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.addBookForSaleSwitch),

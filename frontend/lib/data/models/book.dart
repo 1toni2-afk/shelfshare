@@ -1,3 +1,4 @@
+import '../../l10n/app_localizations.dart';
 
 class BookGenre {
   final String genre;
@@ -167,6 +168,65 @@ class AuthorStatEntry {
       author: json['author'] as String,
       count: json['count'] as int,
     );
+  }
+}
+
+enum BookCondition { noua, foarteBuna, buna, acceptabila }
+
+extension BookConditionX on BookCondition {
+  /// Varianta tolerantă: `null` pentru anunțurile fără stare declarată
+  /// (coloana e nullable) sau pentru o valoare pe care n-o cunoaștem.
+  static BookCondition? fromJsonOrNull(String? value) {
+    if (value == null) return null;
+    try {
+      return fromJson(value);
+    } on ArgumentError {
+      return null;
+    }
+  }
+
+  static BookCondition fromJson(String value) {
+    switch (value) {
+      case 'NOUA':
+        return BookCondition.noua;
+      case 'FOARTE_BUNA':
+        return BookCondition.foarteBuna;
+      case 'BUNA':
+        return BookCondition.buna;
+      case 'ACCEPTABILA':
+        return BookCondition.acceptabila;
+      default:
+        throw ArgumentError('Stare necunoscută: $value');
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case BookCondition.noua:
+        return 'NOUA';
+      case BookCondition.foarteBuna:
+        return 'FOARTE_BUNA';
+      case BookCondition.buna:
+        return 'BUNA';
+      case BookCondition.acceptabila:
+        return 'ACCEPTABILA';
+    }
+  }
+
+  /// Eticheta tradusă. Numele intern al enum-ului rămâne în română fiindcă
+  /// oglindește valorile din baza de date (NOUA, FOARTE_BUNA, ...), dar textul
+  /// afișat trebuie să urmeze limba aplicației.
+  String label(AppLocalizations l10n) {
+    switch (this) {
+      case BookCondition.noua:
+        return l10n.bookConditionNew;
+      case BookCondition.foarteBuna:
+        return l10n.bookConditionVeryGood;
+      case BookCondition.buna:
+        return l10n.bookConditionGood;
+      case BookCondition.acceptabila:
+        return l10n.bookConditionAcceptable;
+    }
   }
 }
 

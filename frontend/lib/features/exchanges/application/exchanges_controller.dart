@@ -71,6 +71,7 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
     String? comment,
     int? communication,
     int? punctuality,
+    int? condition,
   }) =>
       _apply((r) => r.rate(
             id,
@@ -78,6 +79,7 @@ class ExchangesController extends AsyncNotifier<ExchangesData> {
             comment: comment,
             communication: communication,
             punctuality: punctuality,
+            condition: condition,
           ));
 
   Future<void> setMeeting(

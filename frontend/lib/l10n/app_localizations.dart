@@ -3364,36 +3364,6 @@ abstract class AppLocalizations {
   /// **'Sunteți gata de schimb'**
   String get readySafetyBothReady;
 
-  /// No description provided for @readyConditionPhotosTitle.
-  ///
-  /// In ro, this message translates to:
-  /// **'Poze cu starea cărții'**
-  String get readyConditionPhotosTitle;
-
-  /// No description provided for @readyConditionPhotosSubtitle.
-  ///
-  /// In ro, this message translates to:
-  /// **'Fotografiază cartea înainte de predare, ca dovadă a stării ei'**
-  String get readyConditionPhotosSubtitle;
-
-  /// No description provided for @readyConditionPhotosOther.
-  ///
-  /// In ro, this message translates to:
-  /// **'Pozele celeilalte părți'**
-  String get readyConditionPhotosOther;
-
-  /// No description provided for @readyConditionPhotosAdd.
-  ///
-  /// In ro, this message translates to:
-  /// **'Adaugă poză'**
-  String get readyConditionPhotosAdd;
-
-  /// No description provided for @readyConditionPhotosError.
-  ///
-  /// In ro, this message translates to:
-  /// **'Nu am putut urca poza.'**
-  String get readyConditionPhotosError;
-
   /// No description provided for @readyReportIssue.
   ///
   /// In ro, this message translates to:

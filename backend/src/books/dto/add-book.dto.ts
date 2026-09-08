@@ -44,9 +44,9 @@ export class AddBookDto {
   @MaxLength(200)
   author?: string;
 
-  /// Depreciat - starea exemplarului nu mai e cerută nicăieri în aplicație.
-  /// Rămâne acceptat (opțional) doar ca versiunile vechi de app, care încă îl
-  /// trimit, să nu pice pe `forbidNonWhitelisted`.
+  /// Opțional, nu obligatoriu: coloana e nullable, iar anunțurile create cât
+  /// timp câmpul a lipsit din formulare n-au stare. Formularul o trimite din
+  /// nou, dar un client care n-o trimite nu trebuie respins.
   @IsOptional()
   @IsEnum(BookCondition, { message: 'Stare invalidă' })
   condition?: BookCondition;

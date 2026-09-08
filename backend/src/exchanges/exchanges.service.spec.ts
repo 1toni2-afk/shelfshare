@@ -37,8 +37,6 @@ describe('ExchangesService', () => {
     status: 'PENDING',
     requester: { name: 'Requester Nume', nameVisible: true },
     owner: { name: 'Owner Nume', nameVisible: true },
-    requesterConditionPhotos: [],
-    ownerConditionPhotos: [],
   };
 
   beforeEach(async () => {
@@ -138,9 +136,7 @@ describe('ExchangesService', () => {
       id: 'ex-new',
       requester: { name: 'Requester Nume', nameVisible: true },
       owner: { name: 'Owner Nume', nameVisible: true },
-      requesterConditionPhotos: [],
-      ownerConditionPhotos: [],
-    };
+        };
 
     it('creeaza cererea si notifica proprietarul', async () => {
       prisma.userBook.findUnique.mockResolvedValue(requestedUserBook);

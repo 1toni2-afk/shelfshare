@@ -73,8 +73,6 @@ class ExchangeRequest {
   final DateTime? ownerContactSharedAt;
   final DateTime? requesterSafetyAckAt;
   final DateTime? ownerSafetyAckAt;
-  final List<String> requesterConditionPhotos;
-  final List<String> ownerConditionPhotos;
   final DateTime? requesterDoneAt;
   final DateTime? ownerDoneAt;
   final String? cancelReason;
@@ -107,8 +105,6 @@ class ExchangeRequest {
     this.ownerContactSharedAt,
     this.requesterSafetyAckAt,
     this.ownerSafetyAckAt,
-    this.requesterConditionPhotos = const [],
-    this.ownerConditionPhotos = const [],
     this.requesterDoneAt,
     this.ownerDoneAt,
     this.cancelReason,
@@ -162,14 +158,6 @@ class ExchangeRequest {
 
   bool otherSafetyAck(String myUserId) =>
       isRequester(myUserId) ? ownerSafetyAckAt != null : requesterSafetyAckAt != null;
-
-  /// Pozele urcate de MINE cu starea cărții - vezi feature backlog #14.
-  List<String> myConditionPhotos(String myUserId) =>
-      isRequester(myUserId) ? requesterConditionPhotos : ownerConditionPhotos;
-
-  /// Pozele urcate de cealaltă parte.
-  List<String> otherConditionPhotos(String myUserId) =>
-      isRequester(myUserId) ? ownerConditionPhotos : requesterConditionPhotos;
 
   bool get isReadyToExchange =>
       status == ExchangeStatus.accepted &&
@@ -226,9 +214,6 @@ class ExchangeRequest {
       ownerContactSharedAt: parseDate('ownerContactSharedAt'),
       requesterSafetyAckAt: parseDate('requesterSafetyAckAt'),
       ownerSafetyAckAt: parseDate('ownerSafetyAckAt'),
-      requesterConditionPhotos:
-          (json['requesterConditionPhotos'] as List?)?.cast<String>() ?? const [],
-      ownerConditionPhotos: (json['ownerConditionPhotos'] as List?)?.cast<String>() ?? const [],
       requesterDoneAt: parseDate('requesterDoneAt'),
       ownerDoneAt: parseDate('ownerDoneAt'),
       cancelReason: json['cancelReason'] as String?,

@@ -12,7 +12,7 @@ export class BulkAddBooksDto {
   @IsISBN(undefined, { each: true, message: 'ISBN invalid' })
   isbns: string[];
 
-  /// Depreciat - vezi AddBookDto.condition.
+  /// Opțional - vezi AddBookDto.condition.
   @IsOptional()
   @IsEnum(BookCondition, { message: 'Stare invalidă' })
   condition?: BookCondition;

@@ -113,6 +113,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   bool _isSubmitting = false;
   bool _showMoreInfo = false;
   bool _isHardcover = false;
+  BookCondition _condition = BookCondition.buna;
   _ListingMode _listingMode = _ListingMode.swap;
   int _auctionDurationHours = 24;
   bool _isNegotiable = true;
@@ -500,6 +501,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       if (book.seriesNumber != null) {
         _seriesNumberController.text = book.seriesNumber!.toString();
       }
+      _condition = userBook.condition ?? _condition;
       _isHardcover = userBook.isHardcover;
       _isbnFromAutocomplete = book.isbn;
       final cover = userBook.primaryImageUrl;
@@ -761,6 +763,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 author: _authorController.text.trim().isEmpty
                     ? null
                     : _authorController.text.trim(),
+                condition: _condition,
                 isHardcover: _isHardcover,
                 genre: _genreController.text.trim().isEmpty
                     ? null
@@ -1282,6 +1285,18 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
               emptyLabel: l10n.shareCityUnknown,
               onChanged: (value) => setState(() => _city = value),
             ),
+            const SizedBox(height: 12),
+
+            // 8. Starea exemplarului.
+            DropdownButtonFormField<BookCondition>(
+              initialValue: _condition,
+              decoration: InputDecoration(hintText: l10n.filtersCondition),
+              items: [
+                for (final c in BookCondition.values)
+                  DropdownMenuItem(value: c, child: Text(c.label(l10n))),
+              ],
+              onChanged: (v) => setState(() => _condition = v ?? _condition),
+            ),
             const SizedBox(height: 20),
 
             ..._moreInfoSection(context),
@@ -1426,11 +1441,30 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
                 ),
                 ..._priceFields(context),
                 const SizedBox(height: 18),
-                CityAutocomplete(
-                  value: _city,
-                  label: l10n.shareCityHint,
-                  emptyLabel: l10n.shareCityUnknown,
-                  onChanged: (value) => setState(() => _city = value),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<BookCondition>(
+                        initialValue: _condition,
+                        decoration: InputDecoration(hintText: l10n.filtersCondition),
+                        items: [
+                          for (final c in BookCondition.values)
+                            DropdownMenuItem(value: c, child: Text(c.label(l10n))),
+                        ],
+                        onChanged: (v) => setState(() => _condition = v ?? _condition),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: CityAutocomplete(
+                        value: _city,
+                        label: l10n.shareCityHint,
+                        emptyLabel: l10n.shareCityUnknown,
+                        onChanged: (value) => setState(() => _city = value),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 ..._moreInfoSection(context),

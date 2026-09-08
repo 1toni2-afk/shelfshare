@@ -148,6 +148,7 @@ class BooksRepository {
     String? genre,
     String? language,
     String? city,
+    String? condition,
     String? sort,
     String? fromCity,
     int? maxDistanceKm,
@@ -162,6 +163,7 @@ class BooksRepository {
       if (genre != null && genre.isNotEmpty) 'genre': genre,
       if (language != null && language.isNotEmpty) 'language': language,
       if (city != null && city.isNotEmpty) 'city': city,
+      if (condition != null && condition.isNotEmpty) 'condition': condition,
       if (sort != null && sort.isNotEmpty) 'sort': sort,
       if (fromCity != null && fromCity.isNotEmpty) 'fromCity': fromCity,
       if (listingType != null && listingType.isNotEmpty) 'listingType': listingType,
@@ -448,6 +450,7 @@ class BooksRepository {
     String? language,
     String? edition,
     bool isHardcover = false,
+    BookCondition? condition,
     // Câmpuri noi (Milestone 10): metadata operei + câmpuri per exemplar.
     String? genre,
     String? series,
@@ -467,6 +470,7 @@ class BooksRepository {
       if (isbn != null && isbn.isNotEmpty) 'isbn': isbn,
       if (title != null && title.isNotEmpty) 'title': title,
       if (author != null && author.isNotEmpty) 'author': author,
+      if (condition != null) 'condition': condition.toJson(),
       if (language != null && language.isNotEmpty) 'language': language,
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
@@ -534,6 +538,7 @@ class BooksRepository {
   /// timeout-ul peste cel implicit de 10s al clientului Dio.
   Future<BulkAddResult> bulkAdd(
     List<String> isbns, {
+    BookCondition? condition,
     String? language,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
@@ -541,6 +546,7 @@ class BooksRepository {
       '/books/bulk',
       data: {
         'isbns': isbns,
+        if (condition != null) 'condition': condition.toJson(),
         if (language != null && language.isNotEmpty) 'language': language,
       },
       options: Options(sendTimeout: const Duration(seconds: 60), receiveTimeout: const Duration(seconds: 60)),
@@ -548,7 +554,7 @@ class BooksRepository {
     return BulkAddResult.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Import CSV de anunțuri (title,author,isbn,language) - anunțuri
+  /// Import CSV de anunțuri (title,author,isbn,condition,language) - anunțuri
   /// noi de schimb (fără vânzare, care cere poze urcate separat - vezi
   /// backend). Distinct de importCsv() al BookshelfRepository, care
   /// populează statusul de citit, nu creează anunțuri.
@@ -567,12 +573,14 @@ class BooksRepository {
 
   Future<UserBook> relistBook(
     String originalUserBookId, {
+    BookCondition? condition,
     String? language,
     String? edition,
     bool isHardcover = false,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post('/books/$originalUserBookId/relist', data: {
+      if (condition != null) 'condition': condition.toJson(),
       if (language != null && language.isNotEmpty) 'language': language,
       if (edition != null && edition.isNotEmpty) 'edition': edition,
       'isHardcover': isHardcover,
@@ -614,6 +622,7 @@ class BooksRepository {
   /// oricum că există cel puțin o poză înainte de a permite isForSale=true).
   Future<UserBook> updateListing(
     String userBookId, {
+    BookCondition? condition,
     String? language,
     String? edition,
     required bool isHardcover,
@@ -628,6 +637,7 @@ class BooksRepository {
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.patch('/books/$userBookId', data: {
+      if (condition != null) 'condition': condition.toJson(),
       'language': language,
       'edition': edition,
       'isHardcover': isHardcover,
