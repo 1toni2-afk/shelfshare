@@ -1165,7 +1165,7 @@
     "settingsAnalyticsTitle": "Usage statistics",
     "settingsAnalyticsSubtitle": "Helps us see which features get used",
     "settingsAnalyticsSwitch": "Send anonymous statistics",
-    "settingsAnalyticsHelp": "We send Google Analytics only the screens you open and actions such as “listed a book”. Never your name, your email address or anything you write in chat. You can turn this off at any time and the app works exactly the same.",
+    "settingsAnalyticsHelp": "We send Google Analytics only the screens you open, actions such as “listed a book”, what you search for (title or author) and device identifiers, including the Android advertising ID. Never your name, your email address or anything you write in chat. They are on by default; you can turn them off here at any time and the app works exactly the same.",
     "profileListingPrivacySubtitle": "Choose which listing types show up in public search and discover for other users.",
     "profileHideAllListingsButton": "Make all listings private",
     "profileHideAllListingsConfirm": "All your listings (swaps, sales, donations, auctions) become private and disappear from search/discover for other users. You can turn each type back on individually below at any time.",

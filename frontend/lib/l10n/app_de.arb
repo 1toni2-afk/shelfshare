@@ -1156,7 +1156,7 @@
     "settingsAnalyticsTitle": "Nutzungsstatistiken",
     "settingsAnalyticsSubtitle": "Hilft uns zu sehen, welche Funktionen genutzt werden",
     "settingsAnalyticsSwitch": "Anonyme Statistiken senden",
-    "settingsAnalyticsHelp": "An Google Analytics senden wir nur die Bildschirme, die du öffnest, und Aktionen wie „ein Buch eingestellt“. Niemals deinen Namen, deine E-Mail-Adresse oder das, was du im Chat schreibst. Du kannst dies jederzeit ausschalten, die App funktioniert genauso weiter.",
+    "settingsAnalyticsHelp": "Wir senden an Google Analytics nur die von dir geöffneten Bildschirme, Aktionen wie „ein Buch eingestellt“, deine Suchbegriffe (Titel oder Autor) und Gerätekennungen, einschließlich der Android-Werbe-ID. Niemals deinen Namen, deine E-Mail-Adresse oder was du im Chat schreibst. Sie sind standardmäßig aktiviert; du kannst sie hier jederzeit ausschalten, die App funktioniert genauso weiter.",
     "profileListingPrivacySubtitle": "Wähle, welche Anzeigetypen in der öffentlichen Suche und Entdeckung für andere Nutzer sichtbar sind.",
     "profileHideAllListingsButton": "Alle Anzeigen privat machen",
     "profileHideAllListingsConfirm": "Alle deine Anzeigen (Tausch, Verkauf, Spende, Auktion) werden privat und verschwinden für andere Nutzer aus Suche/Entdeckung. Du kannst jeden Typ unten jederzeit einzeln wieder aktivieren.",

@@ -3270,7 +3270,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get settingsAnalyticsHelp =>
-      'A Google Analytics felé csak a megnyitott képernyőket és az olyan műveleteket küldjük, mint a „könyvet hirdetett meg”. Soha nem a nevedet, az e-mail-címedet vagy azt, amit a csevegésbe írsz. Bármikor kikapcsolhatod, az alkalmazás ugyanúgy működik.';
+      'A Google Analytics felé csak a megnyitott képernyőket, az olyan műveleteket, mint a „könyvet hirdetett meg”, a keresett kifejezéseket (cím vagy szerző) és eszközazonosítókat küldünk, köztük az Android hirdetésazonosítót. A neved, az e-mail-címed vagy a cseten írottak soha. Alapértelmezés szerint be van kapcsolva; itt bármikor kikapcsolhatod, az alkalmazás ugyanúgy működik.';
 
   @override
   String get profileListingPrivacySubtitle =>

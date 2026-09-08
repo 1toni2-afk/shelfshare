@@ -3316,7 +3316,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsAnalyticsHelp =>
-      'An Google Analytics senden wir nur die Bildschirme, die du öffnest, und Aktionen wie „ein Buch eingestellt“. Niemals deinen Namen, deine E-Mail-Adresse oder das, was du im Chat schreibst. Du kannst dies jederzeit ausschalten, die App funktioniert genauso weiter.';
+      'Wir senden an Google Analytics nur die von dir geöffneten Bildschirme, Aktionen wie „ein Buch eingestellt“, deine Suchbegriffe (Titel oder Autor) und Gerätekennungen, einschließlich der Android-Werbe-ID. Niemals deinen Namen, deine E-Mail-Adresse oder was du im Chat schreibst. Sie sind standardmäßig aktiviert; du kannst sie hier jederzeit ausschalten, die App funktioniert genauso weiter.';
 
   @override
   String get profileListingPrivacySubtitle =>

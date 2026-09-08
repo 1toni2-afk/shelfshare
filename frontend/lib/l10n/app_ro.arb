@@ -1881,7 +1881,7 @@
     "settingsAnalyticsTitle": "Statistici de folosire",
     "settingsAnalyticsSubtitle": "Ne ajută să vedem ce funcții sunt folosite",
     "settingsAnalyticsSwitch": "Trimite statistici anonime",
-    "settingsAnalyticsHelp": "Trimitem către Google Analytics doar ecranele pe care intri și acțiuni de tipul „a listat o carte”. Niciodată numele, adresa de email sau ce scrii în chat. Poți opri oricând, iar aplicația funcționează la fel.",
+    "settingsAnalyticsHelp": "Trimitem către Google Analytics doar ecranele pe care intri, acțiuni de tipul „a listat o carte”, ce cauți (titlu sau autor) și identificatori ai telefonului, inclusiv advertising ID-ul de Android. Niciodată numele, adresa de email sau ce scrii în chat. Sunt pornite implicit; le poți opri oricând de aici, iar aplicația funcționează la fel.",
     "profileListingPrivacySubtitle": "Alege ce tipuri de anunțuri apar în căutare și discover, publice pentru ceilalți useri.",
     "profileHideAllListingsButton": "Fă toate anunțurile private",
     "profileHideAllListingsConfirm": "Toate anunțurile tale (schimburi, vânzări, donații, licitații) devin private și dispar din căutare/discover pentru ceilalți useri. Poți reactiva oricând fiecare tip individual mai jos.",

@@ -5911,7 +5911,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAnalyticsHelp.
   ///
   /// In ro, this message translates to:
-  /// **'Trimitem către Google Analytics doar ecranele pe care intri și acțiuni de tipul „a listat o carte”. Niciodată numele, adresa de email sau ce scrii în chat. Poți opri oricând, iar aplicația funcționează la fel.'**
+  /// **'Trimitem către Google Analytics doar ecranele pe care intri, acțiuni de tipul „a listat o carte”, ce cauți (titlu sau autor) și identificatori ai telefonului, inclusiv advertising ID-ul de Android. Niciodată numele, adresa de email sau ce scrii în chat. Sunt pornite implicit; le poți opri oricând de aici, iar aplicația funcționează la fel.'**
   String get settingsAnalyticsHelp;
 
   /// No description provided for @profileListingPrivacySubtitle.

@@ -1156,7 +1156,7 @@
     "settingsAnalyticsTitle": "Használati statisztikák",
     "settingsAnalyticsSubtitle": "Segít látnunk, mely funkciókat használják",
     "settingsAnalyticsSwitch": "Névtelen statisztikák küldése",
-    "settingsAnalyticsHelp": "A Google Analytics felé csak a megnyitott képernyőket és az olyan műveleteket küldjük, mint a „könyvet hirdetett meg”. Soha nem a nevedet, az e-mail-címedet vagy azt, amit a csevegésbe írsz. Bármikor kikapcsolhatod, az alkalmazás ugyanúgy működik.",
+    "settingsAnalyticsHelp": "A Google Analytics felé csak a megnyitott képernyőket, az olyan műveleteket, mint a „könyvet hirdetett meg”, a keresett kifejezéseket (cím vagy szerző) és eszközazonosítókat küldünk, köztük az Android hirdetésazonosítót. A neved, az e-mail-címed vagy a cseten írottak soha. Alapértelmezés szerint be van kapcsolva; itt bármikor kikapcsolhatod, az alkalmazás ugyanúgy működik.",
     "profileListingPrivacySubtitle": "Válaszd ki, mely hirdetéstípusok jelenjenek meg a nyilvános keresésben és a felfedezésben mások számára.",
     "profileHideAllListingsButton": "Minden hirdetés legyen privát",
     "profileHideAllListingsConfirm": "Az összes hirdetésed (csere, eladás, adomány, árverés) privát lesz, és eltűnik a keresésből/felfedezésből mások számára. Bármikor egyenként visszakapcsolhatod alább az egyes típusokat.",
