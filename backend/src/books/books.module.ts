@@ -25,5 +25,8 @@ import { ReviewsModule } from '../reviews/reviews.module';
   ],
   controllers: [BooksController],
   providers: [BooksService, BookLookupService],
+  // Cererile de carte („nu găsesc cartea") caută prin exact aceleași surse ca
+  // autocomplete-ul care n-a găsit-o - vezi BookRequestsService.
+  exports: [BooksService, BookLookupService],
 })
 export class BooksModule {}

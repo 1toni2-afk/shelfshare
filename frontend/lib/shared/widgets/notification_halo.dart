@@ -47,6 +47,8 @@ IconData notificationIcon(NotificationType type) {
       return Icons.search;
     case NotificationType.seriesVolumeAvailable:
       return Icons.menu_book;
+    case NotificationType.bookRequestFound:
+      return Icons.find_in_page;
     case NotificationType.outbid:
     case NotificationType.auctionWon:
     case NotificationType.auctionEnded:

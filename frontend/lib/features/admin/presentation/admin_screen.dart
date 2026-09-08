@@ -197,6 +197,19 @@ class _AdminContent extends StatelessWidget {
             onTap: () => context.push('/admin/reports'),
           ),
         ),
+        const SizedBox(height: 12),
+        // Cererile de carte stau lângă rapoarte: amândouă sunt „ce a semnalat
+        // un user și trebuie văzut", nu statistici.
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.find_in_page_outlined),
+            title: Text(l10n.adminBookRequestsTitle),
+            subtitle: Text(l10n.adminBookRequestsDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/admin/book-requests'),
+          ),
+        ),
         const SizedBox(height: 28),
         Text(l10n.adminUpcomingReleasesCount(data.upcomingReleases.length), style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 4),

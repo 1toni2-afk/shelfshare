@@ -67,3 +67,6 @@ scripts/book-enrichment/ShelfShare_SCP_DB_covers/
 # normala). Se regenereaza cu:
 #   flutter test test/deal_summary_card_demo_test.dart --update-goldens --run-skipped
 frontend/test/demo/
+
+# Mediul de test (docker-compose.test.yml) - valori fictive, dar tot un fisier de mediu.
+.env.test

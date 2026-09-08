@@ -2412,5 +2412,62 @@
     "adminUserPickerChange": "Alege alt utilizator",
     "@adminUserPickerChange": {
         "description": "Tooltip for clearing the picked user in the admin user picker"
+    },
+    "bookRequestCta": "Nu găsești cartea? Cere-o",
+    "bookRequestTitle": "Cere o carte",
+    "bookRequestExplainer": "O căutăm în fiecare noapte, cu prioritate, în catalogul nostru și în mai multe librării online. Te anunțăm imediat ce o găsim.",
+    "bookRequestTitleLabel": "Titlul cărții",
+    "bookRequestAuthorLabel": "Autorul (opțional, dar ajută)",
+    "bookRequestNoteLabel": "Detalii: editura, anul, ediția…",
+    "bookRequestSubmit": "Trimite cererea",
+    "bookRequestSent": "Am notat cererea. Te anunțăm când găsim cartea.",
+    "bookRequestFoundNow": "Am găsit cartea în catalog.",
+    "bookRequestOpenBook": "Vezi cartea",
+    "bookRequestError": "Nu am putut trimite cererea.",
+    "bookRequestsTitle": "Cărți cerute",
+    "bookRequestsEmpty": "Nu ai cerut nicio carte încă. Când o căutare nu găsește nimic, poți cere cartea chiar de acolo.",
+    "bookRequestsLoadError": "Nu am putut încărca cererile.",
+    "bookRequestStatusPending": "În căutare",
+    "bookRequestStatusFulfilled": "Găsită",
+    "bookRequestStatusNotFound": "Negăsită deocamdată",
+    "bookRequestStatusCancelled": "Anulată",
+    "bookRequestAttempts": "căutată {nights} nopți",
+    "@bookRequestAttempts": {
+        "placeholders": {
+            "nights": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsTitle": "Cereri de carte",
+    "adminBookRequestsDesc": "Ce cărți caută userii și nu găsesc",
+    "adminBookRequestsEmpty": "Nicio cerere pe filtrul ales.",
+    "adminBookRequestsFilterPending": "În căutare",
+    "adminBookRequestsFilterFulfilled": "Găsite",
+    "adminBookRequestsFilterNotFound": "Negăsite",
+    "adminBookRequestsFilterAll": "Toate",
+    "adminBookRequestsCount": "{count} cereri",
+    "@adminBookRequestsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsDemand": "cerută de {count} oameni",
+    "@adminBookRequestsDemand": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsFoundOn": "găsită pe {source}",
+    "@adminBookRequestsFoundOn": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
     }
 }

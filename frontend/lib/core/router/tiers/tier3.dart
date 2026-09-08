@@ -5,6 +5,7 @@
 library;
 
 export '../../../features/admin/presentation/admin_inactive_listings_screen.dart';
+export '../../../features/admin/presentation/admin_book_requests_screen.dart';
 export '../../../features/admin/presentation/admin_screen.dart';
 export '../../../features/admin/presentation/admin_usage_screen.dart';
 export '../../../features/admin/presentation/admin_users_screen.dart';
@@ -38,4 +39,5 @@ export '../../../features/profile/presentation/pre_registration_screen.dart';
 export '../../../features/profile/presentation/roadmap_screen.dart';
 export '../../../features/profile/presentation/seller_analytics_screen.dart';
 export '../../../features/saved_searches/presentation/saved_searches_screen.dart';
+export '../../../features/books/presentation/book_requests_screen.dart';
 export '../../../features/admin/presentation/admin_reports_screen.dart';

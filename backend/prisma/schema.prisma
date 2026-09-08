@@ -238,6 +238,7 @@ model User {
   authorScores             UserAuthorScore[]
   eraScores                UserEraScore[]
   recalibrationLogs        RecalibrationLog[]
+  bookRequests             BookRequest[]
 
   @@map("users")
 }
@@ -493,6 +494,7 @@ model Book {
   bookOfMonthVotes BookOfMonthVote[]
   readingProgress  ReadingProgress[]
   reviews          Review[]
+  requests         BookRequest[]
 
   @@index([series])
   /// Book Match cade pe interogări exacte per gen când eșantionul aleator nu
@@ -1593,6 +1595,9 @@ enum NotificationType {
   EXCHANGE_REOPENED
   SAVED_SEARCH_MATCH
   SERIES_VOLUME_AVAILABLE
+  /// O carte cerută prin formularul „nu găsesc cartea" a fost găsită de
+  /// căutarea de noapte și există acum în catalog.
+  BOOK_REQUEST_FOUND
 }
 
 /// Token FCM al unui dispozitiv (telefon/tabletă) pe care userul e logat, ca
@@ -1715,4 +1720,74 @@ model UserFeatureFlag {
   @@unique([userId, flagKey])
   @@index([flagKey])
   @@map("user_feature_flags")
+}
+
+/// Cerere de la un user pentru o carte pe care căutarea nu a găsit-o - nici
+/// în catalogul propriu, nici la providerii externi (vezi
+/// `BooksService.searchExternal`). Formularul apare exact acolo unde omul a
+/// dat de gol, în ecranul de „+Share".
+///
+/// Rostul rândului nu e o listă de dorințe (aia e WishlistItem, care cere o
+/// carte EXISTENTĂ în catalog), ci un fir de lucru pentru catalog: în fiecare
+/// noapte cererile în așteptare sunt căutate cu prioritate în mai multe
+/// magazine (vezi BookRequestsService.resolvePendingRequests pentru sursele
+/// online și scripts/book-requests/nightly_book_requests.py pentru librăriile
+/// românești scrapuite cu Playwright). Când una e găsită, cartea intră în
+/// catalog, cererea devine FULFILLED, iar userul primește notificare.
+model BookRequest {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title  String
+  author String?
+  isbn   String?
+  /// Ce a scris userul în plus („ediția de la Humanitas", „e din 1998") -
+  /// nefolosit automat, dar îl vede omul care se uită peste cereri în panou.
+  note   String?
+
+  /// `title` + `author` normalizate (fără diacritice, minuscule, un singur
+  /// spațiu). Două lucruri se sprijină pe ea: unicitatea per user (același om
+  /// nu creează 5 rânduri dând submit de 5 ori) și ordinea de prioritate din
+  /// căutarea de noapte - cu cât mai mulți oameni distincți cer același titlu,
+  /// cu atât mai devreme e căutat.
+  normalizedKey String
+
+  status   BookRequestStatus @default(PENDING)
+  /// De câte nopți a fost căutată fără succes. După
+  /// MAX_RESOLVE_ATTEMPTS cererea trece în NOT_FOUND și nu mai consumă
+  /// cereri către magazine în fiecare noapte, la nesfârșit.
+  attempts Int               @default(0)
+
+  lastAttemptAt  DateTime?
+  /// Sursa care a rezolvat cererea („catalog", „google_books", „libris"...) -
+  /// util ca să vedem care magazin chiar aduce titlurile lipsă.
+  resolvedSource String?
+
+  /// Cartea găsită. Rămâne null cât timp cererea e PENDING/NOT_FOUND.
+  bookId String?
+  book   Book?   @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  fulfilledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, normalizedKey])
+  @@index([status, createdAt])
+  @@map("book_requests")
+}
+
+enum BookRequestStatus {
+  /// În așteptare - intră în căutarea de noapte.
+  PENDING
+  /// Găsită și legată de un rând din `books`.
+  FULFILLED
+  /// Căutată de MAX_RESOLVE_ATTEMPTS nopți fără rezultat. Nu mai e reluată
+  /// automat, dar rămâne vizibilă în panoul de admin (poate fi adăugată
+  /// manual în catalog).
+  NOT_FOUND
+  /// Anulată de user din lista lui de cereri.
+  CANCELLED
 }

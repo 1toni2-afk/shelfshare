@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,6 +26,7 @@ import '../data/bookshelf_repository.dart';
 import '../data/genre_tag_suggestions.dart';
 import '../data/reading_progress_repository.dart';
 import '../../../shared/utils/image_upload.dart';
+import 'request_book_dialog.dart';
 
 /// Ecranul „+ Share" refăcut pe layout-ul din Milestone 10:
 ///
@@ -118,6 +120,13 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   /// True cat timp o cautare de titlu e in zbor - schimba helperText-ul din
   /// „Incepe sa scrii ca sa vezi sugestii" in „Se cauta titlul...".
   bool _titleSearching = false;
+
+  /// Ultima cautare de titlu care n-a intors NIMIC (nici din catalog, nici de
+  /// la providerii externi). Cat timp e nenula, sub camp apare butonul de
+  /// „cere cartea" - vezi showRequestBookDialog. Nu e acelasi lucru cu
+  /// „dropdown-ul e gol acum": userul poate sterge tot textul, iar atunci
+  /// n-avem ce cere.
+  String? _titleWithNoResults;
   /// Ultimul gen pentru care am recalculat sugestiile de taguri.
   String _lastGenreForTags = '';
 
@@ -294,15 +303,46 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
     if (mounted) setState(() {});
   }
 
-  /// `optionsBuilder` poate fi apelat in timpul unui build al campului, deci
-  /// nu putem chema `setState` sincron - amanam pe frame-ul urmator.
+  /// Actualizeaza starile cautarii de titlu, din orice context.
+  ///
+  /// Ambele (`_titleSearching`, `_titleWithNoResults`) sunt scrise din
+  /// `optionsBuilder`, care POATE rula in timpul unui build - iar `setState`
+  /// in timpul unui build arunca. De aceea nu putem scrie mereu direct.
+  ///
+  /// Dar nici invers nu merge: un `addPostFrameCallback` neconditionat ruleaza
+  /// abia la URMATORUL frame, si daca nimeni nu cere unul, nu ruleaza deloc.
+  /// Exact asta se intampla la o cautare FARA rezultate - `Autocomplete` nu
+  /// deschide niciun dropdown, deci nimic nu mai cere un frame, iar campul
+  /// ramanea inghetat pe „Se cauta titlul...", fara sa apara butonul de cerere
+  /// a cartii.
+  ///
+  /// Deci: scriem direct cand faza planificatorului o permite (cazul obisnuit -
+  /// raspunsul cautarii vine intr-un `Timer`, nu in build) si abia altfel
+  /// amanam, cerand explicit si un frame.
+  void _applyTitleSearchState(VoidCallback change) {
+    if (!mounted) return;
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.idle ||
+        phase == SchedulerPhase.postFrameCallbacks) {
+      setState(change);
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(change);
+    });
+    WidgetsBinding.instance.scheduleFrame();
+  }
+
   void _setTitleSearching(bool value) {
     if (_titleSearching == value) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _titleSearching != value) {
-        setState(() => _titleSearching = value);
-      }
-    });
+    _applyTitleSearchState(() => _titleSearching = value);
+  }
+
+  /// Marcheaza ultima cautare ramasa fara niciun rezultat (sau o sterge).
+  /// Vezi `_requestBookCta`.
+  void _setNoResults(String? query) {
+    if (_titleWithNoResults == query) return;
+    _applyTitleSearchState(() => _titleWithNoResults = query);
   }
 
   /// Completer-ul cererii de titlu aflate in asteptare. Il tinem ca sa-l
@@ -313,6 +353,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
   Future<Iterable<ExternalBookResult>> _titleAutocomplete(String query) async {
     if (query.trim().length < 2) {
       _setTitleSearching(false);
+      _setNoResults(null);
       return const [];
     }
     // Debouncing la nivel de tastare: daca alta cerere e programata, o
@@ -330,6 +371,7 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
       try {
         final results =
             await ref.read(booksRepositoryProvider).searchExternal(query.trim());
+        _setNoResults(results.isEmpty ? query.trim() : null);
         if (!completer.isCompleted) completer.complete(results);
       } catch (_) {
         if (!completer.isCompleted) completer.complete(const []);
@@ -1366,7 +1408,30 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.mutedForeground),
           ),
         ),
+        _requestBookCta(context),
       ],
+    );
+  }
+
+  /// „Nu găsești cartea? Cere-o" - apare DOAR după o căutare care n-a întors
+  /// nimic, exact sub câmpul unde omul tocmai a dat de gol. Un buton mereu
+  /// vizibil ar concura cu autocomplete-ul: cine are cartea în listă n-are ce
+  /// cere. Vezi showRequestBookDialog pentru ce se întâmplă mai departe.
+  Widget _requestBookCta(BuildContext context) {
+    final missing = _titleWithNoResults;
+    if (missing == null || _titleSearching) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        icon: const Icon(Icons.add_alert_outlined, size: 18),
+        label: Text(context.l10n.bookRequestCta),
+        onPressed: () => showRequestBookDialog(
+          context,
+          ref,
+          initialTitle: missing,
+          initialAuthor: _authorController.text.trim(),
+        ),
+      ),
     );
   }
 

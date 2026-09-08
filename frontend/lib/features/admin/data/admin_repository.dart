@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
+import '../../../data/models/admin_book_request.dart';
 import '../../../data/models/admin_models.dart';
 import '../../../data/models/upcoming_release.dart';
 
@@ -164,6 +165,20 @@ class AdminRepository {
       data: {'label': label, 'permissions': permissions},
     );
     return AdminRole.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Cererile de carte („nu găsesc cartea"). `status` null = toate.
+  /// Vezi BookRequestsService.listForAdmin - fiecare rând vine cu `demand`,
+  /// numărul de useri care așteaptă același titlu.
+  Future<List<AdminBookRequest>> getBookRequests({String? status}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/book-requests/admin', queryParameters: {
+      'status': ?status,
+      'limit': 200,
+    });
+    return (response.data as List)
+        .map((e) => AdminBookRequest.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<InactiveListing>> getInactiveListings() async {

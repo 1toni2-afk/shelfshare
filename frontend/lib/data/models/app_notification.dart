@@ -31,6 +31,10 @@ enum NotificationType {
   savedSearchMatch,
   seriesVolumeAvailable,
 
+  /// O carte cerută prin formularul „nu găsesc cartea" a fost găsită de
+  /// căutarea de noapte și e acum în catalog.
+  bookRequestFound,
+
   /// Tip trimis de backend pe care versiunea asta de aplicație nu îl cunoaște.
   /// Notificarea se afișează cu textul primit de la server și fără acțiune la
   /// tap - important ca un backend mai nou să nu strice un client mai vechi.
@@ -98,6 +102,8 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.exchangeBookPending;
       case 'EXCHANGE_REOPENED':
         return NotificationType.exchangeReopened;
+      case 'BOOK_REQUEST_FOUND':
+        return NotificationType.bookRequestFound;
       case 'SAVED_SEARCH_MATCH':
         return NotificationType.savedSearchMatch;
       case 'SERIES_VOLUME_AVAILABLE':

@@ -38,6 +38,7 @@ import { BookOfMonthModule } from './book-of-month/book-of-month.module';
 import { ReadingProgressModule } from './reading-progress/reading-progress.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ReportsModule } from './reports/reports.module';
+import { BookRequestsModule } from './book-requests/book-requests.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { ReportsModule } from './reports/reports.module';
     BookOfMonthModule,
     ReadingProgressModule,
     ReviewsModule,
+    BookRequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: HttpThrottlerGuard }],

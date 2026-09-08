@@ -100,6 +100,7 @@ final List<NotificationCategory> kNotificationCategories = [
       'INTEREST_BOOK_LISTED',
       'SAVED_SEARCH_MATCH',
       'SERIES_VOLUME_AVAILABLE',
+      'BOOK_REQUEST_FOUND',
     ],
     labelOf: (l) => l.notificationPrefDiscovery,
   ),

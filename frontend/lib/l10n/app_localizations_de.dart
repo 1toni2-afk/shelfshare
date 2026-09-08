@@ -4598,4 +4598,104 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get adminUserPickerChange => 'Anderen Benutzer wählen';
+
+  @override
+  String get bookRequestCta => 'Buch nicht gefunden? Fordere es an';
+
+  @override
+  String get bookRequestTitle => 'Buch anfordern';
+
+  @override
+  String get bookRequestExplainer =>
+      'Wir suchen jede Nacht mit Vorrang danach - in unserem Katalog und in mehreren Online-Buchhandlungen. Du hörst von uns, sobald wir es finden.';
+
+  @override
+  String get bookRequestTitleLabel => 'Buchtitel';
+
+  @override
+  String get bookRequestAuthorLabel => 'Autor (optional, hilft aber)';
+
+  @override
+  String get bookRequestNoteLabel => 'Details: Verlag, Jahr, Ausgabe…';
+
+  @override
+  String get bookRequestSubmit => 'Anfrage senden';
+
+  @override
+  String get bookRequestSent =>
+      'Anfrage notiert. Wir melden uns, sobald wir das Buch finden.';
+
+  @override
+  String get bookRequestFoundNow => 'Wir haben das Buch im Katalog gefunden.';
+
+  @override
+  String get bookRequestOpenBook => 'Buch ansehen';
+
+  @override
+  String get bookRequestError => 'Anfrage konnte nicht gesendet werden.';
+
+  @override
+  String get bookRequestsTitle => 'Angefragte Bücher';
+
+  @override
+  String get bookRequestsEmpty =>
+      'Du hast noch kein Buch angefragt. Wenn eine Suche nichts findet, kannst du das Buch direkt dort anfragen.';
+
+  @override
+  String get bookRequestsLoadError => 'Anfragen konnten nicht geladen werden.';
+
+  @override
+  String get bookRequestStatusPending => 'Wird gesucht';
+
+  @override
+  String get bookRequestStatusFulfilled => 'Gefunden';
+
+  @override
+  String get bookRequestStatusNotFound => 'Noch nicht gefunden';
+
+  @override
+  String get bookRequestStatusCancelled => 'Abgebrochen';
+
+  @override
+  String bookRequestAttempts(int nights) {
+    return '$nights Nächte gesucht';
+  }
+
+  @override
+  String get adminBookRequestsTitle => 'Buchanfragen';
+
+  @override
+  String get adminBookRequestsDesc =>
+      'Wonach Nutzer suchen und es nicht finden';
+
+  @override
+  String get adminBookRequestsEmpty =>
+      'Keine Anfragen für den gewählten Filter.';
+
+  @override
+  String get adminBookRequestsFilterPending => 'Wird gesucht';
+
+  @override
+  String get adminBookRequestsFilterFulfilled => 'Gefunden';
+
+  @override
+  String get adminBookRequestsFilterNotFound => 'Nicht gefunden';
+
+  @override
+  String get adminBookRequestsFilterAll => 'Alle';
+
+  @override
+  String adminBookRequestsCount(int count) {
+    return '$count Anfragen';
+  }
+
+  @override
+  String adminBookRequestsDemand(int count) {
+    return 'von $count Personen angefragt';
+  }
+
+  @override
+  String adminBookRequestsFoundOn(String source) {
+    return 'gefunden auf $source';
+  }
 }

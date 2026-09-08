@@ -94,6 +94,12 @@ String? routeForNotification(NotificationType type, Map<String, dynamic>? data) 
     case NotificationType.savedSearchMatch:
       return '/saved-searches';
 
+    case NotificationType.bookRequestFound:
+      // Cartea cerută există acum în catalog - ducem direct la pagina operei,
+      // nu la lista de cereri, unde ar mai fi un tap până la ea.
+      final requestedBookId = at('bookId');
+      return requestedBookId == null ? '/book-requests' : '/work/$requestedBookId';
+
     case NotificationType.outbid:
     case NotificationType.auctionWon:
     case NotificationType.auctionEnded:

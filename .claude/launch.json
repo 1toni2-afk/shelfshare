@@ -4,13 +4,28 @@
     {
       "name": "flutter-web",
       "runtimeExecutable": "cmd.exe",
-      "runtimeArgs": ["/c", "cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend && C:\\src\\flutter\\bin\\flutter.bat build web && cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend\\build\\web && node C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\scripts\\static-server.js"],
+      "runtimeArgs": [
+        "/c",
+        "cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend && C:\\src\\flutter\\bin\\flutter.bat build web && cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend\\build\\web && node C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\scripts\\static-server.js"
+      ],
       "port": 5959
     },
     {
       "name": "flutter-web-dev",
       "runtimeExecutable": "cmd.exe",
-      "runtimeArgs": ["/c", "cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend && C:\\src\\flutter\\bin\\flutter.bat run -d web-server --web-port 5960"],
+      "runtimeArgs": [
+        "/c",
+        "cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend && C:\\src\\flutter\\bin\\flutter.bat run -d web-server --web-port 5960"
+      ],
+      "port": 5960
+    },
+    {
+      "name": "flutter-web-test",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": [
+        "/c",
+        "cd /d C:\\Users\\wwwto\\Documents\\GitHub\\shelfshare\\frontend && C:\\src\\flutter\\bin\\flutter.bat run -d web-server --web-port 5960 --dart-define=API_BASE_URL=http://localhost:3999"
+      ],
       "port": 5960
     }
   ]

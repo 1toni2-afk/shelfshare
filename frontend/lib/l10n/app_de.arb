@@ -1454,5 +1454,62 @@
     "adminUserPickerSearchHint": "Suche nach Name, @Username oder E-Mail",
     "adminUserPickerNoResults": "Kein Benutzer gefunden.",
     "adminUserPickerEmpty": "Gib mindestens 2 Zeichen ein, um zu suchen.",
-    "adminUserPickerChange": "Anderen Benutzer wählen"
+    "adminUserPickerChange": "Anderen Benutzer wählen",
+    "bookRequestCta": "Buch nicht gefunden? Fordere es an",
+    "bookRequestTitle": "Buch anfordern",
+    "bookRequestExplainer": "Wir suchen jede Nacht mit Vorrang danach - in unserem Katalog und in mehreren Online-Buchhandlungen. Du hörst von uns, sobald wir es finden.",
+    "bookRequestTitleLabel": "Buchtitel",
+    "bookRequestAuthorLabel": "Autor (optional, hilft aber)",
+    "bookRequestNoteLabel": "Details: Verlag, Jahr, Ausgabe…",
+    "bookRequestSubmit": "Anfrage senden",
+    "bookRequestSent": "Anfrage notiert. Wir melden uns, sobald wir das Buch finden.",
+    "bookRequestFoundNow": "Wir haben das Buch im Katalog gefunden.",
+    "bookRequestOpenBook": "Buch ansehen",
+    "bookRequestError": "Anfrage konnte nicht gesendet werden.",
+    "bookRequestsTitle": "Angefragte Bücher",
+    "bookRequestsEmpty": "Du hast noch kein Buch angefragt. Wenn eine Suche nichts findet, kannst du das Buch direkt dort anfragen.",
+    "bookRequestsLoadError": "Anfragen konnten nicht geladen werden.",
+    "bookRequestStatusPending": "Wird gesucht",
+    "bookRequestStatusFulfilled": "Gefunden",
+    "bookRequestStatusNotFound": "Noch nicht gefunden",
+    "bookRequestStatusCancelled": "Abgebrochen",
+    "bookRequestAttempts": "{nights} Nächte gesucht",
+    "@bookRequestAttempts": {
+        "placeholders": {
+            "nights": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsTitle": "Buchanfragen",
+    "adminBookRequestsDesc": "Wonach Nutzer suchen und es nicht finden",
+    "adminBookRequestsEmpty": "Keine Anfragen für den gewählten Filter.",
+    "adminBookRequestsFilterPending": "Wird gesucht",
+    "adminBookRequestsFilterFulfilled": "Gefunden",
+    "adminBookRequestsFilterNotFound": "Nicht gefunden",
+    "adminBookRequestsFilterAll": "Alle",
+    "adminBookRequestsCount": "{count} Anfragen",
+    "@adminBookRequestsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsDemand": "von {count} Personen angefragt",
+    "@adminBookRequestsDemand": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsFoundOn": "gefunden auf {source}",
+    "@adminBookRequestsFoundOn": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    }
 }

@@ -210,6 +210,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               (context, state) => tier2.WishlistScreen()),
           _deferredRoute('/saved-searches', tier3.loadLibrary,
               (context, state) => tier3.SavedSearchesScreen()),
+          _deferredRoute('/book-requests', tier3.loadLibrary,
+              (context, state) => tier3.BookRequestsScreen()),
           _deferredRoute('/notifications', tier2.loadLibrary,
               (context, state) => tier2.NotificationsScreen()),
           _deferredRoute('/settings', tier2.loadLibrary,
@@ -283,6 +285,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           // Coada de moderare, filtrabila dupa tipul tintei si dupa status.
           _deferredRoute('/admin/reports', tier3.loadLibrary,
               (context, state) => tier3.AdminReportsScreen()),
+          _deferredRoute('/admin/book-requests', tier3.loadLibrary,
+              (context, state) => tier3.AdminBookRequestsScreen()),
           _deferredRoute('/admin/users', tier3.loadLibrary,
               (context, state) => tier3.AdminUsersScreen()),
           // Statistici de folosire (useri activi pe zi, adoptie pe functii).

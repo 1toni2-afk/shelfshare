@@ -28,6 +28,14 @@ class WishlistScreen extends ConsumerWidget {
             tooltip: l10n.savedSearchesTitle,
             onPressed: () => context.push('/saved-searches'),
           ),
+          // Cărțile cerute stau lângă favorite și căutări salvate: toate trei
+          // sunt „ce aștept să apară", doar sursa diferă (un anunț nou, o
+          // căutare care se potrivește, o carte adusă în catalog).
+          IconButton(
+            icon: const Icon(Icons.find_in_page_outlined),
+            tooltip: l10n.bookRequestsTitle,
+            onPressed: () => context.push('/book-requests'),
+          ),
         ],
       ),
       body: SafeArea(

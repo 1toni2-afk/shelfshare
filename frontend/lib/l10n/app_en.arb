@@ -1590,5 +1590,62 @@
     "adminUserPickerSearchHint": "Search by name, @username or email",
     "adminUserPickerNoResults": "No user found.",
     "adminUserPickerEmpty": "Type at least 2 characters to search.",
-    "adminUserPickerChange": "Pick a different user"
+    "adminUserPickerChange": "Pick a different user",
+    "bookRequestCta": "Can't find the book? Request it",
+    "bookRequestTitle": "Request a book",
+    "bookRequestExplainer": "We search for it every night, with priority, in our catalogue and across several online bookshops. We'll let you know as soon as we find it.",
+    "bookRequestTitleLabel": "Book title",
+    "bookRequestAuthorLabel": "Author (optional, but it helps)",
+    "bookRequestNoteLabel": "Details: publisher, year, edition…",
+    "bookRequestSubmit": "Send request",
+    "bookRequestSent": "Request noted. We'll tell you when we find the book.",
+    "bookRequestFoundNow": "We found the book in the catalogue.",
+    "bookRequestOpenBook": "View book",
+    "bookRequestError": "Couldn't send the request.",
+    "bookRequestsTitle": "Requested books",
+    "bookRequestsEmpty": "You haven't requested any book yet. When a search finds nothing, you can request the book right there.",
+    "bookRequestsLoadError": "Couldn't load your requests.",
+    "bookRequestStatusPending": "Searching",
+    "bookRequestStatusFulfilled": "Found",
+    "bookRequestStatusNotFound": "Not found yet",
+    "bookRequestStatusCancelled": "Cancelled",
+    "bookRequestAttempts": "searched {nights} nights",
+    "@bookRequestAttempts": {
+        "placeholders": {
+            "nights": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsTitle": "Book requests",
+    "adminBookRequestsDesc": "What users look for and can't find",
+    "adminBookRequestsEmpty": "No requests for the selected filter.",
+    "adminBookRequestsFilterPending": "Searching",
+    "adminBookRequestsFilterFulfilled": "Found",
+    "adminBookRequestsFilterNotFound": "Not found",
+    "adminBookRequestsFilterAll": "All",
+    "adminBookRequestsCount": "{count} requests",
+    "@adminBookRequestsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsDemand": "requested by {count} people",
+    "@adminBookRequestsDemand": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsFoundOn": "found on {source}",
+    "@adminBookRequestsFoundOn": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    }
 }

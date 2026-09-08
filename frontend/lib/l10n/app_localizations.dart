@@ -8235,6 +8235,180 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Alege alt utilizator'**
   String get adminUserPickerChange;
+
+  /// No description provided for @bookRequestCta.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu găsești cartea? Cere-o'**
+  String get bookRequestCta;
+
+  /// No description provided for @bookRequestTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cere o carte'**
+  String get bookRequestTitle;
+
+  /// No description provided for @bookRequestExplainer.
+  ///
+  /// In ro, this message translates to:
+  /// **'O căutăm în fiecare noapte, cu prioritate, în catalogul nostru și în mai multe librării online. Te anunțăm imediat ce o găsim.'**
+  String get bookRequestExplainer;
+
+  /// No description provided for @bookRequestTitleLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Titlul cărții'**
+  String get bookRequestTitleLabel;
+
+  /// No description provided for @bookRequestAuthorLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Autorul (opțional, dar ajută)'**
+  String get bookRequestAuthorLabel;
+
+  /// No description provided for @bookRequestNoteLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Detalii: editura, anul, ediția…'**
+  String get bookRequestNoteLabel;
+
+  /// No description provided for @bookRequestSubmit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimite cererea'**
+  String get bookRequestSubmit;
+
+  /// No description provided for @bookRequestSent.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am notat cererea. Te anunțăm când găsim cartea.'**
+  String get bookRequestSent;
+
+  /// No description provided for @bookRequestFoundNow.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am găsit cartea în catalog.'**
+  String get bookRequestFoundNow;
+
+  /// No description provided for @bookRequestOpenBook.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi cartea'**
+  String get bookRequestOpenBook;
+
+  /// No description provided for @bookRequestError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut trimite cererea.'**
+  String get bookRequestError;
+
+  /// No description provided for @bookRequestsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți cerute'**
+  String get bookRequestsTitle;
+
+  /// No description provided for @bookRequestsEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu ai cerut nicio carte încă. Când o căutare nu găsește nimic, poți cere cartea chiar de acolo.'**
+  String get bookRequestsEmpty;
+
+  /// No description provided for @bookRequestsLoadError.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am putut încărca cererile.'**
+  String get bookRequestsLoadError;
+
+  /// No description provided for @bookRequestStatusPending.
+  ///
+  /// In ro, this message translates to:
+  /// **'În căutare'**
+  String get bookRequestStatusPending;
+
+  /// No description provided for @bookRequestStatusFulfilled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Găsită'**
+  String get bookRequestStatusFulfilled;
+
+  /// No description provided for @bookRequestStatusNotFound.
+  ///
+  /// In ro, this message translates to:
+  /// **'Negăsită deocamdată'**
+  String get bookRequestStatusNotFound;
+
+  /// No description provided for @bookRequestStatusCancelled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anulată'**
+  String get bookRequestStatusCancelled;
+
+  /// No description provided for @bookRequestAttempts.
+  ///
+  /// In ro, this message translates to:
+  /// **'căutată {nights} nopți'**
+  String bookRequestAttempts(int nights);
+
+  /// No description provided for @adminBookRequestsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cereri de carte'**
+  String get adminBookRequestsTitle;
+
+  /// No description provided for @adminBookRequestsDesc.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce cărți caută userii și nu găsesc'**
+  String get adminBookRequestsDesc;
+
+  /// No description provided for @adminBookRequestsEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nicio cerere pe filtrul ales.'**
+  String get adminBookRequestsEmpty;
+
+  /// No description provided for @adminBookRequestsFilterPending.
+  ///
+  /// In ro, this message translates to:
+  /// **'În căutare'**
+  String get adminBookRequestsFilterPending;
+
+  /// No description provided for @adminBookRequestsFilterFulfilled.
+  ///
+  /// In ro, this message translates to:
+  /// **'Găsite'**
+  String get adminBookRequestsFilterFulfilled;
+
+  /// No description provided for @adminBookRequestsFilterNotFound.
+  ///
+  /// In ro, this message translates to:
+  /// **'Negăsite'**
+  String get adminBookRequestsFilterNotFound;
+
+  /// No description provided for @adminBookRequestsFilterAll.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate'**
+  String get adminBookRequestsFilterAll;
+
+  /// No description provided for @adminBookRequestsCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} cereri'**
+  String adminBookRequestsCount(int count);
+
+  /// No description provided for @adminBookRequestsDemand.
+  ///
+  /// In ro, this message translates to:
+  /// **'cerută de {count} oameni'**
+  String adminBookRequestsDemand(int count);
+
+  /// No description provided for @adminBookRequestsFoundOn.
+  ///
+  /// In ro, this message translates to:
+  /// **'găsită pe {source}'**
+  String adminBookRequestsFoundOn(String source);
 }
 
 class _AppLocalizationsDelegate

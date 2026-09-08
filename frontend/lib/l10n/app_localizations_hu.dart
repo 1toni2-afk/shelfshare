@@ -4549,4 +4549,103 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get adminUserPickerChange => 'Másik felhasználó választása';
+
+  @override
+  String get bookRequestCta => 'Nem találod a könyvet? Kérd!';
+
+  @override
+  String get bookRequestTitle => 'Könyv kérése';
+
+  @override
+  String get bookRequestExplainer =>
+      'Minden éjjel, elsőbbséggel keressük a katalógusunkban és több online könyvesboltban. Szólunk, amint megtaláltuk.';
+
+  @override
+  String get bookRequestTitleLabel => 'A könyv címe';
+
+  @override
+  String get bookRequestAuthorLabel => 'Szerző (nem kötelező, de segít)';
+
+  @override
+  String get bookRequestNoteLabel => 'Részletek: kiadó, év, kiadás…';
+
+  @override
+  String get bookRequestSubmit => 'Kérés elküldése';
+
+  @override
+  String get bookRequestSent =>
+      'Feljegyeztük. Szólunk, ha megtaláltuk a könyvet.';
+
+  @override
+  String get bookRequestFoundNow => 'Megtaláltuk a könyvet a katalógusban.';
+
+  @override
+  String get bookRequestOpenBook => 'Könyv megtekintése';
+
+  @override
+  String get bookRequestError => 'A kérést nem sikerült elküldeni.';
+
+  @override
+  String get bookRequestsTitle => 'Kért könyvek';
+
+  @override
+  String get bookRequestsEmpty =>
+      'Még nem kértél könyvet. Ha egy keresés nem talál semmit, ott helyben kérheted a könyvet.';
+
+  @override
+  String get bookRequestsLoadError => 'A kéréseket nem sikerült betölteni.';
+
+  @override
+  String get bookRequestStatusPending => 'Keresés folyamatban';
+
+  @override
+  String get bookRequestStatusFulfilled => 'Megtalálva';
+
+  @override
+  String get bookRequestStatusNotFound => 'Egyelőre nincs meg';
+
+  @override
+  String get bookRequestStatusCancelled => 'Visszavonva';
+
+  @override
+  String bookRequestAttempts(int nights) {
+    return '$nights éjszaka keresve';
+  }
+
+  @override
+  String get adminBookRequestsTitle => 'Könyvkérések';
+
+  @override
+  String get adminBookRequestsDesc =>
+      'Mit keresnek a felhasználók, és nem találnak';
+
+  @override
+  String get adminBookRequestsEmpty => 'Nincs kérés a kiválasztott szűrőre.';
+
+  @override
+  String get adminBookRequestsFilterPending => 'Keresés alatt';
+
+  @override
+  String get adminBookRequestsFilterFulfilled => 'Megtalálva';
+
+  @override
+  String get adminBookRequestsFilterNotFound => 'Nincs meg';
+
+  @override
+  String get adminBookRequestsFilterAll => 'Mind';
+
+  @override
+  String adminBookRequestsCount(int count) {
+    return '$count kérés';
+  }
+
+  @override
+  String adminBookRequestsDemand(int count) {
+    return '$count ember kérte';
+  }
+
+  @override
+  String adminBookRequestsFoundOn(String source) {
+    return 'megtalálva itt: $source';
+  }
 }

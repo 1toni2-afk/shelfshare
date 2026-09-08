@@ -1454,5 +1454,62 @@
     "adminUserPickerSearchHint": "Keresés név, @felhasználónév vagy e-mail alapján",
     "adminUserPickerNoResults": "Nincs találat.",
     "adminUserPickerEmpty": "Írj be legalább 2 karaktert a kereséshez.",
-    "adminUserPickerChange": "Másik felhasználó választása"
+    "adminUserPickerChange": "Másik felhasználó választása",
+    "bookRequestCta": "Nem találod a könyvet? Kérd!",
+    "bookRequestTitle": "Könyv kérése",
+    "bookRequestExplainer": "Minden éjjel, elsőbbséggel keressük a katalógusunkban és több online könyvesboltban. Szólunk, amint megtaláltuk.",
+    "bookRequestTitleLabel": "A könyv címe",
+    "bookRequestAuthorLabel": "Szerző (nem kötelező, de segít)",
+    "bookRequestNoteLabel": "Részletek: kiadó, év, kiadás…",
+    "bookRequestSubmit": "Kérés elküldése",
+    "bookRequestSent": "Feljegyeztük. Szólunk, ha megtaláltuk a könyvet.",
+    "bookRequestFoundNow": "Megtaláltuk a könyvet a katalógusban.",
+    "bookRequestOpenBook": "Könyv megtekintése",
+    "bookRequestError": "A kérést nem sikerült elküldeni.",
+    "bookRequestsTitle": "Kért könyvek",
+    "bookRequestsEmpty": "Még nem kértél könyvet. Ha egy keresés nem talál semmit, ott helyben kérheted a könyvet.",
+    "bookRequestsLoadError": "A kéréseket nem sikerült betölteni.",
+    "bookRequestStatusPending": "Keresés folyamatban",
+    "bookRequestStatusFulfilled": "Megtalálva",
+    "bookRequestStatusNotFound": "Egyelőre nincs meg",
+    "bookRequestStatusCancelled": "Visszavonva",
+    "bookRequestAttempts": "{nights} éjszaka keresve",
+    "@bookRequestAttempts": {
+        "placeholders": {
+            "nights": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsTitle": "Könyvkérések",
+    "adminBookRequestsDesc": "Mit keresnek a felhasználók, és nem találnak",
+    "adminBookRequestsEmpty": "Nincs kérés a kiválasztott szűrőre.",
+    "adminBookRequestsFilterPending": "Keresés alatt",
+    "adminBookRequestsFilterFulfilled": "Megtalálva",
+    "adminBookRequestsFilterNotFound": "Nincs meg",
+    "adminBookRequestsFilterAll": "Mind",
+    "adminBookRequestsCount": "{count} kérés",
+    "@adminBookRequestsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsDemand": "{count} ember kérte",
+    "@adminBookRequestsDemand": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminBookRequestsFoundOn": "megtalálva itt: {source}",
+    "@adminBookRequestsFoundOn": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    }
 }

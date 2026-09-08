@@ -4550,4 +4550,102 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get adminUserPickerChange => 'Alege alt utilizator';
+
+  @override
+  String get bookRequestCta => 'Nu găsești cartea? Cere-o';
+
+  @override
+  String get bookRequestTitle => 'Cere o carte';
+
+  @override
+  String get bookRequestExplainer =>
+      'O căutăm în fiecare noapte, cu prioritate, în catalogul nostru și în mai multe librării online. Te anunțăm imediat ce o găsim.';
+
+  @override
+  String get bookRequestTitleLabel => 'Titlul cărții';
+
+  @override
+  String get bookRequestAuthorLabel => 'Autorul (opțional, dar ajută)';
+
+  @override
+  String get bookRequestNoteLabel => 'Detalii: editura, anul, ediția…';
+
+  @override
+  String get bookRequestSubmit => 'Trimite cererea';
+
+  @override
+  String get bookRequestSent =>
+      'Am notat cererea. Te anunțăm când găsim cartea.';
+
+  @override
+  String get bookRequestFoundNow => 'Am găsit cartea în catalog.';
+
+  @override
+  String get bookRequestOpenBook => 'Vezi cartea';
+
+  @override
+  String get bookRequestError => 'Nu am putut trimite cererea.';
+
+  @override
+  String get bookRequestsTitle => 'Cărți cerute';
+
+  @override
+  String get bookRequestsEmpty =>
+      'Nu ai cerut nicio carte încă. Când o căutare nu găsește nimic, poți cere cartea chiar de acolo.';
+
+  @override
+  String get bookRequestsLoadError => 'Nu am putut încărca cererile.';
+
+  @override
+  String get bookRequestStatusPending => 'În căutare';
+
+  @override
+  String get bookRequestStatusFulfilled => 'Găsită';
+
+  @override
+  String get bookRequestStatusNotFound => 'Negăsită deocamdată';
+
+  @override
+  String get bookRequestStatusCancelled => 'Anulată';
+
+  @override
+  String bookRequestAttempts(int nights) {
+    return 'căutată $nights nopți';
+  }
+
+  @override
+  String get adminBookRequestsTitle => 'Cereri de carte';
+
+  @override
+  String get adminBookRequestsDesc => 'Ce cărți caută userii și nu găsesc';
+
+  @override
+  String get adminBookRequestsEmpty => 'Nicio cerere pe filtrul ales.';
+
+  @override
+  String get adminBookRequestsFilterPending => 'În căutare';
+
+  @override
+  String get adminBookRequestsFilterFulfilled => 'Găsite';
+
+  @override
+  String get adminBookRequestsFilterNotFound => 'Negăsite';
+
+  @override
+  String get adminBookRequestsFilterAll => 'Toate';
+
+  @override
+  String adminBookRequestsCount(int count) {
+    return '$count cereri';
+  }
+
+  @override
+  String adminBookRequestsDemand(int count) {
+    return 'cerută de $count oameni';
+  }
+
+  @override
+  String adminBookRequestsFoundOn(String source) {
+    return 'găsită pe $source';
+  }
 }
