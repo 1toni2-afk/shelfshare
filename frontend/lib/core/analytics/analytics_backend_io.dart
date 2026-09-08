@@ -18,21 +18,27 @@ const _consentStorageKey = 'analytics_consent';
 
 /// Trimite spre Firebase Analytics pe Android/iOS.
 ///
-/// Colectarea e OPRITĂ implicit - și în Dart, prin
-/// `setAnalyticsCollectionEnabled(false)`, și nativ, prin meta-data
-/// `firebase_analytics_collection_enabled=false` din AndroidManifest.xml.
-/// Sunt necesare amândouă: valoarea din manifest e singura care acoperă
-/// intervalul dintre pornirea procesului și primul cod Dart executat, iar
-/// setarea din Dart e singura care poate fi schimbată la runtime când userul
-/// își dă acordul. Fără cea din manifest, SDK-ul apucă să trimită un
-/// `first_open` înainte să fi întrebat pe cineva ceva.
+/// Statisticile anonime sunt PORNITE implicit: comutatorul din Setări începe
+/// pe „on", iar cine nu vrea îl oprește de acolo (alegerea lui e reținută și
+/// respectată la fiecare pornire). Pe web e altfel - acolo rămâne bannerul de
+/// consimțământ, fiindcă GA pune cookie-uri și e o cerință GDPR.
+///
+/// Nativ, colectarea rămâne oprită la pornirea procesului prin meta-data
+/// `firebase_analytics_collection_enabled=false` din AndroidManifest.xml -
+/// singurul lucru care acoperă intervalul dintre pornirea procesului și
+/// primul cod Dart executat. `initialize()` de mai jos o pornește imediat ce
+/// citește preferința, deci nu se trimite nimic înainte ca aplicația să știe
+/// dacă userul a refuzat.
 class _FirebaseAnalyticsBackend implements AnalyticsBackend {
   final _storage = const FlutterSecureStorage();
   FirebaseAnalytics? _analytics;
 
   /// Copie în memorie a alegerii din storage: `consentGranted` e sincron
-  /// (îl citește UI-ul la fiecare build), storage-ul e async.
-  bool _granted = false;
+  /// (îl citește UI-ul la fiecare build), storage-ul e async. Pornește pe
+  /// `true` fiindcă asta e și valoarea implicită când nu există o alegere
+  /// salvată - altfel comutatorul din Setări ar apărea o clipă pe „off" la
+  /// fiecare deschidere a ecranului.
+  bool _granted = true;
   bool _answered = false;
 
   @override
@@ -58,7 +64,8 @@ class _FirebaseAnalyticsBackend implements AnalyticsBackend {
 
       final stored = await _storage.read(key: _consentStorageKey);
       _answered = stored != null;
-      _granted = stored == 'granted';
+      // Implicit pornit: doar un „denied" salvat explicit oprește colectarea.
+      _granted = stored != 'denied';
 
       final analytics = FirebaseAnalytics.instance;
       // Reafirmăm starea la fiecare pornire, în ambele sensuri: SDK-ul

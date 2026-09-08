@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,7 @@ import '../data/bookshelf_repository.dart';
 import '../data/genre_tag_suggestions.dart';
 import '../data/reading_progress_repository.dart';
 import '../../../shared/utils/image_upload.dart';
+import 'isbn_scanner_sheet.dart';
 import 'request_book_dialog.dart';
 
 /// Ecranul „+ Share" refăcut pe layout-ul din Milestone 10:
@@ -506,6 +508,37 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
         _recommendedCovers = [cover];
       }
     });
+  }
+
+  /// „Scanează ISBN-ul": codul de bare de pe coperta a patra ESTE ISBN-ul, iar
+  /// backendul îl caută cu același `lookup-isbn` folosit de adăugarea în masă.
+  /// Rezultatul intră pe exact aceeași cale ca o sugestie aleasă din
+  /// autocomplete, deci formularul se completează la fel (titlu, autor, gen,
+  /// copertă, detalii) - scanarea e doar o altă cale de a alege cartea, nu un
+  /// flux paralel.
+  Future<void> _scanIsbn() async {
+    final l10n = context.l10n;
+    final isbn = await showIsbnScanner(context);
+    if (isbn == null || !mounted) return;
+
+    setState(() => _titleSearching = true);
+    try {
+      final result = await ref.read(booksRepositoryProvider).lookupIsbn(isbn);
+      if (!mounted) return;
+      if (result == null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.shareScanNoResult)));
+        return;
+      }
+      _applySuggestion(result);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.shareScanNoResult)));
+      }
+    } finally {
+      if (mounted) setState(() => _titleSearching = false);
+    }
   }
 
   void _applySuggestion(ExternalBookResult result) {
@@ -1435,6 +1468,32 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(child: _titleField(context, showHelper: false)),
+              // Scanarea codului de bare - cea mai rapidă cale de a adăuga o
+              // carte pe care o ții în mână. Doar pe telefon: `mobile_scanner`
+              // n-are cameră de folosit pe web/desktop în aplicația noastră.
+              if (!kIsWeb) ...[
+                const SizedBox(width: 10),
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: Tooltip(
+                    message: l10n.shareScanTooltip,
+                    child: Material(
+                      color: AppColors.accent.withValues(alpha: 0.15),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      child: InkWell(
+                        onTap: _scanIsbn,
+                        customBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        child: const Center(
+                          child: Icon(Icons.qr_code_scanner,
+                              color: AppColors.accent, size: 24),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(width: 10),
               AspectRatio(
                 aspectRatio: 1,

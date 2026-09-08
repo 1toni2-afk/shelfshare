@@ -13,6 +13,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/auth/application/auth_controller.dart';
 import 'features/auth/application/auth_state.dart';
+import 'features/chat/data/chat_socket_service.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -81,6 +82,22 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
     super.dispose();
   }
 
+  /// Prezența („online acum") e definită de existența unei conexiuni de
+  /// socket deschise spre backend - vezi PresenceService. Pe telefon, sistemul
+  /// omoară acea conexiune de fiecare dată când aplicația trece în fundal, iar
+  /// nimic nu o refăcea la revenire: socketul se recrea abia când userul
+  /// făcea ceva care avea nevoie de el (trimitea un mesaj). Până atunci,
+  /// pentru toți ceilalți apărea offline, deși avea aplicația deschisă în
+  /// față. Reconectăm la fiecare revenire în prim-plan.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (ref.read(authControllerProvider) is! AuthAuthenticated) return;
+    final socket = ref.read(chatSocketServiceProvider);
+    if (socket.isConnected) return;
+    socket.connectInBackground();
+  }
+
   @override
   void didChangeLocales(List<Locale>? locales) {
     // effectiveLocaleProvider citește limbile dispozitivului direct din
@@ -119,11 +136,18 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
       final push = ref.read(pushGatewayProvider);
       if (next is AuthAuthenticated) {
         push.registerForCurrentUser();
+        // Socketul e ținut deschis cât timp sesiunea e activă, nu doar cât
+        // stă montat un ecran care are nevoie de el: altfel userul apare
+        // online abia din clipa în care deschide chatul sau scrie ceva.
+        ref.read(chatSocketServiceProvider).connectInBackground();
         // Un tap pe notificare care a pornit aplicația din starea închisă
         // ajunge înaintea sesiunii restaurate - abia acum putem naviga acolo.
         _consumePendingNotificationRoute();
       } else if (previous is AuthAuthenticated && next is AuthUnauthenticated) {
         push.unregisterCurrentDevice();
+        // Fără asta, serverul l-ar vedea pe userul deconectat „online" până
+        // când expiră tokenul cu care s-a deschis socketul.
+        ref.read(chatSocketServiceProvider).disconnect();
         // Ruta cerută de o notificare a contului de dinainte nu mai are ce
         // căuta după logout.
         ref.read(pendingNotificationRouteProvider.notifier).set(null);

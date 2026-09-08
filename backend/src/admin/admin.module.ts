@@ -10,9 +10,16 @@ import { FeedbackModule } from '../feedback/feedback.module';
 import { SupportModule } from '../support/support.module';
 import { SecurityEventsModule } from '../security-events/security-events.module';
 import { ListingScoreModule } from '../books/listing-score.module';
+import { PresenceModule } from '../chat/presence.module';
 
 @Module({
-  imports: [FeedbackModule, SupportModule, SecurityEventsModule, ListingScoreModule],
+  imports: [
+    FeedbackModule,
+    SupportModule,
+    SecurityEventsModule,
+    ListingScoreModule,
+    PresenceModule,
+  ],
   controllers: [AdminController, AdminManagementController],
   providers: [
     AdminService,

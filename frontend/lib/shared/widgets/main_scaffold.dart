@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/theme/app_theme.dart';
+import '../../features/admin/data/admin_repository.dart';
 import '../../features/chat/application/conversations_controller.dart';
 import '../../features/notifications/application/notifications_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
@@ -277,6 +278,8 @@ class _SidebarState extends ConsumerState<_Sidebar> {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
+                  const Spacer(),
+                  const _OnlineUsersBadge(),
                 ],
               ),
             ),
@@ -525,6 +528,63 @@ class _AddShortcutTile extends StatelessWidget {
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Câți useri sunt online chiar acum, lângă logo - doar pentru admini.
+///
+/// „Online" = are cel puțin o conexiune de socket deschisă spre backend (vezi
+/// PresenceService); numărăm oameni, nu device-uri. Pentru oricine altcineva
+/// nu se afișează nimic și nici nu se cere nimic de la API: provider-ul e
+/// citit doar pe ramura de admin.
+class _OnlineUsersBadge extends ConsumerWidget {
+  const _OnlineUsersBadge();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    if (user == null || !user.isAdmin) return const SizedBox.shrink();
+
+    final presence = ref.watch(adminOnlinePresenceProvider).value;
+    if (presence == null) return const SizedBox.shrink();
+
+    final names = presence.sample.map((u) => u.name).where((n) => n.isNotEmpty);
+    final summary =
+        '${presence.users} online (${presence.connections} conexiuni)';
+    return Tooltip(
+      message: names.isEmpty
+          ? summary
+          : '$summary\n${names.join(', ')}',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.green.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '${presence.users}',
+              style: const TextStyle(
+                color: Colors.green,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

@@ -2725,6 +2725,17 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get shareScanHint =>
+      'Richte die Kamera auf den Barcode auf der Rückseite';
+
+  @override
+  String get shareScanNoResult =>
+      'Zu diesem Barcode haben wir kein Buch gefunden. Gib den Titel manuell ein.';
+
+  @override
+  String get shareScanTooltip => 'ISBN scannen';
+
+  @override
   String get bulkAddTitle => 'Mehrere Bücher hinzufügen';
 
   @override

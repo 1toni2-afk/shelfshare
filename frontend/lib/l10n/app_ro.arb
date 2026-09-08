@@ -1607,6 +1607,9 @@
             }
         }
     },
+    "shareScanHint": "Îndreaptă camera spre codul de bare de pe coperta a patra",
+    "shareScanNoResult": "Nu am găsit nicio carte cu acest cod de bare. Scrie titlul manual.",
+    "shareScanTooltip": "Scanează ISBN-ul",
     "bulkAddTitle": "Adaugă mai multe cărți",
     "bulkAddScanTooltip": "Scanează cod de bare",
     "bulkAddManualEntry": "Introducere manuală",

@@ -2688,6 +2688,17 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get shareScanHint =>
+      'Îndreaptă camera spre codul de bare de pe coperta a patra';
+
+  @override
+  String get shareScanNoResult =>
+      'Nu am găsit nicio carte cu acest cod de bare. Scrie titlul manual.';
+
+  @override
+  String get shareScanTooltip => 'Scanează ISBN-ul';
+
+  @override
   String get bulkAddTitle => 'Adaugă mai multe cărți';
 
   @override

@@ -4822,6 +4822,24 @@ abstract class AppLocalizations {
   /// **'se încheie în {minutes} min'**
   String auctionEndsInMinutes(int minutes);
 
+  /// No description provided for @shareScanHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Îndreaptă camera spre codul de bare de pe coperta a patra'**
+  String get shareScanHint;
+
+  /// No description provided for @shareScanNoResult.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu am găsit nicio carte cu acest cod de bare. Scrie titlul manual.'**
+  String get shareScanNoResult;
+
+  /// No description provided for @shareScanTooltip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scanează ISBN-ul'**
+  String get shareScanTooltip;
+
   /// No description provided for @bulkAddTitle.
   ///
   /// In ro, this message translates to:

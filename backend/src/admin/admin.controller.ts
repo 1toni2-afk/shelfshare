@@ -34,6 +34,14 @@ export class AdminController {
     return this.adminService.getStats();
   }
 
+  /// Contorul „online acum" din bara laterală a panoului de admin. Starea e
+  /// în memoria procesului (PresenceService), deci răspunsul e instant și nu
+  /// atinge baza decât pentru numele din `sample`.
+  @Get('stats/online')
+  getOnlinePresence() {
+    return this.adminService.getOnlinePresence();
+  }
+
   @Get('stats/marketplace')
   getMarketplaceStats() {
     return this.adminService.getMarketplaceStats();

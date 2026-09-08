@@ -44,6 +44,26 @@ export class PresenceService {
   }
 
   /**
+   * Câți useri distincți au acum cel puțin o conexiune deschisă - contorul
+   * din panoul de admin. Numărăm oameni, nu socket-uri: cineva cu aplicația
+   * deschisă și pe telefon, și în browser, e tot un singur user online.
+   */
+  onlineCount(): number {
+    return this.connections.size;
+  }
+
+  /** Câte conexiuni sunt deschise în total - util ca să vezi câte device-uri. */
+  connectionCount(): number {
+    let total = 0;
+    for (const count of this.connections.values()) total += count;
+    return total;
+  }
+
+  onlineUserIds(): string[] {
+    return [...this.connections.keys()];
+  }
+
+  /**
    * Scriem lastSeenAt doar la deconectarea completă - cât timp e online,
    * „Last seen" nu se afișează oricum, deci un update pe fiecare mesaj ar fi
    * trafic degeaba către DB.

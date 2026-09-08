@@ -1,3 +1,44 @@
+/// „Online acum" din panoul de admin: `users` numără oameni, `connections`
+/// device-uri (aceeași persoană poate avea aplicația deschisă pe telefon și
+/// în browser). `sample` e o listă scurtă de nume, doar pentru context.
+class OnlinePresence {
+  final int users;
+  final int connections;
+  final List<OnlineUser> sample;
+
+  const OnlinePresence({
+    required this.users,
+    required this.connections,
+    this.sample = const [],
+  });
+
+  factory OnlinePresence.fromJson(Map<String, dynamic> json) {
+    return OnlinePresence(
+      users: (json['users'] as num?)?.toInt() ?? 0,
+      connections: (json['connections'] as num?)?.toInt() ?? 0,
+      sample: ((json['sample'] as List?) ?? const [])
+          .map((e) => OnlineUser.fromJson((e as Map).cast<String, dynamic>()))
+          .toList(),
+    );
+  }
+}
+
+class OnlineUser {
+  final String id;
+  final String name;
+  final String? profileImage;
+
+  const OnlineUser({required this.id, required this.name, this.profileImage});
+
+  factory OnlineUser.fromJson(Map<String, dynamic> json) {
+    return OnlineUser(
+      id: json['id'] as String,
+      name: json['name'] as String? ?? '',
+      profileImage: json['profileImage'] as String?,
+    );
+  }
+}
+
 class AdminStats {
   final int totalUsers;
   final int verifiedUsers;

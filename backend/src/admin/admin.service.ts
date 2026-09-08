@@ -14,6 +14,7 @@ import {
 import { FeatureFlagValueDto } from './dto/set-feature-flags.dto';
 import { ListingScoreService } from '../books/listing-score.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { PresenceService } from '../chat/presence.service';
 
 /// Tabelele din care se scoate seria pe zile a statisticilor de folosire.
 /// Numele sunt cele DIN BAZA (`@@map` din schema.prisma), nu ale modelelor
@@ -42,7 +43,33 @@ export class AdminService {
     private listingScore: ListingScoreService,
     private reports: ReportsService,
     private activityLog: ActivityLogService,
+    private presence: PresenceService,
   ) {}
+
+  /**
+   * Cine e online chiar ACUM: userii cu cel puțin o conexiune de socket
+   * deschisă către namespace-ul /chat (vezi PresenceService). Nu e „activi
+   * azi" - starea dispare în clipa în care se închide ultima conexiune.
+   *
+   * `users` numără oameni, `connections` device-uri: cineva cu aplicația
+   * deschisă și pe telefon, și în browser, contează o dată la primul și de
+   * două ori la al doilea. Lista de nume e plafonată - contorul din bara
+   * laterală are nevoie doar de număr, restul e pentru curiozitate.
+   */
+  async getOnlinePresence(limit = 20) {
+    const ids = this.presence.onlineUserIds();
+    const users = ids.length
+      ? await this.prisma.user.findMany({
+          where: { id: { in: ids.slice(0, limit) } },
+          select: { id: true, name: true, profileImage: true },
+        })
+      : [];
+    return {
+      users: this.presence.onlineCount(),
+      connections: this.presence.connectionCount(),
+      sample: users,
+    };
+  }
 
   async getStats() {
     const [

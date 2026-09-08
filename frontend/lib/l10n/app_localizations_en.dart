@@ -2675,6 +2675,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get shareScanHint =>
+      'Point the camera at the barcode on the back cover';
+
+  @override
+  String get shareScanNoResult =>
+      'We couldn\'t find a book with that barcode. Type the title instead.';
+
+  @override
+  String get shareScanTooltip => 'Scan the ISBN';
+
+  @override
   String get bulkAddTitle => 'Add multiple books';
 
   @override

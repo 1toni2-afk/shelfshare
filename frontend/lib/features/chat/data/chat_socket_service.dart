@@ -53,6 +53,23 @@ class ChatSocketService {
     );
   }
 
+  /// Închide conexiunea acum, fără reconectare automată - folosit la logout.
+  ///
+  /// Fără ea, socketul vechi rămâne deschis cu tokenul contului precedent:
+  /// serverul continuă să-l vadă pe userul respectiv „online" până expiră
+  /// tokenul, iar prezența devine o minciună.
+  void disconnect() {
+    _socket?.dispose();
+    _socket = null;
+    _notificationBoundSocket = null;
+    _connecting = null;
+  }
+
+  /// Conexiunea e vie ACUM. Nu e același lucru cu „am chemat connect()":
+  /// pe telefon, socketul moare tăcut când sistemul suspendă aplicația, iar
+  /// serverul îl trece pe user offline din acel moment.
+  bool get isConnected => _socket?.connected ?? false;
+
   /// Cât așteptăm handshake-ul inițial de conectare (deschidere transport +
   /// autentificare) înainte să renunțăm. Suficient de generos cât să acopere
   /// câteva reîncercări automate socket.io (backoff intern), nu doar prima

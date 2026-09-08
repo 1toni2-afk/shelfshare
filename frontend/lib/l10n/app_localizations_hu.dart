@@ -2685,6 +2685,16 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get shareScanHint => 'Irányítsd a kamerát a hátlapon lévő vonalkódra';
+
+  @override
+  String get shareScanNoResult =>
+      'Nem találtunk könyvet ehhez a vonalkódhoz. Írd be a címet kézzel.';
+
+  @override
+  String get shareScanTooltip => 'ISBN beolvasása';
+
+  @override
   String get bulkAddTitle => 'Több könyv hozzáadása';
 
   @override

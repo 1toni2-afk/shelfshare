@@ -307,6 +307,15 @@ class AdminRepository {
     return ListingScoreBreakdown.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// „Online acum": userii cu cel puțin o conexiune de socket deschisă spre
+  /// backend. Vezi PresenceService - starea e în memoria procesului, deci
+  /// răspunsul e instant și poate fi cerut periodic fără cost.
+  Future<OnlinePresence> getOnlinePresence() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/stats/online');
+    return OnlinePresence.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<List<SupportRequestItem>> getSupportRequests() async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.get('/admin/support-requests');
@@ -318,4 +327,28 @@ class AdminRepository {
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref);
+});
+
+/// Cât de des reîmprospătăm contorul „online acum". Starea se schimbă des,
+/// dar nu e o informație critică - la fiecare jumătate de minut e destul de
+/// viu fără să batem degeaba în API cât timp panoul stă deschis.
+const _onlinePollInterval = Duration(seconds: 30);
+
+/// Contorul de useri online, reîmprospătat periodic cât timp cineva îl
+/// ascultă (autoDispose: se oprește când bara laterală iese din arbore).
+/// Erorile nu-l opresc - un 401/timeout ocazional nu are voie să înghețe
+/// contorul până la un restart.
+final adminOnlinePresenceProvider =
+    StreamProvider.autoDispose<OnlinePresence>((ref) async* {
+  final repository = ref.watch(adminRepositoryProvider);
+  var active = true;
+  ref.onDispose(() => active = false);
+  while (active) {
+    try {
+      yield await repository.getOnlinePresence();
+    } catch (_) {
+      // Păstrăm ultima valoare cunoscută; reîncercăm la următorul ciclu.
+    }
+    await Future<void>.delayed(_onlinePollInterval);
+  }
 });
