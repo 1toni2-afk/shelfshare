@@ -46,6 +46,26 @@ const STATIC_HTML_PAGES = {
   '/safety-center': path.join(__dirname, 'static-pages', 'safety-center.html'),
   '/about-dev': path.join(__dirname, 'static-pages', 'about-dev.html'),
   '/help-center': path.join(__dirname, 'static-pages', 'help-center.html'),
+  // Pagina de prezentare a jocului Werewolf Card Game Companion (celălalt
+  // proiect care trimite aici pentru app-ads.txt, vezi mai jos). Nu apare în
+  // STATIC_SITEMAP_ROUTES și nu e legată din nicio pagină - se ajunge la ea
+  // doar pe link direct. Ce o ține în afara Google e <meta name="robots"
+  // content="noindex"> din fișier, NU o intrare în ROBOTS_TXT: un URL blocat
+  // din robots.txt poate ajunge totuși indexat dacă îl leagă cineva, fiindcă
+  // robotul n-are voie să deschidă pagina și deci nu vede niciodată noindex-ul.
+  //
+  // /werewolf/privacy și /werewolf/terms sunt cele două linkuri publice cerute
+  // de Play Console („Application privacy policy link" / „Terms of Service
+  // link"). Trebuie să răspundă FĂRĂ autentificare și să rămână la aceeași
+  // adresă, fiindcă politica însăși promite că versiunea actualizată se publică
+  // tot acolo. noindex-ul din ele NU deranjează verificarea Google Play:
+  // împiedică indexarea, nu accesul.
+  '/werewolf': path.join(__dirname, 'static-pages', 'werewolf.html'),
+  '/werewolf.html': path.join(__dirname, 'static-pages', 'werewolf.html'),
+  '/werewolf/privacy': path.join(__dirname, 'static-pages', 'werewolf-privacy.html'),
+  '/werewolf/privacy.html': path.join(__dirname, 'static-pages', 'werewolf-privacy.html'),
+  '/werewolf/terms': path.join(__dirname, 'static-pages', 'werewolf-terms.html'),
+  '/werewolf/terms.html': path.join(__dirname, 'static-pages', 'werewolf-terms.html'),
   // Cerute de verificarea OAuth a Google (ecranul de consimțământ) ca linkuri
   // publice, la adrese distincte, pe același domeniu cu aplicația. Trebuie să
   // rămână accesibile FĂRĂ autentificare - de-asta sunt aici, nu în router-ul

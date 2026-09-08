@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Werewolf Card Game Companion</title>
+<meta name="description" content="Asistent de moderator pentru jocul de petrecere Werewolf: roluri, faze de noapte, vot de zi, istoric și statistici.">
+<!-- Pagină „doar prin link": nu apare în sitemap.xml și nu e legată de nicăieri
+     din site. „noindex" (NU Disallow în robots.txt) e ce o ține efectiv în
+     afara rezultatelor Google: un URL blocat din robots.txt tot poate ajunge
+     indexat dacă îl leagă cineva, pentru că robotul n-are voie să citească
+     pagina și deci nu vede niciodată directiva de mai jos. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B0D12">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Werewolf Card Game Companion">
+<meta property="og:title" content="Werewolf Card Game Companion">
+<meta property="og:description" content="Asistent de moderator pentru jocul de petrecere Werewolf: roluri, faze de noapte, vot de zi, istoric și statistici.">
+<meta property="og:locale" content="ro_RO">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: #0B0D12;
+    --surface: #14171F;
+    --surface-2: #1B1F29;
+    --foreground: #ECEAE6;
+    --muted-foreground: #9BA1AE;
+    --accent: #C2410C;
+    --accent-soft: #F59E0B;
+    --border: rgba(255, 255, 255, 0.10);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-soft); }
+  main { max-width: 760px; margin: 0 auto; padding: 0 20px 72px; }
+
+  .hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(900px 420px at 50% -10%, rgba(245, 158, 11, 0.16), transparent 65%),
+      radial-gradient(600px 320px at 15% 0%, rgba(194, 65, 12, 0.18), transparent 70%);
+  }
+  .hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 72px 20px 56px;
+    text-align: center;
+  }
+  .moon {
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 22px;
+    display: block;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-soft);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 999px;
+    padding: 5px 14px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 900;
+    font-size: clamp(30px, 7vw, 46px);
+    line-height: 1.12;
+    margin: 0 0 14px;
+  }
+  .tagline {
+    font-size: 17px;
+    color: var(--muted-foreground);
+    margin: 0 auto 30px;
+    max-width: 46ch;
+  }
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: #FFF7ED;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 15px 26px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(194, 65, 12, 0.35);
+  }
+  .cta:hover { background: #DC4A0F; }
+  .cta svg { flex: none; }
+  .cta-note {
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: var(--muted-foreground);
+  }
+
+  section { padding-top: 48px; }
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 24px;
+    margin: 0 0 8px;
+  }
+  .section-intro {
+    color: var(--muted-foreground);
+    margin: 0 0 22px;
+  }
+  p { margin: 0 0 16px; }
+
+  .cards {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .card h3 {
+    font-size: 16px;
+    margin: 0 0 6px;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--muted-foreground);
+    margin: 0;
+  }
+  .card .glyph {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  ol.steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ol.steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 18px 46px;
+    color: var(--muted-foreground);
+    font-size: 15px;
+  }
+  ol.steps li strong {
+    display: block;
+    color: var(--foreground);
+    font-weight: 700;
+  }
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--accent-soft);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .note {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 18px 20px;
+    color: var(--muted-foreground);
+    font-size: 15px;
+  }
+  .note strong { color: var(--foreground); }
+
+  .final {
+    text-align: center;
+    margin-top: 56px;
+    padding: 36px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+  }
+  .final h2 { margin-bottom: 6px; }
+  .final p { color: var(--muted-foreground); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 20px 40px;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: 13px;
+  }
+  footer p { margin: 0 0 6px; }
+  footer .legal { margin-bottom: 14px; font-size: 14px; }
+  footer .legal a { margin: 0 6px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <svg class="moon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <circle cx="32" cy="32" r="26" fill="#F59E0B" opacity="0.14"/>
+      <circle cx="32" cy="32" r="19" fill="#F59E0B" opacity="0.9"/>
+      <circle cx="25" cy="26" r="3.4" fill="#0B0D12" opacity="0.18"/>
+      <circle cx="38" cy="34" r="4.6" fill="#0B0D12" opacity="0.16"/>
+      <circle cx="29" cy="40" r="2.4" fill="#0B0D12" opacity="0.18"/>
+    </svg>
+    <span class="eyebrow">ContrastStudios</span>
+    <h1>Werewolf Card Game Companion</h1>
+    <p class="tagline">
+      Asistentul de moderator pentru jocul clasic de petrecere Werewolf.
+      Ține evidența rolurilor, a nopților, a voturilor și a jucătorilor -
+      restul rămâne la masă.
+    </p>
+    <a class="cta" href="https://play.google.com/store/apps/details?id=com.contraststudio.werewolf_companion" rel="noopener">
+      <svg width="20" height="22" viewBox="0 0 20 22" aria-hidden="true">
+        <path d="M1.3.6a1.7 1.7 0 0 0-.5 1.2v18.4c0 .5.2.9.5 1.2l.1.1 10.3-10.3v-.4L1.4.5l-.1.1Z" fill="#FFF7ED" opacity=".75"/>
+        <path d="M15.1 15.1 11.7 11.7v-.4l3.4-3.4.1.1 4.1 2.3c1.2.6 1.2 1.7 0 2.4l-4.2 2.4Z" fill="#FFF7ED"/>
+        <path d="m15.2 15-3.5-3.5L1.4 21.5c.4.4 1 .5 1.8.1L15.2 15" fill="#FFF7ED" opacity=".9"/>
+        <path d="M15.2 8 3.2.4C2.4 0 1.8 0 1.4.5l10.3 10.2L15.2 8Z" fill="#FFF7ED" opacity=".6"/>
+      </svg>
+      Descarcă din Google Play
+    </a>
+    <p class="cta-note">Gratuit, cu achiziții în aplicație &middot; PEGI 3</p>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <h2>Ce face aplicația</h2>
+    <p class="section-intro">
+      Werewolf se joacă în continuare cu cărțile tale fizice și cu un moderator uman.
+      Aplicația doar ține minte tot ce, altfel, ar trebui să ții tu minte.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <span class="glyph">👥</span>
+        <h3>Jucători și roluri</h3>
+        <p>Numele jucătorilor și rolurile alese, într-un singur loc, de la prima până la ultima noapte.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">🌙</span>
+        <h3>Faze de noapte ghidate</h3>
+        <p>Moderatorul e purtat pas cu pas prin fiecare noapte, ca să nu mai sară nimeni peste o abilitate.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">🗳️</span>
+        <h3>Vot de zi și decese</h3>
+        <p>Votul, eliminările și cine mai e în joc - fără hârtii și fără dispute despre ce s-a întâmplat aseară.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">📊</span>
+        <h3>Istoric și statistici</h3>
+        <p>Partidele jucate rămân salvate, cu statistici pentru grupul tău obișnuit de joc.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Moduri de joc</h2>
+    <p class="section-intro">Aceeași masă, ritmuri diferite.</p>
+    <div class="cards">
+      <div class="card">
+        <span class="glyph">🃏</span>
+        <h3>Clasic</h3>
+        <p>Jocul condus de moderator, exact așa cum îl știi, doar mai ordonat.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">📱</span>
+        <h3>Pass the Phone</h3>
+        <p>Telefonul face turul mesei și împarte rolurile, când nu vrea nimeni să fie moderator.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">🎲</span>
+        <h3>Haos</h3>
+        <p>Evenimente speciale peste regulile obișnuite, pentru grupurile care vor varietate.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">⭐</span>
+        <h3>Premium</h3>
+        <p>Moduri suplimentare, teme și statistici extinse, plus adăugirile viitoare.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cum decurge o partidă</h2>
+    <ol class="steps">
+      <li><strong>Adaugi jucătorii</strong> Scrii numele o singură dată; grupul rămâne salvat pentru data viitoare.</li>
+      <li><strong>Alegi rolurile</strong> Selectezi ce cărți sunt la masă în seara asta și cine primește ce.</li>
+      <li><strong>Conduci noaptea</strong> Aplicația îți spune cine se trezește, în ce ordine și ce poate face.</li>
+      <li><strong>Treci la zi</strong> Anunți decesele, deschizi votul, marchezi eliminarea.</li>
+      <li><strong>Închei partida</strong> Rezultatul intră în istoric, împreună cu statisticile grupului.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Confidențialitate</h2>
+    <div class="note">
+      <p style="margin:0"><strong>Nu se colectează date</strong> și nu se trimit date către terți -
+      exact cum e declarat și în secțiunea „Siguranța datelor" din Google Play.
+      Partidele și numele jucătorilor rămân pe telefonul tău.</p>
+    </div>
+  </section>
+
+  <div class="final">
+    <h2>Gata de prima noapte?</h2>
+    <p>Instalezi, adaugi jucătorii și moderezi. Deducția, bluful și acuzațiile rămân ale voastre.</p>
+    <a class="cta" href="https://play.google.com/store/apps/details?id=com.contraststudio.werewolf_companion" rel="noopener">
+      Descarcă din Google Play
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <p class="legal">
+    <a href="/werewolf/privacy">Privacy Policy</a> &middot;
+    <a href="/werewolf/terms">Terms of Service</a>
+  </p>
+  <p>Werewolf Card Game Companion &middot; ContrastStudios</p>
+  <p>Aplicația nu înlocuiește cărțile fizice sau moderatorul uman - doar ține jocul organizat.</p>
+</footer>
+
+</body>
+</html>
