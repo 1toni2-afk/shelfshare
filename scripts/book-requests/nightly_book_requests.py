@@ -52,8 +52,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import queue
 import re
 import sys
+import threading
 import unicodedata
 import urllib.error
 import urllib.request
@@ -79,6 +81,11 @@ DEFAULT_API = os.environ.get("SHELFSHARE_API_URL", "http://localhost:3000")
 TITLE_THRESHOLD = 0.86
 
 SOURCE_NAMES = ("targulcartii-local", "targulcartii", "libris", "carturesti")
+
+# Cat asteptam un site inainte sa-l consideram pierdut pentru cererea curenta.
+# Generos: Carturesti porneste un Chromium la prima cerere, iar sursele au
+# delay-uri proprii de cateva secunde intre pagini.
+REMOTE_TIMEOUT = 300.0
 
 
 # --------------------------------------------------------------------------
@@ -190,6 +197,9 @@ class Api:
 
 
 class TargulLocal:
+    # Citeste doar din opere.jsonl: zero cereri de retea, deci merita intotdeauna
+    # incercata prima si singura, inainte sa deranjam vreun site.
+    local = True
     name = "targulcartii-local"
 
     def __init__(self) -> None:
@@ -530,6 +540,65 @@ def build_sources(names: Iterable[str], delay: float) -> list[object]:
     return built
 
 
+class SourceWorker:
+    """Ruleaza o singura sursa pe firul ei de executie.
+
+    De ce un fir dedicat per sursa si nu un ThreadPoolExecutor: Carturesti tine
+    un Chromium prin API-ul *sincron* al Playwright, care trebuie creat si
+    folosit din acelasi fir. Un pool ar plimba sursa intre fire si ar crapa.
+
+    Bonus care conteaza mai mult decat viteza: un singur fir per sursa inseamna
+    ca nu cerem niciodata doua pagini simultan de la acelasi site. Paralelismul
+    e *intre* site-uri, unde limitele sunt independente, niciodata *in interiorul*
+    unuia - exact ce ne-a blocat la targulcartii cand am fortat ritmul.
+
+    Si repara un bug: Libris si Carturesti pornesc fiecare `sync_playwright()`,
+    iar API-ul sincron nu suporta doua instante in acelasi fir - a doua crapa cu
+    "Playwright Sync API inside the asyncio loop". Cum ordinea era libris inainte
+    de carturesti si sursele se inchideau abia la final, **carturesti pica la
+    fiecare rulare**. Un fir per sursa inseamna cate o instanta per fir, ceea ce
+    Playwright accepta. De aceea trec prin worker si sursele rulate pe rand.
+    """
+
+    def __init__(self, source: object):
+        self.source = source
+        self.name: str = source.name  # type: ignore[attr-defined]
+        self._jobs: queue.Queue = queue.Queue()
+        self._thread = threading.Thread(
+            target=self._run, name=f"src-{self.name}", daemon=True
+        )
+        self._thread.start()
+
+    def _run(self) -> None:
+        while True:
+            job = self._jobs.get()
+            if job is None:
+                # Inchiderea trebuie facuta tot aici: browserul apartine firului asta.
+                close = getattr(self.source, "close", None)
+                if close:
+                    try:
+                        close()
+                    except Exception as exc:  # noqa: BLE001
+                        print(f"    [!] {self.name} la inchidere: {exc}", file=sys.stderr)
+                return
+            title, author, box = job
+            try:
+                box["book"] = self.source.find(title, author)  # type: ignore[attr-defined]
+            except Exception as exc:  # noqa: BLE001 - o sursa cazuta nu opreste restul
+                box["error"] = exc
+            finally:
+                box["done"].set()
+
+    def submit(self, title: str, author: str | None) -> dict:
+        box: dict = {"book": None, "error": None, "done": threading.Event()}
+        self._jobs.put((title, author, box))
+        return box
+
+    def shutdown(self) -> None:
+        self._jobs.put(None)
+        self._thread.join(timeout=120)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", default=DEFAULT_API, help="URL-ul backend-ului")
@@ -540,6 +609,11 @@ def main() -> None:
         help=f"Lista separata prin virgula din: {', '.join(SOURCE_NAMES)} (implicit: all)",
     )
     parser.add_argument("--delay", type=float, default=2.0, help="Secunde intre cereri HTTP")
+    parser.add_argument(
+        "--sequential",
+        action="store_true",
+        help="Interogheaza site-urile pe rand, ca inainte, in loc de paralel",
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -570,7 +644,16 @@ def main() -> None:
     if not usable:
         raise SystemExit("Nicio sursa disponibila.")
 
-    print(f"{len(requests_)} cereri, surse: {', '.join(s.name for s in usable)}")  # type: ignore[attr-defined]
+    local_sources = [s for s in usable if getattr(s, "local", False)]
+    remote_sources = [s for s in usable if not getattr(s, "local", False)]
+    # Un singur site n-are cu ce sa se suprapuna.
+    parallel = not args.sequential and len(remote_sources) > 1
+    # Workerii se creeaza in ambele moduri: firul dedicat nu e doar pentru
+    # viteza, e si singurul mod in care doua surse pe Playwright coexista.
+    workers = [SourceWorker(s) for s in remote_sources]
+
+    mod = "in paralel" if parallel else "pe rand"
+    print(f"{len(requests_)} cereri, surse: {', '.join(s.name for s in usable)} ({mod})")  # type: ignore[attr-defined]
     found = 0
     try:
         for position, request in enumerate(requests_, start=1):
@@ -581,15 +664,58 @@ def main() -> None:
 
             book = None
             hit_source = None
-            for source in usable:
+
+            # Intai sursele locale: costa zero cereri, deci nu are rost sa
+            # deranjam niciun site daca raspunsul e deja pe disc.
+            for source in local_sources:
                 try:
                     book = source.find(request["title"], request.get("author"))  # type: ignore[attr-defined]
-                except Exception as exc:  # noqa: BLE001 - o sursa cazuta nu opreste restul
+                except Exception as exc:  # noqa: BLE001
                     print(f"    [!] {source.name}: {exc}", file=sys.stderr)  # type: ignore[attr-defined]
                     continue
                 if book:
                     hit_source = source.name  # type: ignore[attr-defined]
                     break
+
+            if not book and workers:
+                if parallel:
+                    # Toate site-urile pornesc odata; asteptam sa termine toate
+                    # si abia apoi alegem, ca sa pastram ordinea de prioritate.
+                    boxes = [
+                        (w, w.submit(request["title"], request.get("author")))
+                        for w in workers
+                    ]
+                    for worker, box in boxes:
+                        if not box["done"].wait(timeout=REMOTE_TIMEOUT):
+                            print(
+                                f"    [!] {worker.name}: timeout dupa {REMOTE_TIMEOUT}s",
+                                file=sys.stderr,
+                            )
+                    for worker, box in boxes:
+                        if box["error"] is not None:
+                            print(f"    [!] {worker.name}: {box['error']}", file=sys.stderr)
+                            continue
+                        if box["book"] and not book:
+                            book = box["book"]
+                            hit_source = worker.name
+                else:
+                    # Pe rand, cu oprire la primul hit - dar tot prin workeri,
+                    # ca fiecare Playwright sa stea pe firul lui.
+                    for worker in workers:
+                        box = worker.submit(request["title"], request.get("author"))
+                        if not box["done"].wait(timeout=REMOTE_TIMEOUT):
+                            print(
+                                f"    [!] {worker.name}: timeout dupa {REMOTE_TIMEOUT}s",
+                                file=sys.stderr,
+                            )
+                            continue
+                        if box["error"] is not None:
+                            print(f"    [!] {worker.name}: {box['error']}", file=sys.stderr)
+                            continue
+                        if box["book"]:
+                            book = box["book"]
+                            hit_source = worker.name
+                            break
 
             if book and hit_source:
                 print(f"    -> gasita pe {hit_source}: {book.get('title')} ({book.get('isbn', 'fara ISBN')})")
@@ -601,7 +727,12 @@ def main() -> None:
                 # nopti, scoate cererea din coada.
                 api.resolve(request["id"], ",".join(s.name for s in usable), None)  # type: ignore[attr-defined]
     finally:
+        # Sursele date pe mana workerilor se inchid pe firul lor; restul aici.
+        for worker in workers:
+            worker.shutdown()
         for source in usable:
+            if any(w.source is source for w in workers):
+                continue
             close = getattr(source, "close", None)
             if close:
                 close()
