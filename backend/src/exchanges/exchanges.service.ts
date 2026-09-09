@@ -114,8 +114,20 @@ export class ExchangesService {
       owner: { name: string | null; nameVisible: boolean };
     },
   >(request: T): T {
+    // Coloanele depreciate de la „Condition Photos" (vezi schema.prisma) vin
+    // în continuare din `include: INCLUDE_FULL`. Le scoatem aici: nimeni nu
+    // le mai citește, iar altfel căile brute din storage - care înainte
+    // treceau prin `getPublicUrl` - ar ajunge ca atare în răspuns.
+    const {
+      requesterConditionPhotos: _requesterConditionPhotos,
+      ownerConditionPhotos: _ownerConditionPhotos,
+      ...rest
+    } = request as T & {
+      requesterConditionPhotos?: string[];
+      ownerConditionPhotos?: string[];
+    };
     return {
-      ...request,
+      ...(rest as T),
       requester: { ...request.requester, name: publicName(request.requester) },
       owner: { ...request.owner, name: publicName(request.owner) },
     };
