@@ -358,7 +358,43 @@ const mime = {
   '.wasm': 'application/wasm',
   '.otf': 'font/otf',
   '.ttf': 'font/ttf',
+  // Emise de `flutter build web` alături de cele de mai sus - fără ele
+  // plecau ca application/octet-stream, iar acum ar rata și testul de
+  // „e cerere de fișier?" de mai jos.
+  '.bin': 'application/octet-stream',
+  '.frag': 'text/plain',
+  '.symbols': 'text/plain',
+  // Nu apar în build-ul curent, dar sunt formate obișnuite de asset web:
+  // le trecem ca să nu depindă corectitudinea de ce a emis ultimul build.
+  '.map': 'application/json',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.webp': 'image/webp',
+  '.jpeg': 'image/jpeg',
+  '.txt': 'text/plain',
 };
+
+/**
+ * E o cerere pentru un FIȘIER, nu pentru o rută a aplicației?
+ *
+ * Contează pentru ce facem când fișierul lipsește: o rută necunoscută
+ * (`/books/123`, `/wishlist`) trebuie să primească index.html, ca routerul din
+ * Flutter s-o rezolve; un fișier lipsă trebuie să primească 404.
+ *
+ * Până acum orice cale lipsă primea index.html. Se vedea când un
+ * `main.dart.js_N.part.js` dispărea (numerotarea părților amânate se schimbă
+ * de la un build la altul, iar deploy-ul curăță acum orfanii): browserul cerea
+ * JavaScript și primea HTML cu 200, deci eșua la parsare în loc să vadă un
+ * 404 curat. Ecranul de eroare din deferred_screen.dart tot apărea, dar pe un
+ * drum mult mai greu de diagnosticat.
+ *
+ * Testul e pe lista de extensii cunoscute, NU pe „conține un punct": un
+ * username ca `/users/ion.popescu` are `path.extname` = `.popescu`, care nu e
+ * un tip de fișier, deci rămâne rută de aplicație și primește index.html.
+ */
+function looksLikeFileRequest(reqPath) {
+  return Object.hasOwn(mime, path.extname(reqPath).toLowerCase());
+}
 
 http.createServer((req, res) => {
   let reqPath = decodeURIComponent(req.url.split('?')[0]);
@@ -482,6 +518,13 @@ http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      // Fișier cerut explicit și inexistent: 404, nu index.html deghizat în
+      // JavaScript. Vezi looksLikeFileRequest.
+      if (looksLikeFileRequest(reqPath)) {
+        res.writeHead(404, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+        res.end('Not found');
+        return;
+      }
       fs.readFile(path.join(root, 'index.html'), (err2, indexData) => {
         if (err2) {
           res.writeHead(404);
