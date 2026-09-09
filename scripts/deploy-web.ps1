@@ -57,5 +57,12 @@ try {
 
 Write-Host ""
 Write-Host "==> Gata. build/web actualizat; static-server il serveste live." -ForegroundColor Green
-Write-Host "    In browser: hard refresh (Ctrl+Shift+R) - main.dart.js are max-age 4h," -ForegroundColor Yellow
-Write-Host "    deci copia veche din cache se foloseste pana la refresh fortat." -ForegroundColor Yellow
+# Mesajul de mai jos spunea candva ca e nevoie de hard refresh, fiindca
+# main.dart.js avea max-age 4h. Nu mai e adevarat: static-server trimite
+# "no-cache, must-revalidate" + ETag pentru TOATE fisierele (vezi comentariul
+# despre /assets/ din static-server.js), iar Cloudflare respecta acum headerele
+# originii ("Respect Existing Headers"), deci revalideaza in loc sa serveasca
+# o copie veche. Un refresh normal e suficient.
+Write-Host "    Un refresh normal ajunge - toate fisierele merg cu no-cache + ETag." -ForegroundColor Yellow
+Write-Host "    Daca totusi vezi versiunea veche, verifica in DevTools > Network ca" -ForegroundColor Yellow
+Write-Host "    main.dart.js chiar vine cu 200/304 de la origine, nu din disk cache." -ForegroundColor Yellow
