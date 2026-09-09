@@ -188,6 +188,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookAvailableForSwapShort => 'Tausch';
 
   @override
+  String get listingReservedBadge => 'Tausch läuft';
+
+  @override
+  String get listingReservedNotice =>
+      'Dieses Buch ist für einen laufenden Tausch reserviert. Es bleibt gelistet, bis der Tausch abgeschlossen ist - scheitert er, wird das Buch wieder frei.';
+
+  @override
   String get commonEmailLabel => 'E-Mail';
 
   @override
@@ -3274,6 +3281,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notificationPrefAuctions => 'Auktionen';
 
   @override
+  String get notificationPrefGroupPosts => 'Neue Beiträge in meinen Gruppen';
+
+  @override
+  String get notificationPrefNearbyCity => 'Bücher aus meiner Stadt';
+
+  @override
   String get notificationPrefDiscovery => 'Bücher, die dir gefallen könnten';
 
   @override
@@ -3631,7 +3644,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aboutAppHomeSectionsBody =>
-      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
+      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (100 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
 
   @override
   String get aboutAppExchangesTitle => 'Schimburi și oferte';

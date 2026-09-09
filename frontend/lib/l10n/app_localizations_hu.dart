@@ -187,6 +187,13 @@ class AppLocalizationsHu extends AppLocalizations {
   String get bookAvailableForSwapShort => 'Csere';
 
   @override
+  String get listingReservedBadge => 'Csere folyamatban';
+
+  @override
+  String get listingReservedNotice =>
+      'A könyv egy folyamatban lévő cseréhez van lefoglalva. A csere lezárásáig fent marad a listán - ha meghiúsul, a könyv újra szabad.';
+
+  @override
   String get commonEmailLabel => 'Email';
 
   @override
@@ -3230,6 +3237,12 @@ class AppLocalizationsHu extends AppLocalizations {
   String get notificationPrefAuctions => 'Aukciók';
 
   @override
+  String get notificationPrefGroupPosts => 'Új bejegyzések a csoportjaimban';
+
+  @override
+  String get notificationPrefNearbyCity => 'A városomban feltöltött könyvek';
+
+  @override
   String get notificationPrefDiscovery => 'Könyvek, amik tetszhetnek';
 
   @override
@@ -3584,7 +3597,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get aboutAppHomeSectionsBody =>
-      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
+      'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (100 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare';
 
   @override
   String get aboutAppExchangesTitle => 'Schimburi și oferte';

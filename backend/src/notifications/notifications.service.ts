@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationType, Prisma } from '@prisma/client';
-import { NOTIFICATION_TYPES } from './notification-types';
+import {
+  CONFIGURABLE_NOTIFICATION_TYPES,
+  HIDDEN_NOTIFICATION_TYPES,
+} from './notification-types';
 import { RealtimeService } from '../common/realtime/realtime.service';
 import { PushService } from './push.service';
 
@@ -132,9 +135,13 @@ export class NotificationsService {
   }
 
   /**
-   * Toate tipurile, cu valoarea efectivă pentru user - inclusiv cele fără rând
-   * în DB (implicit `true`). Frontend-ul primește astfel o hartă completă și
-   * n-are nevoie să știe convenția „lipsă = pornit".
+   * Tipurile comutabile, cu valoarea efectivă pentru user - inclusiv cele
+   * fără rând în DB (implicit `true`). Frontend-ul primește astfel o hartă
+   * completă și n-are nevoie să știe convenția „lipsă = pornit".
+   *
+   * Tipurile din HIDDEN_NOTIFICATION_TYPES lipsesc cu totul din răspuns:
+   * ecranul de setări construiește lista din ce primește, deci ele nu apar
+   * nici măcar ca un comutator dezactivat.
    */
   async getPreferences(userId: string) {
     const rows = await this.prisma.notificationPreference.findMany({
@@ -143,7 +150,10 @@ export class NotificationsService {
     });
     const byType = new Map(rows.map((r) => [r.type, r.enabled]));
     return Object.fromEntries(
-      NOTIFICATION_TYPES.map((type) => [type, byType.get(type) ?? true]),
+      CONFIGURABLE_NOTIFICATION_TYPES.map((type) => [
+        type,
+        byType.get(type) ?? true,
+      ]),
     ) as Record<NotificationType, boolean>;
   }
 
@@ -151,10 +161,9 @@ export class NotificationsService {
     userId: string,
     preferences: Partial<Record<NotificationType, boolean>>,
   ) {
-    const entries = Object.entries(preferences) as [
-      NotificationType,
-      boolean,
-    ][];
+    const entries = (
+      Object.entries(preferences) as [NotificationType, boolean][]
+    ).filter(([type]) => !HIDDEN_NOTIFICATION_TYPES.includes(type));
     await this.prisma.$transaction(
       entries.map(([type, enabled]) =>
         this.prisma.notificationPreference.upsert({

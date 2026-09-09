@@ -202,9 +202,15 @@ describe('ExchangesService', () => {
 
       const result = await service.accept('ex-1', 'owner-1');
 
+      // Cartea RĂMÂNE listată - acceptarea doar o rezervă, ca alți useri s-o
+      // vadă în continuare până când schimbul chiar se finalizează.
       expect(prisma.userBook.updateMany).toHaveBeenCalledWith({
-        where: { id: 'ub-requested', availableForSwap: true },
-        data: { availableForSwap: false },
+        where: {
+          id: 'ub-requested',
+          availableForSwap: true,
+          reservedForExchangeId: null,
+        },
+        data: { reservedForExchangeId: 'ex-1' },
       });
       expect(notifications.create).toHaveBeenCalledWith(
         'requester-1',

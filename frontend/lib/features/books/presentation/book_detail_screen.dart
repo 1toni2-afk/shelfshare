@@ -1118,7 +1118,29 @@ class _ActionButtons extends StatelessWidget {
             ],
           ],
         ),
-        if (book.availableForSwap) ...[
+        // Cartea e prinsă într-un schimb acceptat, dar încă nefinalizat. Nu
+        // blocăm butonul: cererea rămâne validă și se activează singură dacă
+        // schimbul curent pică - dar cine o trimite trebuie să știe asta.
+        if (book.isReservedForExchange) ...[
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.hourglass_bottom,
+                  size: 16, color: AppColors.mutedForeground),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  l10n.listingReservedNotice,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppColors.mutedForeground),
+                ),
+              ),
+            ],
+          ),
+        ] else if (book.availableForSwap) ...[
           const SizedBox(height: 8),
           Center(
             child: Text(

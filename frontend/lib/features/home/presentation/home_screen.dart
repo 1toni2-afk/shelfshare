@@ -172,6 +172,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+          // Trecerea de la bara de sus la feed. Bara și fundalul au aceeași
+          // culoare, deci „muchia" ei era de fapt linia unde primul rând de
+          // cărți se termina brusc la scroll. Degradeul ăsta, lipit sub bară,
+          // topește ce urcă spre ea în loc s-o taie drept.
+          const _TopBarFade(),
           // Bandă care alunecă de la dreapta la stânga, în dreptul
           // clopoțelului, când sosește o notificare nouă (Milestone 23).
           const _NotificationToast(),
@@ -180,6 +185,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+}
+
+/// Degradeul de sub bara de sus: opac în culoarea fundalului lângă bară,
+/// complet transparent la capătul de jos. Nu prinde tap-uri (IgnorePointer),
+/// deci cărțile de dedesubt rămân apăsabile.
+class _TopBarFade extends StatelessWidget {
+  const _TopBarFade();
+
+  /// Destul cât trecerea să se vadă ca o topire, nu ca o umbră. Sub ~24 px
+  /// arată tot ca o muchie, doar una neclară.
+  static const double _height = 36;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = Theme.of(context).scaffoldBackgroundColor;
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        child: Container(
+          height: _height,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [background, background.withValues(alpha: 0)],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Urmărește `notificationsControllerProvider` și arată o bandă scurtă,
@@ -602,9 +640,28 @@ class _HomeSection extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: side),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 12),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        color: accent.withValues(alpha: 0.08),
+        // Fără margine verticală și cu padding generos: banda ATINGE grilele
+        // de deasupra și de dedesubt, iar tenta se stinge treptat în ele.
+        // Marginea de dinainte lăsa o linie curată de despărțire, adică exact
+        // chenarul fix pe care îl înlocuim.
+        padding: const EdgeInsets.symmetric(vertical: 28),
+        decoration: BoxDecoration(
+          // Tenta e plină doar pe mijloc și se stinge complet spre ambele
+          // capete. Zonele de tranziție (primii/ultimii ~26% din înălțime)
+          // sunt lungi intenționat - un fade scurt s-ar citi tot ca o
+          // margine, doar una neclară.
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              accent.withValues(alpha: 0),
+              accent.withValues(alpha: 0.08),
+              accent.withValues(alpha: 0.08),
+              accent.withValues(alpha: 0),
+            ],
+            stops: const [0.0, 0.26, 0.74, 1.0],
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

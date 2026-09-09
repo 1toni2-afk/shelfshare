@@ -333,8 +333,16 @@ export class ExchangesService {
   }
 
   /**
-   * Owner-ul acceptă cererea. Ambele cărți implicate devin indisponibile,
-   * cât timp schimbul e în desfășurare (nu mai apar în alte căutări).
+   * Owner-ul acceptă cererea. Cărțile implicate RĂMÂN listate și vizibile în
+   * căutări, doar că poartă marcajul „schimb în curs"
+   * (`reservedForExchangeId`) - devin indisponibile abia la finalizare, când
+   * își schimbă proprietarul. Înainte se stingeau pe loc, iar un schimb care
+   * pica lăsa cartea invizibilă tot intervalul, fără ca nimeni s-o poată cere.
+   *
+   * Rezervarea e și lacătul de concurență care înainte era `availableForSwap`:
+   * două accept-uri simultane pe aceeași carte se bat pe
+   * `reservedForExchangeId: null`, deci exact unul câștigă.
+   *
    * Ceilalți solicitanți PENDING pentru aceeași carte sunt doar informați -
    * cererile lor rămân deschise, ca să se redeschidă natural dacă schimbul
    * acesta nu se finalizează (vezi performCancel/rejectSiblingRequests).
@@ -358,23 +366,31 @@ export class ExchangesService {
       }
 
       const bookClaim = await tx.userBook.updateMany({
-        where: { id: request.requestedBookId, availableForSwap: true },
-        data: { availableForSwap: false },
+        where: {
+          id: request.requestedBookId,
+          availableForSwap: true,
+          reservedForExchangeId: null,
+        },
+        data: { reservedForExchangeId: id },
       });
       if (bookClaim.count === 0) {
         throw new BadRequestException(
-          'Cartea cerută nu mai este disponibilă la schimb',
+          'Cartea cerută este deja într-un alt schimb în desfășurare',
         );
       }
 
       if (request.offeredBookId) {
         const offeredClaim = await tx.userBook.updateMany({
-          where: { id: request.offeredBookId, availableForSwap: true },
-          data: { availableForSwap: false },
+          where: {
+            id: request.offeredBookId,
+            availableForSwap: true,
+            reservedForExchangeId: null,
+          },
+          data: { reservedForExchangeId: id },
         });
         if (offeredClaim.count === 0) {
           throw new BadRequestException(
-            'Cartea oferită nu mai este disponibilă la schimb',
+            'Cartea oferită este deja într-un alt schimb în desfășurare',
           );
         }
       }
@@ -382,12 +398,16 @@ export class ExchangesService {
       const bundleBookIds = await this.getBundleBookIds(id, tx);
       if (bundleBookIds.length > 0) {
         const bundleClaim = await tx.userBook.updateMany({
-          where: { id: { in: bundleBookIds }, availableForSwap: true },
-          data: { availableForSwap: false },
+          where: {
+            id: { in: bundleBookIds },
+            availableForSwap: true,
+            reservedForExchangeId: null,
+          },
+          data: { reservedForExchangeId: id },
         });
         if (bundleClaim.count !== bundleBookIds.length) {
           throw new BadRequestException(
-            'O carte din pachetul oferit nu mai este disponibilă la schimb',
+            'O carte din pachetul oferit este deja într-un alt schimb în desfășurare',
           );
         }
       }
@@ -546,21 +566,24 @@ export class ExchangesService {
         );
       }
 
+      // `availableForSwap: true` pe lângă golirea rezervării: anunțurile
+      // stinse de regula veche (accept = indisponibil) trebuie tot repuse pe
+      // piață când schimbul lor se anulează, altfel ar rămâne invizibile.
       await tx.userBook.updateMany({
-        where: { id: request.requestedBookId },
-        data: { availableForSwap: true },
+        where: { id: request.requestedBookId, permanentlyTransferred: false },
+        data: { availableForSwap: true, reservedForExchangeId: null },
       });
       if (request.offeredBookId) {
         await tx.userBook.updateMany({
-          where: { id: request.offeredBookId },
-          data: { availableForSwap: true },
+          where: { id: request.offeredBookId, permanentlyTransferred: false },
+          data: { availableForSwap: true, reservedForExchangeId: null },
         });
       }
       const bundleBookIds = await this.getBundleBookIds(id, tx);
       if (bundleBookIds.length > 0) {
         await tx.userBook.updateMany({
-          where: { id: { in: bundleBookIds } },
-          data: { availableForSwap: true },
+          where: { id: { in: bundleBookIds }, permanentlyTransferred: false },
+          data: { availableForSwap: true, reservedForExchangeId: null },
         });
       }
 

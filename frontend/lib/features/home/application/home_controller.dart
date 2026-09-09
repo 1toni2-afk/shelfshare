@@ -64,9 +64,13 @@ const _pageSize = 48;
 
 /// Raza secțiunii „Close Near You". Distanța se calculează între centrele
 /// orașelor (vezi ROMANIAN_CITY_COORDINATES pe backend), deci e orientativă.
-/// Am scăzut de la 50 km la 25 km ca „close" să însemne cu adevărat aproape,
-/// nu jumătate de județ.
-const kNearbyRadiusKm = 25;
+///
+/// A fost 50 km, apoi 25 km ca „close" să însemne cu adevărat aproape. La
+/// densitatea reală de anunțuri, 25 km însemna însă o secțiune goală pentru
+/// aproape toată lumea în afara Bucureștiului: un user din Cluj nu vedea
+/// nimic, deși existau cărți în țară. 100 km acoperă orașul plus județele
+/// vecine - încă o distanță pe care cineva chiar o parcurge pentru o carte.
+const kNearbyRadiusKm = 100;
 
 /// Câte rânduri de „recent" preced fiecare secțiune tematică, în ordine.
 /// Rândurile sunt calculate din numărul real de coloane afișate, deci pe
@@ -74,17 +78,44 @@ const kNearbyRadiusKm = 25;
 /// coloane, aceleași rânduri = 4, 6, 6 cărți.
 const kHomeSectionSlots = [2, 3, 3];
 
+/// Cine e userul curent, redus la ce folosește feed-ul: id-ul (ca să-i sărim
+/// propriile anunțuri din „aproape de tine") și orașul (originea distanței).
+typedef _FeedViewer = ({String? id, String? city});
+
 class HomeController extends AsyncNotifier<HomeFeedState> {
+  /// Ultimul viewer citit în `build`. `refresh()` rulează în afara unui build,
+  /// unde `ref.watch` e interzis, deci reia valoarea de aici.
+  _FeedViewer _viewer = (id: null, city: null);
+
   @override
-  Future<HomeFeedState> build() => _loadInitial();
+  Future<HomeFeedState> build() {
+    // `watch`, nu `read`: la o redeschidere a aplicației (sau un refresh de
+    // pagină pe web) routerul afișează Home cât timp sesiunea încă se
+    // restaurează - vezi `if (isLoading) return null` din app_router.dart.
+    // Cu `read`, feed-ul se construia atunci cu `auth == AuthLoading`, deci
+    // fără oraș, iar secțiunea „aproape de tine" lipsea până la un refresh
+    // manual. După un login proaspăt (ex. fereastră incognito) sesiunea era
+    // deja rezolvată la montarea ecranului și secțiunea apărea - de-aici
+    // impresia că datele diferă între sesiuni.
+    //
+    // `select` ca să nu reîncărcăm tot feed-ul la orice modificare a
+    // obiectului user (nume, avatar, XP): ne interesează doar identitatea și
+    // orașul, exact ce folosim mai jos.
+    _viewer = ref.watch(
+      authControllerProvider.select((auth) {
+        final user = auth is AuthAuthenticated ? auth.user : null;
+        return (id: user?.id, city: user?.city);
+      }),
+    );
+    return _loadInitial();
+  }
 
   Future<HomeFeedState> _loadInitial() async {
     final repository = ref.read(booksRepositoryProvider);
     // Orașul din profil e originea pentru „în jurul tău". Fără oraș setat nu
     // avem de unde calcula distanța, deci sărim peste cerere.
-    final auth = ref.read(authControllerProvider);
-    final me = auth is AuthAuthenticated ? auth.user : null;
-    final myCity = me?.city;
+    final me = _viewer;
+    final myCity = me.city;
 
     // Fiecare secțiune se cere în paralel; dacă una pică (ex. recommended
     // fără chestionar completat pe un backend vechi), restul feed-ului se
@@ -106,7 +137,7 @@ class HomeController extends AsyncNotifier<HomeFeedState> {
             )
             // Fără propriile anunțuri: sunt la 0 km de userul însuși, deci ar
             // ocupa începutul secțiunii fără să-i spună nimic nou.
-            .then((r) => r.items.where((b) => b.userId != me?.id).toList())
+            .then((r) => r.items.where((b) => b.userId != me.id).toList())
             .catchError((_) => <UserBook>[])
         : Future.value(const <UserBook>[]);
     final recommendedFuture =

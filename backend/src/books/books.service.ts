@@ -769,7 +769,11 @@ export class BooksService {
       .notifyFollowersOfNewBook(userId, book.title, userBook.id)
       .catch(() => {});
     this.notifyNearbyUsers(userId, book.title).catch(() => {});
-    this.notifyInterestedUsers(userId, book.title, book.genre).catch(() => {});
+    // INTEREST_BOOK_LISTED nu se mai trimite: anunța TOȚI userii cu genul
+    // respectiv în profilul de cititor, la fiecare listare, deci cineva care
+    // bifase „SF" la onboarding primea o notificare pentru fiecare carte SF
+    // apărută pe platformă. Ce rămâne din aceeași intenție, dar cerut explicit
+    // de user: wishlist, căutări salvate, seria începută, orașul propriu.
     this.savedSearches
       .notifyOnNewListing(userId, book.id, book.title, book.genre, userBook.city)
       .catch(() => {});
@@ -930,57 +934,6 @@ export class BooksService {
             'NEARBY_BOOK_LISTED',
             `${owner.name ?? 'Un utilizator din orașul tău'} a listat o carte nouă: "${bookTitle}"`,
             { ownerId },
-          )
-          .catch(() => {}),
-      ),
-    );
-  }
-
-  /**
-   * „Carte nouă pe gustul tău" - anunță userii care au genul cărții între
-   * preferințele din profilul de cititor (vezi ReadingSurveyDto).
-   *
-   * Complementară cu notifyNearbyUsers, care merge pe oraș: aici contează ce
-   * vrea să citească omul, nu unde stă. Excludem userii din același oraș ca
-   * proprietarul, fiindcă ei primesc deja NEARBY_BOOK_LISTED pentru aceeași
-   * carte - două notificări pentru un singur anunț ar fi spam.
-   */
-  private async notifyInterestedUsers(
-    ownerId: string,
-    bookTitle: string,
-    genre: string | null,
-  ) {
-    if (!genre) return;
-
-    const owner = await this.prisma.user.findUnique({
-      where: { id: ownerId },
-      select: { city: true },
-    });
-
-    const interestedUsers = await this.prisma.user.findMany({
-      where: {
-        id: { not: ownerId },
-        favoriteGenres: { has: genre },
-        // Cei din orașul proprietarului au fost deja anunțați de
-        // notifyNearbyUsers. `city: null` nu se potrivește cu `not`, deci
-        // userii fără oraș setat rămân incluși - corect, ei nu primesc
-        // notificarea „din orașul tău".
-        ...(owner?.city
-          ? { OR: [{ city: null }, { city: { not: owner.city } }] }
-          : {}),
-      },
-      select: { id: true },
-      take: 200, // aceeași plasă de siguranță ca la notificarea pe oraș
-    });
-
-    await Promise.all(
-      interestedUsers.map((u) =>
-        this.notifications
-          .create(
-            u.id,
-            'INTEREST_BOOK_LISTED',
-            `S-a listat o carte de ${genre}, gen care te interesează: „${bookTitle}"`,
-            { ownerId, genre },
           )
           .catch(() => {}),
       ),

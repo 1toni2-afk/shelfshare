@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const PARTICIPANT_SELECT = {
   id: true,
@@ -22,6 +23,7 @@ export class AdminChatService {
   constructor(
     private prisma: PrismaService,
     private activityLog: ActivityLogService,
+    private notifications: NotificationsService,
   ) {}
 
   /** Conversația userului curent cu echipa de admini - creată la prima deschidere. */
@@ -154,6 +156,20 @@ export class AdminChatService {
       details: { conversationId },
       content,
     });
+
+    // ADMIN_MESSAGE nu apare în setările de notificări (vezi NotificationType
+    // în schema.prisma): e răspunsul la ceva ce a cerut userul însuși, deci
+    // n-are sens să poată fi oprit. Dedup pe conversație - o echipă care
+    // scrie trei mesaje la rând dă o singură notificare.
+    await this.notifications
+      .upsertUnread(
+        conversation.userId,
+        'ADMIN_MESSAGE',
+        'Ai primit un răspuns de la echipa ShelfShare',
+        { conversationId },
+        'conversationId',
+      )
+      .catch(() => {});
 
     return message;
   }

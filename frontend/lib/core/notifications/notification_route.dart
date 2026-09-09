@@ -94,6 +94,15 @@ String? routeForNotification(NotificationType type, Map<String, dynamic>? data) 
     case NotificationType.savedSearchMatch:
       return '/saved-searches';
 
+    case NotificationType.groupPost:
+      // Notificarea e per grup, nu per postare (vezi notifyGroupMembers pe
+      // backend), deci ducem la grup - discuția e oricum primul lucru din el.
+      final groupId = at('groupId');
+      return groupId == null ? '/groups' : '/groups/$groupId';
+
+    case NotificationType.adminMessage:
+      return '/support/chat';
+
     case NotificationType.bookRequestFound:
       // Cartea cerută există acum în catalog - ducem direct la pagina operei,
       // nu la lista de cereri, unde ar mai fi un tap până la ea.

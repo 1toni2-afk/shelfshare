@@ -6,6 +6,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { ReportPostDto } from './dto/report-post.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { ReportsService } from '../reports/reports.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const MEMBER_SELECT = {
   id: true,
@@ -37,6 +38,7 @@ export class GroupsService {
   constructor(
     private prisma: PrismaService,
     private reports: ReportsService,
+    private notifications: NotificationsService,
   ) {}
 
   private sanitizeMembers<T extends { user: { name: string | null; nameVisible: boolean } }>(
@@ -138,7 +140,51 @@ export class GroupsService {
   async createPost(groupId: string, userId: string, dto: CreatePostDto) {
     await this.assertMember(groupId, userId);
     await this.prisma.groupPost.create({ data: { groupId, authorId: userId, content: dto.content } });
+    // Best-effort, ca la restul notificărilor: o postare reușită nu trebuie
+    // să cadă fiindcă n-am putut anunța pe cineva.
+    this.notifyGroupMembers(groupId, userId).catch(() => {});
     return this.getGroup(groupId, userId);
+  }
+
+  /**
+   * Anunță ceilalți membri că s-a postat în grup. Notificarea e per GRUP, nu
+   * per postare (`upsertUnread` cu `groupId` drept cheie de dedup): într-o
+   * discuție aprinsă, zece replici într-un minut ar fi însemnat zece
+   * notificări pentru fiecare membru.
+   */
+  private async notifyGroupMembers(groupId: string, authorId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      select: {
+        name: true,
+        members: {
+          where: { userId: { not: authorId } },
+          select: { userId: true },
+          // Plasă de siguranță pentru un grup foarte mare - la fel ca la
+          // notificarea pe oraș din books.service.ts.
+          take: 500,
+        },
+      },
+    });
+    if (!group) return;
+
+    const author = await this.prisma.user.findUnique({
+      where: { id: authorId },
+      select: { name: true, username: true, nameVisible: true },
+    });
+    // publicName întoarce null pentru cine și-a ascuns numele real -
+    // username-ul rămâne mereu vizibil, deci e treapta următoare.
+    const authorLabel =
+      (author && (publicName(author) ?? author.username)) ?? 'Cineva';
+    const message = `${authorLabel} a postat în „${group.name}"`;
+
+    await Promise.all(
+      group.members.map((m) =>
+        this.notifications
+          .upsertUnread(m.userId, 'GROUP_POST', message, { groupId }, 'groupId')
+          .catch(() => {}),
+      ),
+    );
   }
 
   async reportPost(groupId: string, postId: string, reporterId: string, dto: ReportPostDto) {

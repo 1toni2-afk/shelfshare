@@ -86,6 +86,15 @@ class BookCard extends StatelessWidget {
                     right: 6,
                     child: _PriceBadge(userBook: userBook),
                   ),
+                  // Anunțul rezervat de un schimb acceptat rămâne în listă
+                  // (vezi ExchangesService.accept) - marcajul e singurul lucru
+                  // care îl deosebește de unul liber.
+                  if (userBook.isReservedForExchange)
+                    const Positioned(
+                      bottom: 6,
+                      left: 6,
+                      child: _ReservedBadge(),
+                    ),
                 ],
               ),
             ),
@@ -136,6 +145,39 @@ class BookCard extends StatelessWidget {
       return SizedBox(width: width, child: card);
     }
     return card;
+  }
+}
+
+/// Marcaj discret din colțul stânga-jos: cartea e prinsă într-un schimb
+/// acceptat, dar încă nefinalizat. Rămâne vizibilă și cerabilă - dacă schimbul
+/// pică, cererile deja trimise se redeschid singure.
+class _ReservedBadge extends StatelessWidget {
+  const _ReservedBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.foreground.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.hourglass_bottom, size: 11, color: Colors.white),
+          const SizedBox(width: 3),
+          Text(
+            context.l10n.listingReservedBadge,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

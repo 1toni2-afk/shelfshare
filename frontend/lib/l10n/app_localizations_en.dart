@@ -187,6 +187,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookAvailableForSwapShort => 'Swap';
 
   @override
+  String get listingReservedBadge => 'Swap in progress';
+
+  @override
+  String get listingReservedNotice =>
+      'This book is reserved for an ongoing swap. It stays listed until that swap is finalised - if it falls through, the book is free again.';
+
+  @override
   String get commonEmailLabel => 'Email';
 
   @override
@@ -3219,6 +3226,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationPrefAuctions => 'Auctions';
 
   @override
+  String get notificationPrefGroupPosts => 'New posts in my groups';
+
+  @override
+  String get notificationPrefNearbyCity => 'Books listed in my city';
+
+  @override
   String get notificationPrefDiscovery => 'Books you might like';
 
   @override
@@ -3573,7 +3586,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutAppHomeSectionsBody =>
-      'Home is the feed with the latest listings. Between rows you\'ll see 3 themed sections:\n\n• Most Sought After — the most viewed books on the platform\n• Close near you (25 km) — books within that radius from your city. Hidden if you have no city set or nothing nearby\n• Recommended for you — books filtered by the genres and authors in your profile. If you haven\'t filled the reader survey, the section doesn\'t appear';
+      'Home is the feed with the latest listings. Between rows you\'ll see 3 themed sections:\n\n• Most Sought After — the most viewed books on the platform\n• Close near you (100 km) — books within that radius from your city. Hidden if you have no city set or nothing nearby\n• Recommended for you — books filtered by the genres and authors in your profile. If you haven\'t filled the reader survey, the section doesn\'t appear';
 
   @override
   String get aboutAppExchangesTitle => 'Exchanges and offers';

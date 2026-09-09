@@ -858,6 +858,19 @@ model UserBook {
   // „mark available" pe carte transferată. Vezi Milestone 10 + exchanges.
   permanentlyTransferred Boolean @default(false)
 
+  /// Id-ul schimbului ACCEPTAT care a rezervat acest exemplar. Anunțul rămâne
+  /// listat și vizibil (`availableForSwap` nu se mai stinge la acceptare -
+  /// vezi ExchangesService.accept), doar că poartă marcajul „schimb în curs";
+  /// devine indisponibil abia la finalizare, când își schimbă proprietarul.
+  ///
+  /// Dublează ca lacăt de concurență: două accept-uri simultane pe aceeași
+  /// carte se bat pe `reservedForExchangeId: null`, deci exact unul câștigă.
+  ///
+  /// String simplu, nu relație: muchia tipizată există deja în sens invers
+  /// (ExchangeRequest.requestedBookId/offeredBookId), iar o a doua ar fi
+  /// redundantă. Se golește la anulare/expirare.
+  reservedForExchangeId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1600,6 +1613,12 @@ enum NotificationType {
   /// O carte cerută prin formularul „nu găsesc cartea" a fost găsită de
   /// căutarea de noapte și există acum în catalog.
   BOOK_REQUEST_FOUND
+  /// Postare nouă într-un grup din care userul face parte.
+  GROUP_POST
+  /// Răspuns de la echipa de suport (vezi AdminSupportMessage). NU apare în
+  /// setările de notificări: un mesaj de la admin e răspunsul la ceva ce a
+  /// cerut userul însuși, deci nu are sens să poată fi ratat.
+  ADMIN_MESSAGE
 }
 
 /// Token FCM al unui dispozitiv (telefon/tabletă) pe care userul e logat, ca

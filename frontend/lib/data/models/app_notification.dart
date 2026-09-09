@@ -35,6 +35,13 @@ enum NotificationType {
   /// căutarea de noapte și e acum în catalog.
   bookRequestFound,
 
+  /// Postare nouă într-un grup din care userul face parte.
+  groupPost,
+
+  /// Răspuns de la echipa de suport. Nu are comutator în Setări - vezi
+  /// HIDDEN_NOTIFICATION_TYPES pe backend.
+  adminMessage,
+
   /// Tip trimis de backend pe care versiunea asta de aplicație nu îl cunoaște.
   /// Notificarea se afișează cu textul primit de la server și fără acțiune la
   /// tap - important ca un backend mai nou să nu strice un client mai vechi.
@@ -104,6 +111,10 @@ extension NotificationTypeX on NotificationType {
         return NotificationType.exchangeReopened;
       case 'BOOK_REQUEST_FOUND':
         return NotificationType.bookRequestFound;
+      case 'GROUP_POST':
+        return NotificationType.groupPost;
+      case 'ADMIN_MESSAGE':
+        return NotificationType.adminMessage;
       case 'SAVED_SEARCH_MATCH':
         return NotificationType.savedSearchMatch;
       case 'SERIES_VOLUME_AVAILABLE':

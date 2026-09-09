@@ -49,6 +49,10 @@ IconData notificationIcon(NotificationType type) {
       return Icons.menu_book;
     case NotificationType.bookRequestFound:
       return Icons.find_in_page;
+    case NotificationType.groupPost:
+      return Icons.groups;
+    case NotificationType.adminMessage:
+      return Icons.support_agent;
     case NotificationType.outbid:
     case NotificationType.auctionWon:
     case NotificationType.auctionEnded:

@@ -46,6 +46,12 @@ class UserBook {
   /// Setat true când un exchange s-a completat pe această listare - carte
   /// „plecată permanent", nu mai poate fi făcută disponibilă. Vezi Milestone 10.
   final bool permanentlyTransferred;
+
+  /// True cât timp un schimb ACCEPTAT ține cartea rezervată. Anunțul rămâne
+  /// vizibil în căutări (asta e ideea - un schimb care pică nu mai ascunde
+  /// cartea zile întregi), doar că poartă marcajul „schimb în curs".
+  /// Backend-ul trimite id-ul schimbului; aici ne interesează doar existența.
+  final bool isReservedForExchange;
   /// Setat când userul a apăsat delete pe carte - rămâne în coșul de gunoi
   /// 7 zile, iar apoi cron-ul o șterge definitiv.
   final DateTime? deletedAt;
@@ -101,6 +107,7 @@ class UserBook {
     this.mainPhotoUrl,
     required this.createdAt,
     this.permanentlyTransferred = false,
+    this.isReservedForExchange = false,
     this.deletedAt,
     this.description,
     this.tags = const [],
@@ -149,6 +156,7 @@ class UserBook {
       mainPhotoUrl: json['mainPhotoUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       permanentlyTransferred: json['permanentlyTransferred'] as bool? ?? false,
+      isReservedForExchange: json['reservedForExchangeId'] != null,
       deletedAt: json['deletedAt'] != null
           ? DateTime.parse(json['deletedAt'] as String)
           : null,

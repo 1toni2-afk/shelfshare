@@ -152,6 +152,13 @@ class AppTheme {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.foreground,
         elevation: 0,
+        // Material 3 pune singur un strat de `surfaceTint` peste bara de sus
+        // în momentul în care conținutul trece pe sub ea. Rezultatul e o
+        // bandă de altă nuanță cu o muchie de jos perfect dreaptă - exact
+        // chenarul pe care îl vrem dizolvat. Le stingem pe amândouă; unde
+        // vrem o trecere, o desenăm noi ca degrade (vezi Home).
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         // Titlu centrat pe toate ecranele. Înainte era pe stânga, iar Home și
         // Discover și-l centrau local - de unde inconsecvența dintre taburi.
         centerTitle: true,

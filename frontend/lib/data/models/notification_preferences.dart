@@ -30,21 +30,18 @@ class NotificationCategory {
 }
 
 /// Toate categoriile, în ordinea din ecranul de setări. Reuniunea `types`-
-/// urilor de aici acoperă TOATE tipurile din backend - un tip nou trebuie
-/// adăugat și aici, altfel rămâne fără comutator în interfață.
+/// urilor de aici acoperă toate tipurile COMUTABILE din backend (vezi
+/// CONFIGURABLE_NOTIFICATION_TYPES) - un tip nou trebuie adăugat și aici,
+/// altfel rămâne fără comutator în interfață.
+///
+/// Ordinea urmează ce contează pentru user, nu alfabetul: întâi lucrurile
+/// care i se întâmplă LUI (mesaje, anunțurile lui), apoi cele pe care le-a
+/// cerut (grupuri, oameni urmăriți, orașul lui), apoi descoperirea.
+///
+/// Nu sunt aici, intenționat: mesajele de la echipa de suport (nu se pot
+/// opri) și vechea notificare pe gen din onboarding, care trimitea câte o
+/// notificare la FIECARE carte dintr-un gen bifat și nu se mai trimite deloc.
 final List<NotificationCategory> kNotificationCategories = [
-  NotificationCategory(
-    id: 'followedUserNewBook',
-    icon: Icons.library_add_outlined,
-    types: const ['FOLLOWED_USER_NEW_BOOK'],
-    labelOf: (l) => l.notificationPrefFollowedNewBook,
-  ),
-  NotificationCategory(
-    id: 'followedUserFinishedBook',
-    icon: Icons.auto_stories_outlined,
-    types: const ['FOLLOWED_USER_FINISHED_BOOK'],
-    labelOf: (l) => l.notificationPrefFollowedFinishedBook,
-  ),
   NotificationCategory(
     id: 'messages',
     icon: Icons.chat_bubble_outline,
@@ -92,12 +89,37 @@ final List<NotificationCategory> kNotificationCategories = [
     labelOf: (l) => l.notificationPrefAuctions,
   ),
   NotificationCategory(
+    id: 'groupPosts',
+    icon: Icons.groups_outlined,
+    types: const ['GROUP_POST'],
+    labelOf: (l) => l.notificationPrefGroupPosts,
+  ),
+  NotificationCategory(
+    id: 'followedUserNewBook',
+    icon: Icons.library_add_outlined,
+    types: const ['FOLLOWED_USER_NEW_BOOK'],
+    labelOf: (l) => l.notificationPrefFollowedNewBook,
+  ),
+  NotificationCategory(
+    id: 'followedUserFinishedBook',
+    icon: Icons.auto_stories_outlined,
+    types: const ['FOLLOWED_USER_FINISHED_BOOK'],
+    labelOf: (l) => l.notificationPrefFollowedFinishedBook,
+  ),
+  // Scoasă din „descoperire" ca să poată fi oprită separat: e singura care
+  // se declanșează la FIECARE anunț nou din oraș, deci și singura care poate
+  // deveni zgomotoasă într-un oraș activ.
+  NotificationCategory(
+    id: 'nearbyCity',
+    icon: Icons.location_on_outlined,
+    types: const ['NEARBY_BOOK_LISTED'],
+    labelOf: (l) => l.notificationPrefNearbyCity,
+  ),
+  NotificationCategory(
     id: 'discovery',
     icon: Icons.travel_explore_outlined,
     types: const [
       'WISHLIST_BOOK_AVAILABLE',
-      'NEARBY_BOOK_LISTED',
-      'INTEREST_BOOK_LISTED',
       'SAVED_SEARCH_MATCH',
       'SERIES_VOLUME_AVAILABLE',
       'BOOK_REQUEST_FOUND',

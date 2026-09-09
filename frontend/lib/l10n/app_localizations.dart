@@ -407,6 +407,18 @@ abstract class AppLocalizations {
   /// **'Schimb'**
   String get bookAvailableForSwapShort;
 
+  /// No description provided for @listingReservedBadge.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimb în curs'**
+  String get listingReservedBadge;
+
+  /// No description provided for @listingReservedNotice.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cartea e rezervată pentru un schimb în desfășurare. Rămâne listată până când schimbul se finalizează - dacă acela pică, redevine liberă.'**
+  String get listingReservedNotice;
+
   /// No description provided for @commonEmailLabel.
   ///
   /// In ro, this message translates to:
@@ -5836,6 +5848,18 @@ abstract class AppLocalizations {
   /// **'Licitații'**
   String get notificationPrefAuctions;
 
+  /// No description provided for @notificationPrefGroupPosts.
+  ///
+  /// In ro, this message translates to:
+  /// **'Postări noi în grupurile mele'**
+  String get notificationPrefGroupPosts;
+
+  /// No description provided for @notificationPrefNearbyCity.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cărți listate în orașul meu'**
+  String get notificationPrefNearbyCity;
+
   /// No description provided for @notificationPrefDiscovery.
   ///
   /// In ro, this message translates to:
@@ -6487,7 +6511,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutAppHomeSectionsBody.
   ///
   /// In ro, this message translates to:
-  /// **'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (25 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare'**
+  /// **'Home-ul e feed-ul cu ultimele cărți listate. Între rânduri apar 3 secțiuni tematice:\n\n• Most Sought After — cele mai vizualizate cărți din platformă\n• Aproape de tine (100 km) — cărți disponibile în raza asta față de orașul tău. Se ascunde dacă nu ai oraș setat sau dacă nu e nimic aproape\n• Recomandări pentru tine — cărți filtrate după genurile și autorii din profilul tău. Dacă n-ai completat chestionarul de cititor, secțiunea nu apare'**
   String get aboutAppHomeSectionsBody;
 
   /// No description provided for @aboutAppExchangesTitle.

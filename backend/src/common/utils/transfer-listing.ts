@@ -31,6 +31,9 @@ export async function transferListingOwnership(
       availableForSwap: false,
       isForSale: false,
       isPromoted: false,
+      // Rezervarea („schimb în curs") și-a făcut treaba: de aici încolo
+      // anunțul e închis definitiv, nu doar pus deoparte.
+      reservedForExchangeId: null,
     },
   });
 
