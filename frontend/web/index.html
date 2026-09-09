@@ -282,7 +282,10 @@
         </svg>
         <div class="splash-percent" id="splash-percent">0%</div>
       </div>
-      <div class="splash-stage" id="splash-stage">Se încarcă aplicația…</div>
+      <!-- Gol intenționat: textul e pus de scriptul de mai jos, în limba
+           vizitatorului. Un text scris aici ar fi vizibil o clipă în română
+           pentru toată lumea, înainte să apuce JS-ul să-l înlocuiască. -->
+      <div class="splash-stage" id="splash-stage"></div>
     </div>
   </div>
   <script>
@@ -313,10 +316,46 @@
     // asimptotic de 92% cât timp așteaptă, ca userul să nu vadă niciodată
     // 100% înainte ca aplicația chiar să fie gata - finalizarea reală tot
     // vine din "flutter-first-frame" / timeout, ca înainte, neschimbat.
+    // Limba splash-ului. Flutter nu a pornit încă, deci `AppLocalizations` nu
+    // există - textele de aici trebuie ținute separat, în cele patru limbi ale
+    // aplicației (vezi AppLocale în lib/core/locale/locale_controller.dart).
+    //
+    // Ordinea de alegere oglindește `effectiveLocaleProvider`:
+    //   1. alegerea explicită a userului, scrisă în localStorage la fiecare
+    //      schimbare de limbă (vezi splash_locale_hint_web.dart). NU citim
+    //      direct valoarea din flutter_secure_storage: acolo e împachetată,
+    //      nu e un simplu cod de limbă;
+    //   2. prima limbă a browserului care e suportată;
+    //   3. română.
+    var SPLASH_TEXTS = {
+      ro: ['Se încarcă aplicația…', 'Se pregătesc resursele…', 'Aproape gata…'],
+      en: ['Loading the app…', 'Getting things ready…', 'Almost there…'],
+      de: ['App wird geladen…', 'Ressourcen werden vorbereitet…', 'Fast fertig…'],
+      hu: ['Alkalmazás betöltése…', 'Erőforrások előkészítése…', 'Mindjárt kész…']
+    };
+
+    var splashLang = (function () {
+      try {
+        var saved = window.localStorage.getItem('splash_locale');
+        if (saved && SPLASH_TEXTS[saved]) return saved;
+      } catch (e) {
+        // localStorage poate arunca (cookies blocate, mod privat pe unele
+        // browsere) - nu e motiv să rămână splash-ul fără text.
+      }
+      var candidates = navigator.languages || [navigator.language || ''];
+      for (var i = 0; i < candidates.length; i++) {
+        // "de-AT", "en-GB" -> "de", "en".
+        var code = String(candidates[i]).toLowerCase().split('-')[0];
+        if (SPLASH_TEXTS[code]) return code;
+      }
+      return 'ro';
+    })();
+
     (function () {
       var percentEl = document.getElementById('splash-percent');
       var stageEl = document.getElementById('splash-stage');
       var ringFg = document.getElementById('splash-ring-fg');
+      var texts = SPLASH_TEXTS[splashLang];
       var circumference = 201.06;
       var current = 0;
       var done = false;
@@ -326,13 +365,13 @@
         if (percentEl) percentEl.textContent = Math.round(p) + '%';
         if (ringFg) ringFg.style.strokeDashoffset = String(circumference * (1 - p / 100));
         if (stageEl) {
-          stageEl.textContent = p < 30
-            ? 'Se încarcă aplicația…'
-            : p < 70
-              ? 'Se pregătesc resursele…'
-              : 'Aproape gata…';
+          stageEl.textContent = p < 30 ? texts[0] : p < 70 ? texts[1] : texts[2];
         }
       }
+
+      // Imediat, nu la primul tick de 60ms: altfel linia de sub inel ar fi
+      // goală în prima fracțiune de secundă.
+      setPercent(0);
 
       var tickInterval = setInterval(function () {
         if (done) return;

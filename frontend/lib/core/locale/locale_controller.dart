@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../network/providers.dart';
+import 'splash_locale_hint.dart';
 
 /// Limbile disponibile în aplicație - codul e folosit atât pentru
 /// `Locale(code)` cât și ca valoare persistată în secure storage.
@@ -33,6 +34,9 @@ class LocaleController extends AsyncNotifier<AppLocale?> {
 
   Future<void> setLocale(AppLocale locale) async {
     state = AsyncData(locale);
+    // Indiciu în text clar pentru splash-ul din index.html, care rulează
+    // înainte de Flutter și n-ar avea cum să citească secure storage.
+    saveSplashLocaleHint(locale.code);
     await ref.read(secureStorageProvider).write(key: _localeStorageKey, value: locale.code);
   }
 }
