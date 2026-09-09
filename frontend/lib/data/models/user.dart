@@ -1,4 +1,5 @@
 import 'book.dart';
+import 'store.dart';
 import 'user_book.dart';
 
 class AppUser {
@@ -28,7 +29,18 @@ class AppUser {
   final int booksReceivedCount;
   final bool isEmailVerified;
   final bool isAdmin;
+
+  /// Rolul SUPER_ADMIN, nu doar „e admin". Uneltele de operare (adăugarea în
+  /// masă pentru anticariate) sunt ascunse pentru oricine altcineva, inclusiv
+  /// pentru moderatori. Vine calculat de backend din AdminRole.
+  final bool isSuperAdmin;
+
   final bool isPremium;
+
+  /// Cont de anticariat/librărie, acordat manual de un super-admin. Datele
+  /// comerciale (program, adresă, livrare) sunt în [storeProfile].
+  final bool isStore;
+  final StoreProfile? storeProfile;
 
   /// Dacă userul are voie la „Advanced Analytics" - Premium, admin sau
   /// flag-ul `advanced_statistics` acordat din panoul de admin. Vine
@@ -103,7 +115,10 @@ class AppUser {
     this.booksReceivedCount = 0,
     this.isEmailVerified = false,
     this.isAdmin = false,
+    this.isSuperAdmin = false,
     this.isPremium = false,
+    this.isStore = false,
+    this.storeProfile,
     this.canAccessAdvancedStats = false,
     this.showAcquisitionHistory = false,
     this.showAllListingScores = false,
@@ -148,7 +163,12 @@ class AppUser {
       booksReceivedCount: json['booksReceivedCount'] as int? ?? 0,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isAdmin: json['isAdmin'] as bool? ?? false,
+      isSuperAdmin: json['isSuperAdmin'] as bool? ?? false,
       isPremium: json['isPremium'] as bool? ?? false,
+      isStore: json['isStore'] as bool? ?? false,
+      storeProfile: json['storeProfile'] != null
+          ? StoreProfile.fromJson(json['storeProfile'] as Map<String, dynamic>)
+          : null,
       canAccessAdvancedStats: json['canAccessAdvancedStats'] as bool? ??
           ((json['isPremium'] as bool? ?? false) ||
               (json['isAdmin'] as bool? ?? false)),
@@ -734,6 +754,13 @@ class PublicUser {
   final String? city;
   final String? profileImage;
   final bool isPremium;
+
+  /// Cont de anticariat/librărie. [storeProfile] vine doar de pe profilul
+  /// public complet (/profile/:userId), nu din relațiile scurte - pe cardul
+  /// unei cărți ajunge flag-ul, pentru insignă.
+  final bool isStore;
+  final StoreProfile? storeProfile;
+
   final double rating;
   final String? bio;
 
@@ -768,6 +795,8 @@ class PublicUser {
     this.city,
     this.profileImage,
     this.isPremium = false,
+    this.isStore = false,
+    this.storeProfile,
     this.rating = 0,
     this.bio,
     this.languages = const [],
@@ -797,6 +826,8 @@ class PublicUser {
       city: city,
       profileImage: profileImage,
       isPremium: isPremium,
+      isStore: isStore,
+      storeProfile: storeProfile,
       rating: rating,
       bio: bio,
       languages: languages,
@@ -827,6 +858,10 @@ class PublicUser {
       city: json['city'] as String?,
       profileImage: json['profileImage'] as String?,
       isPremium: json['isPremium'] as bool? ?? false,
+      isStore: json['isStore'] as bool? ?? false,
+      storeProfile: json['storeProfile'] != null
+          ? StoreProfile.fromJson(json['storeProfile'] as Map<String, dynamic>)
+          : null,
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       bio: json['bio'] as String?,
       languages: (json['languages'] as List<dynamic>? ?? const [])

@@ -5,6 +5,7 @@ import '../../../core/locale/l10n_extensions.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/book.dart';
 import '../../../data/models/user.dart';
+import '../../../shared/widgets/store_info_card.dart';
 import '../../../shared/widgets/book_card.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/book_grid_metrics.dart';
@@ -226,6 +227,13 @@ class _Content extends StatelessWidget {
             ].join(' · '),
             style: TextStyle(color: AppColors.mutedForeground, fontSize: 12),
           ),
+        ],
+        // Magazinul intră imediat sub antet: programul și livrarea sunt
+        // primele întrebări pentru un anticariat, înaintea scorului de
+        // încredere sau a gamificării.
+        if (user.storeProfile != null) ...[
+          const SizedBox(height: 20),
+          StoreInfoCard(profile: user.storeProfile!),
         ],
         if (user.trustScore != null) ...[
           const SizedBox(height: 20),

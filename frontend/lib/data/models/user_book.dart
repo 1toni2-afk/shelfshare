@@ -35,6 +35,11 @@ class UserBook {
   final AuctionCardSummary? auction;
   final bool isPromoted;
   final int viewCount;
+
+  /// Câte exemplare mai are proprietarul. 1 pentru anunțurile obișnuite (un om
+  /// are o carte); mai multe doar la conturile de magazin, unde vine din
+  /// coloana `qty` a importului de stoc.
+  final int stockQuantity;
   final double? distanceKm;
   final List<String> photos;
   /// URL-ul pozei principale (Batch 8) - afișat cu prioritate în feed/carduri.
@@ -102,6 +107,7 @@ class UserBook {
     this.auction,
     this.isPromoted = false,
     this.viewCount = 0,
+    this.stockQuantity = 1,
     this.distanceKm,
     this.photos = const [],
     this.mainPhotoUrl,
@@ -148,6 +154,7 @@ class UserBook {
           : null,
       isPromoted: json['isPromoted'] as bool? ?? false,
       viewCount: json['viewCount'] as int? ?? 0,
+      stockQuantity: json['stockQuantity'] as int? ?? 1,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       photos: (json['photos'] as List<dynamic>?)
               ?.map((e) => e as String)

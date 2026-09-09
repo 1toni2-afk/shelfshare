@@ -1,4 +1,13 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsISBN, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
+  IsISBN,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { BookCondition } from '@prisma/client';
 
 export class BulkAddBooksDto {
@@ -20,4 +29,11 @@ export class BulkAddBooksDto {
   @IsOptional()
   @IsString()
   language?: string;
+
+  /// Contul de magazin în numele căruia se adaugă (vezi StoreProfile).
+  /// Lipsă = pe contul propriu. Ruta e rezervată super-adminilor, iar ținta
+  /// trebuie să fie un magazin ACTIV - vezi StoresService.assertActiveStore.
+  @IsOptional()
+  @IsUUID()
+  storeUserId?: string;
 }

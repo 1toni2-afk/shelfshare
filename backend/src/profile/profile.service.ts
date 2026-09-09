@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { BookshelfService } from '../bookshelf/bookshelf.service';
 import { StorageService } from '../storage/storage.service';
+import { StoresService } from '../stores/stores.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
 import { publicName } from '../common/utils/user-visibility';
@@ -22,6 +23,7 @@ export class ProfileService {
     private prisma: PrismaService,
     private bookshelf: BookshelfService,
     private storage: StorageService,
+    private stores: StoresService,
   ) {}
 
   /**
@@ -119,6 +121,16 @@ export class ProfileService {
       where: { invitedById: user.id },
     });
 
+    // Rolul de admin nu e pe User, ci pe AdminRole - iar frontendul are nevoie
+    // de el ca să ascundă uneltele rezervate super-adminilor (adăugarea în
+    // masă). `isAdmin` singur nu ajunge: un moderator e și el admin.
+    const adminRole = user.adminRoleId
+      ? await this.prisma.adminRole.findUnique({
+          where: { id: user.adminRoleId },
+          select: { name: true },
+        })
+      : null;
+
     return {
       id: user.id,
       email: user.email,
@@ -137,7 +149,10 @@ export class ProfileService {
       booksReceivedCount: user.booksReceivedCount,
       isEmailVerified: user.isEmailVerified,
       isAdmin: user.isAdmin,
+      isSuperAdmin: adminRole?.name === 'SUPER_ADMIN',
       isPremium: user.isPremium,
+      isStore: user.isStore,
+      storeProfile: await this.stores.getPublicProfile(user.id),
       showAcquisitionHistory: user.showAcquisitionHistory,
       showAllListingScores: user.showAllListingScores,
       hideSwapListingsPublic: user.hideSwapListingsPublic,
@@ -246,6 +261,10 @@ export class ProfileService {
       languages: user.languages,
       profileImage: user.profileImage,
       isPremium: user.isPremium,
+      // Profilul de magazin e public: programul și politica de livrare sunt
+      // exact ce caută cineva înainte să scrie unui anticariat.
+      isStore: user.isStore,
+      storeProfile: await this.stores.getPublicProfile(user.id),
       rating: user.rating,
       booksExchangedCount: user.booksExchangedCount,
       booksSharedCount: user.booksSharedCount,

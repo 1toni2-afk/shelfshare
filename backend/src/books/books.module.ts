@@ -10,6 +10,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { ListingScoreModule } from './listing-score.module';
 import { SavedSearchesModule } from '../saved-searches/saved-searches.module';
 import { ReviewsModule } from '../reviews/reviews.module';
+import { StoresModule } from '../stores/stores.module';
 
 @Module({
   imports: [
@@ -22,6 +23,8 @@ import { ReviewsModule } from '../reviews/reviews.module';
     SavedSearchesModule,
     // Pagina operei adună recenziile peste toate edițiile - vezi getWork.
     ReviewsModule,
+    // Importul de stoc verifică aici că ținta e chiar un magazin activ.
+    StoresModule,
   ],
   controllers: [BooksController],
   providers: [BooksService, BookLookupService],

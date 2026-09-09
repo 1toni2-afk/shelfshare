@@ -703,6 +703,14 @@ class _MainInfoPanelState extends State<_MainInfoPanel> {
                 icon: Icons.menu_book_outlined,
                 label: l10n.bookDetailHardcoverChip,
               ),
+            // Stocul are sens doar de la două exemplare în sus: un anunț
+            // obișnuit e mereu unul singur, iar „1 exemplar în stoc" pe fiecare
+            // carte din aplicație ar fi zgomot.
+            if (book.stockQuantity > 1)
+              _OutlinePill(
+                icon: Icons.inventory_2_outlined,
+                label: l10n.storeStockLeft(book.stockQuantity),
+              ),
           ],
         ),
         const SizedBox(height: 16),

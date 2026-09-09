@@ -4655,4 +4655,134 @@ class AppLocalizationsHu extends AppLocalizations {
   String adminBookRequestsFoundOn(String source) {
     return 'megtalálva itt: $source';
   }
+
+  @override
+  String libraryImportSummaryDetailed(
+    int created,
+    int updated,
+    int delisted,
+    int failed,
+  ) {
+    return '$created létrehozva, $updated frissítve, $delisted levéve, $failed sikertelen';
+  }
+
+  @override
+  String get storeBadge => 'Bolt';
+
+  @override
+  String get storeSectionTitle => 'A boltról';
+
+  @override
+  String get storeHours => 'Nyitvatartás';
+
+  @override
+  String get storeAddress => 'Cím';
+
+  @override
+  String get storePhone => 'Telefon';
+
+  @override
+  String get storeWebsite => 'Weboldal';
+
+  @override
+  String get storeDelivery => 'Szállítás';
+
+  @override
+  String get adminStoresTitle => 'Bolti fiókok';
+
+  @override
+  String get adminStoresSubtitle =>
+      'Antikváriumok és könyvesboltok, amelyek importálhatják a készletüket';
+
+  @override
+  String get adminStoresEmpty => 'Még nincs bolti fiók.';
+
+  @override
+  String get adminStoresAdd => 'Bolt hozzáadása';
+
+  @override
+  String get adminStoresEdit => 'Bolt szerkesztése';
+
+  @override
+  String get adminStoresPickUser => 'A fiók, amely bolt lesz';
+
+  @override
+  String get adminStoreName => 'Kereskedelmi név';
+
+  @override
+  String get adminStoreNameRequired => 'A kereskedelmi név kötelező';
+
+  @override
+  String get adminStoreDescription => 'Leírás';
+
+  @override
+  String get adminStoreAddress => 'Cím';
+
+  @override
+  String get adminStoreCity => 'Város';
+
+  @override
+  String get adminStoreWebsite => 'Weboldal';
+
+  @override
+  String get adminStorePhone => 'Telefon';
+
+  @override
+  String get adminStoreHours => 'Nyitvatartás';
+
+  @override
+  String get adminStoreDelivery => 'Szállítási feltételek';
+
+  @override
+  String get adminStoreActive => 'Aktív bolt';
+
+  @override
+  String get adminStoreActiveHint =>
+      'Felfüggesztve a fiók megtartja az adatait, de nem kap új készletet.';
+
+  @override
+  String get adminStoreSuspended => 'Felfüggesztve';
+
+  @override
+  String adminStoreListings(int count) {
+    return '$count hirdetés';
+  }
+
+  @override
+  String get adminStoreRemove => 'Bolti státusz visszavonása';
+
+  @override
+  String get adminStoreRemoveConfirm =>
+      'A már importált hirdetések a fióknál maradnak. Csak a kereskedelmi adatok törlődnek.';
+
+  @override
+  String get adminStoreUserRequired => 'Előbb válaszd ki a fiókot';
+
+  @override
+  String get bulkAddTargetOwn => 'Saját fiók';
+
+  @override
+  String get bulkAddTarget => 'Hozzáadás ehhez a fiókhoz';
+
+  @override
+  String get bulkAddTabScan => 'ISBN beolvasása';
+
+  @override
+  String get bulkAddTabCsv => 'CSV import';
+
+  @override
+  String get bulkAddCsvPick => 'CSV-fájl kiválasztása';
+
+  @override
+  String get bulkAddCsvHint =>
+      'Oszlopok: sku, isbn, title, author, condition, language, price, qty. A már elküldött sku-val érkező sor frissíti a hirdetést, nem hoz létre újat; a qty 0 leveszi.';
+
+  @override
+  String get bulkAddCsvNoStore =>
+      'Előbb válaszd ki a boltot: a CSV ára csak bolti fiókoknál teszi eladóvá a hirdetést.';
+
+  @override
+  String storeStockLeft(int count) {
+    return '$count példány raktáron';
+  }
 }

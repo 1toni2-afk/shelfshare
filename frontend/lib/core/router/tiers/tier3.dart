@@ -10,6 +10,7 @@ export '../../../features/admin/presentation/admin_screen.dart';
 export '../../../features/admin/presentation/admin_usage_screen.dart';
 export '../../../features/admin/presentation/admin_users_screen.dart';
 export '../../../features/admin/presentation/administrators_screen.dart';
+export '../../../features/admin/presentation/admin_stores_screen.dart';
 export '../../../features/admin/presentation/feature_access_screen.dart';
 export '../../../features/admin/presentation/listing_score_screen.dart';
 export '../../../features/admin/presentation/roles_permissions_screen.dart';

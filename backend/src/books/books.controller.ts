@@ -30,6 +30,7 @@ import { SearchLibraryDto } from './dto/search-library.dto';
 import { GetListingScoresDto } from './dto/get-listing-scores.dto';
 import { AddPhotoUrlDto } from './dto/add-photo-url.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SuperAdminGuard } from '../admin/guards/super-admin.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -253,7 +254,11 @@ export class BooksController {
     return this.booksService.lookupIsbnPreview(isbn);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Adăugarea în masă e o unealtă de operare (integrări cu anticariate), nu o
+  // funcție de user: e ascunsă din UI pentru toată lumea în afară de
+  // super-admini, iar endpointul o refuză la fel, ca ascunderea din meniu să
+  // nu fie singura barieră.
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post('bulk')
   bulkAddToLibrary(@Req() req: Request, @Body() dto: BulkAddBooksDto) {
     const { userId } = req.user as AuthenticatedUser;
@@ -262,6 +267,7 @@ export class BooksController {
       dto.isbns,
       dto.condition,
       dto.language,
+      dto.storeUserId,
     );
   }
 
@@ -275,6 +281,11 @@ export class BooksController {
   importListingsCsv(
     @Req() req: Request,
     @UploadedFile() file: Express.Multer.File,
+    // Câmp de formular, nu de body JSON: cererea e multipart. Lipsă = importul
+    // propriu al userului, exact ca până acum; prezent = import în numele unui
+    // magazin, permis doar super-adminilor (verificat în serviciu, fiindcă
+    // ruta rămâne deschisă tuturor pentru importul propriu).
+    @Body('storeUserId') storeUserId?: string,
   ) {
     if (!file) {
       throw new BadRequestException('Niciun fișier primit');
@@ -283,7 +294,11 @@ export class BooksController {
       throw new BadRequestException('Fișierul este prea mare (maxim 10MB)');
     }
     const { userId } = req.user as AuthenticatedUser;
-    return this.booksService.importListingsCsv(userId!, file.buffer);
+    return this.booksService.importListingsCsv(
+      userId!,
+      file.buffer,
+      storeUserId?.trim() || undefined,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

@@ -12,6 +12,7 @@ import '../../../data/models/admin_models.dart';
 import '../../../data/models/upcoming_release.dart';
 import '../../../shared/widgets/book_cover.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
+import '../../profile/application/profile_controller.dart';
 import '../application/admin_controller.dart';
 
 class AdminScreen extends ConsumerWidget {
@@ -50,13 +51,17 @@ class AdminScreen extends ConsumerWidget {
   }
 }
 
-class _AdminContent extends StatelessWidget {
+class _AdminContent extends ConsumerWidget {
   const _AdminContent({required this.data});
   final AdminData data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // Conturile de magazin sunt singura intrare din panou rezervată
+    // super-adminilor: dau dreptul de a lista la vânzare fără poze, deci nu
+    // sunt o unealtă de moderare. Ruta e apărată și de backend.
+    final isSuperAdmin = ref.watch(currentUserProvider)?.isSuperAdmin ?? false;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
@@ -115,6 +120,19 @@ class _AdminContent extends StatelessWidget {
             onTap: () => context.push('/admin/roles'),
           ),
         ),
+        if (isSuperAdmin) ...[
+          const SizedBox(height: 12),
+          Card(
+            margin: EdgeInsets.zero,
+            child: ListTile(
+              leading: const Icon(Icons.storefront_outlined),
+              title: Text(l10n.adminStoresTitle),
+              subtitle: Text(l10n.adminStoresSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/admin/stores'),
+            ),
+          ),
+        ],
         const SizedBox(height: 28),
         Text(l10n.adminStatsTitle, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),

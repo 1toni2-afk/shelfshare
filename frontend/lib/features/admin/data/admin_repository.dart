@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/providers.dart';
 import '../../../data/models/admin_book_request.dart';
 import '../../../data/models/admin_models.dart';
+import '../../../data/models/store.dart';
 import '../../../data/models/upcoming_release.dart';
 
 class AdminRepository {
@@ -56,6 +57,38 @@ class AdminRepository {
       queryParameters: {'limit': limit, 'offset': offset},
     );
     return AdminUsersPage.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  // ---------- Conturi de magazin (anticariate) ----------
+  // Rute rezervate super-adminilor (SuperAdminGuard pe /admin/stores): a face
+  // un cont „magazin" îi dă dreptul să listeze la vânzare fără pozele cerute
+  // tuturor, deci e o decizie comercială, nu una de moderare.
+
+  Future<List<StoreAccount>> listStores() async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.get('/admin/stores');
+    return (response.data as List)
+        .map((e) => StoreAccount.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> createStore({required String userId, required StoreProfile profile}) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.post('/admin/stores', data: {'userId': userId, ...profile.toJson()});
+  }
+
+  Future<void> updateStore({
+    required String userId,
+    required StoreProfile profile,
+    required bool isActive,
+  }) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.put('/admin/stores/$userId', data: {...profile.toJson(), 'isActive': isActive});
+  }
+
+  Future<void> deleteStore(String userId) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    await dio.delete('/admin/stores/$userId');
   }
 
   Future<List<AdminUser>> searchUsers(String query) async {

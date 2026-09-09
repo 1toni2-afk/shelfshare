@@ -1513,5 +1513,73 @@
                 "type": "String"
             }
         }
+    },
+    "libraryImportSummaryDetailed": "{created} létrehozva, {updated} frissítve, {delisted} levéve, {failed} sikertelen",
+    "@libraryImportSummaryDetailed": {
+        "placeholders": {
+            "created": {
+                "type": "int"
+            },
+            "updated": {
+                "type": "int"
+            },
+            "delisted": {
+                "type": "int"
+            },
+            "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "storeBadge": "Bolt",
+    "storeSectionTitle": "A boltról",
+    "storeHours": "Nyitvatartás",
+    "storeAddress": "Cím",
+    "storePhone": "Telefon",
+    "storeWebsite": "Weboldal",
+    "storeDelivery": "Szállítás",
+    "adminStoresTitle": "Bolti fiókok",
+    "adminStoresSubtitle": "Antikváriumok és könyvesboltok, amelyek importálhatják a készletüket",
+    "adminStoresEmpty": "Még nincs bolti fiók.",
+    "adminStoresAdd": "Bolt hozzáadása",
+    "adminStoresEdit": "Bolt szerkesztése",
+    "adminStoresPickUser": "A fiók, amely bolt lesz",
+    "adminStoreName": "Kereskedelmi név",
+    "adminStoreNameRequired": "A kereskedelmi név kötelező",
+    "adminStoreDescription": "Leírás",
+    "adminStoreAddress": "Cím",
+    "adminStoreCity": "Város",
+    "adminStoreWebsite": "Weboldal",
+    "adminStorePhone": "Telefon",
+    "adminStoreHours": "Nyitvatartás",
+    "adminStoreDelivery": "Szállítási feltételek",
+    "adminStoreActive": "Aktív bolt",
+    "adminStoreActiveHint": "Felfüggesztve a fiók megtartja az adatait, de nem kap új készletet.",
+    "adminStoreSuspended": "Felfüggesztve",
+    "adminStoreListings": "{count} hirdetés",
+    "@adminStoreListings": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminStoreRemove": "Bolti státusz visszavonása",
+    "adminStoreRemoveConfirm": "A már importált hirdetések a fióknál maradnak. Csak a kereskedelmi adatok törlődnek.",
+    "adminStoreUserRequired": "Előbb válaszd ki a fiókot",
+    "bulkAddTargetOwn": "Saját fiók",
+    "bulkAddTarget": "Hozzáadás ehhez a fiókhoz",
+    "bulkAddTabScan": "ISBN beolvasása",
+    "bulkAddTabCsv": "CSV import",
+    "bulkAddCsvPick": "CSV-fájl kiválasztása",
+    "bulkAddCsvHint": "Oszlopok: sku, isbn, title, author, condition, language, price, qty. A már elküldött sku-val érkező sor frissíti a hirdetést, nem hoz létre újat; a qty 0 leveszi.",
+    "bulkAddCsvNoStore": "Előbb válaszd ki a boltot: a CSV ára csak bolti fiókoknál teszi eladóvá a hirdetést.",
+    "storeStockLeft": "{count} példány raktáron",
+    "@storeStockLeft": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     }
 }

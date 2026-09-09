@@ -118,15 +118,24 @@ class BookCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall,
             ),
-          if (userBook.owner?.city != null) ...[
+          if (userBook.owner?.city != null || userBook.owner?.isStore == true) ...[
             const SizedBox(height: 2),
             Row(
               children: [
-                Icon(Icons.place_outlined, size: 13, color: AppColors.mutedForeground),
-                const SizedBox(width: 2),
+                // Anunțul unui anticariat arată altfel decât cel al unui om:
+                // are preț fix, stoc și program - merită spus pe card, nu doar
+                // pe profil.
+                if (userBook.owner?.isStore == true) ...[
+                  Icon(Icons.storefront_outlined, size: 13, color: AppColors.accent),
+                  const SizedBox(width: 4),
+                ],
+                if (userBook.owner?.city != null) ...[
+                  Icon(Icons.place_outlined, size: 13, color: AppColors.mutedForeground),
+                  const SizedBox(width: 2),
+                ],
                 Expanded(
                   child: Text(
-                    userBook.owner!.city!,
+                    userBook.owner!.city ?? context.l10n.storeBadge,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(

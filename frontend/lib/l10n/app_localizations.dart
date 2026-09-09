@@ -8421,6 +8421,239 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'găsită pe {source}'**
   String adminBookRequestsFoundOn(String source);
+
+  /// No description provided for @libraryImportSummaryDetailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'{created} create, {updated} actualizate, {delisted} scoase din piață, {failed} eșuate'**
+  String libraryImportSummaryDetailed(
+    int created,
+    int updated,
+    int delisted,
+    int failed,
+  );
+
+  /// No description provided for @storeBadge.
+  ///
+  /// In ro, this message translates to:
+  /// **'Magazin'**
+  String get storeBadge;
+
+  /// No description provided for @storeSectionTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Despre magazin'**
+  String get storeSectionTitle;
+
+  /// No description provided for @storeHours.
+  ///
+  /// In ro, this message translates to:
+  /// **'Program'**
+  String get storeHours;
+
+  /// No description provided for @storeAddress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adresă'**
+  String get storeAddress;
+
+  /// No description provided for @storePhone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Telefon'**
+  String get storePhone;
+
+  /// No description provided for @storeWebsite.
+  ///
+  /// In ro, this message translates to:
+  /// **'Site'**
+  String get storeWebsite;
+
+  /// No description provided for @storeDelivery.
+  ///
+  /// In ro, this message translates to:
+  /// **'Livrare'**
+  String get storeDelivery;
+
+  /// No description provided for @adminStoresTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conturi de magazin'**
+  String get adminStoresTitle;
+
+  /// No description provided for @adminStoresSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anticariate și librării care își pot importa stocul'**
+  String get adminStoresSubtitle;
+
+  /// No description provided for @adminStoresEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun cont de magazin încă.'**
+  String get adminStoresEmpty;
+
+  /// No description provided for @adminStoresAdd.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă magazin'**
+  String get adminStoresAdd;
+
+  /// No description provided for @adminStoresEdit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Editează magazinul'**
+  String get adminStoresEdit;
+
+  /// No description provided for @adminStoresPickUser.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contul care devine magazin'**
+  String get adminStoresPickUser;
+
+  /// No description provided for @adminStoreName.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nume comercial'**
+  String get adminStoreName;
+
+  /// No description provided for @adminStoreNameRequired.
+  ///
+  /// In ro, this message translates to:
+  /// **'Numele comercial e obligatoriu'**
+  String get adminStoreNameRequired;
+
+  /// No description provided for @adminStoreDescription.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descriere'**
+  String get adminStoreDescription;
+
+  /// No description provided for @adminStoreAddress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adresă'**
+  String get adminStoreAddress;
+
+  /// No description provided for @adminStoreCity.
+  ///
+  /// In ro, this message translates to:
+  /// **'Oraș'**
+  String get adminStoreCity;
+
+  /// No description provided for @adminStoreWebsite.
+  ///
+  /// In ro, this message translates to:
+  /// **'Site'**
+  String get adminStoreWebsite;
+
+  /// No description provided for @adminStorePhone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Telefon'**
+  String get adminStorePhone;
+
+  /// No description provided for @adminStoreHours.
+  ///
+  /// In ro, this message translates to:
+  /// **'Program'**
+  String get adminStoreHours;
+
+  /// No description provided for @adminStoreDelivery.
+  ///
+  /// In ro, this message translates to:
+  /// **'Politică de livrare'**
+  String get adminStoreDelivery;
+
+  /// No description provided for @adminStoreActive.
+  ///
+  /// In ro, this message translates to:
+  /// **'Magazin activ'**
+  String get adminStoreActive;
+
+  /// No description provided for @adminStoreActiveHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Suspendat, contul păstrează datele dar nu mai primește stoc nou.'**
+  String get adminStoreActiveHint;
+
+  /// No description provided for @adminStoreSuspended.
+  ///
+  /// In ro, this message translates to:
+  /// **'Suspendat'**
+  String get adminStoreSuspended;
+
+  /// No description provided for @adminStoreListings.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} anunțuri'**
+  String adminStoreListings(int count);
+
+  /// No description provided for @adminStoreRemove.
+  ///
+  /// In ro, this message translates to:
+  /// **'Retrage statutul de magazin'**
+  String get adminStoreRemove;
+
+  /// No description provided for @adminStoreRemoveConfirm.
+  ///
+  /// In ro, this message translates to:
+  /// **'Anunțurile deja importate rămân ale contului. Se șterg doar datele comerciale.'**
+  String get adminStoreRemoveConfirm;
+
+  /// No description provided for @adminStoreUserRequired.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege întâi contul'**
+  String get adminStoreUserRequired;
+
+  /// No description provided for @bulkAddTargetOwn.
+  ///
+  /// In ro, this message translates to:
+  /// **'Contul meu'**
+  String get bulkAddTargetOwn;
+
+  /// No description provided for @bulkAddTarget.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă în contul'**
+  String get bulkAddTarget;
+
+  /// No description provided for @bulkAddTabScan.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scanare ISBN'**
+  String get bulkAddTabScan;
+
+  /// No description provided for @bulkAddTabCsv.
+  ///
+  /// In ro, this message translates to:
+  /// **'Import CSV'**
+  String get bulkAddTabCsv;
+
+  /// No description provided for @bulkAddCsvPick.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege fișierul CSV'**
+  String get bulkAddCsvPick;
+
+  /// No description provided for @bulkAddCsvHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coloane: sku, isbn, title, author, condition, language, price, qty. Un rând cu un sku deja trimis actualizează anunțul, nu creează altul; qty 0 îl scoate din piață.'**
+  String get bulkAddCsvHint;
+
+  /// No description provided for @bulkAddCsvNoStore.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege întâi magazinul: prețul din CSV pune anunțul la vânzare doar pentru conturile de magazin.'**
+  String get bulkAddCsvNoStore;
+
+  /// No description provided for @storeStockLeft.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} exemplare în stoc'**
+  String storeStockLeft(int count);
 }
 
 class _AppLocalizationsDelegate

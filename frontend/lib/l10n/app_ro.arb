@@ -2471,5 +2471,73 @@
                 "type": "String"
             }
         }
+    },
+    "libraryImportSummaryDetailed": "{created} create, {updated} actualizate, {delisted} scoase din piață, {failed} eșuate",
+    "@libraryImportSummaryDetailed": {
+        "placeholders": {
+            "created": {
+                "type": "int"
+            },
+            "updated": {
+                "type": "int"
+            },
+            "delisted": {
+                "type": "int"
+            },
+            "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "storeBadge": "Magazin",
+    "storeSectionTitle": "Despre magazin",
+    "storeHours": "Program",
+    "storeAddress": "Adresă",
+    "storePhone": "Telefon",
+    "storeWebsite": "Site",
+    "storeDelivery": "Livrare",
+    "adminStoresTitle": "Conturi de magazin",
+    "adminStoresSubtitle": "Anticariate și librării care își pot importa stocul",
+    "adminStoresEmpty": "Niciun cont de magazin încă.",
+    "adminStoresAdd": "Adaugă magazin",
+    "adminStoresEdit": "Editează magazinul",
+    "adminStoresPickUser": "Contul care devine magazin",
+    "adminStoreName": "Nume comercial",
+    "adminStoreNameRequired": "Numele comercial e obligatoriu",
+    "adminStoreDescription": "Descriere",
+    "adminStoreAddress": "Adresă",
+    "adminStoreCity": "Oraș",
+    "adminStoreWebsite": "Site",
+    "adminStorePhone": "Telefon",
+    "adminStoreHours": "Program",
+    "adminStoreDelivery": "Politică de livrare",
+    "adminStoreActive": "Magazin activ",
+    "adminStoreActiveHint": "Suspendat, contul păstrează datele dar nu mai primește stoc nou.",
+    "adminStoreSuspended": "Suspendat",
+    "adminStoreListings": "{count} anunțuri",
+    "@adminStoreListings": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminStoreRemove": "Retrage statutul de magazin",
+    "adminStoreRemoveConfirm": "Anunțurile deja importate rămân ale contului. Se șterg doar datele comerciale.",
+    "adminStoreUserRequired": "Alege întâi contul",
+    "bulkAddTargetOwn": "Contul meu",
+    "bulkAddTarget": "Adaugă în contul",
+    "bulkAddTabScan": "Scanare ISBN",
+    "bulkAddTabCsv": "Import CSV",
+    "bulkAddCsvPick": "Alege fișierul CSV",
+    "bulkAddCsvHint": "Coloane: sku, isbn, title, author, condition, language, price, qty. Un rând cu un sku deja trimis actualizează anunțul, nu creează altul; qty 0 îl scoate din piață.",
+    "bulkAddCsvNoStore": "Alege întâi magazinul: prețul din CSV pune anunțul la vânzare doar pentru conturile de magazin.",
+    "storeStockLeft": "{count} exemplare în stoc",
+    "@storeStockLeft": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     }
 }

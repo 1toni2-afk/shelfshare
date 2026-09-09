@@ -1513,5 +1513,73 @@
                 "type": "String"
             }
         }
+    },
+    "libraryImportSummaryDetailed": "{created} erstellt, {updated} aktualisiert, {delisted} zurückgezogen, {failed} fehlgeschlagen",
+    "@libraryImportSummaryDetailed": {
+        "placeholders": {
+            "created": {
+                "type": "int"
+            },
+            "updated": {
+                "type": "int"
+            },
+            "delisted": {
+                "type": "int"
+            },
+            "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "storeBadge": "Buchhandlung",
+    "storeSectionTitle": "Über die Buchhandlung",
+    "storeHours": "Öffnungszeiten",
+    "storeAddress": "Adresse",
+    "storePhone": "Telefon",
+    "storeWebsite": "Website",
+    "storeDelivery": "Lieferung",
+    "adminStoresTitle": "Händlerkonten",
+    "adminStoresSubtitle": "Antiquariate und Buchhandlungen, die ihren Bestand importieren dürfen",
+    "adminStoresEmpty": "Noch keine Händlerkonten.",
+    "adminStoresAdd": "Händler hinzufügen",
+    "adminStoresEdit": "Händler bearbeiten",
+    "adminStoresPickUser": "Konto, das zum Händler wird",
+    "adminStoreName": "Firmenname",
+    "adminStoreNameRequired": "Der Firmenname ist erforderlich",
+    "adminStoreDescription": "Beschreibung",
+    "adminStoreAddress": "Adresse",
+    "adminStoreCity": "Stadt",
+    "adminStoreWebsite": "Website",
+    "adminStorePhone": "Telefon",
+    "adminStoreHours": "Öffnungszeiten",
+    "adminStoreDelivery": "Lieferbedingungen",
+    "adminStoreActive": "Aktiver Händler",
+    "adminStoreActiveHint": "Gesperrt behält das Konto seine Daten, nimmt aber keinen neuen Bestand an.",
+    "adminStoreSuspended": "Gesperrt",
+    "adminStoreListings": "{count} Anzeigen",
+    "@adminStoreListings": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminStoreRemove": "Händlerstatus entziehen",
+    "adminStoreRemoveConfirm": "Bereits importierte Anzeigen bleiben beim Konto. Nur die Händlerdaten werden gelöscht.",
+    "adminStoreUserRequired": "Wähle zuerst das Konto",
+    "bulkAddTargetOwn": "Mein Konto",
+    "bulkAddTarget": "Hinzufügen zum Konto",
+    "bulkAddTabScan": "ISBN scannen",
+    "bulkAddTabCsv": "CSV-Import",
+    "bulkAddCsvPick": "CSV-Datei wählen",
+    "bulkAddCsvHint": "Spalten: sku, isbn, title, author, condition, language, price, qty. Eine Zeile mit bereits gesendeter sku aktualisiert die Anzeige, statt eine neue zu erstellen; qty 0 zieht sie zurück.",
+    "bulkAddCsvNoStore": "Wähle zuerst den Händler: Ein Preis in der CSV stellt eine Anzeige nur bei Händlerkonten zum Verkauf.",
+    "storeStockLeft": "{count} Exemplare auf Lager",
+    "@storeStockLeft": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     }
 }

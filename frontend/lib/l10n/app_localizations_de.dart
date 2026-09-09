@@ -4705,4 +4705,134 @@ class AppLocalizationsDe extends AppLocalizations {
   String adminBookRequestsFoundOn(String source) {
     return 'gefunden auf $source';
   }
+
+  @override
+  String libraryImportSummaryDetailed(
+    int created,
+    int updated,
+    int delisted,
+    int failed,
+  ) {
+    return '$created erstellt, $updated aktualisiert, $delisted zurückgezogen, $failed fehlgeschlagen';
+  }
+
+  @override
+  String get storeBadge => 'Buchhandlung';
+
+  @override
+  String get storeSectionTitle => 'Über die Buchhandlung';
+
+  @override
+  String get storeHours => 'Öffnungszeiten';
+
+  @override
+  String get storeAddress => 'Adresse';
+
+  @override
+  String get storePhone => 'Telefon';
+
+  @override
+  String get storeWebsite => 'Website';
+
+  @override
+  String get storeDelivery => 'Lieferung';
+
+  @override
+  String get adminStoresTitle => 'Händlerkonten';
+
+  @override
+  String get adminStoresSubtitle =>
+      'Antiquariate und Buchhandlungen, die ihren Bestand importieren dürfen';
+
+  @override
+  String get adminStoresEmpty => 'Noch keine Händlerkonten.';
+
+  @override
+  String get adminStoresAdd => 'Händler hinzufügen';
+
+  @override
+  String get adminStoresEdit => 'Händler bearbeiten';
+
+  @override
+  String get adminStoresPickUser => 'Konto, das zum Händler wird';
+
+  @override
+  String get adminStoreName => 'Firmenname';
+
+  @override
+  String get adminStoreNameRequired => 'Der Firmenname ist erforderlich';
+
+  @override
+  String get adminStoreDescription => 'Beschreibung';
+
+  @override
+  String get adminStoreAddress => 'Adresse';
+
+  @override
+  String get adminStoreCity => 'Stadt';
+
+  @override
+  String get adminStoreWebsite => 'Website';
+
+  @override
+  String get adminStorePhone => 'Telefon';
+
+  @override
+  String get adminStoreHours => 'Öffnungszeiten';
+
+  @override
+  String get adminStoreDelivery => 'Lieferbedingungen';
+
+  @override
+  String get adminStoreActive => 'Aktiver Händler';
+
+  @override
+  String get adminStoreActiveHint =>
+      'Gesperrt behält das Konto seine Daten, nimmt aber keinen neuen Bestand an.';
+
+  @override
+  String get adminStoreSuspended => 'Gesperrt';
+
+  @override
+  String adminStoreListings(int count) {
+    return '$count Anzeigen';
+  }
+
+  @override
+  String get adminStoreRemove => 'Händlerstatus entziehen';
+
+  @override
+  String get adminStoreRemoveConfirm =>
+      'Bereits importierte Anzeigen bleiben beim Konto. Nur die Händlerdaten werden gelöscht.';
+
+  @override
+  String get adminStoreUserRequired => 'Wähle zuerst das Konto';
+
+  @override
+  String get bulkAddTargetOwn => 'Mein Konto';
+
+  @override
+  String get bulkAddTarget => 'Hinzufügen zum Konto';
+
+  @override
+  String get bulkAddTabScan => 'ISBN scannen';
+
+  @override
+  String get bulkAddTabCsv => 'CSV-Import';
+
+  @override
+  String get bulkAddCsvPick => 'CSV-Datei wählen';
+
+  @override
+  String get bulkAddCsvHint =>
+      'Spalten: sku, isbn, title, author, condition, language, price, qty. Eine Zeile mit bereits gesendeter sku aktualisiert die Anzeige, statt eine neue zu erstellen; qty 0 zieht sie zurück.';
+
+  @override
+  String get bulkAddCsvNoStore =>
+      'Wähle zuerst den Händler: Ein Preis in der CSV stellt eine Anzeige nur bei Händlerkonten zum Verkauf.';
+
+  @override
+  String storeStockLeft(int count) {
+    return '$count Exemplare auf Lager';
+  }
 }

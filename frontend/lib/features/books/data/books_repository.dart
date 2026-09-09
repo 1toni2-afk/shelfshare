@@ -112,16 +112,40 @@ class ListingImportFailed {
   }
 }
 
+/// Rezultatul unui import de anunțuri.
+///
+/// `updated` și `delisted` există de când CSV-ul poate purta `sku`: rândul cu
+/// un sku deja cunoscut actualizează anunțul existent (preț, stare, stoc) în
+/// loc să creeze încă unul, iar `qty = 0` îl scoate din piață. Ambele vin
+/// goale de la un backend mai vechi sau dintr-un fișier fără sku, deci
+/// citirea lor e tolerantă la lipsă.
 class ListingImportResult {
   final List<ListingImportCreated> created;
+  final List<ListingImportCreated> updated;
+  final List<ListingImportCreated> delisted;
   final List<ListingImportFailed> failed;
 
-  const ListingImportResult({required this.created, required this.failed});
+  const ListingImportResult({
+    required this.created,
+    this.updated = const [],
+    this.delisted = const [],
+    required this.failed,
+  });
+
+  /// Câte rânduri au fost atinse cu succes, oricum ar fi fost atinse - numărul
+  /// pe care îl caută cineva care tocmai a sincronizat un stoc.
+  int get touchedCount => created.length + updated.length + delisted.length;
+
+  static List<ListingImportCreated> _entries(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw.map((e) => ListingImportCreated.fromJson(e as Map<String, dynamic>)).toList();
+  }
 
   factory ListingImportResult.fromJson(Map<String, dynamic> json) {
     return ListingImportResult(
-      created:
-          (json['created'] as List).map((e) => ListingImportCreated.fromJson(e as Map<String, dynamic>)).toList(),
+      created: _entries(json['created']),
+      updated: _entries(json['updated']),
+      delisted: _entries(json['delisted']),
       failed: (json['failed'] as List).map((e) => ListingImportFailed.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
@@ -536,10 +560,14 @@ class BooksRepository {
   /// Adăugare în masă - maxim 50 ISBN-uri odată (vezi BulkAddBooksDto), pot
   /// declanșa căutări externe secvențiale pentru fiecare, deci mărim
   /// timeout-ul peste cel implicit de 10s al clientului Dio.
+  ///
+  /// `storeUserId` adaugă cărțile pe contul unui anticariat, nu pe al celui
+  /// care scanează - ruta e oricum rezervată super-adminilor.
   Future<BulkAddResult> bulkAdd(
     List<String> isbns, {
     BookCondition? condition,
     String? language,
+    String? storeUserId,
   }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final response = await dio.post(
@@ -548,20 +576,31 @@ class BooksRepository {
         'isbns': isbns,
         if (condition != null) 'condition': condition.toJson(),
         if (language != null && language.isNotEmpty) 'language': language,
+        'storeUserId': ?storeUserId,
       },
       options: Options(sendTimeout: const Duration(seconds: 60), receiveTimeout: const Duration(seconds: 60)),
     );
     return BulkAddResult.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Import CSV de anunțuri (title,author,isbn,condition,language) - anunțuri
-  /// noi de schimb (fără vânzare, care cere poze urcate separat - vezi
-  /// backend). Distinct de importCsv() al BookshelfRepository, care
-  /// populează statusul de citit, nu creează anunțuri.
-  Future<ListingImportResult> importListingsCsv({required List<int> bytes, required String filename}) async {
+  /// Import CSV de anunțuri. Coloane: title, author, isbn, condition,
+  /// language, city, description, plus cele de stoc - sku, price, qty.
+  /// Distinct de importCsv() al BookshelfRepository, care populează statusul
+  /// de citit, nu creează anunțuri.
+  ///
+  /// `storeUserId` importă pe contul unui anticariat (doar super-admini) -
+  /// acolo prețul din CSV chiar pune anunțul la vânzare, fiindcă magazinele
+  /// sunt scutite de regula „cel puțin o poză". Pentru un user obișnuit
+  /// prețul e doar reținut.
+  Future<ListingImportResult> importListingsCsv({
+    required List<int> bytes,
+    required String filename,
+    String? storeUserId,
+  }) async {
     final dio = _ref.read(apiClientProvider).dio;
     final formData = FormData.fromMap({
       'file': MultipartFile.fromBytes(bytes, filename: filename.isEmpty ? 'import.csv' : filename),
+      'storeUserId': ?storeUserId,
     });
     final response = await dio.post(
       '/books/import-listings',

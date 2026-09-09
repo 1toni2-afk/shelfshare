@@ -4630,4 +4630,134 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminBookRequestsFoundOn(String source) {
     return 'found on $source';
   }
+
+  @override
+  String libraryImportSummaryDetailed(
+    int created,
+    int updated,
+    int delisted,
+    int failed,
+  ) {
+    return '$created created, $updated updated, $delisted delisted, $failed failed';
+  }
+
+  @override
+  String get storeBadge => 'Store';
+
+  @override
+  String get storeSectionTitle => 'About the store';
+
+  @override
+  String get storeHours => 'Opening hours';
+
+  @override
+  String get storeAddress => 'Address';
+
+  @override
+  String get storePhone => 'Phone';
+
+  @override
+  String get storeWebsite => 'Website';
+
+  @override
+  String get storeDelivery => 'Delivery';
+
+  @override
+  String get adminStoresTitle => 'Store accounts';
+
+  @override
+  String get adminStoresSubtitle =>
+      'Second-hand and new bookshops that can import their stock';
+
+  @override
+  String get adminStoresEmpty => 'No store accounts yet.';
+
+  @override
+  String get adminStoresAdd => 'Add store';
+
+  @override
+  String get adminStoresEdit => 'Edit store';
+
+  @override
+  String get adminStoresPickUser => 'Account to turn into a store';
+
+  @override
+  String get adminStoreName => 'Trading name';
+
+  @override
+  String get adminStoreNameRequired => 'The trading name is required';
+
+  @override
+  String get adminStoreDescription => 'Description';
+
+  @override
+  String get adminStoreAddress => 'Address';
+
+  @override
+  String get adminStoreCity => 'City';
+
+  @override
+  String get adminStoreWebsite => 'Website';
+
+  @override
+  String get adminStorePhone => 'Phone';
+
+  @override
+  String get adminStoreHours => 'Opening hours';
+
+  @override
+  String get adminStoreDelivery => 'Delivery policy';
+
+  @override
+  String get adminStoreActive => 'Active store';
+
+  @override
+  String get adminStoreActiveHint =>
+      'When suspended, the account keeps its details but takes no new stock.';
+
+  @override
+  String get adminStoreSuspended => 'Suspended';
+
+  @override
+  String adminStoreListings(int count) {
+    return '$count listings';
+  }
+
+  @override
+  String get adminStoreRemove => 'Revoke store status';
+
+  @override
+  String get adminStoreRemoveConfirm =>
+      'Listings already imported stay with the account. Only the trading details are removed.';
+
+  @override
+  String get adminStoreUserRequired => 'Pick the account first';
+
+  @override
+  String get bulkAddTargetOwn => 'My account';
+
+  @override
+  String get bulkAddTarget => 'Add to account';
+
+  @override
+  String get bulkAddTabScan => 'Scan ISBN';
+
+  @override
+  String get bulkAddTabCsv => 'CSV import';
+
+  @override
+  String get bulkAddCsvPick => 'Choose CSV file';
+
+  @override
+  String get bulkAddCsvHint =>
+      'Columns: sku, isbn, title, author, condition, language, price, qty. A row whose sku was sent before updates the listing instead of creating another; qty 0 delists it.';
+
+  @override
+  String get bulkAddCsvNoStore =>
+      'Pick the store first: a price in the CSV puts a listing on sale only for store accounts.';
+
+  @override
+  String storeStockLeft(int count) {
+    return '$count copies in stock';
+  }
 }

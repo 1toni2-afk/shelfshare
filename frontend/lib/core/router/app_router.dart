@@ -131,6 +131,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           goingToOnboarding) {
         return '/';
       }
+      // Adăugarea în masă (integrări cu anticariatele) e doar pentru
+      // super-admini: ascunsă din meniu, refuzată de backend și inaccesibilă
+      // prin URL scris de mână.
+      if (isAuthenticated &&
+          state.matchedLocation == '/library/bulk-add' &&
+          !authState.user.isSuperAdmin) {
+        return '/library';
+      }
+      // Conturile de magazin: aceeași regulă, dar întoarcerea se face în
+      // panoul de admin, de unde vine intrarea.
+      if (isAuthenticated &&
+          state.matchedLocation == '/admin/stores' &&
+          !authState.user.isSuperAdmin) {
+        return '/admin';
+      }
       return null;
     },
     refreshListenable: _AuthStateListenable(ref),
@@ -302,6 +317,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               (context, state) => tier3.AdministratorsScreen()),
           _deferredRoute('/admin/roles', tier3.loadLibrary,
               (context, state) => tier3.RolesPermissionsScreen()),
+          _deferredRoute('/admin/stores', tier3.loadLibrary,
+              (context, state) => tier3.AdminStoresScreen()),
           _deferredRoute('/admin/chat', tier3.loadLibrary,
               (context, state) => tier3.AdminChatInboxScreen()),
           _deferredRoute(

@@ -27,6 +27,8 @@ import { SavedSearchesService } from '../saved-searches/saved-searches.service';
 import { ExternalBookResult } from './types/external-book-result';
 import { ReviewsService } from '../reviews/reviews.service';
 import { ResolveWorkDto } from './dto/resolve-work.dto';
+import { StoresService } from '../stores/stores.service';
+import { isSuperAdmin } from '../common/utils/is-super-admin';
 
 /// Rândul brut întors de căutarea în catalog (`searchCatalog`) - doar
 /// coloanele de care are nevoie dropdown-ul de autocomplete.
@@ -91,6 +93,10 @@ const OWNER_SELECT = {
   city: true,
   rating: true,
   profileImage: true,
+  // Insigna „Magazin" de pe card. Doar flag-ul, nu și StoreProfile: numele
+  // comercial e ținut sincron în `User.name` de StoresService exact ca să nu
+  // fie nevoie de un join în interogările de căutare/browse.
+  isStore: true,
 } as const;
 
 @Injectable()
@@ -107,6 +113,7 @@ export class BooksService {
     private listingScore: ListingScoreService,
     private savedSearches: SavedSearchesService,
     private reviews: ReviewsService,
+    private stores: StoresService,
   ) {}
 
   async searchExternal(query: string) {
@@ -735,7 +742,20 @@ export class BooksService {
     };
   }
 
-  async addToLibrary(userId: string, dto: AddBookDto) {
+  /**
+   * @param options.silent Sare peste notificările de tip „difuzare" (vecini,
+   * followeri, urmăritori de serie) și peste XP. Folosit de importul de stoc
+   * al magazinelor: un anticariat care își încarcă 800 de titluri ar trimite
+   * altfel 800 de notificări fiecărui follower și ar urca artificial în
+   * clasamentele de gamificare. Notificările CERUTE explicit de useri
+   * (wishlist, căutări salvate) rămân - ele sunt exact motivul pentru care
+   * cineva vrea să afle că un anticariat a pus cartea pe piață.
+   */
+  async addToLibrary(
+    userId: string,
+    dto: AddBookDto,
+    options: { silent?: boolean } = {},
+  ) {
     const book = await this.findOrCreateBook(dto);
 
     // isForSale pornește mereu false - vezi comentariul din AddBookDto.
@@ -765,10 +785,14 @@ export class BooksService {
     });
 
     this.wishlist.notifyWishlistedUsers(book.id, userId).catch(() => {});
-    this.follow
-      .notifyFollowersOfNewBook(userId, book.title, userBook.id)
-      .catch(() => {});
-    this.notifyNearbyUsers(userId, book.title).catch(() => {});
+    if (!options.silent) {
+      this.follow
+        .notifyFollowersOfNewBook(userId, book.title, userBook.id)
+        .catch(() => {});
+    }
+    if (!options.silent) {
+      this.notifyNearbyUsers(userId, book.title).catch(() => {});
+    }
     // INTEREST_BOOK_LISTED nu se mai trimite: anunța TOȚI userii cu genul
     // respectiv în profilul de cititor, la fiecare listare, deci cineva care
     // bifase „SF" la onboarding primea o notificare pentru fiecare carte SF
@@ -777,8 +801,10 @@ export class BooksService {
     this.savedSearches
       .notifyOnNewListing(userId, book.id, book.title, book.genre, userBook.city)
       .catch(() => {});
-    this.notifySeriesFollowers(userId, book).catch(() => {});
-    await awardXp(this.prisma, userId, XP_BOOK_LISTED);
+    if (!options.silent) {
+      this.notifySeriesFollowers(userId, book).catch(() => {});
+      await awardXp(this.prisma, userId, XP_BOOK_LISTED);
+    }
 
     return userBook;
   }
@@ -788,23 +814,36 @@ export class BooksService {
    * stare/limbă pentru toate, câte un userBook per ISBN, procesate secvențial
    * ca să reutilizeze exact logica de la addToLibrary (deduplicare pe ISBN,
    * XP, notificări). Un ISBN care eșuează nu oprește restul listei.
+   *
+   * `storeUserId` face adăugarea ÎN NUMELE unui cont de magazin: cărțile
+   * ajung la magazin, nu pe raftul super-adminului care ține telefonul.
+   * Endpointul e oricum rezervat super-adminilor (vezi SuperAdminGuard pe
+   * POST /books/bulk), deci aici rămâne doar validarea țintei.
    */
   async bulkAddToLibrary(
     userId: string,
     isbns: string[],
     condition: BookCondition | undefined,
     language?: string,
+    storeUserId?: string,
   ) {
+    const targetUserId = storeUserId
+      ? await this.stores.assertActiveStore(storeUserId)
+      : userId;
+    // Adăugarea în numele altcuiva nu trebuie să trezească followerii sau
+    // vecinii magazinului la fiecare carte scanată - vezi addToLibrary.
+    const silent = targetUserId !== userId;
+
     const created: { isbn: string; userBookId: string; title: string }[] = [];
     const failed: { isbn: string; reason: string }[] = [];
 
     for (const isbn of isbns) {
       try {
-        const userBook = await this.addToLibrary(userId, {
-          isbn,
-          condition,
-          language,
-        });
+        const userBook = await this.addToLibrary(
+          targetUserId,
+          { isbn, condition, language },
+          { silent },
+        );
         created.push({
           isbn,
           userBookId: userBook.id,
@@ -831,15 +870,56 @@ export class BooksService {
   }
 
   /**
-   * Import CSV de anunțuri (Seller Tools, Milestone 5) - distinct de
-   * importul Goodreads/StoryGraph (acela populează statusul de citit,
-   * nu creează anunțuri). Coloane așteptate: title, author, isbn,
-   * condition, language. Anunțurile create sunt mereu doar pentru schimb
-   * (availableForSwap, isForSale: false) - vânzarea cere cel puțin o poză
-   * deja urcată (vezi updateUserBook), imposibil de satisfăcut dintr-un CSV,
-   * deci userul trece la vânzare separat, per anunț, după ce urcă poze.
+   * Import CSV de anunțuri (Seller Tools, Milestone 5) - distinct de importul
+   * Goodreads/StoryGraph (acela populează statusul de citit, nu creează
+   * anunțuri).
+   *
+   * Coloane: `title`, `author`, `isbn`, `condition`, `language`, `city`,
+   * `description`, plus cele de stoc - `sku`, `price`, `qty`.
+   *
+   * `sku` e cheia de idempotență: un rând cu un sku deja văzut ACTUALIZEAZĂ
+   * anunțul existent (preț, stare, stoc) în loc să creeze încă unul, deci
+   * feed-ul unui anticariat poate fi re-trimis zilnic fără să dubleze nimic.
+   * Rândurile fără sku păstrează comportamentul vechi (creează mereu), ca
+   * fișierele de până acum să meargă neschimbate.
+   *
+   * `qty = 0` scoate anunțul din piață fără să-l șteargă: stocul se poate
+   * întoarce la sincronizarea următoare, cu istoricul intact.
+   *
+   * `price` intră mereu în `salePrice`, dar aprinde `isForSale` DOAR pentru
+   * conturile de magazin. Pentru un user obișnuit rămâne regula existentă
+   * („cel puțin o poză înainte de vânzare", vezi updateUserBook): prețul e
+   * reținut, iar el trece la vânzare din aplicație după ce urcă o poză.
+   * Magazinele sunt scutite fiindcă sunt aprobate manual de un super-admin,
+   * iar anunțurile lor arată coperta din catalog.
    */
-  async importListingsCsv(userId: string, buffer: Buffer) {
+  async importListingsCsv(
+    actorUserId: string,
+    buffer: Buffer,
+    storeUserId?: string,
+  ) {
+    // Importul „în numele magazinului X" nu poate fi apărat de un guard pe
+    // rută: aceeași rută e folosită de orice user ca să-și importe propriul
+    // CSV. Verificarea stă aici, iar ținta trebuie să fie un magazin activ.
+    let targetUserId = actorUserId;
+    if (storeUserId && storeUserId !== actorUserId) {
+      if (!(await isSuperAdmin(this.prisma, actorUserId))) {
+        throw new ForbiddenException(
+          'Doar un super-admin poate importa în numele unui magazin',
+        );
+      }
+      targetUserId = await this.stores.assertActiveStore(storeUserId);
+    }
+
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { isStore: true },
+    });
+    if (!target) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+    const isStoreImport = target.isStore;
+
     let rows: Record<string, string>[];
     try {
       rows = parse(buffer.toString('utf-8'), {
@@ -864,42 +944,233 @@ export class BooksService {
     }
 
     const created: { title: string; userBookId: string }[] = [];
+    const updated: { title: string; userBookId: string }[] = [];
+    const delisted: { title: string; userBookId: string }[] = [];
     const failed: { title: string; reason: string }[] = [];
 
+    // Un sku repetat în ACELAȘI fișier: al doilea rând ar suprascrie ce tocmai
+    // a scris primul, fără ca nimeni să afle care a câștigat. Îl raportăm.
+    const seenSkus = new Set<string>();
+
     for (const row of rows) {
-      const title = row['title']?.trim();
-      if (!title) {
-        failed.push({ title: '(fără titlu)', reason: 'Lipsește titlul' });
+      const sku = this.csvValue(row, 'sku');
+      const title = this.csvValue(row, 'title');
+      const label = title ?? sku ?? '(fără titlu)';
+
+      if (sku && seenSkus.has(sku)) {
+        failed.push({ title: label, reason: `SKU duplicat în fișier: ${sku}` });
         continue;
       }
-      const conditionRaw = row['condition']?.trim().toUpperCase();
+      if (sku) seenSkus.add(sku);
+
+      let quantity: number;
+      let price: number | null;
+      try {
+        quantity = this.parseQuantity(this.csvValue(row, 'qty'));
+        price = this.parsePrice(this.csvValue(row, 'price'));
+      } catch (error) {
+        failed.push({
+          title: label,
+          reason:
+            error instanceof BadRequestException
+              ? error.message
+              : 'Rând invalid',
+        });
+        continue;
+      }
+
+      const conditionRaw = this.csvValue(row, 'condition')?.toUpperCase();
       const condition: BookCondition =
         conditionRaw &&
         (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
           ? (conditionRaw as BookCondition)
           : 'BUNA';
+      const language = this.csvValue(row, 'language');
+      const city = this.csvValue(row, 'city');
+      const description = this.csvValue(row, 'description');
+
+      // Anunțul existent pentru acest sku - inclusiv unul șters, ca stocul
+      // reapărut în feed să reînvie rândul vechi cu tot cu istoricul lui.
+      const existing = sku
+        ? await this.prisma.userBook.findFirst({
+            where: { userId: targetUserId, sku },
+          })
+        : null;
 
       try {
-        const userBook = await this.addToLibrary(userId, {
-          title,
-          author: row['author']?.trim() || undefined,
-          isbn: row['isbn']?.trim().replace(/[-\s]/g, '') || undefined,
+        if (existing) {
+          const outcome = await this.syncStockRow(existing.id, {
+            condition,
+            language,
+            city,
+            description,
+            price,
+            quantity,
+            isStoreImport,
+          });
+          const entry = { title: label, userBookId: existing.id };
+          if (outcome === 'delisted') {
+            delisted.push(entry);
+          } else {
+            updated.push(entry);
+          }
+          continue;
+        }
+
+        if (!title && !this.csvValue(row, 'isbn')) {
+          failed.push({
+            title: label,
+            reason: 'Lipsește și titlul, și ISBN-ul',
+          });
+          continue;
+        }
+
+        const userBook = await this.addToLibrary(
+          targetUserId,
+          {
+            title: title ?? undefined,
+            author: this.csvValue(row, 'author') ?? undefined,
+            isbn: this.csvValue(row, 'isbn')?.replace(/[-\s]/g, '') ?? undefined,
+            condition,
+            language: language ?? undefined,
+            city: city ?? undefined,
+            description: description ?? undefined,
+          },
+          { silent: isStoreImport },
+        );
+
+        await this.syncStockRow(userBook.id, {
           condition,
-          language: row['language']?.trim() || undefined,
+          language,
+          city,
+          description,
+          price,
+          quantity,
+          isStoreImport,
+          sku,
         });
-        created.push({ title, userBookId: userBook.id });
+
+        const entry = { title: userBook.book.title, userBookId: userBook.id };
+        if (quantity <= 0) {
+          delisted.push(entry);
+        } else {
+          created.push(entry);
+        }
       } catch (error) {
         failed.push({
-          title,
+          title: label,
           reason:
-            error instanceof BadRequestException
+            error instanceof BadRequestException ||
+            error instanceof ForbiddenException
               ? error.message
               : 'Eroare necunoscută',
         });
       }
     }
 
-    return { created, failed };
+    return { created, updated, delisted, failed };
+  }
+
+  /**
+   * Aduce un anunț la starea cerută de un rând din feed-ul de stoc.
+   *
+   * Scrie direct, nu prin updateUserBook: acela e fluxul MANUAL al userului și
+   * impune cooldown-ul de 72h la schimbarea prețului - o regulă anti-„preț
+   * oscilant" care n-are sens pentru un feed sincronizat zilnic, unde prețul
+   * real chiar se schimbă des. Regula prețului tăiat rămâne însă aceeași ca la
+   * editarea manuală: doar o SCĂDERE lasă în urmă prețul vechi.
+   */
+  private async syncStockRow(
+    userBookId: string,
+    input: {
+      condition: BookCondition;
+      language: string | null;
+      city: string | null;
+      description: string | null;
+      price: number | null;
+      quantity: number;
+      isStoreImport: boolean;
+      sku?: string | null;
+    },
+  ): Promise<'updated' | 'delisted'> {
+    const current = await this.prisma.userBook.findUnique({
+      where: { id: userBookId },
+      select: { salePrice: true, permanentlyTransferred: true },
+    });
+    if (!current) {
+      throw new BadRequestException('Anunțul nu mai există');
+    }
+    // Un exemplar deja dat mai departe nu poate fi repus în stoc de un feed -
+    // aceeași regulă ca la „marchează disponibilă" din bulk edit.
+    if (current.permanentlyTransferred && input.quantity > 0) {
+      throw new BadRequestException(
+        'Exemplarul a fost deja transferat și nu mai poate fi repus în stoc',
+      );
+    }
+
+    const inStock = input.quantity > 0;
+    const oldPrice =
+      current.salePrice != null ? Number(current.salePrice) : null;
+    const priceChanged = input.price != null && input.price !== oldPrice;
+
+    const data: Prisma.UserBookUpdateInput = {
+      condition: input.condition,
+      stockQuantity: input.quantity,
+      // Ieșit din stoc = scos din piață, dar NU șters: rândul (și istoricul
+      // lui) așteaptă următoarea sincronizare.
+      availableForSwap: inStock,
+      // Feed-ul e sursa de adevăr pentru stoc: un rând întors în stoc trebuie
+      // scos și din coșul de gunoi, altfel ar rămâne invizibil.
+      deletedAt: inStock ? null : undefined,
+    };
+    if (input.sku !== undefined) data.sku = input.sku;
+    if (input.language) data.language = input.language;
+    if (input.city) data.city = input.city;
+    if (input.description) data.description = input.description;
+
+    if (input.price != null) {
+      data.salePrice = new Prisma.Decimal(input.price);
+      // Vânzarea fără poze e rezervată magazinelor (aprobate manual, cu
+      // coperta din catalog pe anunț). Pentru restul, prețul e doar reținut.
+      data.isForSale = input.isStoreImport && inStock;
+      if (priceChanged) {
+        data.priceUpdatedAt = new Date();
+        data.previousSalePrice =
+          oldPrice != null && input.price < oldPrice ? oldPrice : null;
+      }
+    } else if (!inStock) {
+      data.isForSale = false;
+    }
+
+    await this.prisma.userBook.update({ where: { id: userBookId }, data });
+    return inStock ? 'updated' : 'delisted';
+  }
+
+  /** Citire tolerantă a unei coloane CSV: antet cu majuscule/spații, valoare goală = absentă. */
+  private csvValue(row: Record<string, string>, column: string): string | null {
+    const key = Object.keys(row).find((k) => k.trim().toLowerCase() === column);
+    const value = key ? row[key]?.trim() : undefined;
+    return value ? value : null;
+  }
+
+  /** `qty` lipsă = un exemplar (comportamentul de dinaintea coloanei). */
+  private parseQuantity(raw: string | null): number {
+    if (raw == null) return 1;
+    const value = Number(raw);
+    if (!Number.isInteger(value) || value < 0 || value > 10000) {
+      throw new BadRequestException(`Stoc invalid: ${raw}`);
+    }
+    return value;
+  }
+
+  /** Acceptă și virgula zecimală - exporturile românești o folosesc. */
+  private parsePrice(raw: string | null): number | null {
+    if (raw == null) return null;
+    const value = Number(raw.replace(/\s/g, '').replace(',', '.'));
+    if (!Number.isFinite(value) || value < 0 || value > 100000) {
+      throw new BadRequestException(`Preț invalid: ${raw}`);
+    }
+    return Math.round(value * 100) / 100;
   }
 
   /**
@@ -2574,12 +2845,20 @@ export class BooksService {
     };
   }
 
+  /**
+   * Curăță anunțul altcuiva înainte să plece spre client: numele proprietarului
+   * trece prin `nameVisible`, iar codul intern al magazinului (`sku`) dispare -
+   * e o cheie operațională a lui, nu o informație despre carte. `undefined` nu
+   * ajunge în JSON, deci cheia nici nu apare în răspuns. Anunțurile PROPRII
+   * (getMyLibrary) nu trec pe aici, deci magazinul își vede sku-urile.
+   */
   private sanitizeOwner<
     T extends { user: { name: string | null; nameVisible: boolean } },
   >(userBook: T): T {
     return {
       ...userBook,
       user: { ...userBook.user, name: publicName(userBook.user) },
-    };
+      sku: undefined,
+    } as T;
   }
 }

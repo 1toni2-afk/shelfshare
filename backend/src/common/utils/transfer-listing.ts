@@ -24,17 +24,38 @@ export async function transferListingOwnership(
   const original = await tx.userBook.findUnique({ where: { id: userBookId } });
   if (!original) return null;
 
+  // Anunțul unui magazin cu mai multe exemplare nu se închide la prima
+  // vânzare: scade stocul cu unul și rămâne pe piață. Fără asta, un anticariat
+  // cu 5 exemplare dispărea din căutare după primul client, până la
+  // sincronizarea următoare a feed-ului.
+  const hasStockLeft = original.stockQuantity > 1;
+
+  // `permanentlyTransferred` există ca să nu poată cineva re-lista cartea pe
+  // care tocmai a dat-o din mână. Pentru un magazin, rândul nu e un exemplar,
+  // ci o linie de stoc: același sku se reaprovizionează, iar marcajul ar
+  // închide definitiv linia și ar face următorul import să eșueze pe ea (vezi
+  // syncStockRow). Rămâne doar delistat, cu stoc 0.
+  const seller = await tx.user.findUnique({
+    where: { id: original.userId },
+    select: { isStore: true },
+  });
+  const soldOut = {
+    stockQuantity: 0,
+    availableForSwap: false,
+    isForSale: false,
+    isPromoted: false,
+    // Rezervarea („schimb în curs") și-a făcut treaba: de aici încolo anunțul
+    // e închis, nu doar pus deoparte.
+    reservedForExchangeId: null,
+  };
+
   await tx.userBook.update({
     where: { id: userBookId },
-    data: {
-      permanentlyTransferred: true,
-      availableForSwap: false,
-      isForSale: false,
-      isPromoted: false,
-      // Rezervarea („schimb în curs") și-a făcut treaba: de aici încolo
-      // anunțul e închis definitiv, nu doar pus deoparte.
-      reservedForExchangeId: null,
-    },
+    data: hasStockLeft
+      ? { stockQuantity: { decrement: 1 }, reservedForExchangeId: null }
+      : seller?.isStore
+        ? soldOut
+        : { ...soldOut, permanentlyTransferred: true },
   });
 
   // Cartea rămâne la fostul proprietar doar dacă el e chiar cel care o
@@ -69,6 +90,9 @@ export async function transferListingOwnership(
       availableForSwap: false,
       isForSale: false,
       isAuction: false,
+      // Un singur exemplar, oricâte ar mai fi rămas în stocul magazinului:
+      // cumpărătorul a primit o carte, nu raftul.
+      stockQuantity: 1,
       previousListingId: userBookId,
     },
   });

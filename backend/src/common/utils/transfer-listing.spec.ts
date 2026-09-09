@@ -1,13 +1,20 @@
 import { transferListingOwnership } from './transfer-listing';
 
 /** Minimul din `Prisma.TransactionClient` folosit de helper. */
-function makeTx(original: Record<string, unknown> | null, existing: unknown = null) {
+function makeTx(
+  original: Record<string, unknown> | null,
+  existing: unknown = null,
+  seller: { isStore: boolean } = { isStore: false },
+) {
   return {
     userBook: {
       findUnique: jest.fn().mockResolvedValue(original),
       findFirst: jest.fn().mockResolvedValue(existing),
       update: jest.fn().mockResolvedValue(original),
       create: jest.fn().mockImplementation(({ data }) => ({ id: 'nou', ...data })),
+    },
+    user: {
+      findUnique: jest.fn().mockResolvedValue(seller),
     },
     bookshelfEntry: {
       upsert: jest.fn().mockResolvedValue({}),
@@ -28,6 +35,7 @@ const original = {
   photos: ['a.jpg', 'b.jpg'],
   mainPhotoUrl: 'a.jpg',
   city: 'Cluj-Napoca',
+  stockQuantity: 1,
 };
 
 describe('transferListingOwnership', () => {
@@ -39,10 +47,12 @@ describe('transferListingOwnership', () => {
     expect(tx.userBook.update).toHaveBeenCalledWith({
       where: { id: 'ub-1' },
       data: {
-        permanentlyTransferred: true,
+        stockQuantity: 0,
         availableForSwap: false,
         isForSale: false,
         isPromoted: false,
+        reservedForExchangeId: null,
+        permanentlyTransferred: true,
       },
     });
     expect(tx.userBook.create).toHaveBeenCalledWith({
@@ -94,5 +104,36 @@ describe('transferListingOwnership', () => {
 
     expect(result).toBeNull();
     expect(tx.userBook.update).not.toHaveBeenCalled();
+  });
+
+  describe('anunt de magazin (stoc)', () => {
+    const storeListing = { ...original, userId: 'store-1', stockQuantity: 3 };
+
+    it('scade stocul si lasa anuntul pe piata cat timp mai are exemplare', async () => {
+      const tx = makeTx(storeListing, null, { isStore: true });
+
+      await transferListingOwnership(tx as never, 'ub-1', 'buyer-1');
+
+      expect(tx.userBook.update).toHaveBeenCalledWith({
+        where: { id: 'ub-1' },
+        data: { stockQuantity: { decrement: 1 }, reservedForExchangeId: null },
+      });
+      // Cumparatorul primeste un exemplar, nu raftul.
+      expect(tx.userBook.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ userId: 'buyer-1', stockQuantity: 1 }),
+      });
+    });
+
+    it('la ultimul exemplar delisteaza, dar NU marcheaza linia ca transferata definitiv', async () => {
+      const tx = makeTx({ ...storeListing, stockQuantity: 1 }, null, { isStore: true });
+
+      await transferListingOwnership(tx as never, 'ub-1', 'buyer-1');
+
+      const data = tx.userBook.update.mock.calls[0][0].data as Record<string, unknown>;
+      expect(data.stockQuantity).toBe(0);
+      expect(data.availableForSwap).toBe(false);
+      // Fara asta, urmatorul import cu acelasi sku ar esua pe linia reaprovizionata.
+      expect(data.permanentlyTransferred).toBeUndefined();
+    });
   });
 });

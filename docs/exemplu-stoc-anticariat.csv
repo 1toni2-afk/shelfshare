@@ -1,0 +1,5 @@
+sku,isbn,title,author,condition,language,city,price,qty
+AC-0001,9789735063351,Maitreyi,Mircea Eliade,BUNA,ro,Cluj-Napoca,24.90,3
+AC-0002,9789734635214,Cartea nuntii,Mircea Eliade,FOARTE_BUNA,ro,Cluj-Napoca,29,1
+AC-0003,,Amintiri din copilarie,Ion Creanga,ACCEPTABILA,ro,Cluj-Napoca,"12,50",5
+AC-0004,9780441172719,Dune,Frank Herbert,NOUA,en,Cluj-Napoca,64.00,0

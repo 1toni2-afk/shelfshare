@@ -4656,4 +4656,134 @@ class AppLocalizationsRo extends AppLocalizations {
   String adminBookRequestsFoundOn(String source) {
     return 'găsită pe $source';
   }
+
+  @override
+  String libraryImportSummaryDetailed(
+    int created,
+    int updated,
+    int delisted,
+    int failed,
+  ) {
+    return '$created create, $updated actualizate, $delisted scoase din piață, $failed eșuate';
+  }
+
+  @override
+  String get storeBadge => 'Magazin';
+
+  @override
+  String get storeSectionTitle => 'Despre magazin';
+
+  @override
+  String get storeHours => 'Program';
+
+  @override
+  String get storeAddress => 'Adresă';
+
+  @override
+  String get storePhone => 'Telefon';
+
+  @override
+  String get storeWebsite => 'Site';
+
+  @override
+  String get storeDelivery => 'Livrare';
+
+  @override
+  String get adminStoresTitle => 'Conturi de magazin';
+
+  @override
+  String get adminStoresSubtitle =>
+      'Anticariate și librării care își pot importa stocul';
+
+  @override
+  String get adminStoresEmpty => 'Niciun cont de magazin încă.';
+
+  @override
+  String get adminStoresAdd => 'Adaugă magazin';
+
+  @override
+  String get adminStoresEdit => 'Editează magazinul';
+
+  @override
+  String get adminStoresPickUser => 'Contul care devine magazin';
+
+  @override
+  String get adminStoreName => 'Nume comercial';
+
+  @override
+  String get adminStoreNameRequired => 'Numele comercial e obligatoriu';
+
+  @override
+  String get adminStoreDescription => 'Descriere';
+
+  @override
+  String get adminStoreAddress => 'Adresă';
+
+  @override
+  String get adminStoreCity => 'Oraș';
+
+  @override
+  String get adminStoreWebsite => 'Site';
+
+  @override
+  String get adminStorePhone => 'Telefon';
+
+  @override
+  String get adminStoreHours => 'Program';
+
+  @override
+  String get adminStoreDelivery => 'Politică de livrare';
+
+  @override
+  String get adminStoreActive => 'Magazin activ';
+
+  @override
+  String get adminStoreActiveHint =>
+      'Suspendat, contul păstrează datele dar nu mai primește stoc nou.';
+
+  @override
+  String get adminStoreSuspended => 'Suspendat';
+
+  @override
+  String adminStoreListings(int count) {
+    return '$count anunțuri';
+  }
+
+  @override
+  String get adminStoreRemove => 'Retrage statutul de magazin';
+
+  @override
+  String get adminStoreRemoveConfirm =>
+      'Anunțurile deja importate rămân ale contului. Se șterg doar datele comerciale.';
+
+  @override
+  String get adminStoreUserRequired => 'Alege întâi contul';
+
+  @override
+  String get bulkAddTargetOwn => 'Contul meu';
+
+  @override
+  String get bulkAddTarget => 'Adaugă în contul';
+
+  @override
+  String get bulkAddTabScan => 'Scanare ISBN';
+
+  @override
+  String get bulkAddTabCsv => 'Import CSV';
+
+  @override
+  String get bulkAddCsvPick => 'Alege fișierul CSV';
+
+  @override
+  String get bulkAddCsvHint =>
+      'Coloane: sku, isbn, title, author, condition, language, price, qty. Un rând cu un sku deja trimis actualizează anunțul, nu creează altul; qty 0 îl scoate din piață.';
+
+  @override
+  String get bulkAddCsvNoStore =>
+      'Alege întâi magazinul: prețul din CSV pune anunțul la vânzare doar pentru conturile de magazin.';
+
+  @override
+  String storeStockLeft(int count) {
+    return '$count exemplare în stoc';
+  }
 }

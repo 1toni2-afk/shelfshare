@@ -126,6 +126,16 @@ model User {
   // fără procesare de plăți reale (vezi togglePremium în admin.service.ts).
   isPremium Boolean @default(false)
 
+  // Cont de anticariat / librărie (integrări cu magazinele) - acordat manual
+  // de un super-admin, ca `isPremium`. Boolean pe User, cu detaliile în
+  // StoreProfile, din același motiv ca `isAdmin` lângă `adminRoleId`:
+  // filtrarea „e magazin?" apare în interogări fierbinți (badge pe anunțuri,
+  // reguli de listare), iar un join 1:1 acolo n-ar aduce nimic în plus.
+  // Adevărul e ținut într-un singur loc de StoresService, care le scrie
+  // mereu împreună.
+  isStore      Boolean       @default(false)
+  storeProfile StoreProfile?
+
   // Supporter (Milestone 13) - userii care au donat prin „Keep the app alive".
   // Momentul donației, nu un boolean, ca să putem afișa „supporter din <lună>"
   // și eventual să expirăm insigna pe viitor. Acordat manual din admin panel
@@ -642,6 +652,39 @@ enum AdminRoleName {
   CUSTOM
 }
 
+/// Datele publice ale unui cont de anticariat/librărie (vezi `User.isStore`).
+///
+/// Separat de User fiindcă privește doar câteva zeci de conturi din zeci de
+/// mii: câmpurile astea pe User ar fi NULL peste tot și ar îngreuna fiecare
+/// citire de profil. Ștergerea contului îl ia cu el (Cascade), ca orice altă
+/// relație a userului - vezi AccountDeletionService.
+model StoreProfile {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Numele comercial afișat pe anunțuri, independent de `User.name` (contul
+  /// poate fi deschis pe numele unei persoane, dar clientul vede magazinul).
+  displayName String
+
+  description    String?
+  address        String?
+  city           String?
+  website        String?
+  phone          String?
+  /// Programul, ca text liber („L-V 10-18, S 10-14") - fiecare magazin îl
+  /// scrie altfel, iar noi nu facem nimic programatic cu el.
+  openingHours   String?
+  /// Cum livrează / de unde se ridică, tot text liber, afișat pe anunțuri.
+  deliveryPolicy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("store_profiles")
+}
+
 model AdminRole {
   id          String        @id @default(uuid())
   name        AdminRoleName
@@ -825,6 +868,21 @@ model UserBook {
   /// ListingScoreEvent. Nu afectează exchangePotentialScore.
   manualScoreOverride Float?
 
+  /// Codul intern al magazinului pentru acest exemplar (Stock Keeping Unit),
+  /// setat doar de importul de stoc al conturilor de anticariat. E cheia de
+  /// idempotență a importului: un rând cu același `sku` actualizează anunțul
+  /// existent în loc să creeze încă unul, deci feed-ul poate fi re-trimis
+  /// zilnic fără să dubleze nimic. NULL pentru anunțurile obișnuite (în
+  /// Postgres, NULL-urile nu se ciocnesc într-un index unic).
+  sku String?
+
+  /// Câte exemplare are magazinul din titlul ăsta. 1 pentru anunțurile
+  /// obișnuite (un om are o carte), deci comportamentul de până acum rămâne
+  /// neschimbat. Importul îl rescrie la fiecare rulare din coloana `qty`;
+  /// `qty = 0` scoate anunțul din piață fără să-l șteargă, ca să se poată
+  /// întoarce la următoarea sincronizare cu tot cu istoric.
+  stockQuantity Int @default(1)
+
   photos String[]
 
   /// URL-ul pozei principale afișate în feed/carduri. Poate fi una din
@@ -890,6 +948,9 @@ model UserBook {
   previousListing   UserBook?  @relation("ListingChain", fields: [previousListingId], references: [id], onDelete: SetNull)
   nextListings      UserBook[] @relation("ListingChain")
 
+  /// Cheia de idempotență a importului de stoc. NULL-urile sunt distincte în
+  /// Postgres, deci anunțurile obișnuite (fără sku) nu se ciocnesc între ele.
+  @@unique([userId, sku])
   @@map("user_books")
 }
 

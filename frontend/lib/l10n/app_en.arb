@@ -1649,5 +1649,73 @@
                 "type": "String"
             }
         }
+    },
+    "libraryImportSummaryDetailed": "{created} created, {updated} updated, {delisted} delisted, {failed} failed",
+    "@libraryImportSummaryDetailed": {
+        "placeholders": {
+            "created": {
+                "type": "int"
+            },
+            "updated": {
+                "type": "int"
+            },
+            "delisted": {
+                "type": "int"
+            },
+            "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "storeBadge": "Store",
+    "storeSectionTitle": "About the store",
+    "storeHours": "Opening hours",
+    "storeAddress": "Address",
+    "storePhone": "Phone",
+    "storeWebsite": "Website",
+    "storeDelivery": "Delivery",
+    "adminStoresTitle": "Store accounts",
+    "adminStoresSubtitle": "Second-hand and new bookshops that can import their stock",
+    "adminStoresEmpty": "No store accounts yet.",
+    "adminStoresAdd": "Add store",
+    "adminStoresEdit": "Edit store",
+    "adminStoresPickUser": "Account to turn into a store",
+    "adminStoreName": "Trading name",
+    "adminStoreNameRequired": "The trading name is required",
+    "adminStoreDescription": "Description",
+    "adminStoreAddress": "Address",
+    "adminStoreCity": "City",
+    "adminStoreWebsite": "Website",
+    "adminStorePhone": "Phone",
+    "adminStoreHours": "Opening hours",
+    "adminStoreDelivery": "Delivery policy",
+    "adminStoreActive": "Active store",
+    "adminStoreActiveHint": "When suspended, the account keeps its details but takes no new stock.",
+    "adminStoreSuspended": "Suspended",
+    "adminStoreListings": "{count} listings",
+    "@adminStoreListings": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "adminStoreRemove": "Revoke store status",
+    "adminStoreRemoveConfirm": "Listings already imported stay with the account. Only the trading details are removed.",
+    "adminStoreUserRequired": "Pick the account first",
+    "bulkAddTargetOwn": "My account",
+    "bulkAddTarget": "Add to account",
+    "bulkAddTabScan": "Scan ISBN",
+    "bulkAddTabCsv": "CSV import",
+    "bulkAddCsvPick": "Choose CSV file",
+    "bulkAddCsvHint": "Columns: sku, isbn, title, author, condition, language, price, qty. A row whose sku was sent before updates the listing instead of creating another; qty 0 delists it.",
+    "bulkAddCsvNoStore": "Pick the store first: a price in the CSV puts a listing on sale only for store accounts.",
+    "storeStockLeft": "{count} copies in stock",
+    "@storeStockLeft": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
     }
 }

@@ -17,6 +17,7 @@ import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { AdminModule } from './admin/admin.module';
+import { StoresModule } from './stores/stores.module';
 import { UpcomingReleasesModule } from './upcoming-releases/upcoming-releases.module';
 import { SafetyModule } from './safety/safety.module';
 import { OffersModule } from './offers/offers.module';
@@ -61,6 +62,7 @@ import { BookRequestsModule } from './book-requests/book-requests.module';
     NotificationsModule,
     WishlistModule,
     AdminModule,
+    StoresModule,
     UpcomingReleasesModule,
     SafetyModule,
     OffersModule,

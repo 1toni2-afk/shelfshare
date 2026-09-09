@@ -15,6 +15,7 @@ import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/genre_radar_card.dart';
 import '../../../shared/widgets/motto_text.dart';
+import '../../profile/application/profile_controller.dart';
 import '../application/my_library_controller.dart';
 import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
@@ -366,7 +367,16 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.libraryImportSummary(summary.created.length, summary.failed.length))),
+          // Nu doar „create": un CSV cu `sku` actualizează anunțuri existente
+          // și scoate din piață rândurile cu qty 0 - vezi importListingsCsv.
+          SnackBar(
+            content: Text(l10n.libraryImportSummaryDetailed(
+              summary.created.length,
+              summary.updated.length,
+              summary.delisted.length,
+              summary.failed.length,
+            )),
+          ),
         );
       }
     } on DioException catch (e) {
@@ -385,6 +395,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(myLibraryControllerProvider);
     final l10n = context.l10n;
+    final isSuperAdmin = ref.watch(currentUserProvider)?.isSuperAdmin ?? false;
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
@@ -439,7 +450,12 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   itemBuilder: (context) => [
                     PopupMenuItem(value: 'export', child: Text(l10n.libraryExportCsv)),
                     PopupMenuItem(value: 'import', child: Text(l10n.libraryImportCsv)),
-                    PopupMenuItem(value: 'bulk-add', child: Text(l10n.libraryBulkAdd)),
+                    // Adăugarea în masă e o unealtă pentru integrările cu
+                    // anticariatele, nu o funcție de user obișnuit - o vede
+                    // doar super-adminul (endpointul o refuză oricum
+                    // restului, vezi SuperAdminGuard).
+                    if (isSuperAdmin)
+                      PopupMenuItem(value: 'bulk-add', child: Text(l10n.libraryBulkAdd)),
                     PopupMenuItem(value: 'trash', child: Text(l10n.libraryTrash)),
                   ],
                 ),

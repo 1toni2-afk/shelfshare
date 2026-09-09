@@ -1,8 +1,51 @@
 # Schiță: adăugarea cărților în bulk pentru anticariate
 
-Stare: **propunere**, nimic implementat. Documentul descrie cum s-ar integra un
-anticariat (sau orice magazin cu stoc mare de carte veche) în ShelfShare, ce
-trebuie adăugat în schemă și în ce ordine merită construit.
+Stare: **pasul 1 implementat** (2026-09-09), restul rămâne propunere.
+Documentul descrie cum s-ar integra un anticariat (sau orice magazin cu stoc
+mare de carte veche) în ShelfShare, ce trebuie adăugat în schemă și în ce
+ordine merită construit.
+
+## 0. Ce există deja în cod
+
+Pasul 1 din §9 („fără API") e livrat, cu câteva nume diferite față de schița de
+mai jos - schița rămâne așa cum a fost gândită, aici e ce s-a construit efectiv:
+
+| în schiță | în cod |
+|---|---|
+| `Partner` | `User.isStore` + `StoreProfile` (`backend/src/stores/`) |
+| `UserBook.externalRef` + `partnerId` | `UserBook.sku`, unic pe `(userId, sku)` |
+| `quantity` | `UserBook.stockQuantity` |
+| `PartnerImport` | - (importul e sincron, rezultatul se întoarce în răspuns) |
+
+Concret:
+
+* Un super-admin marchează un cont existent ca magazin din **Admin → Conturi de
+  magazin** (`/admin/stores`): nume comercial, program, adresă, livrare. Numele
+  comercial se scrie și în `User.name`, ca să apară peste tot fără join.
+  Suspendarea păstrează datele, dar oprește stocul nou.
+* **Adăugarea în masă** (`/library/bulk-add`, doar super-admini) alege întâi
+  contul-țintă - al meu sau un magazin - apoi fie scanează ISBN-uri, fie
+  încarcă un CSV.
+* **CSV**: coloanele `sku`, `isbn`, `title`, `author`, `condition`, `language`,
+  `city`, `description`, `price`, `qty`. Un rând cu un `sku` deja trimis
+  ACTUALIZEAZĂ anunțul existent, deci fișierul poate fi re-trimis zilnic;
+  `qty = 0` îl scoate din piață fără să-l șteargă. Maximum 500 de rânduri per
+  fișier (`MAX_LISTING_IMPORT_ROWS`).
+* `price` aprinde `isForSale` **doar** pentru conturile de magazin - ele sunt
+  scutite de regula „cel puțin o poză" fiindcă sunt aprobate manual și afișează
+  coperta din catalog. Pentru un user obișnuit prețul e doar reținut.
+* La vânzarea/schimbul unui exemplar de magazin, stocul scade cu unu și anunțul
+  rămâne pe piață; la ultimul exemplar se delistează, dar linia NU se marchează
+  `permanentlyTransferred`, ca următorul import s-o poată reaproviziona.
+* Importul unui magazin nu trimite notificările de difuzare (vecini, followeri,
+  serii) și nu dă XP - altfel un stoc de 800 de titluri ar fi 800 de notificări.
+  Wishlist-ul și căutările salvate rămân: sunt cerute explicit de useri.
+* `sku` nu iese public (vezi `sanitizeOwner`), dar magazinul îl vede în
+  biblioteca lui.
+
+Ce NU există încă din pasul 1: descărcarea pozelor din feed, filtrul
+„include magazine" din browse și plafonarea rezultatelor consecutive de la
+același vânzător (§6), moderarea primului import (§7).
 
 ## 1. Ce problemă rezolvă
 
@@ -173,9 +216,8 @@ delistează tot stocul dintr-o mișcare.
 
 ## 9. Ordinea de construit
 
-1. **Fără API.** Import CSV făcut de un admin în numele magazinului, pe un cont
-   normal. Zero schemă nouă în afară de `externalRef`. Validează formatul și
-   arată dacă produsul interesează pe cineva.
+1. ~~**Fără API.** Import CSV făcut de un admin în numele magazinului, pe un
+   cont normal.~~ **Făcut** - vezi §0.
 2. **Partener + cheie + JSON/CSV asincron**, `delta` și `full`, badge și filtru
    în browse. Ăsta e MVP-ul real.
 3. **Self-serve**: pagină de partener unde magazinul își vede importurile, își
