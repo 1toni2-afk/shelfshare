@@ -8,12 +8,16 @@ import '../../core/theme/app_theme.dart';
 /// conținut funcțional, deci rămân text fix în română peste tot, la fel ca
 /// `loginMadeWithLove`, nu trec prin l10n.
 const List<String> sustainabilityMottos = [
-  'Cea mai sustenabilă carte e cea pe care o ai deja — doar că la altcineva.',
-  'Nu cumpăra, Circulă!',
-  'Made for readers, made for the planet.',
-  'Citește mai mult. Cumpără mai puțin. Schimbă mai mult.',
-  'O carte are mai multe vieți decât un cititor.',
-  'Dă o viață nouă cărților vechi.',
+  'O carte. Mai multe vieți.',
+  'Cărțile circulă. Poveștile rămân.',
+  'Cărțile nu se termină. Se dau mai departe.',
+  'Citește. Schimbă. Repetă.',
+  'Cărți care merg mai departe.',
+  'Lasă cartea să circule.',
+  'Dă-o mai departe. Citește mai departe.',
+  'Mai puține rafturi pline. Mai multe povești citite.',
+  'Cărți pentru oameni, nu pentru rafturi.',
+  'O poveste nu aparține unui singur cititor.',
 ];
 
 /// O linie de motto, aleasă o singură dată per widget - fixată în [initState]
