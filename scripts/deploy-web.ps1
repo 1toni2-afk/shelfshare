@@ -55,6 +55,41 @@ try {
     Pop-Location
 }
 
+# Curatenie DUPA build, nu inainte: static-server serveste direct din
+# build/web, deci golirea folderului inainte de compilare ar lasa site-ul cazut
+# tot timpul build-ului (~4-5 minute la fiecare deploy).
+#
+# Flutter scrie main.dart.js_N.part.js doar pentru partile de care are nevoie,
+# dar nu sterge niciodata fisierele ramase de la o numerotare veche - se
+# strang la nesfarsit (32 de fisiere din care doar 14 folosite, la momentul
+# scrierii). Nu ne luam dupa data fisierului, ci dupa ce refera chiar
+# main.dart.js: e criteriul exact, nu o aproximare.
+#
+# Efect secundar acceptat: o sesiune de browser deschisa in timpul deploy-ului
+# si care cere o parte cu numerotarea VECHE primeste 404 si ecranul
+# "Aceasta sectiune nu s-a putut incarca" din deferred_screen.dart. Oricum
+# primea continut nepotrivit si inainte, fiindca un build nou rescrie
+# part_N cu alt continut.
+Write-Host ""
+Write-Host "==> Curat fisierele .part.js ramase de la build-uri vechi..." -ForegroundColor Cyan
+$webDir = Join-Path $frontend "build\web"
+$mainJs = Join-Path $webDir "main.dart.js"
+if (Test-Path $mainJs) {
+    $referenced = @([regex]::Matches((Get-Content -Raw $mainJs), 'main\.dart\.js_\d+\.part\.js') |
+        ForEach-Object { $_.Value } | Sort-Object -Unique)
+    if ($referenced.Count -eq 0) {
+        # Fara nicio referinta nu putem sti ce e viu - mai bine nu stergem nimic.
+        Write-Host "    main.dart.js nu refera niciun .part.js; nu sterg nimic." -ForegroundColor Yellow
+    } else {
+        $orphans = @(Get-ChildItem -Path $webDir -Filter "main.dart.js_*.part.js" |
+            Where-Object { $referenced -notcontains $_.Name })
+        foreach ($o in $orphans) { Remove-Item -LiteralPath $o.FullName -Force }
+        Write-Host "    $($orphans.Count) orfane sterse, $($referenced.Count) pastrate."
+    }
+} else {
+    Write-Host "    build/web/main.dart.js lipseste; sar peste curatenie." -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "==> Gata. build/web actualizat; static-server il serveste live." -ForegroundColor Green
 # Mesajul de mai jos spunea candva ca e nevoie de hard refresh, fiindca
