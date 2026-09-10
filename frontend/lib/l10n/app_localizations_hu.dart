@@ -4686,6 +4686,9 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get inventoryStartSelection => 'Könyvek kijelölése';
+
+  @override
   String get storeBadge => 'Bolt';
 
   @override

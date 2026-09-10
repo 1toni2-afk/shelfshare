@@ -4686,6 +4686,9 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get inventoryStartSelection => 'Selectează cărți';
+
+  @override
   String get storeBadge => 'Magazin';
 
   @override

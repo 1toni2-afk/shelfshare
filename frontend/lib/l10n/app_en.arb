@@ -1696,6 +1696,8 @@
             }
         }
     },
+    "inventoryStartSelection": "Select books",
+    "@inventoryStartSelection": {},
     "storeBadge": "Store",
     "storeSectionTitle": "About the store",
     "storeHours": "Opening hours",

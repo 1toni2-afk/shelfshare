@@ -2518,6 +2518,8 @@
             }
         }
     },
+    "inventoryStartSelection": "Selectează cărți",
+    "@inventoryStartSelection": {},
     "storeBadge": "Magazin",
     "storeSectionTitle": "Despre magazin",
     "storeHours": "Program",
