@@ -982,7 +982,7 @@
     "inventoryChangePriceTitle": "Ár módosítása",
     "inventoryPriceChangedCount": "Ár módosítva {count} hirdetésen",
     "inventoryDeleteConfirmTitle": "Törlöd a kiválasztott hirdetéseket?",
-    "inventoryDeleteConfirmBody": "Ez véglegesen törli {count} hirdetést. Nem vonható vissza.",
+    "inventoryDeleteConfirmBody": "{count} hirdetés a kukába kerül. 7 napig visszaallíthatod őket.",
     "inventoryBulkDone": "Művelet alkalmazva",
     "collectionsTitle": "Gyűjtemények",
     "collectionsEmpty": "Még nincs gyűjtemény.",
@@ -1527,6 +1527,35 @@
                 "type": "int"
             },
             "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryImportSummaryShelfAware": "{shelved} a polcon, {favorited} a kedvencek között",
+    "@libraryImportSummaryShelfAware": {
+        "placeholders": {
+            "shelved": {
+                "type": "int"
+            },
+            "favorited": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedTitle": "Eltávolítod a kijelölt könyveket a polcodról?",
+    "@shelfRemoveSelectedTitle": {},
+    "shelfRemoveSelectedBody": "{count} könyv kerül le a polcodról. A katalógusban maradnak, bármikor visszateheted őket.",
+    "@shelfRemoveSelectedBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedDone": "{count} könyv lekerült a polcodról",
+    "@shelfRemoveSelectedDone": {
+        "placeholders": {
+            "count": {
                 "type": "int"
             }
         }

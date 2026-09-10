@@ -187,10 +187,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     );
     if (confirmed != true) return;
 
-    final notifier = ref.read(myLibraryControllerProvider.notifier);
-    for (final id in _selectedIds.toList()) {
-      await notifier.deleteBook(id);
-    }
+    await ref.read(myLibraryControllerProvider.notifier).deleteBooks(_selectedIds.toList());
     if (mounted) {
       setState(() => _selectedIds.clear());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.inventoryBulkDone)));
@@ -366,17 +363,26 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       ref.invalidate(myLibraryControllerProvider);
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          // Nu doar „create": un CSV cu `sku` actualizează anunțuri existente
-          // și scoate din piață rândurile cu qty 0 - vezi importListingsCsv.
-          SnackBar(
-            content: Text(l10n.libraryImportSummaryDetailed(
-              summary.created.length,
-              summary.updated.length,
-              summary.delisted.length,
-              summary.failed.length,
-            )),
+        // Nu doar „create": un CSV cu `sku` actualizează anunțuri existente
+        // și scoate din piață rândurile cu qty 0 - vezi importListingsCsv.
+        // Iar un export Goodreads/StoryGraph împarte rândurile după raft:
+        // ce e „to-read"/favorit NU devine anunț, deci trebuie spus explicit
+        // unde au ajuns, altfel userul le caută degeaba în piață.
+        final parts = [
+          l10n.libraryImportSummaryDetailed(
+            summary.created.length,
+            summary.updated.length,
+            summary.delisted.length,
+            summary.failed.length,
           ),
+          if (summary.shelved.isNotEmpty || summary.favorited.isNotEmpty)
+            l10n.libraryImportSummaryShelfAware(
+              summary.shelved.length,
+              summary.favorited.length,
+            ),
+        ];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(parts.join(' · '))),
         );
       }
     } on DioException catch (e) {

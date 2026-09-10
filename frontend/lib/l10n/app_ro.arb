@@ -1652,7 +1652,7 @@
         }
     },
     "inventoryDeleteConfirmTitle": "Ștergi anunțurile selectate?",
-    "inventoryDeleteConfirmBody": "{count} anunțuri vor fi șterse definitiv. Această acțiune nu poate fi anulată.",
+    "inventoryDeleteConfirmBody": "{count} anunțuri vor fi mutate în coșul de gunoi. Le poți restaura timp de 7 zile.",
     "@inventoryDeleteConfirmBody": {
         "placeholders": {
             "count": {
@@ -2485,6 +2485,35 @@
                 "type": "int"
             },
             "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryImportSummaryShelfAware": "{shelved} pe raft, {favorited} la favorite",
+    "@libraryImportSummaryShelfAware": {
+        "placeholders": {
+            "shelved": {
+                "type": "int"
+            },
+            "favorited": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedTitle": "Scoți cărțile selectate din raft?",
+    "@shelfRemoveSelectedTitle": {},
+    "shelfRemoveSelectedBody": "{count} cărți vor fi scoase din raft. Rămân în catalog și le poți adăuga oricând la loc.",
+    "@shelfRemoveSelectedBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedDone": "{count} cărți scoase din raft",
+    "@shelfRemoveSelectedDone": {
+        "placeholders": {
+            "count": {
                 "type": "int"
             }
         }

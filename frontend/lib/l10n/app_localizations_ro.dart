@@ -2743,7 +2743,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String inventoryDeleteConfirmBody(int count) {
-    return '$count anunțuri vor fi șterse definitiv. Această acțiune nu poate fi anulată.';
+    return '$count anunțuri vor fi mutate în coșul de gunoi. Le poți restaura timp de 7 zile.';
   }
 
   @override
@@ -4665,6 +4665,24 @@ class AppLocalizationsRo extends AppLocalizations {
     int failed,
   ) {
     return '$created create, $updated actualizate, $delisted scoase din piață, $failed eșuate';
+  }
+
+  @override
+  String libraryImportSummaryShelfAware(int shelved, int favorited) {
+    return '$shelved pe raft, $favorited la favorite';
+  }
+
+  @override
+  String get shelfRemoveSelectedTitle => 'Scoți cărțile selectate din raft?';
+
+  @override
+  String shelfRemoveSelectedBody(int count) {
+    return '$count cărți vor fi scoase din raft. Rămân în catalog și le poți adăuga oricând la loc.';
+  }
+
+  @override
+  String shelfRemoveSelectedDone(int count) {
+    return '$count cărți scoase din raft';
   }
 
   @override

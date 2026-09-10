@@ -123,18 +123,33 @@ class ListingImportResult {
   final List<ListingImportCreated> created;
   final List<ListingImportCreated> updated;
   final List<ListingImportCreated> delisted;
+
+  /// Rândurile trimise pe raftul de lectură (Goodreads „read" /
+  /// „currently-reading"), nu în piață.
+  final List<ListingImportShelved> shelved;
+
+  /// Rândurile trimise doar la favorite („to-read" sau raftul „favorites").
+  final List<ListingImportShelved> favorited;
+
   final List<ListingImportFailed> failed;
 
   const ListingImportResult({
     required this.created,
     this.updated = const [],
     this.delisted = const [],
+    this.shelved = const [],
+    this.favorited = const [],
     required this.failed,
   });
 
   /// Câte rânduri au fost atinse cu succes, oricum ar fi fost atinse - numărul
   /// pe care îl caută cineva care tocmai a sincronizat un stoc.
   int get touchedCount => created.length + updated.length + delisted.length;
+
+  static List<ListingImportShelved> _shelfEntries(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw.map((e) => ListingImportShelved.fromJson(e as Map<String, dynamic>)).toList();
+  }
 
   static List<ListingImportCreated> _entries(dynamic raw) {
     if (raw is! List) return const [];
@@ -146,8 +161,21 @@ class ListingImportResult {
       created: _entries(json['created']),
       updated: _entries(json['updated']),
       delisted: _entries(json['delisted']),
+      shelved: _shelfEntries(json['shelved']),
+      favorited: _shelfEntries(json['favorited']),
       failed: (json['failed'] as List).map((e) => ListingImportFailed.fromJson(e as Map<String, dynamic>)).toList(),
     );
+  }
+}
+
+/// Un rând care NU a devenit anunț: a mers pe raft sau la favorite.
+class ListingImportShelved {
+  final String title;
+
+  const ListingImportShelved({required this.title});
+
+  factory ListingImportShelved.fromJson(Map<String, dynamic> json) {
+    return ListingImportShelved(title: json['title'] as String? ?? '');
   }
 }
 
@@ -456,6 +484,15 @@ class BooksRepository {
   Future<void> deleteUserBook(String userBookId) async {
     final dio = _ref.read(apiClientProvider).dio;
     await dio.delete('/books/$userBookId');
+  }
+
+  /// Ștergerea mai multor anunțuri odată. Aceeași regulă ca ștergerea unui
+  /// singur anunț: soft-delete, deci cărțile rămân 7 zile în coșul de gunoi.
+  /// Întoarce câte au fost efectiv șterse (un id deja șters nu se numără).
+  Future<int> deleteUserBooks(List<String> userBookIds) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/books/batch-delete', data: {'userBookIds': userBookIds});
+    return (response.data as Map<String, dynamic>)['deleted'] as int? ?? 0;
   }
 
   Future<List<ExternalBookResult>> searchExternal(String query) async {

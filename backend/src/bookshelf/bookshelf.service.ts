@@ -239,6 +239,15 @@ export class BookshelfService {
     return { message: 'Cartea a fost eliminată din raft' };
   }
 
+  /// Scoaterea mai multor carti odata - `userId` in `where` tine loc de
+  /// verificare de proprietate.
+  async removeManyFromShelf(userId: string, bookIds: string[]) {
+    const { count } = await this.prisma.bookshelfEntry.deleteMany({
+      where: { userId, bookId: { in: bookIds } },
+    });
+    return { removed: count, requested: bookIds.length };
+  }
+
   async getStatusForBook(userId: string, bookId: string) {
     const entry = await this.prisma.bookshelfEntry.findUnique({
       where: { userId_bookId: { userId, bookId } },

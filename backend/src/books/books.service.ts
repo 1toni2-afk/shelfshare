@@ -1,12 +1,13 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { BookCondition, Prisma } from '@prisma/client';
+import { BookCondition, BookshelfStatus, Prisma } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -29,6 +30,13 @@ import { ReviewsService } from '../reviews/reviews.service';
 import { ResolveWorkDto } from './dto/resolve-work.dto';
 import { StoresService } from '../stores/stores.service';
 import { isSuperAdmin } from '../common/utils/is-super-admin';
+
+/// Unde ajunge un rând dintr-un CSV de import: în piață (anunț), pe raftul de
+/// lectură sau doar la favorite. Vezi classifyImportRow.
+type ImportDestination =
+  | { kind: 'listing' }
+  | { kind: 'shelf'; status: BookshelfStatus }
+  | { kind: 'favorite' };
 
 /// Rândul brut întors de căutarea în catalog (`searchCatalog`) - doar
 /// coloanele de care are nevoie dropdown-ul de autocomplete.
@@ -947,6 +955,11 @@ export class BooksService {
     const updated: { title: string; userBookId: string }[] = [];
     const delisted: { title: string; userBookId: string }[] = [];
     const failed: { title: string; reason: string }[] = [];
+    // Randurile care NU descriu un anunt: exportul de pe Goodreads/StoryGraph
+    // spune pe ce raft sta fiecare titlu, iar un titlu „to-read"/„favorites"
+    // n-are ce cauta in piata doar fiindca a nimerit in acelasi fisier.
+    const shelved: { title: string; status: BookshelfStatus }[] = [];
+    const favorited: { title: string }[] = [];
 
     // Un sku repetat în ACELAȘI fișier: al doilea rând ar suprascrie ce tocmai
     // a scris primul, fără ca nimeni să afle care a câștigat. Îl raportăm.
@@ -956,6 +969,42 @@ export class BooksService {
       const sku = this.csvValue(row, 'sku');
       const title = this.csvValue(row, 'title');
       const label = title ?? sku ?? '(fără titlu)';
+
+      // Raft/favorite INAINTE de orice logica de stoc: un rand de pe raftul de
+      // lectura nu are sku/qty/price, deci nu trece niciodata prin syncStockRow.
+      const destination = this.classifyImportRow(row);
+      if (destination.kind !== 'listing') {
+        if (!title && !this.csvValue(row, 'isbn')) {
+          failed.push({
+            title: label,
+            reason: 'Lipsește și titlul, și ISBN-ul',
+          });
+          continue;
+        }
+        try {
+          const shelfTitle = await this.importShelfRow(
+            targetUserId,
+            row,
+            destination,
+          );
+          if (destination.kind === 'favorite') {
+            favorited.push({ title: shelfTitle });
+          } else {
+            shelved.push({ title: shelfTitle, status: destination.status });
+          }
+        } catch (error) {
+          failed.push({
+            title: label,
+            reason:
+              error instanceof BadRequestException ||
+              error instanceof ForbiddenException ||
+              error instanceof ConflictException
+                ? error.message
+                : 'Eroare necunoscută',
+          });
+        }
+        continue;
+      }
 
       if (sku && seenSkus.has(sku)) {
         failed.push({ title: label, reason: `SKU duplicat în fișier: ${sku}` });
@@ -1068,7 +1117,160 @@ export class BooksService {
       }
     }
 
-    return { created, updated, delisted, failed };
+    return { created, updated, delisted, shelved, favorited, failed };
+  }
+
+  /**
+   * Unde trebuie sa ajunga un rand de import: in piata, pe raftul de lectura
+   * sau doar la favorite.
+   *
+   * Exporturile Goodreads/StoryGraph au o coloana de raft exclusiv („Exclusive
+   * Shelf" / „Read Status") plus rafturile libere din „Bookshelves". Pana acum
+   * le ignoram complet si faceam anunt din fiecare rand - adica toata
+   * biblioteca cuiva, inclusiv cartile pe care vrea doar sa le citeasca, ajungea
+   * disponibila la schimb.
+   *
+   * Fisierele de stoc ale anticariatelor (sku/qty/price) si cele exportate din
+   * „Cartile mele" n-au coloanele astea, deci raman exact cum erau: anunturi.
+   */
+  private classifyImportRow(row: Record<string, string>): ImportDestination {
+    // Un rand de feed descrie explicit stoc/pret: e un anunt, oricare ar fi
+    // rafturile trecute langa el.
+    if (
+      this.csvValue(row, 'sku') ||
+      this.csvValue(row, 'qty') ||
+      this.csvValue(row, 'price')
+    ) {
+      return { kind: 'listing' };
+    }
+
+    const shelf = (
+      this.csvValue(row, 'exclusive shelf') ??
+      this.csvValue(row, 'read status') ??
+      this.csvValue(row, 'shelf') ??
+      this.csvValue(row, 'status') ??
+      ''
+    )
+      .toLowerCase()
+      .replace(/[\s_]+/g, '-');
+
+    if (shelf === 'read' || shelf === 'finished' || shelf === 'citita') {
+      return { kind: 'shelf', status: 'FINISHED' };
+    }
+    if (shelf === 'currently-reading' || shelf === 'reading') {
+      return { kind: 'shelf', status: 'READING' };
+    }
+    if (
+      shelf === 'to-read' ||
+      shelf === 'want-to-read' ||
+      shelf === 'favorite' ||
+      shelf === 'favorites'
+    ) {
+      return { kind: 'favorite' };
+    }
+    // Randul e explicit destinat pietei (coloana `shelf`/`status` scrisa de
+    // mana intr-un fisier propriu).
+    if (shelf === 'swap' || shelf === 'listing' || shelf === 'schimb') {
+      return { kind: 'listing' };
+    }
+
+    // Fara raft exclusiv, dar trecut la „favorites" printre rafturile libere:
+    // exact cazul „e doar la favorite, sa apara doar la favorite".
+    const bookshelves = (
+      this.csvValue(row, 'bookshelves') ??
+      this.csvValue(row, 'tags') ??
+      ''
+    ).toLowerCase();
+    if (/favou?rite/.test(bookshelves)) {
+      return { kind: 'favorite' };
+    }
+
+    return { kind: 'listing' };
+  }
+
+  /**
+   * Un rand care nu devine anunt: rezolva cartea o singura data (exact ca la
+   * listare, deci fara duplicate in catalog) si o pune fie pe raftul de
+   * lectura, fie la favorite.
+   */
+  private async importShelfRow(
+    userId: string,
+    row: Record<string, string>,
+    destination: Exclude<ImportDestination, { kind: 'listing' }>,
+  ): Promise<string> {
+    const title = this.csvValue(row, 'title');
+    const author = this.csvValue(row, 'author');
+    const isbn = this.csvValue(row, 'isbn')?.replace(/[-\s]/g, '');
+
+    // Fara ISBN, findOrCreateBook creeaza mereu o carte noua (vezi comentariul
+    // de acolo: deduplicarea reala se face doar pe ISBN). Pentru raft/favorite
+    // asta ar umple catalogul cu duplicate si ar cauta o coperta pe retea
+    // pentru fiecare rand, asa ca refolosim intai un titlu deja cunoscut -
+    // exact cum face importul din My Book Shelf.
+    const known =
+      !isbn && title
+        ? await this.prisma.book.findFirst({
+            where: {
+              title: { equals: title, mode: 'insensitive' },
+              author: author
+                ? { equals: author, mode: 'insensitive' }
+                : undefined,
+            },
+          })
+        : null;
+
+    const book =
+      known ??
+      (await this.findOrCreateBook({
+        title: title ?? undefined,
+        author: author ?? undefined,
+        isbn: isbn ?? undefined,
+      }));
+
+    if (destination.kind === 'favorite') {
+      // Direct pe tabela, nu prin WishlistService.add: acela arunca 409 daca
+      // titlul e deja la favorite, iar un import re-trimis trebuie sa fie
+      // idempotent, nu sa raporteze sute de „erori".
+      const existing = await this.prisma.wishlistItem.findFirst({
+        where: { userId, bookId: book.id },
+        select: { id: true },
+      });
+      if (!existing) {
+        await this.prisma.wishlistItem.create({
+          data: { userId, bookId: book.id },
+        });
+      }
+      return book.title;
+    }
+
+    await this.prisma.bookshelfEntry.upsert({
+      where: { userId_bookId: { userId, bookId: book.id } },
+      // `owned: true` doar la creare: fisierul descrie biblioteca fizica a
+      // userului, deci cartea apare in prim-planul din My Shelf - dar fara
+      // anunt, deci fara sa fie disponibila la schimb.
+      create: {
+        userId,
+        bookId: book.id,
+        status: destination.status,
+        owned: true,
+      },
+      update: { status: destination.status },
+    });
+    return book.title;
+  }
+
+  /**
+   * Stergere in masa din „Cartile mele" - aceeasi regula ca stergerea unui
+   * singur anunt (soft-delete cu 7 zile de gratie), intr-o singura interogare.
+   * `userId` in `where` tine loc de assertOwnership: un id strain pur si simplu
+   * nu se potriveste, deci nu se sterge.
+   */
+  async deleteUserBooks(userId: string, userBookIds: string[]) {
+    const { count } = await this.prisma.userBook.updateMany({
+      where: { id: { in: userBookIds }, userId, deletedAt: null },
+      data: { deletedAt: new Date(), availableForSwap: false },
+    });
+    return { deleted: count, requested: userBookIds.length };
   }
 
   /**

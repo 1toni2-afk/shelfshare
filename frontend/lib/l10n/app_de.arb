@@ -982,7 +982,7 @@
     "inventoryChangePriceTitle": "Preis ändern",
     "inventoryPriceChangedCount": "Preis bei {count} Anzeigen geändert",
     "inventoryDeleteConfirmTitle": "Ausgewählte Anzeigen löschen?",
-    "inventoryDeleteConfirmBody": "Dies löscht {count} Anzeigen dauerhaft. Kann nicht rückgängig gemacht werden.",
+    "inventoryDeleteConfirmBody": "{count} Anzeigen werden in den Papierkorb verschoben. Du kannst sie 7 Tage lang wiederherstellen.",
     "inventoryBulkDone": "Aktion angewendet",
     "collectionsTitle": "Sammlungen",
     "collectionsEmpty": "Noch keine Sammlungen.",
@@ -1527,6 +1527,35 @@
                 "type": "int"
             },
             "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryImportSummaryShelfAware": "{shelved} im Regal, {favorited} in den Favoriten",
+    "@libraryImportSummaryShelfAware": {
+        "placeholders": {
+            "shelved": {
+                "type": "int"
+            },
+            "favorited": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedTitle": "Ausgewählte Bücher vom Regal entfernen?",
+    "@shelfRemoveSelectedTitle": {},
+    "shelfRemoveSelectedBody": "{count} Bücher werden von deinem Regal entfernt. Sie bleiben im Katalog, du kannst sie jederzeit wieder hinzufügen.",
+    "@shelfRemoveSelectedBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedDone": "{count} Bücher vom Regal entfernt",
+    "@shelfRemoveSelectedDone": {
+        "placeholders": {
+            "count": {
                 "type": "int"
             }
         }

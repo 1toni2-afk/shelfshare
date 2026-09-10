@@ -194,12 +194,61 @@ class _ProgressRow extends ConsumerWidget {
 
 enum _ShelfSection { reading, wantToRead, finished }
 
-class _ShelfList extends ConsumerWidget {
+/// Un raft, cu selectie multipla proprie: starea sta pe tab, nu pe ecran, ca
+/// selectia sa nu se scurga dintr-o filă in alta cand userul schimba tabul.
+class _ShelfList extends ConsumerStatefulWidget {
   const _ShelfList({required this.section});
   final _ShelfSection section;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ShelfList> createState() => _ShelfListState();
+}
+
+class _ShelfListState extends ConsumerState<_ShelfList> {
+  final Set<String> _selected = {};
+
+  bool get _selectionMode => _selected.isNotEmpty;
+
+  _ShelfSection get section => widget.section;
+
+  void _toggle(String bookId) {
+    setState(() {
+      if (!_selected.remove(bookId)) _selected.add(bookId);
+    });
+  }
+
+  Future<void> _removeOne(String bookId) async {
+    await ref.read(bookshelfRepositoryProvider).removeFromShelf(bookId);
+    ref.invalidate(_myShelfProvider);
+  }
+
+  /// Scoaterea in masa - o singura cerere, nu una per carte.
+  Future<void> _removeSelected() async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.shelfRemoveSelectedTitle),
+        content: Text(l10n.shelfRemoveSelectedBody(_selected.length)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.commonGiveUp)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.commonDelete)),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final removed = await ref.read(bookshelfRepositoryProvider).removeManyFromShelf(_selected.toList());
+    ref.invalidate(_myShelfProvider);
+    if (!mounted) return;
+    setState(() => _selected.clear());
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.shelfRemoveSelectedDone(removed))),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(_myShelfProvider);
     final l10n = context.l10n;
 
@@ -222,19 +271,28 @@ class _ShelfList extends ConsumerWidget {
             ),
           );
         }
-        return ListView.separated(
+        final list = ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: books.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final book = books[index];
+            final selected = _selected.contains(book.id);
             return Card(
               margin: EdgeInsets.zero,
               child: ListTile(
-                onTap: section == _ShelfSection.reading
-                    ? () => _showProgressDialog(context, ref, book)
-                    : null,
-                leading: BookCover(url: book.coverUrl, width: 40, height: 56),
+                selected: selected,
+                // In selectie, tap-ul bifeaza/debifeaza - altfel ar deschide
+                // dialogul de progres peste bara de actiuni.
+                onTap: _selectionMode
+                    ? () => _toggle(book.id)
+                    : section == _ShelfSection.reading
+                        ? () => _showProgressDialog(context, ref, book)
+                        : null,
+                onLongPress: () => _toggle(book.id),
+                leading: _selectionMode
+                    ? Checkbox(value: selected, onChanged: (_) => _toggle(book.id))
+                    : BookCover(url: book.coverUrl, width: 40, height: 56),
                 title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                 // Autorul pe o singură linie: un nume lung se rupea în două
                 // rânduri, tile-ul creștea peste înălțimea pe care ListTile o
@@ -248,17 +306,59 @@ class _ShelfList extends ConsumerWidget {
                     if (section == _ShelfSection.reading) _ProgressRow(bookId: book.id),
                   ],
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: l10n.bookDetailShelfRemove,
-                  onPressed: () async {
-                    await ref.read(bookshelfRepositoryProvider).removeFromShelf(book.id);
-                    ref.invalidate(_myShelfProvider);
-                  },
-                ),
+                trailing: _selectionMode
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close),
+                        tooltip: l10n.bookDetailShelfRemove,
+                        onPressed: () => _removeOne(book.id),
+                      ),
               ),
             );
           },
+        );
+
+        if (!_selectionMode) return list;
+
+        return Column(
+          children: [
+            Expanded(child: list),
+            SafeArea(
+              top: false,
+              child: Material(
+                elevation: 8,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: l10n.commonGiveUp,
+                      onPressed: () => setState(_selected.clear),
+                    ),
+                    Expanded(child: Text(l10n.inventorySelectedCount(_selected.length))),
+                    IconButton(
+                      icon: const Icon(Icons.select_all),
+                      tooltip: l10n.inventorySelectAll,
+                      onPressed: () => setState(() {
+                        final all = books.map((b) => b.id).toSet();
+                        if (_selected.length == all.length) {
+                          _selected.clear();
+                        } else {
+                          _selected
+                            ..clear()
+                            ..addAll(all);
+                        }
+                      }),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: l10n.commonDelete,
+                      onPressed: _removeSelected,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       },
       loading: () => const CenteredScrollable(

@@ -79,6 +79,18 @@ class MyLibraryController extends AsyncNotifier<List<UserBook>> {
     ref.invalidate(deletedBooksProvider);
   }
 
+  /// Ștergerea mai multor anunțuri într-o singură cerere - nu N cereri
+  /// secvențiale, care pe o selecție de câteva zeci de cărți țineau ecranul
+  /// blocat vizibil de mult.
+  Future<int> deleteBooks(List<String> userBookIds) async {
+    final deleted = await ref.read(booksRepositoryProvider).deleteUserBooks(userBookIds);
+    final removed = userBookIds.toSet();
+    final current = state.value ?? const [];
+    state = AsyncData(current.where((book) => !removed.contains(book.id)).toList());
+    ref.invalidate(deletedBooksProvider);
+    return deleted;
+  }
+
   /// Aplică o transformare de descriere pe cărțile date (bulk). Făcută secvențial
   /// ca să nu supraîncărcăm backend-ul, dar loose (dacă una eșuează, celelalte
   /// tot merg). Returnează câte au fost afectate.

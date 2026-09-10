@@ -125,6 +125,13 @@ class BookshelfRepository {
     await dio.delete('/bookshelf/$bookId');
   }
 
+  /// Scoaterea mai multor cărți din raft dintr-o singură apăsare.
+  Future<int> removeManyFromShelf(List<String> bookIds) async {
+    final dio = _ref.read(apiClientProvider).dio;
+    final response = await dio.post('/bookshelf/batch-remove', data: {'bookIds': bookIds});
+    return (response.data as Map<String, dynamic>)['removed'] as int? ?? 0;
+  }
+
   /// Import dintr-un export CSV Goodreads/StoryGraph - fișierul poate avea
   /// câteva mii de rânduri, deci mărim timeout-ul peste cel implicit de 10s
   /// al clientului Dio (vezi api_client.dart).

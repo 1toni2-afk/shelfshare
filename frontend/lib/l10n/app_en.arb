@@ -991,7 +991,7 @@
     "inventoryChangePriceTitle": "Change price",
     "inventoryPriceChangedCount": "Price changed on {count} listings",
     "inventoryDeleteConfirmTitle": "Delete the selected listings?",
-    "inventoryDeleteConfirmBody": "This permanently deletes {count} listings. This cannot be undone.",
+    "inventoryDeleteConfirmBody": "{count} listings will be moved to the trash. You can restore them for 7 days.",
     "inventoryBulkDone": "Action applied",
     "collectionsTitle": "Collections",
     "collectionsEmpty": "No collections yet.",
@@ -1663,6 +1663,35 @@
                 "type": "int"
             },
             "failed": {
+                "type": "int"
+            }
+        }
+    },
+    "libraryImportSummaryShelfAware": "{shelved} on your shelf, {favorited} in favourites",
+    "@libraryImportSummaryShelfAware": {
+        "placeholders": {
+            "shelved": {
+                "type": "int"
+            },
+            "favorited": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedTitle": "Remove the selected books from your shelf?",
+    "@shelfRemoveSelectedTitle": {},
+    "shelfRemoveSelectedBody": "{count} books will be removed from your shelf. They stay in the catalogue, so you can add them back any time.",
+    "@shelfRemoveSelectedBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "shelfRemoveSelectedDone": "{count} books removed from your shelf",
+    "@shelfRemoveSelectedDone": {
+        "placeholders": {
+            "count": {
                 "type": "int"
             }
         }

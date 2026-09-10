@@ -24,6 +24,7 @@ import { BooksService } from './books.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { ResolveWorkDto } from './dto/resolve-work.dto';
 import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
+import { BatchDeleteBooksDto } from './dto/batch-delete-books.dto';
 import { UpdateUserBookDto } from './dto/update-user-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
 import { SearchLibraryDto } from './dto/search-library.dto';
@@ -299,6 +300,17 @@ export class BooksController {
       file.buffer,
       storeUserId?.trim() || undefined,
     );
+  }
+
+  // POST, nu DELETE: lista de id-uri sta in body, iar un body pe DELETE e
+  // ignorat de o parte din proxy-uri/clienti. Declarat inaintea rutelor cu
+  // parametru, ca 'batch-delete' sa nu fie citit ca un userBookId.
+  @UseGuards(JwtAuthGuard)
+  @Post('batch-delete')
+  @HttpCode(HttpStatus.OK)
+  deleteUserBooks(@Req() req: Request, @Body() dto: BatchDeleteBooksDto) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.booksService.deleteUserBooks(userId!, dto.userBookIds);
   }
 
   @UseGuards(JwtAuthGuard)

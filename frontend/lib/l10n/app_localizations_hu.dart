@@ -2740,7 +2740,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String inventoryDeleteConfirmBody(int count) {
-    return 'Ez véglegesen törli $count hirdetést. Nem vonható vissza.';
+    return '$count hirdetés a kukába kerül. 7 napig visszaallíthatod őket.';
   }
 
   @override
@@ -4664,6 +4664,25 @@ class AppLocalizationsHu extends AppLocalizations {
     int failed,
   ) {
     return '$created létrehozva, $updated frissítve, $delisted levéve, $failed sikertelen';
+  }
+
+  @override
+  String libraryImportSummaryShelfAware(int shelved, int favorited) {
+    return '$shelved a polcon, $favorited a kedvencek között';
+  }
+
+  @override
+  String get shelfRemoveSelectedTitle =>
+      'Eltávolítod a kijelölt könyveket a polcodról?';
+
+  @override
+  String shelfRemoveSelectedBody(int count) {
+    return '$count könyv kerül le a polcodról. A katalógusban maradnak, bármikor visszateheted őket.';
+  }
+
+  @override
+  String shelfRemoveSelectedDone(int count) {
+    return '$count könyv lekerült a polcodról';
   }
 
   @override

@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -17,6 +19,7 @@ import type { Request } from 'express';
 import { BookshelfService } from './bookshelf.service';
 import { SetBookshelfStatusDto } from './dto/set-bookshelf-status.dto';
 import { AddOwnedBookDto } from './dto/add-owned-book.dto';
+import { BatchRemoveShelfDto } from './dto/batch-remove-shelf.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -76,6 +79,15 @@ export class BookshelfController {
 
     const { userId } = req.user as AuthenticatedUser;
     return this.bookshelfService.importCsv(userId!, source, file.buffer);
+  }
+
+  // Inaintea rutelor cu parametru: altfel 'batch-remove' ar fi citit ca bookId.
+  // POST cu body, fiindca un body pe DELETE e ignorat de unele proxy-uri.
+  @Post('batch-remove')
+  @HttpCode(HttpStatus.OK)
+  removeMany(@Req() req: Request, @Body() dto: BatchRemoveShelfDto) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.bookshelfService.removeManyFromShelf(userId!, dto.bookIds);
   }
 
   @Get('me/:bookId')

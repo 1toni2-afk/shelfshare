@@ -2779,7 +2779,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String inventoryDeleteConfirmBody(int count) {
-    return 'Dies löscht $count Anzeigen dauerhaft. Kann nicht rückgängig gemacht werden.';
+    return '$count Anzeigen werden in den Papierkorb verschoben. Du kannst sie 7 Tage lang wiederherstellen.';
   }
 
   @override
@@ -4714,6 +4714,25 @@ class AppLocalizationsDe extends AppLocalizations {
     int failed,
   ) {
     return '$created erstellt, $updated aktualisiert, $delisted zurückgezogen, $failed fehlgeschlagen';
+  }
+
+  @override
+  String libraryImportSummaryShelfAware(int shelved, int favorited) {
+    return '$shelved im Regal, $favorited in den Favoriten';
+  }
+
+  @override
+  String get shelfRemoveSelectedTitle =>
+      'Ausgewählte Bücher vom Regal entfernen?';
+
+  @override
+  String shelfRemoveSelectedBody(int count) {
+    return '$count Bücher werden von deinem Regal entfernt. Sie bleiben im Katalog, du kannst sie jederzeit wieder hinzufügen.';
+  }
+
+  @override
+  String shelfRemoveSelectedDone(int count) {
+    return '$count Bücher vom Regal entfernt';
   }
 
   @override

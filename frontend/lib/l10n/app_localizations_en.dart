@@ -2729,7 +2729,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inventoryDeleteConfirmBody(int count) {
-    return 'This permanently deletes $count listings. This cannot be undone.';
+    return '$count listings will be moved to the trash. You can restore them for 7 days.';
   }
 
   @override
@@ -4639,6 +4639,25 @@ class AppLocalizationsEn extends AppLocalizations {
     int failed,
   ) {
     return '$created created, $updated updated, $delisted delisted, $failed failed';
+  }
+
+  @override
+  String libraryImportSummaryShelfAware(int shelved, int favorited) {
+    return '$shelved on your shelf, $favorited in favourites';
+  }
+
+  @override
+  String get shelfRemoveSelectedTitle =>
+      'Remove the selected books from your shelf?';
+
+  @override
+  String shelfRemoveSelectedBody(int count) {
+    return '$count books will be removed from your shelf. They stay in the catalogue, so you can add them back any time.';
+  }
+
+  @override
+  String shelfRemoveSelectedDone(int count) {
+    return '$count books removed from your shelf';
   }
 
   @override

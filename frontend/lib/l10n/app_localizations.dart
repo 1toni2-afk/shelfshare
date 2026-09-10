@@ -4909,7 +4909,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryDeleteConfirmBody.
   ///
   /// In ro, this message translates to:
-  /// **'{count} anunțuri vor fi șterse definitiv. Această acțiune nu poate fi anulată.'**
+  /// **'{count} anunțuri vor fi mutate în coșul de gunoi. Le poți restaura timp de 7 zile.'**
   String inventoryDeleteConfirmBody(int count);
 
   /// No description provided for @inventoryBulkDone.
@@ -8432,6 +8432,30 @@ abstract class AppLocalizations {
     int delisted,
     int failed,
   );
+
+  /// No description provided for @libraryImportSummaryShelfAware.
+  ///
+  /// In ro, this message translates to:
+  /// **'{shelved} pe raft, {favorited} la favorite'**
+  String libraryImportSummaryShelfAware(int shelved, int favorited);
+
+  /// No description provided for @shelfRemoveSelectedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Scoți cărțile selectate din raft?'**
+  String get shelfRemoveSelectedTitle;
+
+  /// No description provided for @shelfRemoveSelectedBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} cărți vor fi scoase din raft. Rămân în catalog și le poți adăuga oricând la loc.'**
+  String shelfRemoveSelectedBody(int count);
+
+  /// No description provided for @shelfRemoveSelectedDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} cărți scoase din raft'**
+  String shelfRemoveSelectedDone(int count);
 
   /// No description provided for @storeBadge.
   ///
