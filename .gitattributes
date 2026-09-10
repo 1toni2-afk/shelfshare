@@ -3,3 +3,12 @@
 # a picat backup-ul zilnic tăcut timp de câteva zile. Forțăm LF indiferent de
 # core.autocrlf pe checkout-urile Windows.
 *.sh text eol=lf
+
+# Definitiile de taskuri pentru Task Scheduler trebuie sa fie UTF-16 in working
+# tree: `schtasks /create /xml` refuza UTF-8 si iese cu "The task XML is
+# malformed". Stocate asa, git le vede ca binar si nu se pot citi la review.
+#
+# working-tree-encoding=UTF-16 pastreaza in repo UTF-8 (deci diff lizibil) si
+# reface UTF-16 cu BOM la checkout, deci schtasks primeste ce asteapta.
+# Necesita git >= 2.18. Dupa modificarea liniei asteia: `git add --renormalize .`
+scripts/*-task.xml text working-tree-encoding=UTF-16LE-BOM eol=CRLF
