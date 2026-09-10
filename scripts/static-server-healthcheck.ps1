@@ -24,7 +24,11 @@ param(
   # (GC, contenție de disc la un deploy). Repornim doar dacă e constant mort -
   # un restart inutil taie cererile în curs ale userilor.
   [int]$Attempts = 3,
-  [int]$TimeoutSec = 5,
+  # 8s, nu 5: masina sta la 100%% CPU pe 4 nuclee, iar node-ul e descheduled
+  # secunde intregi chiar cand e perfect sanatos (p90 3.6s, max 9.3s masurat pe
+  # /robots.txt). Cu 5s, o furtuna de CPU ar arata identic cu o intepenire si am
+  # reporni un server care era doar incetinit - exact invers decat vrem.
+  [int]$TimeoutSec = 8,
   [int]$DelaySec = 5,
   # Raportează ce ar face, fără să omoare nimic. Pentru testare.
   [switch]$DryRun
