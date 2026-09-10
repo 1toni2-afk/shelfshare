@@ -4739,6 +4739,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryStartSelection => 'Bücher auswählen';
 
   @override
+  String libraryImportFailedTitle(int count) {
+    return '$count Zeilen konnten nicht importiert werden';
+  }
+
+  @override
   String get storeBadge => 'Buchhandlung';
 
   @override

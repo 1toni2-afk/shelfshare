@@ -1562,6 +1562,14 @@
     },
     "inventoryStartSelection": "Bücher auswählen",
     "@inventoryStartSelection": {},
+    "libraryImportFailedTitle": "{count} Zeilen konnten nicht importiert werden",
+    "@libraryImportFailedTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "storeBadge": "Buchhandlung",
     "storeSectionTitle": "Über die Buchhandlung",
     "storeHours": "Öffnungszeiten",

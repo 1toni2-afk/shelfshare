@@ -4689,6 +4689,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get inventoryStartSelection => 'Könyvek kijelölése';
 
   @override
+  String libraryImportFailedTitle(int count) {
+    return '$count sort nem sikerült importálni';
+  }
+
+  @override
   String get storeBadge => 'Bolt';
 
   @override

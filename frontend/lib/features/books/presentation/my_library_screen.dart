@@ -396,6 +396,13 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(parts.join(' · '))),
         );
+        // Un număr de rânduri eșuate nu spune nimic despre CE a eșuat: până
+        // acum backendul trimitea motivul pentru fiecare rând, iar UI-ul îl
+        // arunca. Cu sute de rânduri într-un export Goodreads, „7 eșuate" era
+        // imposibil de depanat fără acces la loguri.
+        if (summary.failed.isNotEmpty) {
+          await _showImportFailures(summary.failed);
+        }
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -407,6 +414,39 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
     }
+  }
+
+  /// Ce anume n-a intrat și de ce - titlu + motiv, așa cum vin de la backend.
+  Future<void> _showImportFailures(List<ListingImportFailed> failed) async {
+    final l10n = context.l10n;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.libraryImportFailedTitle(failed.length)),
+        content: SizedBox(
+          width: 420,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: failed.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final row = failed[index];
+              return ListTile(
+                dense: true,
+                title: Text(row.title),
+                subtitle: Text(row.reason),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonClose),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

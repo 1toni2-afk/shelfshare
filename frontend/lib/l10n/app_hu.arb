@@ -1562,6 +1562,14 @@
     },
     "inventoryStartSelection": "Könyvek kijelölése",
     "@inventoryStartSelection": {},
+    "libraryImportFailedTitle": "{count} sort nem sikerült importálni",
+    "@libraryImportFailedTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "storeBadge": "Bolt",
     "storeSectionTitle": "A boltról",
     "storeHours": "Nyitvatartás",

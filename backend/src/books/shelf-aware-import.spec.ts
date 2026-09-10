@@ -29,9 +29,16 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
     searchLog: Record<string, jest.Mock>;
   };
 
+  let lookup: Record<string, jest.Mock>;
+
   const csv = (body: string) => Buffer.from(body, 'utf-8');
 
   beforeEach(async () => {
+    lookup = {
+      lookupByIsbn: jest.fn().mockResolvedValue(null),
+      lookupPrice: jest.fn().mockResolvedValue(null),
+      lookupCoverByTitle: jest.fn().mockResolvedValue(null),
+    };
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue({ isStore: false }) },
       userBook: {
@@ -69,14 +76,7 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
         { provide: FollowService, useValue: { notifyFollowersOfNewBook: jest.fn().mockResolvedValue(undefined) } },
         { provide: ReviewsService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
-        {
-          provide: BookLookupService,
-          useValue: {
-            lookupByIsbn: jest.fn().mockResolvedValue(null),
-            lookupPrice: jest.fn().mockResolvedValue(null),
-            lookupCoverByTitle: jest.fn().mockResolvedValue(null),
-          },
-        },
+        { provide: BookLookupService, useValue: lookup },
         { provide: ListingScoreService, useValue: {} },
         { provide: SavedSearchesService, useValue: {} },
         { provide: StoresService, useValue: {} },
@@ -156,6 +156,52 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
     expect(result.favorited).toHaveLength(0);
     expect(result.shelved).toHaveLength(0);
     expect(prisma.userBook.create).toHaveBeenCalled();
+  });
+
+  it('curata invelisul Excel al ISBN-ului Goodreads si ignora `=""`', async () => {
+    prisma.book.findFirst.mockResolvedValue(null);
+    prisma.book.findUnique.mockResolvedValue(null);
+
+    await service.importListingsCsv(
+      'user-1',
+      csv(
+        'Title,ISBN,Exclusive Shelf\n' +
+          'Dune,"=""0143039954""",read\n' +
+          'White Nights,"=""""",read\n',
+      ),
+    );
+
+    // Primul rand: ISBN curatat de invelisul Excel, cautat ca atare.
+    expect(prisma.book.findUnique).toHaveBeenCalledWith({
+      where: { isbn: '0143039954' },
+    });
+    // Al doilea: `=""` nu e un ISBN, deci cautam pe titlu si NU scriem un
+    // ISBN fals pe care s-ar dedubla toate cartile fara ISBN.
+    expect(prisma.book.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          title: { equals: 'White Nights', mode: 'insensitive' },
+        }),
+      }),
+    );
+    const created = prisma.book.create.mock.calls.map(
+      (c) => c[0].data as Record<string, unknown>,
+    );
+    expect(created[0]).toMatchObject({ isbn: '0143039954', title: 'Dune' });
+    expect(created[1].isbn).toBeUndefined();
+  });
+
+  it('nu cauta extern pentru randurile de raft (fara timeout pe sute de randuri)', async () => {
+    prisma.book.findFirst.mockResolvedValue(null);
+    prisma.book.findUnique.mockResolvedValue(null);
+
+    await service.importListingsCsv(
+      'user-1',
+      csv('Title,Exclusive Shelf\nDune,read\n'),
+    );
+
+    expect(lookup.lookupByIsbn).not.toHaveBeenCalled();
+    expect(lookup.lookupCoverByTitle).not.toHaveBeenCalled();
   });
 
   it('stergerea in masa atinge doar anunturile proprii, nesterse', async () => {

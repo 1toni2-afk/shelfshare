@@ -1200,15 +1200,20 @@ export class BooksService {
   ): Promise<string> {
     const title = this.csvValue(row, 'title');
     const author = this.csvValue(row, 'author');
-    const isbn = this.csvValue(row, 'isbn')?.replace(/[-\s]/g, '');
+    const isbn =
+      this.cleanImportIsbn(this.csvValue(row, 'isbn13')) ??
+      this.cleanImportIsbn(this.csvValue(row, 'isbn'));
 
-    // Fara ISBN, findOrCreateBook creeaza mereu o carte noua (vezi comentariul
-    // de acolo: deduplicarea reala se face doar pe ISBN). Pentru raft/favorite
-    // asta ar umple catalogul cu duplicate si ar cauta o coperta pe retea
-    // pentru fiecare rand, asa ca refolosim intai un titlu deja cunoscut -
-    // exact cum face importul din My Book Shelf.
-    const known =
-      !isbn && title
+    // Rezolvarea cartii se face DOAR din ce scrie in CSV, fara findOrCreateBook:
+    // acela cauta pe Google Books/Open Library la fiecare rand fara potrivire,
+    // deci un export Goodreads de cateva sute de randuri devine tot atatea
+    // cereri HTTP secventiale - importul se tara si pica pe timeout. E exact
+    // motivul pentru care importul din My Book Shelf nu cauta extern (vezi
+    // comentariul de pe BookshelfService.importCsv); calea asta trebuie sa se
+    // poarte la fel.
+    const existing = isbn
+      ? await this.prisma.book.findUnique({ where: { isbn } })
+      : title
         ? await this.prisma.book.findFirst({
             where: {
               title: { equals: title, mode: 'insensitive' },
@@ -1219,12 +1224,28 @@ export class BooksService {
           })
         : null;
 
+    if (!existing && !title) {
+      throw new BadRequestException('Rand fara titlu');
+    }
+
     const book =
-      known ??
-      (await this.findOrCreateBook({
-        title: title ?? undefined,
-        author: author ?? undefined,
-        isbn: isbn ?? undefined,
+      existing ??
+      (await this.prisma.book.create({
+        data: {
+          isbn,
+          title: title!,
+          author: author ?? undefined,
+          publisher: this.csvValue(row, 'publisher') ?? undefined,
+          publishedYear:
+            this.parseImportYear(this.csvValue(row, 'year published')) ??
+            this.parseImportYear(
+              this.csvValue(row, 'original publication year'),
+            ),
+          pageCount: this.parseImportPageCount(
+            this.csvValue(row, 'number of pages'),
+          ),
+          source: 'shelf-import',
+        },
       }));
 
     if (destination.kind === 'favorite') {
@@ -1353,6 +1374,35 @@ export class BooksService {
     const key = Object.keys(row).find((k) => k.trim().toLowerCase() === column);
     const value = key ? row[key]?.trim() : undefined;
     return value ? value : null;
+  }
+
+  /**
+   * Goodreads infasoara ISBN-urile intr-un pseudo-formula Excel (`="0143039954"`),
+   * ca Excel/Sheets sa nu le trunchieze ca numere, iar o carte fara ISBN
+   * primeste `=""` - un sir NEGOL. Fara curatarea asta ajungeau in catalog
+   * ISBN-uri literale `="0143039954"`, iar toate randurile fara ISBN se
+   * dedublau intre ele pe acelasi `=""`, adica zeci de titluri diferite
+   * deveneau o singura carte.
+   */
+  private cleanImportIsbn(raw: string | null): string | undefined {
+    if (!raw) return undefined;
+    const stripped = raw
+      .replace(/^="?/, '')
+      .replace(/"$/, '')
+      .replace(/[-\s]/g, '');
+    return /^[0-9Xx]{9,13}$/.test(stripped)
+      ? stripped.toUpperCase()
+      : undefined;
+  }
+
+  private parseImportYear(raw: string | null): number | undefined {
+    const n = parseInt((raw ?? '').trim(), 10);
+    return Number.isFinite(n) && n > 1000 && n < 3000 ? n : undefined;
+  }
+
+  private parseImportPageCount(raw: string | null): number | undefined {
+    const n = parseInt((raw ?? '').trim(), 10);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
   }
 
   /** `qty` lipsă = un exemplar (comportamentul de dinaintea coloanei). */

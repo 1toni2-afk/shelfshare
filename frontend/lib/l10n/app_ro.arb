@@ -2520,6 +2520,14 @@
     },
     "inventoryStartSelection": "Selectează cărți",
     "@inventoryStartSelection": {},
+    "libraryImportFailedTitle": "{count} rânduri nu au putut fi importate",
+    "@libraryImportFailedTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "storeBadge": "Magazin",
     "storeSectionTitle": "Despre magazin",
     "storeHours": "Program",

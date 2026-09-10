@@ -4689,6 +4689,11 @@ class AppLocalizationsRo extends AppLocalizations {
   String get inventoryStartSelection => 'Selectează cărți';
 
   @override
+  String libraryImportFailedTitle(int count) {
+    return '$count rânduri nu au putut fi importate';
+  }
+
+  @override
   String get storeBadge => 'Magazin';
 
   @override

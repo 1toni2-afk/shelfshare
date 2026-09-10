@@ -4664,6 +4664,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryStartSelection => 'Select books';
 
   @override
+  String libraryImportFailedTitle(int count) {
+    return '$count rows could not be imported';
+  }
+
+  @override
   String get storeBadge => 'Store';
 
   @override

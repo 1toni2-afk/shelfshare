@@ -8463,6 +8463,12 @@ abstract class AppLocalizations {
   /// **'Selectează cărți'**
   String get inventoryStartSelection;
 
+  /// No description provided for @libraryImportFailedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} rânduri nu au putut fi importate'**
+  String libraryImportFailedTitle(int count);
+
   /// No description provided for @storeBadge.
   ///
   /// In ro, this message translates to:

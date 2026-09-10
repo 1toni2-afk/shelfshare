@@ -1698,6 +1698,14 @@
     },
     "inventoryStartSelection": "Select books",
     "@inventoryStartSelection": {},
+    "libraryImportFailedTitle": "{count} rows could not be imported",
+    "@libraryImportFailedTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "storeBadge": "Store",
     "storeSectionTitle": "About the store",
     "storeHours": "Opening hours",
