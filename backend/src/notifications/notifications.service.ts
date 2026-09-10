@@ -109,7 +109,10 @@ export class NotificationsService {
         userId,
         type,
         isRead: false,
-        data: { path: [dedupeField], equals: dedupeValue as Prisma.InputJsonValue },
+        data: {
+          path: [dedupeField],
+          equals: dedupeValue as Prisma.InputJsonValue,
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -208,7 +211,10 @@ export class NotificationsService {
         userId,
         type,
         isRead: false,
-        data: { path: [dedupeField], equals: dedupeValue as Prisma.InputJsonValue },
+        data: {
+          path: [dedupeField],
+          equals: dedupeValue as Prisma.InputJsonValue,
+        },
       },
       data: { isRead: true },
     });
@@ -217,7 +223,11 @@ export class NotificationsService {
     // reload manual - userul deschide conversația, mesajele devin citite, dar
     // notificarea din clopoțel pare tot necitită.
     if (count > 0) {
-      this.realtime.emitToUser(userId, 'notification_read', { type, dedupeField, dedupeValue });
+      this.realtime.emitToUser(userId, 'notification_read', {
+        type,
+        dedupeField,
+        dedupeValue,
+      });
     }
   }
 
@@ -247,8 +257,22 @@ function buildPushData(
   const payload: Record<string, string> = { type };
   for (const [key, value] of Object.entries(data ?? {})) {
     if (value === null || value === undefined) continue;
-    payload[key] =
-      typeof value === 'object' ? JSON.stringify(value) : String(value);
+    // Ramificam pe tip, nu pe "e obiect sau nu": `value` e `unknown`, iar
+    // ramura non-obiect prindea si functii sau simboluri, unde String() da
+    // "function () {...}" sau arunca. FCM accepta doar string-uri, deci tot ce
+    // nu e primitiva se serializeaza. bigint se ia inaintea lui JSON.stringify,
+    // care arunca pe el.
+    if (typeof value === 'string') {
+      payload[key] = value;
+    } else if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint'
+    ) {
+      payload[key] = String(value);
+    } else {
+      payload[key] = JSON.stringify(value) ?? '';
+    }
   }
   return payload;
 }

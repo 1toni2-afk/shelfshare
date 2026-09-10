@@ -20,15 +20,14 @@ import { PresenceService } from '../chat/presence.service';
 /// Numele sunt cele DIN BAZA (`@@map` din schema.prisma), nu ale modelelor
 /// Prisma - interogarea e SQL brut. Lista e inchisa aici tocmai ca numele sa
 /// nu poata veni niciodata din exterior.
-const USAGE_TABLES = [
-  'users',
-  'user_books',
-  'book_swipes',
-  'search_logs',
-  'messages',
-  'price_offers',
-  'exchange_requests',
-] as const;
+type UsageTable =
+  | 'users'
+  | 'user_books'
+  | 'book_swipes'
+  | 'search_logs'
+  | 'messages'
+  | 'price_offers'
+  | 'exchange_requests';
 
 /// Acelasi fus ca al jurnalului de activitate - altfel seria din DB si cea din
 /// fisiere ar taia zilele in locuri diferite si n-ar mai fi comparabile.
@@ -530,7 +529,9 @@ export class AdminService {
   }
 
   async deleteGroupPost(groupPostId: string) {
-    const post = await this.prisma.groupPost.findUnique({ where: { id: groupPostId } });
+    const post = await this.prisma.groupPost.findUnique({
+      where: { id: groupPostId },
+    });
     if (!post) {
       throw new NotFoundException('Postarea nu a fost găsită');
     }
@@ -539,7 +540,9 @@ export class AdminService {
   }
 
   async deleteReview(reviewId: string) {
-    const review = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
     if (!review) {
       throw new NotFoundException('Recenzia nu a fost găsită');
     }
@@ -826,11 +829,11 @@ export class AdminService {
    * Cate randuri s-au creat pe zi intr-o tabela, in fusul aplicatiei.
    *
    * `$queryRawUnsafe` doar pentru NUMELE tabelei, care vine exclusiv din
-   * literalii din USAGE_TABLES - niciodata din input de user. Data si fusul
+   * literalii din UsageTable - niciodata din input de user. Data si fusul
    * sunt parametri legati, deci nu se poate injecta prin ele.
    */
   private async countPerDay(
-    table: (typeof USAGE_TABLES)[number],
+    table: UsageTable,
     since: Date,
   ): Promise<Map<string, number>> {
     const rows = await this.prisma.$queryRawUnsafe<

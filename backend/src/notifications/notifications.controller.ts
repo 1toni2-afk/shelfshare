@@ -14,7 +14,7 @@ import { NotificationsService } from './notifications.service';
 import { PushService } from './push.service';
 import { RegisterDeviceTokenDto } from './dto/register-device-token.dto';
 import { SetNotificationPreferencesDto } from './dto/set-notification-preferences.dto';
-import { NotificationType } from '@prisma/client';
+import type { NotificationType } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -31,7 +31,10 @@ export class NotificationsController {
    * token nou (rotație normală) - vezi push_notifications_service.dart.
    */
   @Post('device-token')
-  registerDeviceToken(@Req() req: Request, @Body() dto: RegisterDeviceTokenDto) {
+  registerDeviceToken(
+    @Req() req: Request,
+    @Body() dto: RegisterDeviceTokenDto,
+  ) {
     const { userId } = req.user as AuthenticatedUser;
     return this.pushService.registerToken(userId!, dto.token, dto.platform);
   }
@@ -54,12 +57,15 @@ export class NotificationsController {
     @Body() dto: SetNotificationPreferencesDto,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.notificationsService.setPreferences(
-      userId!,
-      Object.fromEntries(
-        dto.preferences.map((p) => [p.type, p.enabled]),
-      ) as Partial<Record<NotificationType, boolean>>,
-    );
+    // Construit explicit, nu prin Object.fromEntries: pe un map care intoarce
+    // array-uri (nu tuple), fromEntries cade pe supraincarcarea care da `any`,
+    // deci cast-ul de dupa nu verifica nimic - eslint il si semnala ca inutil.
+    // Asa tipul e real si greselile de forma se vad la compilare.
+    const preferences: Partial<Record<NotificationType, boolean>> = {};
+    for (const p of dto.preferences) {
+      preferences[p.type] = p.enabled;
+    }
+    return this.notificationsService.setPreferences(userId!, preferences);
   }
 
   @Get()

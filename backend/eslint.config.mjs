@@ -29,6 +29,20 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
+      // `const { chiaScoasa: _x, ...rest } = obj` e modul standard de a omite
+      // o cheie dintr-un obiect. Fara ignoreRestSiblings, variabila legata
+      // doar ca sa fie aruncata e raportata ca nefolosita - exact ce face,
+      // intentionat. varsIgnorePattern acopera si cazurile fara `...rest`,
+      // unde prefixul `_` semnaleaza deja "stiu ca nu il folosesc".
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          ignoreRestSiblings: true,
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
