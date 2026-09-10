@@ -19,7 +19,7 @@
 # Web-ul e un build STATIC (frontend/build/web-test), nu `flutter run`: acela e
 # un proces care ține de sesiunea din care a fost pornit și moare cu ea.
 # Bundle-ul se reface cu:
-#   flutter build web -o build/web-test --dart-define=API_BASE_URL=http://localhost:3999
+#   flutter build web -o build/web-test --dart-define=API_BASE_URL=/api
 # `-o build/web-test` e obligatoriu - `build/web` e ce servește producția pe
 # 5959, iar un build cu API-ul de test acolo ar rupe site-ul real până la
 # următorul deploy.
@@ -96,6 +96,10 @@ services:
     volumes:
       - ./frontend/build/web-test:/usr/share/nginx/html:ro
       - ./scripts/test-web-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    # nginx rezolva `backend` la pornire (pentru proxy-ul /api/) si moare daca
+    # numele nu exista inca, deci ordinea conteaza.
+    depends_on:
+      - backend
 
 volumes:
   postgres_test_data:
