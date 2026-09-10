@@ -207,7 +207,18 @@ class _ShelfList extends ConsumerStatefulWidget {
 class _ShelfListState extends ConsumerState<_ShelfList> {
   final Set<String> _selected = {};
 
-  bool get _selectionMode => _selected.isNotEmpty;
+  /// Pornit din butonul „Selectează", cu zero cărți bifate încă: long-press-ul
+  /// singur nu se vede pe web, unde înseamnă click ținut apăsat.
+  bool _selectionActive = false;
+
+  bool get _selectionMode => _selectionActive || _selected.isNotEmpty;
+
+  void _exitSelection() {
+    setState(() {
+      _selected.clear();
+      _selectionActive = false;
+    });
+  }
 
   _ShelfSection get section => widget.section;
 
@@ -241,7 +252,7 @@ class _ShelfListState extends ConsumerState<_ShelfList> {
     final removed = await ref.read(bookshelfRepositoryProvider).removeManyFromShelf(_selected.toList());
     ref.invalidate(_myShelfProvider);
     if (!mounted) return;
-    setState(() => _selected.clear());
+    _exitSelection();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.shelfRemoveSelectedDone(removed))),
     );
@@ -318,7 +329,26 @@ class _ShelfListState extends ConsumerState<_ShelfList> {
           },
         );
 
-        if (!_selectionMode) return list;
+        if (!_selectionMode) {
+          // Butonul care porneste selectia - deasupra listei, ca sa fie vizibil
+          // fara sa stii de long-press.
+          return Column(
+            children: [
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(top: 8, end: 12),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.checklist),
+                    label: Text(l10n.inventoryStartSelection),
+                    onPressed: () => setState(() => _selectionActive = true),
+                  ),
+                ),
+              ),
+              Expanded(child: list),
+            ],
+          );
+        }
 
         return Column(
           children: [
@@ -332,7 +362,7 @@ class _ShelfListState extends ConsumerState<_ShelfList> {
                     IconButton(
                       icon: const Icon(Icons.close),
                       tooltip: l10n.commonGiveUp,
-                      onPressed: () => setState(_selected.clear),
+                      onPressed: _exitSelection,
                     ),
                     Expanded(child: Text(l10n.inventorySelectedCount(_selected.length))),
                     IconButton(

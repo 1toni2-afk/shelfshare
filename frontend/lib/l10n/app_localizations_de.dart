@@ -4736,6 +4736,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get inventoryStartSelection => 'Bücher auswählen';
+
+  @override
   String get storeBadge => 'Buchhandlung';
 
   @override

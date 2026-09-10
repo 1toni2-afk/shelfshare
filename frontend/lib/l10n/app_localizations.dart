@@ -8457,6 +8457,12 @@ abstract class AppLocalizations {
   /// **'{count} cărți scoase din raft'**
   String shelfRemoveSelectedDone(int count);
 
+  /// No description provided for @inventoryStartSelection.
+  ///
+  /// In ro, this message translates to:
+  /// **'Selectează cărți'**
+  String get inventoryStartSelection;
+
   /// No description provided for @storeBadge.
   ///
   /// In ro, this message translates to:

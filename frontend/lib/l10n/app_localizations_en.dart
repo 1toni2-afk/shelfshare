@@ -4661,6 +4661,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get inventoryStartSelection => 'Select books';
+
+  @override
   String get storeBadge => 'Store';
 
   @override

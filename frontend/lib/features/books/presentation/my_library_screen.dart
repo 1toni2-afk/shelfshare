@@ -61,7 +61,19 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
   _StatusFilter _filter = _StatusFilter.all;
   final Set<String> _selectedIds = {};
 
-  bool get _selectionMode => _selectedIds.isNotEmpty;
+  /// Modul de selecție pornit din meniu, cu zero cărți bifate încă. Fără el,
+  /// singura cale de intrare era long-press-ul pe un card - pe web înseamnă
+  /// click ținut apăsat, pe care nimeni nu-l ghicește.
+  bool _selectionActive = false;
+
+  bool get _selectionMode => _selectionActive || _selectedIds.isNotEmpty;
+
+  void _exitSelection() {
+    setState(() {
+      _selectedIds.clear();
+      _selectionActive = false;
+    });
+  }
 
   void _toggleSelected(String userBookId) {
     setState(() {
@@ -189,7 +201,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
 
     await ref.read(myLibraryControllerProvider.notifier).deleteBooks(_selectedIds.toList());
     if (mounted) {
-      setState(() => _selectedIds.clear());
+      _exitSelection();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.inventoryBulkDone)));
     }
   }
@@ -410,7 +422,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
               title: Text(l10n.inventorySelectedCount(_selectedIds.length)),
               leading: IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () => setState(() => _selectedIds.clear()),
+                onPressed: _exitSelection,
               ),
               actions: [
                 IconButton(
@@ -443,6 +455,8 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) {
                     switch (value) {
+                      case 'select':
+                        setState(() => _selectionActive = true);
                       case 'export':
                         _exportCsv(l10n, state.value ?? const []);
                       case 'import':
@@ -454,6 +468,7 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                     }
                   },
                   itemBuilder: (context) => [
+                    PopupMenuItem(value: 'select', child: Text(l10n.inventoryStartSelection)),
                     PopupMenuItem(value: 'export', child: Text(l10n.libraryExportCsv)),
                     PopupMenuItem(value: 'import', child: Text(l10n.libraryImportCsv)),
                     // Adăugarea în masă e o unealtă pentru integrările cu
