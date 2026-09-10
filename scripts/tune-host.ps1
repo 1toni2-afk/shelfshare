@@ -65,12 +65,40 @@ if ($WhatIfOnly) {
     # efect, citit de serviciul de indexare la repornire.
     $key = 'HKLM:\SOFTWARE\Microsoft\Windows Search\CrawlScopeManager\Windows\SystemIndex\DefaultRules'
     Write-Warning "COM CrawlScopeManager indisponibil - exclud prin oprirea indexarii pe folder (atributul FILE_ATTRIBUTE_NOT_CONTENT_INDEXED)."
-    # Atributul 'not content indexed' pe folder, recursiv: e mecanismul pe care
-    # il foloseste si caseta "Allow files to have contents indexed" din
-    # Properties, si e respectat de indexer fara repornire de serviciu.
-    & attrib.exe +I /S /D "$repo\*" 2>&1 | Out-Null
-    & attrib.exe +I /D "$repo" 2>&1 | Out-Null
-    Write-Host "Search: repo marcat ca neindexabil prin atribut."
+    # Atributul 'not content indexed', recursiv: acelasi mecanism ca bifa
+    # "Allow files ... to have contents indexed" din Properties, respectat de
+    # indexer fara repornire de serviciu.
+    #
+    # ATENTIE la sintaxa: pe directorul radacina se da FARA /D ('attrib +I dir'),
+    # iar /D e acceptat DOAR impreuna cu /S. 'attrib +I /D dir' intoarce
+    # "Parameter format not correct" - iar prima versiune a scriptului trimitea
+    # eroarea in Out-Null si raporta succes fara sa fi setat nimic.
+    # NU recursiv. Prima incercare a fost 'attrib +I /S /D repo\*' peste tot
+    # repo-ul (node_modules, .git, build) si a tinut masina la 100%% CPU minute
+    # in sir - adica exact infometarea pe care incercam sa o eliminam: un task
+    # de healthcheck a avut nevoie de 3 minute doar ca sa porneasca PowerShell.
+    #
+    # Nici nu e nevoie: indexer-ul nu coboara intr-un folder marcat
+    # NotContentIndexed, iar fisierele noi create intr-un astfel de folder
+    # mostenesc atributul. Marcam radacina si folderele de build, care sunt si
+    # cele care se rescriu la fiecare deploy.
+    #
+    # Sintaxa: pe un director se da FARA /D ('attrib +I dir'); /D e acceptat
+    # DOAR impreuna cu /S. 'attrib +I /D dir' intoarce "Parameter format not
+    # correct" - iar prima versiune trimitea eroarea in Out-Null si raporta
+    # succes fara sa fi setat nimic.
+    foreach ($d in @($repo, "$reporontenduild", "$repoackend\dist")) {
+      if (Test-Path $d) { & attrib.exe +I $d }
+    }
+
+    # Verificam efectul, nu codul de iesire: attrib intoarce 0 si cand n-a facut
+    # nimic. Fara asta, un esec arata identic cu o reusita.
+    $rootAttr = (Get-Item $repo -Force).Attributes
+    if ($rootAttr -band [System.IO.FileAttributes]::NotContentIndexed) {
+      Write-Host "Search: repo marcat ca neindexabil (verificat: $rootAttr)."
+    } else {
+      Write-Error "Search: atributul NU s-a aplicat pe $repo (atribute: $rootAttr)."
+    }
   } else {
     $url = 'file:///' + $repo.Replace('\','/') + '/'
     $csm.AddUserScopeExclusionRule($url, $true, 0)
