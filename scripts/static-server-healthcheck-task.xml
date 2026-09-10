@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>Verifica la fiecare 2 minute ca static-server.js chiar RASPUNDE (cerere HTTP reala pe /robots.txt), nu doar ca procesul exista si tine portul deschis. Daca e intepenit, omoara node-ul; bucla din start-static-server.bat il reporneste in ~3s. Ruleaza prin run-hidden.vbs ca sa nu deschida o consola la fiecare 2 minute.</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <TimeTrigger>
+      <Enabled>true</Enabled>
+      <StartBoundary>2026-09-10T00:00:00</StartBoundary>
+      <Repetition>
+        <Interval>PT2M</Interval>
+        <StopAtDurationEnd>false</StopAtDurationEnd>
+      </Repetition>
+    </TimeTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>wwwto</UserId>
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>true</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT5M</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>wscript.exe</Command>
+      <Arguments>"C:\Users\wwwto\Documents\GitHub\shelfshare\scripts\run-hidden.vbs" "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ""C:\Users\wwwto\Documents\GitHub\shelfshare\scripts\static-server-healthcheck.ps1"""</Arguments>
+    </Exec>
+  </Actions>
+</Task>
