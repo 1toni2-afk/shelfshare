@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <!-- Fără cache pentru HTML: fișierele din /assets au numele hash-uit de Vite
+       și pot fi cache-uite lung, dar index.html trebuie să vină mereu de la
+       server, ca să pointeze spre bundle-ul curent. Vezi și nota din
+       scripts/static-server.js despre „Respect Existing Headers" pe Cloudflare:
+       fără ea, CF servea o copie veche 4h și deploy-ul părea că nu s-a aplicat. -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+
+  <!--
+    Blocul de metadate al paginii.
+
+    Ce e ÎNTRE marcajele „ss-head" e înlocuit de scripts/beta-server.js cu
+    titlul, descrierea, canonical-ul și Open Graph-ul paginii cerute, înainte
+    ca HTML-ul să plece spre browser. Aplicația fiind randată în întregime de
+    JavaScript, un crawler care nu îl execută (sau un unfurl de link din
+    WhatsApp/Discord) ar vedea altfel mereu titlul generic, indiferent ce carte
+    sau ce profil e la capătul adresei.
+
+    NU șterge marcajele și nu muta titlul în afara lor: serverul înlocuiește
+    exact intervalul dintre ele, iar fără ele cade înapoi pe blocul implicit
+    de mai jos - adică pe comportamentul de dinainte, tăcut.
+
+    Valorile de aici sunt cele implicite, folosite ca atare pe rutele fără
+    metadate proprii; trebuie să rămână identice cu DEFAULT_DESCRIPTION din
+    src/lib/seo/routes.ts și din beta-server.js.
+  -->
+  <!--ss-head-->
+  <title>ShelfShare</title>
+  <meta name="description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România." />
+  <link rel="canonical" href="https://beta.shelfshare.ro/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ShelfShare" />
+  <meta property="og:title" content="ShelfShare" />
+  <meta property="og:description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România." />
+  <meta property="og:url" content="https://beta.shelfshare.ro/" />
+  <meta property="og:image" content="https://beta.shelfshare.ro/icons/Icon-512.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ShelfShare" />
+  <meta name="twitter:description" content="ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România." />
+  <meta name="twitter:image" content="https://beta.shelfshare.ro/icons/Icon-512.png" />
+  <!--/ss-head-->
+
+  <meta name="theme-color" content="#7C3A1E" />
+
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/icons/Icon-192.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ShelfShare" />
+
+  <!-- Fonturile sunt servite local, NU de pe fonts.gstatic.com. Varianta
+       CDN cădea sau întârzia pe rețele mobile și în tab-uri incognito, iar
+       pagina rula pe fontul de sistem cât aștepta - cu alte metrici de linie,
+       care dezaliniau vertical textul din câmpuri. -->
+  <link rel="preload" href="/fonts/DMSans-Variable.ttf" as="font" type="font/ttf" crossorigin />
+
+  <!--
+    Tema se aplică ÎNAINTE de primul paint, nu din React. Dacă am aștepta
+    montarea aplicației, un user cu temă întunecată ar vedea un flash alb la
+    fiecare încărcare. Citim aceeași cheie pe care o scrie themeStore.ts.
+  -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('shelfshare.theme');
+        var dark = saved === 'dark' ||
+          (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) { /* storage blocat (incognito//cookies off) - rămâne light */ }
+    })();
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <!--
+    Aici scrie scripts/beta-server.js conținutul real al paginii publice
+    (titluri, text, linkuri) - vezi marcajul „ss-body". E textul pe care îl
+    citește un crawler sau un vizitator fără JavaScript, adică aceeași pagină,
+    doar fără partea interactivă.
+
+    Stă ÎN AFARA lui #root dinadins: React golește containerul la montare, deci
+    pus înăuntru ar dispărea înainte să apuce cineva să-l vadă. Îl scoate
+    main.tsx, după primul randare - vezi nota de acolo despre de ce nu e
+    ascuns cu display:none.
+  -->
+  <!--ss-body-->
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
