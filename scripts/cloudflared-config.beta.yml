@@ -1,0 +1,41 @@
+# Configul de ingress al tunelului Cloudflare, cu beta adaugat.
+#
+# ATENTIE: fisierul PE CARE IL CITESTE SERVICIUL nu e cel din profilul tau, ci
+#   C:\Windows\System32\config\systemprofile\.cloudflared\config.yml
+# (vezi PathName-ul serviciului "Cloudflared"). Cel din C:\Users\wwwto\.cloudflared\
+# e o copie ramasa de la instalare si nu are niciun efect - editarea lui nu
+# schimba nimic in productie.
+#
+# Se copiaza peste configul serviciului dintr-un PowerShell RIDICAT
+# (administrator), apoi serviciul se reporneste. Vezi scripts/apply-beta-tunnel.ps1.
+
+tunnel: e76d8e20-115a-4def-b27b-41a58c0a37dc
+credentials-file: C:\Windows\System32\config\systemprofile\.cloudflared\e76d8e20-115a-4def-b27b-41a58c0a37dc.json
+
+# Regulile se potrivesc IN ORDINE, prima care se potriveste castiga. Toate sunt
+# gazde exacte (fara wildcard), deci ordinea dintre ele nu schimba nimic - dar
+# regula fara `hostname` de la final TREBUIE sa ramana ultima: ea prinde orice
+# gazda necunoscuta si raspunde 404 in loc sa lase tunelul fara ruta.
+ingress:
+  # --- productie (neatinse) ---
+  - hostname: api.shelfshare.ro
+    service: http://localhost:3000
+  - hostname: storage.shelfshare.ro
+    service: http://localhost:9000
+  - hostname: shelfshare.ro
+    service: http://localhost:5959
+  - hostname: www.shelfshare.ro
+    service: http://localhost:5959
+
+  # --- beta: frontendul nou (React), servit de scripts/beta-server.js ---
+  - hostname: beta.shelfshare.ro
+    service: http://localhost:5960
+
+  # --- beta: API-ul zonei de TEST (docker-compose.test.yml), nu productia ---
+  # Dinadins separat de api.shelfshare.ro: beta scrie date reale (mesaje,
+  # schimburi, stergeri), iar frontendul nou e inca incomplet. Asa, orice test
+  # de pe beta ramane in baza de test.
+  - hostname: api-beta.shelfshare.ro
+    service: http://localhost:3999
+
+  - service: http_status:404

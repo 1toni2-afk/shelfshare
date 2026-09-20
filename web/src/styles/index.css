@@ -1,0 +1,377 @@
+@import "tailwindcss";
+
+/*
+  Paleta e portată 1:1 din frontend/lib/core/theme/app_theme.dart. Culorile de
+  brand (primary/accent/destructive) rămân identice în ambele moduri; doar
+  suprafețele (fundal/text/card/muted/border) comută - exact ca getterele care
+  citeau `AppColors._dark` acolo.
+
+  Diferența față de Flutter: acolo tema se reconstruia în Dart, aici comutarea
+  e o singură variabilă CSS pe <html data-theme>. Nu se re-randează nimic.
+*/
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --ss-background: #F8F4EC;
+  --ss-foreground: #2A1A0E;
+  --ss-card: #FDFAF4;
+
+  --ss-primary: #7C3A1E;
+  --ss-primary-foreground: #FDF9F3;
+
+  --ss-secondary: #E8E2D5;
+  --ss-muted: #EDE8DE;
+
+  /* #655A4A, nu o nuanță mai deschisă: pe card muted ratio-ul era 4.26, sub
+     pragul WCAG AA (4.5) pentru text mic. Acum ~5.0 pe muted, ~5.8 pe fundal. */
+  --ss-muted-foreground: #655A4A;
+
+  --ss-accent: #C8783A;
+  --ss-accent-foreground: #FDF9F3;
+
+  --ss-destructive: #C0392B;
+  /* Varianta pentru TEXT destructiv. Pe fundal întunecat, #C0392B are ratio
+     3.55 - se citește prost exact acolo unde contează (mesaje de eroare). */
+  --ss-danger-text: #C0392B;
+
+  --ss-success: #2E7D32;
+  --ss-warning: #B8860B;
+
+  --ss-border: rgba(42, 26, 14, 0.13);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* Negru aproape pur, nu maro-închis: aspect „luxury", nu un maro
+     supra-întunecat. */
+  --ss-background: #0E0E0F;
+  --ss-foreground: #F5F3F0;
+  --ss-card: #19191B;
+
+  --ss-secondary: #242426;
+  --ss-muted: #29292B;
+  --ss-muted-foreground: #A8A6A3;
+
+  --ss-danger-text: #E85347;
+  --ss-success: #66BB6A;
+  --ss-warning: #FFC947;
+
+  --ss-border: rgba(255, 255, 255, 0.12);
+
+  color-scheme: dark;
+}
+
+/*
+  `@theme inline` - nu `@theme` simplu. Varianta simplă ar îngheța valoarea
+  culorii în fiecare utilitar generat, deci `bg-background` ar rămâne crem și
+  în dark. Cu `inline`, utilitarul referă variabila, iar comutarea temei o
+  rezolvă CSS-ul singur.
+*/
+@theme inline {
+  --color-background: var(--ss-background);
+  --color-foreground: var(--ss-foreground);
+  --color-card: var(--ss-card);
+  --color-primary: var(--ss-primary);
+  --color-primary-foreground: var(--ss-primary-foreground);
+  --color-secondary: var(--ss-secondary);
+  --color-muted: var(--ss-muted);
+  --color-muted-foreground: var(--ss-muted-foreground);
+  --color-accent: var(--ss-accent);
+  --color-accent-foreground: var(--ss-accent-foreground);
+  --color-destructive: var(--ss-destructive);
+  --color-danger-text: var(--ss-danger-text);
+  --color-success: var(--ss-success);
+  --color-warning: var(--ss-warning);
+  --color-border: var(--ss-border);
+
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+
+  /* Aceleași raze ca în app_theme.dart: card/input 16, butoane 12. */
+  --radius-card: 16px;
+  --radius-button: 12px;
+  --radius-input: 16px;
+
+  /* kSidebarWidth / kSidebarBreakpoint din main_scaffold.dart. */
+  --spacing-sidebar: 240px;
+  --breakpoint-desktop: 900px;
+}
+
+/* Variabile, nu descărcate de pe fonts.gstatic.com - vezi nota din index.html. */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/DMSans-Variable.ttf") format("truetype-variations");
+  font-weight: 100 1000;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/PlayfairDisplay-Variable.ttf") format("truetype-variations");
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    /* Fundalul e pe <html>, nu doar pe <body>: la overscroll pe iOS/Android
+       banda care apare dincolo de conținut ia culoarea rădăcinii. Fără asta,
+       în dark mode se vedea o dungă albă la capătul scroll-ului. */
+    background-color: var(--ss-background);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--ss-background);
+    color: var(--ss-foreground);
+    font-family: var(--font-sans);
+    /* height 1.2 în loc de ~1.5: DM Sans are ascent/descent asimetric, iar cu
+       cutia de linie înaltă textul din câmpuri părea împins spre bază, nu
+       centrat. Paragrafele își cer explicit leading-ul mai mare. */
+    line-height: 1.2;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  /* Focus vizibil doar la navigare cu tastatura - un inel pe fiecare click de
+     mouse arăta ca un bug. */
+  :focus-visible {
+    outline: 2px solid var(--ss-accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /*
+    Bara de derulare a caruselelor orizontale. Cea implicită de pe desktop e
+    groasă și opacă, iar sub un rând de coperți se citește ca o linie de
+    despărțire - exact ce încearcă banda în degrade să evite. Rămâne vizibilă
+    (userul trebuie să știe că rândul continuă), doar discretă.
+
+    Pe telefon nu se vede oricum: barele sunt suprapuse și dispar singure.
+  */
+  .rail-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ss-foreground) 22%, transparent) transparent;
+  }
+
+  .rail-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .rail-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .rail-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ss-foreground) 22%, transparent);
+    border-radius: 9999px;
+  }
+
+  /*
+    Banda de file de dosar. Aici bara de derulare chiar se ascunde, spre
+    deosebire de `.rail-scroll`: o bară sub filele dosarului ar tăia exact
+    linia pe care fila activă se lipește de panou. Rolul ei - „banda continuă"
+    - îl preia estomparea de la capăt, desenată doar când chiar mai urmează
+    ceva (vezi FolderTabs.tsx).
+  */
+  .ss-noscrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .ss-noscrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+    Paginile publice plain-HTML, desenate în aplicație (vezi
+    StaticPageScreen.tsx). Fișierele își aduc propriul <style>, dar acela are o
+    paletă fixă, deschisă; aici îl ignorăm complet și le dăm tokenurile temei,
+    ca aceleași texte să se citească și pe fundal negru.
+
+    Selectorii sunt cei folosiți efectiv de fișierele din scripts/static-pages/.
+  */
+  .static-page {
+    color: var(--ss-foreground);
+    line-height: 1.65;
+  }
+
+  .static-page h1 {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-block: 0 0.75rem;
+    text-wrap: balance;
+  }
+
+  .static-page h2 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-block: 1.75rem 0.5rem;
+  }
+
+  .static-page h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-block: 1.25rem 0.35rem;
+  }
+
+  .static-page p {
+    margin-block: 0 0.85rem;
+  }
+
+  .static-page ul {
+    margin-block: 0 0.85rem;
+    padding-inline-start: 1.25rem;
+    list-style: disc;
+  }
+
+  .static-page li {
+    margin-block: 0.25rem;
+  }
+
+  .static-page a {
+    color: var(--ss-accent);
+    text-decoration: underline;
+  }
+
+  .static-page code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+    background: var(--ss-muted);
+    border-radius: 6px;
+    padding: 0.1em 0.35em;
+  }
+
+  /* Introduceri și date de actualizare: text secundar, nu corp de pagină. */
+  .static-page .intro,
+  .static-page .lead,
+  .static-page .updated,
+  .static-page .byline {
+    color: var(--ss-muted-foreground);
+  }
+
+  .static-page .updated {
+    font-size: 0.85rem;
+  }
+
+  /* Blocurile „card": sfat, atenționare, contact, suport. */
+  .static-page .tip,
+  .static-page .callout,
+  .static-page .contact,
+  .static-page .support-card,
+  .static-page .footer-card {
+    display: flex;
+    gap: 0.85rem;
+    background: var(--ss-card);
+    border: 1px solid var(--ss-border);
+    border-radius: var(--radius-card);
+    padding: 1rem;
+    margin-block: 0.85rem;
+  }
+
+  .static-page .callout,
+  .static-page .contact,
+  .static-page .support-card,
+  .static-page .footer-card {
+    display: block;
+  }
+
+  .static-page .tip > div:last-child > h2:first-child {
+    margin-top: 0;
+  }
+
+  /* Numărul sfatului, în pastila de accent. */
+  .static-page .tip-badge {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: var(--ss-accent);
+    color: var(--ss-accent-foreground);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .static-page .group-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ss-muted-foreground);
+    margin-block: 1.5rem 0.5rem;
+  }
+
+  /* Întrebările frecvente sunt <details>: le facem să arate ca rânduri. */
+  .static-page details {
+    border-bottom: 1px solid var(--ss-border);
+    padding-block: 0.75rem;
+  }
+
+  .static-page summary {
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .static-page summary::marker {
+    color: var(--ss-accent);
+  }
+
+  .static-page .contact-btn,
+  .static-page .coffee-btn {
+    display: inline-block;
+    background: var(--ss-primary);
+    color: var(--ss-primary-foreground);
+    border-radius: var(--radius-button);
+    padding: 0.7rem 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .static-page .avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    object-fit: cover;
+  }
+
+  /*
+    Tabelele din politica de confidențialitate sunt singurul lucru mai lat
+    decât ecranul unui telefon; derulează în propriul container, ca pagina să
+    nu se miște lateral.
+  */
+  .static-page .table-wrap {
+    overflow-x: auto;
+    margin-block: 0.85rem;
+  }
+
+  .static-page table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .static-page th,
+  .static-page td {
+    border: 1px solid var(--ss-border);
+    padding: 0.5rem 0.65rem;
+    text-align: start;
+    vertical-align: top;
+  }
+
+  .static-page th {
+    background: var(--ss-muted);
+    font-weight: 700;
+  }
+}

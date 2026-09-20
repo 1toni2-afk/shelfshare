@@ -1,0 +1,174 @@
+import { api } from '@/lib/api/client';
+import type { Book, PublicUser, UserBook } from '@/types/models';
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  isPublic: boolean;
+  memberCount: number;
+  isMember?: boolean;
+  createdAt: string;
+}
+
+export interface GroupPost {
+  id: string;
+  content: string;
+  author: PublicUser;
+  createdAt: string;
+}
+
+export interface GroupEvent {
+  id: string;
+  title: string;
+  location: string | null;
+  startsAt: string;
+}
+
+export interface GroupDetail extends Group {
+  posts: GroupPost[];
+  events: GroupEvent[];
+  members?: PublicUser[];
+}
+
+export interface SmartMatch {
+  user: PublicUser;
+  /** Cărți pe care le are el și le vreau eu. */
+  theyHave: UserBook[];
+  /** Cărți pe care le am eu și le vrea el. */
+  theyWant: UserBook[];
+}
+
+/**
+ * Un card de Book Match. Backendul întoarce câmpurile cărții APLATIZATE (titlu,
+ * autor, copertă direct pe card), nu un obiect `book` imbricat - vezi
+ * BookMatchCard.fromJson din book_match_repository.dart.
+ */
+export interface BookMatchCard {
+  /** `bookId`, nu `id`: cardul e o proiecție a cărții, nu cartea însăși. */
+  bookId: string;
+  title: string;
+  author: string | null;
+  coverUrl: string | null;
+  genre: string | null;
+  publishedYear: number | null;
+  description: string | null;
+  /** Carte scoasă din zona de descoperire, nu din preferințele userului. */
+  isDiscovery: boolean;
+}
+
+export interface BookMatchQueue {
+  /**
+   * Backendul LEAGĂ coada de sesiune: același `sessionId` trebuie trimis și la
+   * fiecare swipe, altfel serverul nu poate corela răspunsurile cu teancul pe
+   * care l-a servit. Îl generăm noi și îl păstrăm cât ține ecranul.
+   */
+  sessionId: string;
+  cards: BookMatchCard[];
+}
+
+export interface BookMatchSwipeResult {
+  recorded: boolean;
+  addedToWishlist: boolean;
+  onboardingSwipesCount: number;
+  discoveryBoostSwipesRemaining: number;
+}
+
+export const groupsRepository = {
+  mine(signal?: AbortSignal): Promise<Group[]> {
+    return api.get<Group[]>('/groups/mine', { signal });
+  },
+
+  discover(signal?: AbortSignal): Promise<Group[]> {
+    return api.get<Group[]>('/groups/public', { signal });
+  },
+
+  detail(id: string, signal?: AbortSignal): Promise<GroupDetail> {
+    return api.get<GroupDetail>(`/groups/${id}`, { signal });
+  },
+
+  create(input: { name: string; description?: string; isPublic: boolean }): Promise<Group> {
+    return api.post<Group>('/groups', input);
+  },
+
+  join(id: string): Promise<void> {
+    return api.post(`/groups/${id}/join`);
+  },
+
+  leave(id: string): Promise<void> {
+    return api.post(`/groups/${id}/leave`);
+  },
+
+  remove(id: string): Promise<void> {
+    return api.delete(`/groups/${id}`);
+  },
+
+  post(id: string, content: string): Promise<GroupPost> {
+    return api.post<GroupPost>(`/groups/${id}/posts`, { content });
+  },
+
+  addEvent(id: string, input: { title: string; location?: string; startsAt: string }) {
+    return api.post<GroupEvent>(`/groups/${id}/events`, input);
+  },
+
+  reportPost(groupId: string, postId: string, reason: string): Promise<void> {
+    return api.post(`/groups/${groupId}/posts/${postId}/report`, { reason });
+  },
+};
+
+export const bookMatchRepository = {
+  queue(sessionId: string, size = 20, signal?: AbortSignal): Promise<BookMatchQueue> {
+    return api.get<BookMatchQueue>('/book-match/queue', {
+      // `size` e limitat de backend la 1-50; cerem 20, ca în Flutter.
+      query: { sessionId, size },
+      signal,
+    });
+  },
+
+  /**
+   * `YES` adaugă cartea în lista de dorințe (sursa BOOK_MATCH), `NO` o exclude,
+   * `SKIP` o amână fără să exprime o preferință - de aceea sunt trei valori,
+   * nu un boolean.
+   */
+  swipe(input: {
+    bookId: string;
+    action: 'YES' | 'NO' | 'SKIP';
+    sessionId: string;
+    isDiscovery?: boolean;
+  }): Promise<BookMatchSwipeResult> {
+    return api.post<BookMatchSwipeResult>('/book-match/swipe', input);
+  },
+
+  recalibrate(): Promise<void> {
+    return api.post('/book-match/recalibrate');
+  },
+
+  status(signal?: AbortSignal): Promise<{ canRecalibrate: boolean; nextAt?: string }> {
+    return api.get('/book-match/status', { signal });
+  },
+};
+
+export const statsRepository = {
+  smartMatches(signal?: AbortSignal): Promise<SmartMatch[]> {
+    return api.get<SmartMatch[]>('/books/smart-matches', { signal });
+  },
+
+  mostShared(signal?: AbortSignal): Promise<Array<{ book: Book; count: number }>> {
+    return api.get('/books/most-shared', { signal });
+  },
+
+  trending(signal?: AbortSignal): Promise<Array<{ book: Book; count: number }>> {
+    return api.get('/books/trending', { signal });
+  },
+};
+
+export const socialKeys = {
+  groupsMine: () => ['groups', 'mine'] as const,
+  groupsDiscover: () => ['groups', 'public'] as const,
+  group: (id: string) => ['groups', id] as const,
+  bookMatchQueue: () => ['book-match', 'queue'] as const,
+  bookMatchStatus: () => ['book-match', 'status'] as const,
+  smartMatches: () => ['books', 'smart-matches'] as const,
+  mostShared: () => ['books', 'most-shared'] as const,
+  trending: () => ['books', 'trending'] as const,
+};

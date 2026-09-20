@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gyakori kérdések | ShelfShare</title>
+<meta name="description" content="Válaszok a ShelfShare cseréiről, árairól, bizalmi és biztonsági kérdéseiről.">
+<meta name="theme-color" content="#7C3A1E">
+<link rel="canonical" href="https://shelfshare.ro/hu/help-center">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shelfshare.ro/help-center">
+<meta property="og:site_name" content="ShelfShare">
+<meta property="og:title" content="Gyakori kérdések | ShelfShare">
+<meta property="og:description" content="Válaszok a ShelfShare cseréiről, árairól, bizalmi és biztonsági kérdéseiről.">
+<meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+<meta property="og:locale" content="hu_HU">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Hogyan működik egy könyvcsere?", "acceptedAnswer": {"@type": "Answer", "text": "Kérsz egy könyvet valaki más hirdetéséből (te is felajánlhatsz cserébe egyet), a tulajdonos elfogadja vagy elutasítja, majd a csevegésben megbeszélitek a találkozót. Miután személyesen lebonyolítottátok a cserét, bármelyikőtök lezártnak jelölheti."}},
+    {"@type": "Question", "name": "Mi történik a könyvvel, miután eladtam vagy elcseréltem?", "acceptedAnswer": {"@type": "Answer", "text": "A hirdetés véglegesen elérhetetlenné válik. Ha az, aki megkapta, tovább szeretné hirdetni, ezt a Cserék/Ajánlatok képernyőről teheti meg („Hozzáadás a könyvtáradhoz”) – a könyv története a részletek oldalán követhető marad, minden tulajdonos fotóival együtt."}},
+    {"@type": "Question", "name": "Miért nem jelenik meg egy könyvem a Kategóriák vagy a Hasonló könyvek között?", "acceptedAnswer": {"@type": "Answer", "text": "A könyv műfaja hozzáadáskor az Open Library-ből vagy a Google Books-ból érkezik – néhány könyvnél ez a mező üres ezekben a forrásokban, főleg a kevésbé gyakori kiadásoknál."}},
+    {"@type": "Question", "name": "Hogyan számoljuk ki a „könyvesbolti” árat?", "acceptedAnswer": {"@type": "Answer", "text": "Amikor ISBN-nel adsz hozzá könyvet, megpróbáljuk megtalálni a listaárát a Google Books-on. A lefedettség részleges – nem minden könyvhöz van ott ár, különösen a régebbi vagy román kiadásokhoz."}},
+    {"@type": "Question", "name": "Mit jelent a „Fix ár, nem alkudható”?", "acceptedAnswer": {"@type": "Answer", "text": "Ha az eladó bejelöli ezt, a vásárlók nem küldhetnek árajánlatot – a könyv csak a feltüntetett áron vehető meg."}},
+    {"@type": "Question", "name": "Mi az a bizalmi pontszám?", "acceptedAnswer": {"@type": "Answer", "text": "Egy 0–100 közötti mutató, amelyet automatikusan számolunk az alkalmazásbeli tevékenységedből: a fiók kora, az e-mail-cím megerősítése, a lezárt cseréid száma, a kapott értékelésed, milyen gyakran válaszolsz és milyen ritkán mondasz vissza kéréseket. Ez nem személyazonosság-ellenőrzés, csak a viselkedésre utaló jelzés."}},
+    {"@type": "Question", "name": "Hogyan jelenthetek vagy tilthatok le valakit?", "acceptedAnswer": {"@type": "Answer", "text": "A beszélgetés jobb felső sarkában lévő menüből, vagy egy hirdetés részletek oldaláról (a zászló ikonnal). A letiltás mindkét irányban leállítja az üzeneteket."}}
+  ]
+}
+</script>
+<style>
+  :root {
+    --background: #F8F4EC;
+    --foreground: #2A1A0E;
+    --card: #FDFAF4;
+    --primary: #7C3A1E;
+    --primary-foreground: #FDF9F3;
+    --accent: #C8783A;
+    --accent-foreground: #FDF9F3;
+    --muted-foreground: #655A4A;
+    --border: rgba(42, 26, 14, 0.13);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0E0E0F;
+      --foreground: #F5F3F0;
+      --card: #19191B;
+      --muted-foreground: #A8A6A3;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  .lang {
+    display: flex;
+    gap: 4px;
+    flex: none;
+  }
+  .lang a {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .lang a[aria-current='page'] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: transparent;
+  }
+  header a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .group-label {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    margin: 24px 0 10px;
+  }
+  .group-label:first-of-type { margin-top: 0; }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px 18px;
+    margin-bottom: 10px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 0;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '+';
+    float: right;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  details[open] summary::after { content: '−'; }
+  details p {
+    margin: 0 0 16px;
+    color: var(--foreground);
+    font-size: 14px;
+  }
+  .footer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted-foreground);
+    max-width: 460px;
+  }
+  .contact-btn {
+    flex: none;
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <a class="back" href="/">← ShelfShare</a>
+    <nav class="lang" aria-label="Nyelv">
+      <a href="/help-center" hreflang="ro" lang="ro">RO</a>
+      <a href="/en/help-center" hreflang="en" lang="en">EN</a>
+      <a href="/de/help-center" hreflang="de" lang="de">DE</a>
+      <a href="/hu/help-center" hreflang="hu" lang="hu" aria-current="page">HU</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Gyakori kérdések</h1>
+
+    <div class="group-label">Cserék</div>
+    <details open>
+      <summary>Hogyan működik egy könyvcsere?</summary>
+      <p>Kérsz egy könyvet valaki más hirdetéséből (te is felajánlhatsz cserébe egyet), a tulajdonos elfogadja vagy elutasítja, majd a csevegésben megbeszélitek a találkozót. Miután személyesen lebonyolítottátok a cserét, bármelyikőtök lezártnak jelölheti.</p>
+    </details>
+    <details>
+      <summary>Mi történik a könyvvel, miután eladtam vagy elcseréltem?</summary>
+      <p>A hirdetés véglegesen elérhetetlenné válik. Ha az, aki megkapta, tovább szeretné hirdetni, ezt a Cserék/Ajánlatok képernyőről teheti meg („Hozzáadás a könyvtáradhoz”) – a könyv története a részletek oldalán követhető marad, minden tulajdonos fotóival együtt.</p>
+    </details>
+    <details>
+      <summary>Miért nem jelenik meg egy könyvem a Kategóriák vagy a Hasonló könyvek között?</summary>
+      <p>A könyv műfaja hozzáadáskor az Open Library-ből vagy a Google Books-ból érkezik – néhány könyvnél ez a mező üres ezekben a forrásokban, főleg a kevésbé gyakori kiadásoknál.</p>
+    </details>
+
+    <div class="group-label">Árak</div>
+    <details>
+      <summary>Hogyan számoljuk ki a „könyvesbolti” árat?</summary>
+      <p>Amikor ISBN-nel adsz hozzá könyvet, megpróbáljuk megtalálni a listaárát a Google Books-on. A lefedettség részleges – nem minden könyvhöz van ott ár, különösen a régebbi vagy román kiadásokhoz.</p>
+    </details>
+    <details>
+      <summary>Mit jelent a „Fix ár, nem alkudható”?</summary>
+      <p>Ha az eladó bejelöli ezt, a vásárlók nem küldhetnek árajánlatot – a könyv csak a feltüntetett áron vehető meg.</p>
+    </details>
+
+    <div class="group-label">Bizalom és biztonság</div>
+    <details>
+      <summary>Mi az a bizalmi pontszám?</summary>
+      <p>Egy 0–100 közötti mutató, amelyet automatikusan számolunk az alkalmazásbeli tevékenységedből: a fiók kora, az e-mail-cím megerősítése, a lezárt cseréid száma, a kapott értékelésed, milyen gyakran válaszolsz és milyen ritkán mondasz vissza kéréseket. Ez nem személyazonosság-ellenőrzés, csak a viselkedésre utaló jelzés.</p>
+    </details>
+    <details>
+      <summary>Hogyan jelenthetek vagy tilthatok le valakit?</summary>
+      <p>A beszélgetés jobb felső sarkában lévő menüből, vagy egy hirdetés részletek oldaláról (a zászló ikonnal). A letiltás mindkét irányban leállítja az üzeneteket.</p>
+    </details>
+
+    <div class="footer-card">
+      <p>Nem találtad meg a választ? Problémát közvetlenül az érintett felhasználóval folytatott beszélgetésből jelenthetsz, vagy írhatsz egy moderátornak.</p>
+      <a class="contact-btn" href="mailto:contact@shelfshare.ro">Írj egy moderátornak</a>
+    </div>
+  </main>
+</body>
+</html>
