@@ -13,6 +13,7 @@ import {
   Min,
 } from 'class-validator';
 import { BookCondition } from '@prisma/client';
+import { IsCatalogId } from '../../common/decorators/is-catalog-id.decorator';
 
 /**
  * O carte nu poate porni "la vânzare" chiar la creare - fotografiile se
@@ -26,8 +27,9 @@ export class AddBookDto {
   /// de pe o carte din raftul personal. Fără el, o carte fără ISBN ar fi
   /// duplicată în catalog (vezi findOrCreateBook), iar raftul ar arăta și
   /// intrarea veche, și listarea nouă, ca două cărți diferite.
+  /// Vezi IsCatalogId.
   @IsOptional()
-  @IsUUID()
+  @IsCatalogId()
   bookId?: string;
 
   @IsOptional()

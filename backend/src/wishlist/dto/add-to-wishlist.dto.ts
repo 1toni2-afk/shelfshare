@@ -1,7 +1,9 @@
 import { IsOptional, IsUUID } from 'class-validator';
+import { IsCatalogId } from '../../common/decorators/is-catalog-id.decorator';
 
 export class AddToWishlistDto {
-  @IsUUID()
+  /// Vezi IsCatalogId: id-ul de catalog NU e garantat UUID.
+  @IsCatalogId()
   bookId: string;
 
   /// Anunțul de pe care s-a apăsat inima. Opțional: adăugările care nu pleacă

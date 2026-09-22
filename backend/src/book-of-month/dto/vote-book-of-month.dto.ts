@@ -1,7 +1,7 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsCatalogId } from '../../common/decorators/is-catalog-id.decorator';
 
 export class VoteBookOfMonthDto {
-  @IsString()
-  @IsUUID()
+  /// Vezi IsCatalogId.
+  @IsCatalogId()
   bookId: string;
 }

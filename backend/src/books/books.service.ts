@@ -32,11 +32,13 @@ import { StoresService } from '../stores/stores.service';
 import { isSuperAdmin } from '../common/utils/is-super-admin';
 
 /// Unde ajunge un rând dintr-un CSV de import: în piață (anunț), pe raftul de
-/// lectură sau doar la favorite. Vezi classifyImportRow.
+/// lectură, doar la favorite - sau nicăieri, dacă raftul scris în fișier nu
+/// înseamnă nimic pentru noi. Vezi classifyImportRow.
 type ImportDestination =
   | { kind: 'listing' }
   | { kind: 'shelf'; status: BookshelfStatus }
-  | { kind: 'favorite' };
+  | { kind: 'favorite' }
+  | { kind: 'skipped'; shelf: string };
 
 /// Rândul brut întors de căutarea în catalog (`searchCatalog`) - doar
 /// coloanele de care are nevoie dropdown-ul de autocomplete.
@@ -57,7 +59,22 @@ interface CatalogSearchRow {
 }
 
 const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
-const MAX_LISTING_IMPORT_ROWS = 500;
+/*
+  Plafonul de rânduri la un import.
+
+  500 era gândit pentru un feed de stoc de anticariat. Un export de pe
+  Goodreads e alt animal: e biblioteca de-o viață a unui cititor, cu mii de
+  titluri, iar el intră aproape tot pe raftul de lectură (vezi
+  classifyImportRow), nu în piață. Cu plafonul vechi, orice cititor serios
+  lovea un refuz sec la primul import.
+
+  ATENȚIE: importul rulează sincron, rând cu rând, în cererea HTTP. La mii de
+  rânduri durează minute, iar în spatele unui proxy cu timeout (Cloudflare taie
+  la 100s) cererea moare înainte să răspundă. Plafonul de aici e limita până la
+  care mai are rost să încercăm într-o singură cerere; peste ea, importul
+  trebuie mutat pe o coadă de fundal.
+*/
+const MAX_LISTING_IMPORT_ROWS = 5000;
 const MAX_PHOTOS_PER_LISTING = 10;
 // Storage-abuse guard: rough cap on total listing photos across a user's
 // whole library, well above what any real user would ever legitimately need
@@ -592,6 +609,11 @@ export class BooksService {
           : undefined,
       },
       user: filters.city ? { city: filters.city } : undefined,
+      // Feed-ul „aproape de tine" nu-și arată propriile anunțuri: sunt la 0 km
+      // de tine, deci ar ocupa începutul listei fără să-ți spună nimic nou.
+      // Exclusul se face aici, nu în client, altfel anunțurile proprii ar
+      // consuma din `limit` și pagina ar veni mai scurtă (sau goală).
+      userId: filters.excludeUserId ? { not: filters.excludeUserId } : undefined,
       // Confidențialitatea anunțurilor (vezi User în schema.prisma): un anunț
       // poate fi simultan de mai multe tipuri (ex. și la schimb, și la
       // vânzare), deci vizibilitatea publică se decide per-tip, nu printr-un
@@ -610,11 +632,44 @@ export class BooksService {
 
     if (useDistance) {
       // Distanța nu se poate calcula la nivel de query SQL fără o extensie
-      // geo (PostGIS/earthdistance) - luăm un set rezonabil de candidați și
-      // calculăm/filtrăm/sortăm în JS. Suficient la scara acestei aplicații,
-      // dar nu se scalează la un catalog foarte mare.
+      // geo (PostGIS/earthdistance), deci sortarea rămâne în JS - dar pe un
+      // set minimal: întâi doar id-ul și orașul proprietarului, apoi datele
+      // complete DOAR pentru pagina cerută, exact ca la „popularity" mai jos.
+      //
+      // Varianta de dinainte lua candidații cu `include` complet și `take:
+      // 500`, iar Prisma completează orice `take` fără `orderBy` cu `ORDER BY
+      // id ASC` - peste 500 de anunțuri listate, „cele mai apropiate" se
+      // calculau pe o felie arbitrară de id-uri, deci anunțuri chiar din
+      // orașul userului puteau lipsi complet din rezultat.
       const candidates = await this.prisma.userBook.findMany({
         where,
+        select: { id: true, user: { select: { city: true } } },
+      });
+
+      const ordered = candidates
+        .map((item) => {
+          const city = item.user.city as RomanianCity | null;
+          const coords = city ? ROMANIAN_CITY_COORDINATES[city] : undefined;
+          return {
+            id: item.id,
+            distanceKm: coords ? haversineDistanceKm(fromCoords, coords) : null,
+          };
+        })
+        .filter((item) => item.distanceKm !== null)
+        .filter(
+          (item) =>
+            filters.maxDistanceKm == null ||
+            item.distanceKm! <= filters.maxDistanceKm,
+        )
+        .sort((a, b) => a.distanceKm! - b.distanceKm!);
+
+      const total = ordered.length;
+      const page = ordered.slice(
+        filters.offset,
+        filters.offset! + filters.limit!,
+      );
+      const pageItems = await this.prisma.userBook.findMany({
+        where: { id: { in: page.map((c) => c.id) } },
         include: {
           book: true,
           user: { select: OWNER_SELECT },
@@ -628,29 +683,16 @@ export class BooksService {
             },
           },
         },
-        take: 500,
       });
-
-      const withDistance = candidates
-        .map((item) => {
-          const city = item.user.city as RomanianCity | null;
-          const coords = city ? ROMANIAN_CITY_COORDINATES[city] : undefined;
-          return {
-            ...item,
-            distanceKm: coords ? haversineDistanceKm(fromCoords, coords) : null,
-          };
+      // Prisma nu garantează ordinea pentru `id: { in }` - o reconstruim din
+      // `page`, care are deja ordinea corectă de distanță.
+      const byId = new Map(pageItems.map((i) => [i.id, i]));
+      const items = page
+        .map((c) => {
+          const item = byId.get(c.id);
+          return item ? { ...item, distanceKm: c.distanceKm } : null;
         })
-        .filter((item) => item.distanceKm !== null)
-        .filter(
-          (item) =>
-            filters.maxDistanceKm == null ||
-            item.distanceKm! <= filters.maxDistanceKm,
-        )
-        .sort((a, b) => a.distanceKm! - b.distanceKm!);
-
-      const total = withDistance.length;
-      const items = withDistance
-        .slice(filters.offset, filters.offset! + filters.limit!)
+        .filter((i) => i != null)
         .map((i) => this.sanitizeOwner(this.toPublicPhotos(i)));
       return { items, total, limit: filters.limit, offset: filters.offset };
     }
@@ -960,6 +1002,10 @@ export class BooksService {
     // n-are ce cauta in piata doar fiindca a nimerit in acelasi fisier.
     const shelved: { title: string; status: BookshelfStatus }[] = [];
     const favorited: { title: string }[] = [];
+    // Randurile de pe un raft pe care nu-l stim traduce (vezi classifyImportRow):
+    // nu sunt erori, dar nici nu s-a intamplat nimic cu ele, deci trebuie sa
+    // apara undeva - altfel userul le cauta degeaba si in piata, si pe raft.
+    const skipped: { title: string; shelf: string }[] = [];
 
     // Un sku repetat în ACELAȘI fișier: al doilea rând ar suprascrie ce tocmai
     // a scris primul, fără ca nimeni să afle care a câștigat. Îl raportăm.
@@ -973,6 +1019,10 @@ export class BooksService {
       // Raft/favorite INAINTE de orice logica de stoc: un rand de pe raftul de
       // lectura nu are sku/qty/price, deci nu trece niciodata prin syncStockRow.
       const destination = this.classifyImportRow(row);
+      if (destination.kind === 'skipped') {
+        skipped.push({ title: label, shelf: destination.shelf });
+        continue;
+      }
       if (destination.kind !== 'listing') {
         if (!title && !this.csvValue(row, 'isbn')) {
           failed.push({
@@ -1117,7 +1167,7 @@ export class BooksService {
       }
     }
 
-    return { created, updated, delisted, shelved, favorited, failed };
+    return { created, updated, delisted, shelved, favorited, skipped, failed };
   }
 
   /**
@@ -1185,6 +1235,15 @@ export class BooksService {
       return { kind: 'favorite' };
     }
 
+    // Randul SPUNE pe ce raft sta, dar e un raft pe care nu-l intelegem:
+    // „did-not-finish" de pe StoryGraph, sau un raft exclusiv inventat de user
+    // pe Goodreads („abandonate", „scoala"). Pana acum cadea pe ramura de
+    // anunt, adica o carte pe care omul o abandonase ajungea public la schimb
+    // fara ca el sa ceara asta. Mai bine o sarim si i-o raportam.
+    if (shelf) {
+      return { kind: 'skipped', shelf };
+    }
+
     return { kind: 'listing' };
   }
 
@@ -1196,7 +1255,10 @@ export class BooksService {
   private async importShelfRow(
     userId: string,
     row: Record<string, string>,
-    destination: Exclude<ImportDestination, { kind: 'listing' }>,
+    destination: Extract<
+      ImportDestination,
+      { kind: 'shelf' } | { kind: 'favorite' }
+    >,
   ): Promise<string> {
     const title = this.csvValue(row, 'title');
     const author = this.csvValue(row, 'author');

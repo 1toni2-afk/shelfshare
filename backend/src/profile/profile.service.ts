@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -12,6 +13,8 @@ import { StorageService } from '../storage/storage.service';
 import { StoresService } from '../stores/stores.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
+import { OnboardingTodoDto } from './dto/onboarding-todo.dto';
+import { isOnboardingTodoStep } from '../common/constants/onboarding-todo';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_PER_LEVEL, XP_REWARDS } from '../common/utils/xp';
 import { ADVANCED_STATISTICS_FLAG } from '../common/constants/feature-flags';
@@ -185,6 +188,34 @@ export class ProfileService {
   }
 
   async updateMyProfile(userId: string, dto: UpdateProfileDto) {
+    /*
+      Username-ul se alege O SINGURĂ DATĂ.
+
+      E identificatorul public al omului: apare pe profil, în conversații și în
+      linkul care se dă mai departe (`/users/:id` are numele afișat pe el).
+      Dacă s-ar putea schimba, un link trimis ieri ar duce mâine la altcineva,
+      iar cineva care tocmai a eliberat un nume l-ar putea vedea luat de un
+      impostor peste cinci minute. Unicitatea o ține baza de date
+      (`username String? @unique`), permanența o ține regula asta.
+
+      Setarea inițială rămâne permisă: conturile create înainte de onboarding -
+      și cele venite prin Google - pornesc cu `username` null.
+    */
+    if (dto.username !== undefined) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { username: true },
+      });
+      if (
+        current?.username &&
+        current.username !== dto.username
+      ) {
+        throw new BadRequestException(
+          'Username-ul nu poate fi schimbat după ce a fost ales.',
+        );
+      }
+    }
+
     let user: User;
     try {
       user = await this.users.update(userId, dto);
@@ -1224,5 +1255,62 @@ export class ProfileService {
     return events
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(boundedOffset, boundedOffset + boundedLimit);
+  }
+
+  /**
+   * Lista „Primii pași" de pe Home. Stă pe cont, nu pe dispozitiv: pașii
+   * descriu ce a făcut OMUL în aplicație (a văzut turul, a importat
+   * biblioteca), iar asta nu se uită fiindcă s-a mutat pe alt telefon.
+   */
+  async getOnboardingTodo(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { onboardingTodoDone: true, onboardingTodoDismissed: true },
+    });
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+    return {
+      // Filtrăm la citire: un pas scos din UI rămâne în coloană (nu merită o
+      // migrare pentru asta), dar n-are ce căuta în răspuns.
+      done: user.onboardingTodoDone.filter(isOnboardingTodoStep),
+      dismissed: user.onboardingTodoDismissed,
+    };
+  }
+
+  /**
+   * Bifează pași și/sau ascunde lista. `done` se reunește cu ce e deja pe
+   * cont - vezi OnboardingTodoDto.
+   *
+   * Reuniunea o face Postgres, nu noi: două bife trimise în paralel (turul
+   * terminat și o scurtătură pusă în aceeași clipă) s-ar fi suprascris una pe
+   * alta dacă citeam lista în Node și o scriam înapoi întreagă.
+   */
+  async saveOnboardingTodo(userId: string, dto: OnboardingTodoDto) {
+    const done = (dto.done ?? []).filter(isOnboardingTodoStep);
+    const dismissed = dto.dismissed ?? null;
+
+    const rows = await this.prisma.$queryRaw<
+      { onboardingTodoDone: string[]; onboardingTodoDismissed: boolean }[]
+    >`
+      UPDATE "users"
+      SET "onboardingTodoDone" = ARRAY(
+            SELECT DISTINCT unnest("onboardingTodoDone" || ${done}::text[])
+          ),
+          "onboardingTodoDismissed" = COALESCE(
+            ${dismissed}::boolean,
+            "onboardingTodoDismissed"
+          )
+      WHERE "id" = ${userId}
+      RETURNING "onboardingTodoDone", "onboardingTodoDismissed"
+    `;
+    const row = rows[0];
+    if (!row) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+    return {
+      done: row.onboardingTodoDone.filter(isOnboardingTodoStep),
+      dismissed: row.onboardingTodoDismissed,
+    };
   }
 }

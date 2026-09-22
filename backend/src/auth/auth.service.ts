@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   UnauthorizedException,
+  type OnModuleInit,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -36,8 +37,44 @@ const EMAIL_SEND_DAILY_LIMIT = 10;
 const MAX_FAILED_LOGIN_ATTEMPTS = 8;
 const LOGIN_LOCKOUT_MS = 15 * 60 * 1000;
 
+/*
+  Cod FIX de verificare, doar pentru medii de test.
+
+  Zona de test nu trimite email (MAIL_FROM e o adresă `.invalid`), deci un cod
+  aleator nu ajunge nicăieri și trebuie citit de fiecare dată din baza de date.
+  Cu variabila asta setată, codul e mereu același și te poți înregistra fără
+  să ai acces la inbox.
+
+  PERICOL - de ce NU se pune niciodată în producție: același generator dă și
+  codurile de RESETARE A PAROLEI (vezi requestPasswordReset). Cu un cod fix,
+  oricine ar putea confirma emailul altcuiva și, mai rău, ar putea reseta
+  parola oricărui cont doar știind adresa de email. E acceptabil exclusiv acolo
+  unde datele sunt de unică folosință.
+
+  Implicit e oprit. Se activează punând `TEST_FIXED_VERIFICATION_CODE=123456`
+  în `.env.test` - niciodată în `.env`.
+*/
+const FIXED_VERIFICATION_CODE = (() => {
+  const raw = process.env.TEST_FIXED_VERIFICATION_CODE?.trim();
+  if (!raw) return null;
+  // Exact șase cifre: restul codului compară lungimi (vezi `codesMatch`), iar o
+  // valoare de altă formă ar face verificarea să eșueze mereu, ceea ce ar părea
+  // un bug, nu o configurare greșită.
+  if (!/^\d{6}$/.test(raw)) {
+    throw new Error(
+      `TEST_FIXED_VERIFICATION_CODE trebuie să fie exact 6 cifre, am primit „${raw}"`,
+    );
+  }
+  return raw;
+})();
+
 /** Cod de confirmare pe 6 cifre - mai simplu de introdus manual decât un link, imun la cache-ul browserului. */
 function generateVerificationCode(): string {
+  // Înlocuim doar GENERAREA, nu și verificarea: `codesMatch` rămâne o
+  // comparație în timp constant pe codul chiar stocat în baza de date. Așa,
+  // dacă variabila se stinge, codurile emise înainte continuă să funcționeze
+  // normal, iar logica de verificare n-are nicio ramură „de test" în ea.
+  if (FIXED_VERIFICATION_CODE) return FIXED_VERIFICATION_CODE;
   return crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
 }
 
@@ -59,8 +96,23 @@ interface PendingLoginTokens {
 }
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly logger = new Logger(AuthService.name);
+
+  /*
+    Un cod fix de verificare trebuie să se VADĂ în loguri la fiecare pornire.
+    O variabilă de mediu uitată pe un server e invizibilă; o linie de avertizare
+    la boot e primul lucru pe care îl vezi când te uiți de ce merge ceva ciudat.
+  */
+  onModuleInit() {
+    if (FIXED_VERIFICATION_CODE) {
+      this.logger.warn(
+        `TEST_FIXED_VERIFICATION_CODE este ACTIV (${FIXED_VERIFICATION_CODE}). ` +
+          'Codurile de verificare ȘI cele de resetare a parolei sunt previzibile. ' +
+          'Nu folosi asta pe un mediu cu utilizatori reali.',
+      );
+    }
+  }
 
   // Coduri de schimb pentru fluxul OAuth (Google) - single-use, expiră rapid.
   // Token-urile nu mai tranzitează niciodată URL-ul de redirect al browserului,
@@ -331,9 +383,22 @@ export class AuthService {
     }
 
     if (!user.isEmailVerified) {
-      throw new UnauthorizedException(
-        'Trebuie să îți confirmi email-ul înainte de a te autentifica',
-      );
+      /*
+        `code` alături de mesaj, ca frontendul să poată DUCE omul la ecranul de
+        confirmare, nu doar să-i arate textul.
+
+        Fără un marcaj citibil de mașină, singura variantă ar fi ghicitul după
+        mesaj - care e tradus, deci s-ar rupe la prima limbă nouă. Cazul real:
+        cineva se înregistrează, iese din ecranul de cod, și după aceea
+        autentificarea îi spunea „confirmă-ți emailul" fără să existe vreun
+        drum înapoi spre câmpul de cod. Cont creat, imposibil de folosit.
+      */
+      throw new UnauthorizedException({
+        statusCode: 401,
+        error: 'Unauthorized',
+        code: 'EMAIL_NOT_VERIFIED',
+        message: 'Trebuie să îți confirmi email-ul înainte de a te autentifica',
+      });
     }
 
     if (user.failedLoginAttempts > 0 || user.lockedUntil) {

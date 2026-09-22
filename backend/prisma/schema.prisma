@@ -179,6 +179,19 @@ model User {
   /// cu scor. Fără efect pentru userii ne-admin - ei nu văd niciodată scorul.
   showAllListingScores Boolean @default(false)
 
+  /// Lista „Primii pași" de pe Home (vezi onboarding_todo_controller.dart).
+  /// Ține de cont, nu de dispozitiv: altfel cineva care și-a importat
+  /// biblioteca de pe laptop vedea din nou lista goală pe telefon.
+  ///
+  /// Pașii sunt ținuți ca text liber, nu ca enum: setul lor e o decizie de
+  /// UI (azi tutorial/bookMatch/import/shortcuts), se schimbă odată cu
+  /// ecranele, iar o valoare rămasă de la un pas scos nu trebuie să ceară o
+  /// migrare - backendul o validează la scriere și o ignoră la citire.
+  /// Valorile sunt numele din `enum OnboardingTodo` din frontend.
+  onboardingTodoDone      String[] @default([])
+  /// „×" pe card: lista nu mai apare, dar bifele rămân.
+  onboardingTodoDismissed Boolean  @default(false)
+
   // Book Match (swipe) - starea profilului de swipe. Vezi BookMatchService.
   // Cât timp onboardingSwipesCount < 50 suntem în „cold start": coada vine
   // dintr-un pool curatoriat pe genuri, iar fiecare swipe contează mai mult
@@ -201,6 +214,11 @@ model User {
   // șterge efectiv contul după expirare. NULL = neprogramat. Anularea = set
   // pe NULL. Vezi AccountDeletionService.
   deletionScheduledAt DateTime?
+
+  /// Emailul de bun venit trimis la 3 zile după înregistrare (sfaturi + link
+  /// de feedback). Timestamp, nu boolean, ca să se vadă CÂND a plecat, și
+  /// nullable ca marcaj de „încă nu" - vezi WelcomeEmailService.
+  welcomeEmailSentAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
