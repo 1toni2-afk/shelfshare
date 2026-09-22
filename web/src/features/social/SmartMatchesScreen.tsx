@@ -3,11 +3,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { ArrowLeftRight } from 'lucide-react';
-import { socialKeys, statsRepository } from './socialRepository';
+import { socialKeys, statsRepository, type SmartMatchBook } from './socialRepository';
 import { BookCover } from '@/components/ui/BookCover';
 import { Avatar } from '@/components/ui/Avatar';
 import { ErrorNotice, Spinner } from '@/components/ui';
-import type { UserBook } from '@/types/models';
 
 /**
  * Potriviri de schimb: useri care au o carte pe care o vreau ȘI vor o carte pe
@@ -52,18 +51,18 @@ export function SmartMatchesScreen() {
       ) : (
         <ul className="flex flex-col gap-4">
           {matches.data.map((match) => {
-            const name = match.user.name ?? match.user.username ?? t('commonUnknownUser');
+            const name = match.owner.name ?? match.owner.username ?? t('commonUnknownUser');
             return (
-              <li key={match.user.id} className="rounded-[16px] border border-border bg-card p-4">
+              <li key={match.owner.id} className="rounded-[16px] border border-border bg-card p-4">
                 <Link
-                  to={`/users/${match.user.id}`}
+                  to={`/users/${match.owner.id}`}
                   className="mb-4 flex items-center gap-3 hover:underline"
                 >
-                  <Avatar src={match.user.profileImage} name={name} size={40} />
+                  <Avatar src={match.owner.profileImage} name={name} size={40} />
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{name}</p>
-                    {match.user.city && (
-                      <p className="truncate text-sm text-muted-foreground">{match.user.city}</p>
+                    {match.owner.city && (
+                      <p className="truncate text-sm text-muted-foreground">{match.owner.city}</p>
                     )}
                   </div>
                 </Link>
@@ -71,12 +70,12 @@ export function SmartMatchesScreen() {
                 {/* Cele două coloane sunt simetrice dinadins: potrivirea are
                     sens doar dacă se văd simultan ambele direcții. */}
                 <div className="grid gap-4 min-[560px]:grid-cols-[1fr_auto_1fr] min-[560px]:items-center">
-                  <BookStrip title={t('smartMatchesTheyHave')} books={match.theyHave} />
+                  <BookStrip title={t('smartMatchesTheyHave')} books={match.theirBooks} />
                   <ArrowLeftRight
                     size={20}
                     className="mx-auto hidden shrink-0 text-muted-foreground min-[560px]:block"
                   />
-                  <BookStrip title={t('smartMatchesTheyWant')} books={match.theyWant} />
+                  <BookStrip title={t('smartMatchesTheyWant')} books={match.myBooksTheyWant} />
                 </div>
               </li>
             );
@@ -87,7 +86,7 @@ export function SmartMatchesScreen() {
   );
 }
 
-function BookStrip({ title, books }: { title: string; books: UserBook[] }) {
+function BookStrip({ title, books }: { title: string; books: SmartMatchBook[] }) {
   return (
     <div className="min-w-0">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -95,13 +94,13 @@ function BookStrip({ title, books }: { title: string; books: UserBook[] }) {
       </p>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {books.slice(0, 6).map((item) => (
-          <Link key={item.id} to={`/books/${item.id}`} className="w-[52px] shrink-0">
+          <Link
+            key={item.userBookId}
+            to={`/books/${item.userBookId}`}
+            className="w-[52px] shrink-0"
+          >
             <div className="aspect-[5/7] overflow-hidden rounded-lg bg-muted">
-              <BookCover
-                url={item.book.coverUrl}
-                fallbackUrl={item.mainPhotoUrl}
-                title={item.book.title}
-              />
+              <BookCover url={item.coverUrl} title={item.title} />
             </div>
           </Link>
         ))}

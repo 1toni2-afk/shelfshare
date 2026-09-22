@@ -1,5 +1,5 @@
 import { api } from '@/lib/api/client';
-import type { Book, PublicUser, UserBook } from '@/types/models';
+import type { Book, PublicUser } from '@/types/models';
 
 export interface Group {
   id: string;
@@ -31,12 +31,25 @@ export interface GroupDetail extends Group {
   members?: PublicUser[];
 }
 
+/**
+ * Un exemplar dintr-o potrivire. Backendul întoarce o proiecție plată
+ * (`userBookId`, `title`, `coverUrl`), NU un `UserBook` întreg - vezi
+ * getSmartMatches din backend/src/books/books.service.ts.
+ */
+export interface SmartMatchBook {
+  /** Id-ul anunțului, nu al cărții din catalog: cu el se deschide /books/:id. */
+  userBookId: string;
+  title: string;
+  coverUrl: string | null;
+}
+
 export interface SmartMatch {
-  user: PublicUser;
+  /** Numele câmpului vine din API (`owner`), nu `user`. */
+  owner: PublicUser;
   /** Cărți pe care le are el și le vreau eu. */
-  theyHave: UserBook[];
+  theirBooks: SmartMatchBook[];
   /** Cărți pe care le am eu și le vrea el. */
-  theyWant: UserBook[];
+  myBooksTheyWant: SmartMatchBook[];
 }
 
 /**
