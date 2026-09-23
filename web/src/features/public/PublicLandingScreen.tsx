@@ -8,8 +8,8 @@ import {
   BookOpen,
   Compass,
   Heart,
+  House,
   Images,
-  LayoutGrid,
   Map as MapIcon,
   MessageCircle,
   Repeat,
@@ -312,7 +312,7 @@ function MenuGuide() {
 
   const main = [
     {
-      icon: <LayoutGrid size={20} />,
+      icon: <House size={20} />,
       title: t('navHome', 'Acasă'),
       text: t(
         'landingMenuHome',
