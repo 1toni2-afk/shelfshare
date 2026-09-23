@@ -349,6 +349,22 @@ const STRINGS = {
   },
 };
 
+/**
+ * Adresa unei pagini plain-HTML in limba ceruta.
+ *
+ * Paginile EXISTA in toate cele patru limbi (vezi TRANSLATED_PAGES din
+ * scripts/static-pages.js), dar linkurile din pagina pre-randata erau scrise
+ * fix: `/privacy`. Adica o pagina servita in germana trimitea spre politica de
+ * confidentialitate in romana, desi `/de/privacy` era acolo si chiar e in
+ * sitemap. Traducerea nu lipsea - lipsea drumul spre ea.
+ *
+ * Oglinda lui staticPageUrl din web/src/lib/staticPages.ts.
+ */
+function staticPageUrl(slug, locale) {
+  const lang = localeOf(locale);
+  return lang === DEFAULT_LOCALE ? `/${slug}` : `/${lang}/${slug}`;
+}
+
 /** Textele limbii cerute. */
 function s(locale) {
   return STRINGS[localeOf(locale)];
@@ -672,10 +688,10 @@ async function landingMeta(locale) {
         <li><a href="/browse">${escapeHtml(t.fullCatalogue)}</a></li>
         <li><a href="/leaderboard">${escapeHtml(t.readersLeaderboard)}</a></li>
         <li><a href="/global-stats">${escapeHtml(t.globalStats)}</a></li>
-        <li><a href="/help-center">${escapeHtml(t.faq)}</a></li>
-        <li><a href="/safety-center">${escapeHtml(t.safetyCenter)}</a></li>
-        <li><a href="/privacy">${escapeHtml(t.privacy)}</a></li>
-        <li><a href="/terms">${escapeHtml(t.terms)}</a></li>
+        <li><a href="${staticPageUrl('help-center', locale)}">${escapeHtml(t.faq)}</a></li>
+        <li><a href="${staticPageUrl('safety-center', locale)}">${escapeHtml(t.safetyCenter)}</a></li>
+        <li><a href="${staticPageUrl('privacy', locale)}">${escapeHtml(t.privacy)}</a></li>
+        <li><a href="${staticPageUrl('terms', locale)}">${escapeHtml(t.terms)}</a></li>
       </ul>
     `,
   };

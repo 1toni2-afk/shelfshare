@@ -28,6 +28,7 @@ import { TypewriterText, type TypewriterPhrase } from '@/components/ui/Typewrite
 import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
 import { LANDING_META } from '@/lib/seo/routes';
 import type { UserBook } from '@/types/models';
+import { staticPageUrl } from '@/lib/staticPages';
 
 /**
  * Câte RÂNDURI de anunțuri vede vizitatorul: ultimele adăugate, o tăietură.
@@ -63,7 +64,7 @@ const GUEST_PREVIEW_LIMIT = 24;
  * scripts/beta-seo.js trebuie să spună același lucru.
  */
 export function PublicLandingScreen({ decorative = false }: { decorative?: boolean } = {}) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   /*
     `decorative`: aceeași pagină e randată și estompat, ca fundal al ecranelor
     de autentificare (vezi AuthLayout). Acolo NU are voie să atingă `<head>` -
@@ -210,11 +211,17 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
             {/* `<a>`, nu `<Link>`: paginile astea sunt HTML servit direct de
                 beta-server.js, nu rute ale routerului din browser. */}
-            <a href="/safety-center" className="text-sm font-semibold text-accent">
-              {t('settingsSafetyCenter', 'Centrul de siguranță')}
+            <a
+              href={staticPageUrl('safety-center', i18n.language)}
+              className="text-sm font-semibold text-accent"
+            >
+              {t('settingsSafetyCenter')}
             </a>
-            <a href="/help-center" className="text-sm font-semibold text-accent">
-              {t('settingsHelpCenter', 'Întrebări frecvente')}
+            <a
+              href={staticPageUrl('help-center', i18n.language)}
+              className="text-sm font-semibold text-accent"
+            >
+              {t('settingsHelpCenter')}
             </a>
           </div>
         </section>

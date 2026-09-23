@@ -9,13 +9,14 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { staticPageUrl } from '@/lib/staticPages';
 
 /**
  * Panoul din dreapta al chatului pe desktop, cât timp nu e deschisă nicio
  * conversație. Port al `_ChatSafetyPage` din conversations_list_screen.dart.
  */
 export function ChatSafetyPane() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <div className="mx-auto w-full max-w-[620px] px-6 py-8">
@@ -54,7 +55,7 @@ export function ChatSafetyPane() {
       <SafetyQuiz />
 
       <a
-        href="/safety-center"
+        href={staticPageUrl('safety-center', i18n.language)}
         target="_blank"
         rel="noreferrer"
         className="mt-6 inline-flex items-center gap-2 rounded-[12px] border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted"

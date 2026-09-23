@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { ErrorNotice, Spinner } from '@/components/ui';
+import { staticPageUrl, type StaticPageSlug } from '@/lib/staticPages';
 
 /**
  * Paginile publice (centrul de siguranță, întrebări frecvente, despre
@@ -33,20 +34,7 @@ const PAGES = {
   terms: { titleKey: 'profileTermsOfService' },
 } as const;
 
-export type StaticPageSlug = keyof typeof PAGES;
-
-/**
- * Limbile în care există paginile traduse (vezi TRANSLATED_PAGES din
- * scripts/static-pages.js - toate cele cinci pagini au acum toate limbile).
- */
-const PAGE_LANGS = ['ro', 'en', 'de', 'hu'];
-
-function urlFor(slug: StaticPageSlug, language: string): string {
-  // Româna e implicită și stă în rădăcină; restul sub prefixul lor. O limbă pe
-  // care n-o avem tradusă cade pe română, nu pe o adresă inexistentă.
-  const lang = language.split('-')[0];
-  return lang === 'ro' || !PAGE_LANGS.includes(lang) ? `/${slug}` : `/${lang}/${slug}`;
-}
+export type { StaticPageSlug };
 
 /**
  * Extrage `<main>` din pagină.
@@ -81,7 +69,7 @@ export function StaticPageScreen() {
   const content = useQuery({
     queryKey: ['static-page', slug, i18n.language],
     queryFn: async ({ signal }) => {
-      const response = await fetch(urlFor(slug!, i18n.language), { signal });
+      const response = await fetch(staticPageUrl(slug!, i18n.language), { signal });
       if (!response.ok) throw new Error(String(response.status));
       return extractMain(await response.text());
     },

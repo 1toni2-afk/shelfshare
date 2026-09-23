@@ -45,6 +45,7 @@ import {
   type ShortcutSpec,
 } from './sidebarShortcuts';
 import { useCompleteOnboardingTodo } from '@/features/home/onboardingTodo';
+import { staticPageUrl, type StaticPageSlug } from '@/lib/staticPages';
 
 /** kSidebarBreakpoint din main_scaffold.dart. */
 const DESKTOP_BREAKPOINT = 900;
@@ -204,16 +205,16 @@ export function AppShell() {
  * Deci `<a>` obișnuit, nu `<Link>`: un `<Link>` le-ar rezolva prin routerul din
  * browser, care n-are rutele astea și ar afișa „pagină inexistentă".
  */
-const FOOTER_LINKS: Array<{ href: string; labelKey: string }> = [
-  { href: '/help-center', labelKey: 'settingsHelpCenter' },
-  { href: '/safety-center', labelKey: 'settingsSafetyCenter' },
-  { href: '/about-dev', labelKey: 'settingsAboutDev' },
-  { href: '/privacy', labelKey: 'settingsPrivacy' },
-  { href: '/terms', labelKey: 'settingsTerms' },
+const FOOTER_LINKS: Array<{ slug: StaticPageSlug; labelKey: string }> = [
+  { slug: 'help-center', labelKey: 'settingsHelpCenter' },
+  { slug: 'safety-center', labelKey: 'settingsSafetyCenter' },
+  { slug: 'about-dev', labelKey: 'settingsAboutDev' },
+  { slug: 'privacy', labelKey: 'settingsPrivacy' },
+  { slug: 'terms', labelKey: 'settingsTerms' },
 ];
 
 function GuestFooter() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isGuest } = useGuestGate();
   if (!isGuest) return null;
 
@@ -223,8 +224,8 @@ function GuestFooter() {
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
           {FOOTER_LINKS.map((item) => (
             <a
-              key={item.href}
-              href={item.href}
+              key={item.slug}
+              href={staticPageUrl(item.slug, i18n.language)}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               {t(item.labelKey)}
