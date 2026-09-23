@@ -1,5 +1,8 @@
 import type { TokenStorage } from '@/lib/storage/tokenStorage';
 import { webTokenStorage } from '@/lib/storage/tokenStorage';
+// Instanța i18next direct, nu `useTranslation`: fișierul ăsta nu e o
+// componentă React, iar mesajele de mai jos ajung totuși pe ecran.
+import i18n from '@/lib/i18n';
 
 declare const __API_BASE_URL__: string;
 
@@ -257,14 +260,14 @@ function extractMessage(data: unknown): string {
     if (Array.isArray(message)) return message.join(', ');
     if (message != null) return String(message);
   }
-  return 'A apărut o eroare. Încearcă din nou.';
+  return i18n.t('commonGenericError');
 }
 
 function networkMessage(error: unknown): string {
   if (error instanceof DOMException && error.name === 'TimeoutError') {
-    return 'Serverul nu a răspuns la timp. Încearcă din nou.';
+    return i18n.t('errorTimeout');
   }
-  return 'A apărut o eroare. Încearcă din nou.';
+  return i18n.t('commonGenericError');
 }
 
 function ensureTrailingSlash(url: string): string {

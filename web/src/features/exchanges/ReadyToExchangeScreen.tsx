@@ -90,7 +90,7 @@ export function ReadyToExchangeScreen({ kind }: { kind: 'exchange' | 'offer' }) 
           });
         default:
           // Ofertele n-au pașii de siguranță și de contestare pe backend.
-          throw new Error('Acțiune indisponibilă pentru oferte');
+          throw new Error(t('exchangeOffersActionUnavailable'));
       }
     },
     onSuccess: invalidate,

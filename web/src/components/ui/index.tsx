@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
 
@@ -133,10 +134,11 @@ export function Card({ className, children }: { className?: string; children: Re
 }
 
 export function Spinner({ size = 20, className }: { size?: number; className?: string }) {
+  const { t } = useTranslation();
   return (
     <span
       role="status"
-      aria-label="Se încarcă"
+      aria-label={t('commonLoading')}
       style={{ width: size, height: size, borderWidth: Math.max(2, size / 10) }}
       className={cn(
         'inline-block animate-spin rounded-full border-current border-t-transparent opacity-70',
@@ -156,12 +158,13 @@ export function FullScreenLoader() {
 }
 
 export function ErrorNotice({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-3 rounded-[16px] border border-border bg-card p-6 text-center">
       <p className="text-danger-text">{message}</p>
       {onRetry && (
         <Button variant="outline" onClick={onRetry}>
-          Încearcă din nou
+          {t('commonRetry')}
         </Button>
       )}
     </div>

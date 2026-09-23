@@ -204,12 +204,12 @@ export function AppShell() {
  * Deci `<a>` obișnuit, nu `<Link>`: un `<Link>` le-ar rezolva prin routerul din
  * browser, care n-are rutele astea și ar afișa „pagină inexistentă".
  */
-const FOOTER_LINKS: Array<{ href: string; labelKey: string; fallback: string }> = [
-  { href: '/help-center', labelKey: 'settingsHelpCenter', fallback: 'Întrebări frecvente' },
-  { href: '/safety-center', labelKey: 'settingsSafetyCenter', fallback: 'Centrul de siguranță' },
-  { href: '/about-dev', labelKey: 'settingsAboutDev', fallback: 'Despre dezvoltator' },
-  { href: '/privacy', labelKey: 'settingsPrivacy', fallback: 'Confidențialitate' },
-  { href: '/terms', labelKey: 'settingsTerms', fallback: 'Termeni și condiții' },
+const FOOTER_LINKS: Array<{ href: string; labelKey: string }> = [
+  { href: '/help-center', labelKey: 'settingsHelpCenter' },
+  { href: '/safety-center', labelKey: 'settingsSafetyCenter' },
+  { href: '/about-dev', labelKey: 'settingsAboutDev' },
+  { href: '/privacy', labelKey: 'settingsPrivacy' },
+  { href: '/terms', labelKey: 'settingsTerms' },
 ];
 
 function GuestFooter() {
@@ -227,15 +227,12 @@ function GuestFooter() {
               href={item.href}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
-              {t(item.labelKey, item.fallback)}
+              {t(item.labelKey)}
             </a>
           ))}
         </nav>
         <p className="mt-5 text-xs text-muted-foreground">
-          {t(
-            'publicFooterTagline',
-            'ShelfShare - comunitatea de cititori din România care își dau cărțile mai departe.',
-          )}
+          {t('publicFooterTagline')}
         </p>
       </div>
     </footer>

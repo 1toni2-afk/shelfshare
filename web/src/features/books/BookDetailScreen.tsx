@@ -15,7 +15,8 @@ import { Button, ErrorNotice, Spinner } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { SellerName, useGuestGate } from '@/features/auth/GuestGate';
 import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
-import { bookTitle, type DocumentMeta } from '@/lib/seo/routes';
+import { SITE_NAME, type DocumentMeta } from '@/lib/seo/routes';
+import i18n from '@/lib/i18n';
 import { toNumber, type BookCondition, type PublicUser, type UserBook } from '@/types/models';
 
 /**
@@ -83,16 +84,24 @@ function bookDocumentMeta(item: UserBook, userBookId: string): DocumentMeta {
   const price = toNumber(item.salePrice);
   const forSale = item.isForSale && price !== null && price > 0;
   const cover = item.mainPhotoUrl ?? item.book.coverUrl ?? undefined;
-  const byline = item.book.author ? `${item.book.title} de ${item.book.author}` : item.book.title;
+  /*
+    Instanța i18next direct: funcția asta nu e o componentă, dar ce produce
+    ajunge în `<head>` - titlul din tab și cardul de la „distribuie". Netradus,
+    un vizitator pe engleză ar primi pagina în engleză și titlul în română.
+    Formulările rămân în oglindă cu STRINGS din scripts/beta-seo.js, care
+    pre-randează aceleași pagini pentru crawlere.
+  */
+  const byline = item.book.author
+    ? i18n.t('seoBookByline', { title: item.book.title, author: item.book.author })
+    : item.book.title;
+  const city = item.city ? i18n.t('seoInCity', { city: item.city }) : '';
 
   return {
-    title: bookTitle(item.book.title, item.book.author),
+    title: `${byline} | ${SITE_NAME}`,
     description:
       item.description?.slice(0, 200) ||
       item.book.description?.slice(0, 200) ||
-      `${byline}, disponibilă pe ShelfShare${item.city ? ` în ${item.city}` : ''}${
-        forSale ? ` - ${price} lei` : ' - disponibilă pentru schimb'
-      }.`,
+      i18n.t(forSale ? 'seoBookForSale' : 'seoBookAvailable', { byline, city, price }),
     path: `/books/${userBookId}`,
     image: cover,
     jsonLd: {

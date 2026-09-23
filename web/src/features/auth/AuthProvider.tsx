@@ -10,6 +10,9 @@ import {
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, SESSION_EXPIRED_EVENT } from '@/lib/api/client';
+// `messageOf` e o funcție pură, în afara componentei, deci instanța i18next
+// direct - `useTranslation` e un hook și n-are ce căuta acolo.
+import i18n from '@/lib/i18n';
 import { chatSocket } from '@/lib/socket/chatSocket';
 import { authRepository } from './authRepository';
 import type { AppUser, CaptchaChallenge } from '@/types/models';
@@ -208,7 +211,7 @@ function toFailureState(error: unknown, email: string, password: string): AuthSt
 }
 
 function messageOf(error: unknown): string {
-  return error instanceof ApiError ? error.message : 'A apărut o eroare. Încearcă din nou.';
+  return error instanceof ApiError ? error.message : i18n.t('commonGenericError');
 }
 
 export function useAuth(): AuthContextValue {

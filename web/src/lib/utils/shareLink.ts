@@ -5,10 +5,11 @@
  * Pe web Flutter copia linkul în clipboard și arăta un mesaj; aici folosim în
  * plus Web Share API acolo unde există (telefon, unde Capacitor rulează același
  * cod), fiindcă e exact comportamentul pe care îl are aplicația nativă.
- *
- * Textul mesajului e în română, netradus - la fel ca în Flutter, care are acolo
- * un literal, nu o cheie de traducere.
  */
+// Instanța i18next direct: fișierul nu e o componentă React, dar mesajul pe
+// care îl trimite ajunge într-un toast, sub ochii userului.
+import i18n from '@/lib/i18n';
+
 export async function shareAppLink(
   path: string,
   notify: (message: string) => void,
@@ -26,8 +27,8 @@ export async function shareAppLink(
 
   try {
     await navigator.clipboard.writeText(link);
-    notify('Link copiat în clipboard');
+    notify(i18n.t('shareLinkCopied'));
   } catch {
-    notify('Link copiat în clipboard');
+    notify(i18n.t('shareLinkCopied'));
   }
 }

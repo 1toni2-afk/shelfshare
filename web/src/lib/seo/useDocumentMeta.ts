@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { DEFAULT_DESCRIPTION, SITE_NAME, type DocumentMeta } from './routes';
+import { SITE_NAME, type DocumentMeta } from './routes';
+// Instanta i18next direct: hook-ul asta ruleaza si inainte ca o componenta sa
+// fi cerut traducerile, iar descrierea implicita ajunge in `<meta>`.
+import i18n from '@/lib/i18n';
 
 /**
  * Originea publică a site-ului, pentru URL-uri canonice absolute.
@@ -39,17 +42,17 @@ export function useDocumentMeta(meta: DocumentMeta | null): void {
     const url = origin() + path;
     document.title = title;
 
-    setMeta('name', 'description', description || DEFAULT_DESCRIPTION);
+    setMeta('name', 'description', description || i18n.t('seoDefaultDescription'));
     setLink('canonical', url);
 
     setMeta('property', 'og:type', 'website');
     setMeta('property', 'og:site_name', SITE_NAME);
     setMeta('property', 'og:title', title);
-    setMeta('property', 'og:description', description || DEFAULT_DESCRIPTION);
+    setMeta('property', 'og:description', description || i18n.t('seoDefaultDescription'));
     setMeta('property', 'og:url', url);
     setMeta('name', 'twitter:card', image ? 'summary_large_image' : 'summary');
     setMeta('name', 'twitter:title', title);
-    setMeta('name', 'twitter:description', description || DEFAULT_DESCRIPTION);
+    setMeta('name', 'twitter:description', description || i18n.t('seoDefaultDescription'));
     if (image) {
       setMeta('property', 'og:image', image);
       setMeta('name', 'twitter:image', image);

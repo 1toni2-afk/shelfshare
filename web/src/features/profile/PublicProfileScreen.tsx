@@ -61,11 +61,14 @@ export function PublicProfileScreen() {
     profile.data
       ? {
           title: profileTitle(profile.data.name ?? profile.data.username ?? 'Cititor'),
+          // Tradusă - vezi nota din GroupDetailScreen.
           description:
             profile.data.bio ||
-            `Profilul lui ${profile.data.name ?? profile.data.username} pe ShelfShare${
-              profile.data.city ? ` (${profile.data.city})` : ''
-            } - ${profile.data.listedBooks?.length ?? 0} cărți listate.`,
+            t('seoProfileDescription', {
+              name: profile.data.name ?? profile.data.username,
+              city: profile.data.city ? ` (${profile.data.city})` : '',
+              count: profile.data.listedBooks?.length ?? 0,
+            }),
           path: `/users/${userId}`,
           image: profile.data.profileImage ?? undefined,
           jsonLd: {

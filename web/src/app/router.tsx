@@ -553,5 +553,5 @@ export const router = createBrowserRouter([
     ],
   },
 
-  { path: '*', element: <NotPortedYet name="Pagină inexistentă" notFound /> },
+  { path: '*', element: <NotPortedYet notFound /> },
 ]);

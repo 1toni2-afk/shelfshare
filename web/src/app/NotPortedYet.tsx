@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Construction } from 'lucide-react';
 
 /**
@@ -8,20 +9,26 @@ import { Construction } from 'lucide-react';
  * Fără el, orice rută neportată ar cădea pe 404, iar cine testează ar raporta
  * zeci de bug-uri inexistente. Dispare complet la paritate.
  */
-export function NotPortedYet({ name, notFound = false }: { name: string; notFound?: boolean }) {
+export function NotPortedYet({
+  name,
+  notFound = false,
+}: {
+  /** Titlul afișat. Omis pentru 404, unde titlul vine din traduceri. */
+  name?: string;
+  notFound?: boolean;
+}) {
+  const { t } = useTranslation();
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
       <span className="rounded-2xl bg-muted p-4 text-muted-foreground">
         <Construction size={28} />
       </span>
-      <h1 className="font-display text-xl font-bold">{name}</h1>
+      <h1 className="font-display text-xl font-bold">{name ?? t('notFoundTitle')}</h1>
       <p className="text-muted-foreground">
-        {notFound
-          ? 'Adresa asta nu există.'
-          : 'Ecranul nu e încă mutat pe noul frontend. Pe shelfshare.ro funcționează normal.'}
+        {notFound ? t('notFoundBody') : t('notPortedBody')}
       </p>
       <Link to="/" className="text-accent hover:underline">
-        Înapoi la Acasă
+        {t('commonBackHome')}
       </Link>
     </div>
   );

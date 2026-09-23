@@ -23,22 +23,18 @@ export interface DocumentMeta {
 
 export const SITE_NAME = 'ShelfShare';
 
-export const DEFAULT_DESCRIPTION =
-  'ShelfShare - schimbă, vinde sau cumpără cărți second-hand de la alți cititori din România.';
+/*
+  Doar CALEA canonică, nu și textele.
 
-export const LANDING_META: DocumentMeta = {
-  title: 'ShelfShare - schimbă și cumpără cărți second-hand în România',
-  description:
-    'Comunitatea de cititori din România unde cărțile citite își găsesc un cititor nou. Îți listezi cărțile, cauți ce vrei să citești și te înțelegi direct cu proprietarul - prin schimb sau la un preț stabilit de voi.',
-  path: '/',
-};
+  Titlul și descrierea erau aici, fixe, în română. Le-au înlocuit cheile de
+  traducere (`seoLandingTitle`, `seoBrowseTitle` și perechile lor), fiindcă
+  altfel aplicația rescria `<head>`-ul cu varianta românească peste pagina pe
+  care serverul tocmai o livrase în limba vizitatorului. Ecranele compun
+  obiectul întreg: `{ ...LANDING_META, title: t(...), description: t(...) }`.
+*/
+export const LANDING_META: Pick<DocumentMeta, 'path'> = { path: '/' };
 
-export const BROWSE_META: DocumentMeta = {
-  title: 'Catalog de cărți second-hand | ShelfShare',
-  description:
-    'Caută printre cărțile puse la schimb sau la vânzare de cititorii ShelfShare. Filtrează după titlu, autor, gen, stare și oraș.',
-  path: '/browse',
-};
+export const BROWSE_META: Pick<DocumentMeta, 'path'> = { path: '/browse' };
 
 /** Titlul unei pagini de carte. Oglindit în beta-server.js (`bookTitle`). */
 export function bookTitle(title: string, author?: string | null): string {

@@ -225,6 +225,7 @@ function AdminUserRow({
   busy: boolean;
   onAct: (action: 'ban' | 'unban' | 'premium') => void;
 }) {
+  const { t } = useTranslation();
   const name = person.name ?? person.username ?? person.email;
 
   return (
@@ -254,8 +255,8 @@ function AdminUserRow({
       <button
         onClick={() => onAct(person.isBanned ? 'unban' : 'ban')}
         disabled={busy}
-        title={person.isBanned ? 'deblochează' : 'blochează'}
-        aria-label={person.isBanned ? 'deblochează' : 'blochează'}
+        title={t(person.isBanned ? 'adminUserUnblock' : 'adminUserBlock')}
+        aria-label={t(person.isBanned ? 'adminUserUnblock' : 'adminUserBlock')}
         className="shrink-0 rounded-[12px] p-2.5 text-muted-foreground hover:bg-muted hover:text-danger-text disabled:opacity-50"
       >
         <ShieldOff size={18} />

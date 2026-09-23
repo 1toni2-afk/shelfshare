@@ -36,9 +36,11 @@ export function GroupDetailScreen() {
     group.data
       ? {
           title: groupTitle(group.data.name),
+          // Tradusă, ca descrierea din `<head>` să fie în limba paginii - vezi
+          // STRINGS din scripts/beta-seo.js, cu care trebuie să rămână identică.
           description:
             group.data.description ||
-            `${group.data.name} - club de lectură pe ShelfShare, cu ${group.data.memberCount} membri.`,
+            t('seoGroupDescription', { name: group.data.name, count: group.data.memberCount }),
           path: `/groups/${id}`,
         }
       : null,

@@ -95,9 +95,10 @@ export const i18nReady: Promise<void> = (async () => {
 
   loaded.add(initialLocale);
 
-  // Fallback-ul se aduce doar dacă userul chiar e pe altă limbă - și tocmai
-  // pentru cazul real: `de` și `hu` sunt în urmă cu 135 de chei față de `ro`,
-  // deci fără bundle-ul de fallback acele texte ar apărea ca nume de chei.
+  // Fallback-ul se aduce doar dacă userul chiar e pe altă limbă. Cele patru
+  // limbi sunt acum la paritate (vezi numărătoarea tipărită de arb-to-json.mjs
+  // la fiecare build), dar plasa rămâne: prima cheie adăugată doar în `ro` ar
+  // apărea altfel pe ecran ca nume de cheie, nu ca text.
   if (initialLocale !== FALLBACK) {
     await ensureLoaded(FALLBACK);
   }

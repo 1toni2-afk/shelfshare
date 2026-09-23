@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Check, Search } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import { booksRepository } from '@/features/books/booksRepository';
@@ -19,17 +20,18 @@ interface ListingScoreBreakdown {
 }
 
 /**
- * Etichetele evenimentelor, în română și hardcodate - exact ca în Flutter, unde
- * ecranul ăsta n-a trecut prin .arb: e o unealtă internă, văzută doar de
- * admini.
+ * Cheile de traducere ale evenimentelor. Erau texte românești hardcodate, cu
+ * nota „e o unealtă internă, văzută doar de admini" - dar un admin care își
+ * pune aplicația pe engleză vedea jumătate de ecran în română, deci excepția
+ * costa mai mult decât economisea.
  */
-const COUNT_LABELS: Record<string, string> = {
-  UNIQUE_VIEW: 'Vizitatori unici',
-  RETURN_VISIT: 'Reveniri',
-  WISHLIST_ADD: 'Adăugări la favorite',
-  EXCHANGE_REQUEST: 'Cereri de schimb',
-  BUY_OFFER: 'Oferte de preț',
-  REVIEW: 'Refresh-uri (vechi, ignorate)',
+const COUNT_LABEL_KEYS: Record<string, string> = {
+  UNIQUE_VIEW: 'adminScoreEventUniqueView',
+  RETURN_VISIT: 'adminScoreEventReturnVisit',
+  WISHLIST_ADD: 'adminScoreWishlistAdds',
+  EXCHANGE_REQUEST: 'adminScoreEventExchangeRequest',
+  BUY_OFFER: 'adminScorePriceOffers',
+  REVIEW: 'adminScoreEventReview',
 };
 
 /**
@@ -42,6 +44,7 @@ const COUNT_LABELS: Record<string, string> = {
  * aplicație unde apare desfășurat.
  */
 export function AdminListingScoreScreen() {
+  const { t } = useTranslation();
   const toast = useToast();
 
   const [term, setTerm] = useState('');
@@ -87,15 +90,21 @@ export function AdminListingScoreScreen() {
     onSuccess: (updated) => {
       score.refetch().catch(() => {});
       setOverride(updated.manualScoreOverride?.toString() ?? '');
-      toast.show(updated.manualScoreOverride === null ? 'Override eliminat.' : 'Override salvat.');
+      toast.show(
+        t(
+          updated.manualScoreOverride === null
+            ? 'adminScoreOverrideRemoved'
+            : 'adminScoreOverrideSaved',
+        ),
+      );
     },
-    onError: () => toast.show('Salvarea a eșuat.', 'danger'),
+    onError: () => toast.show(t('adminScoreSaveError'), 'danger'),
   });
 
   function submit() {
     const raw = override.trim();
     if (raw !== '' && Number.isNaN(Number(raw))) {
-      toast.show('Scorul trebuie să fie un număr.', 'danger');
+      toast.show(t('adminScoreMustBeNumber'), 'danger');
       return;
     }
     save.mutate();
@@ -106,11 +115,10 @@ export function AdminListingScoreScreen() {
   return (
     <RequireAdmin>
       <div className="mx-auto w-full max-w-[680px] px-5 pb-16 pt-4 min-[900px]:px-8">
-        <ScreenHeader title="Scor de interes anunț" back="/admin" />
+        <ScreenHeader title={t('adminScoreTitle')} back="/admin" />
 
         <p className="mb-4 text-sm text-muted-foreground">
-          Caută un anunț după titlul cărții ca să vezi breakdown-ul scorului de popularitate și de
-          potențial de schimb, sau să suprascrii manual scorul.
+          {t('adminScoreIntro')}
         </p>
 
         <div className="mb-3 flex items-center gap-2 rounded-[16px] bg-muted px-4">
@@ -118,15 +126,15 @@ export function AdminListingScoreScreen() {
           <input
             value={term}
             onChange={(event) => setTerm(event.target.value)}
-            placeholder="Titlul cărții..."
-            aria-label="Titlul cărții"
+            placeholder={t('adminScoreSearchHint')}
+            aria-label={t('adminScoreSearchLabel')}
             className="w-full bg-transparent py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
           {results.isFetching && <Spinner size={16} />}
         </div>
 
         {query.length >= 2 && results.isSuccess && results.data.items.length === 0 ? (
-          <p className="text-muted-foreground">Niciun anunț găsit.</p>
+          <p className="text-muted-foreground">{t('adminScoreNoResults')}</p>
         ) : (
           <ul>
             {(results.data?.items ?? []).map((item) => (
@@ -153,15 +161,13 @@ export function AdminListingScoreScreen() {
 
         <div className="mt-6">
           {!selectedId ? (
-            <p className="text-sm text-muted-foreground">Caută un anunț mai sus ca să-i vezi scorul.</p>
+            <p className="text-sm text-muted-foreground">{t('adminScorePickOne')}</p>
           ) : score.isPending ? (
             <div className="flex h-40 items-center justify-center text-accent">
               <Spinner size={26} />
             </div>
           ) : score.isError ? (
-            <p className="text-sm text-destructive">
-              Nu am putut încărca scorul acestui anunț.
-            </p>
+            <p className="text-sm text-destructive">{t('adminScoreLoadError')}</p>
           ) : breakdown ? (
             <>
               <p className="font-semibold">{breakdown.book.title}</p>
@@ -171,46 +177,46 @@ export function AdminListingScoreScreen() {
 
               <div className="mt-4 flex flex-col gap-2">
                 <ScoreTile
-                  label="Popularitate"
+                  label={t('adminScorePopularity')}
                   value={breakdown.popularityScore}
                   highlighted={breakdown.manualScoreOverride !== null}
                 />
                 <ScoreTile
-                  label="Potențial de schimb"
+                  label={t('adminScoreSwapPotential')}
                   value={breakdown.exchangePotentialScore}
                 />
               </div>
 
-              <h2 className="mt-5 font-semibold">Evenimente (ultimele 30 de zile)</h2>
+              <h2 className="mt-5 font-semibold">{t('adminScoreEventsTitle')}</h2>
               {Object.keys(breakdown.counts).length === 0 ? (
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Niciun eveniment în ultimele 30 de zile.
+                  {t('adminScoreNoEvents')}
                 </p>
               ) : (
                 <ul className="mt-1">
                   {Object.entries(breakdown.counts).map(([key, value]) => (
                     <li key={key} className="flex items-center justify-between py-0.5">
-                      <span>{COUNT_LABELS[key] ?? key}</span>
+                      <span>{COUNT_LABEL_KEYS[key] ? t(COUNT_LABEL_KEYS[key]) : key}</span>
                       <span>{value}</span>
                     </li>
                   ))}
                 </ul>
               )}
 
-              <h2 className="mt-5 font-semibold">Suprascriere manuală (popularitate)</h2>
+              <h2 className="mt-5 font-semibold">{t('adminScoreOverrideLabel')}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Gol = fără override, se folosește scorul calculat.
+                {t('adminScoreOverrideHint')}
               </p>
               <input
                 value={override}
                 onChange={(event) => setOverride(event.target.value)}
                 inputMode="decimal"
                 placeholder="ex: 87"
-                aria-label="Scor manual"
+                aria-label={t('adminScoreManualLabel')}
                 className="mt-2 w-full rounded-[16px] bg-muted px-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
               <Button className="mt-3" onClick={submit} loading={save.isPending}>
-                Salvează
+                {t('commonSave')}
               </Button>
             </>
           ) : null}
@@ -229,6 +235,7 @@ function ScoreTile({
   value: number;
   highlighted?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -239,7 +246,7 @@ function ScoreTile({
       <span>
         {label}
         {highlighted && (
-          <span className="block text-sm text-muted-foreground">Override manual activ</span>
+          <span className="block text-sm text-muted-foreground">{t('adminScoreOverrideActive')}</span>
         )}
       </span>
       <span className="font-display text-xl font-bold">{value.toFixed(1)}</span>
