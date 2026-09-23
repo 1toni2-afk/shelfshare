@@ -16,15 +16,23 @@ import { useEdgeFade } from '@/lib/hooks/useEdgeFade';
  * infinită de „setState în efect fără dependențe stabile".
  */
 const SlotContext = createContext<HTMLElement | null>(null);
+/** Colțul din dreapta al barei de brand, care există doar pe telefon. */
+const BrandSlotContext = createContext<HTMLElement | null>(null);
 
 export function ScreenHeaderSlot({
   slot,
+  brandSlot,
   children,
 }: {
   slot: HTMLElement | null;
+  brandSlot: HTMLElement | null;
   children: ReactNode;
 }) {
-  return <SlotContext value={slot}>{children}</SlotContext>;
+  return (
+    <SlotContext value={slot}>
+      <BrandSlotContext value={brandSlot}>{children}</BrandSlotContext>
+    </SlotContext>
+  );
 }
 
 /**
@@ -41,6 +49,7 @@ export function ScreenHeader({
   actions,
   bottom,
   back,
+  actionsInBrandBar = false,
 }: {
   title?: ReactNode;
   actions?: ReactNode;
@@ -48,14 +57,23 @@ export function ScreenHeader({
   bottom?: ReactNode;
   /** Săgeata de back: `true` = un pas înapoi, string = rută fixă. */
   back?: boolean | string;
+  /**
+   * Pe telefon, acțiunile urcă în bara de brand, lângă logo. Pentru titlurile
+   * lungi (salutul de pe Home): pe lățimea unui telefon titlul centrat nu mai
+   * lasă loc iconițelor, coloana lor se strângea la zero și ele ajungeau peste
+   * text. Așa stau și în Flutter, în capul ecranului.
+   */
+  actionsInBrandBar?: boolean;
 }) {
   const { t } = useTranslation();
   const slot = use(SlotContext);
+  const brandSlot = use(BrandSlotContext);
   const navigate = useNavigate();
   if (!slot) return null;
 
   return createPortal(
     <>
+      {actionsInBrandBar && actions && brandSlot && createPortal(actions, brandSlot)}
       {/*
         Grilă cu trei coloane, nu un rând flex.
 
@@ -96,7 +114,16 @@ export function ScreenHeader({
 
         <h1 className="truncate text-center font-display text-lg font-bold">{title}</h1>
 
-        <div className="flex min-w-0 items-center justify-end">{actions}</div>
+        <div
+          className={cn(
+            'flex min-w-0 items-center justify-end',
+            // Bara de brand dispare de la pragul de sidebar în sus, deci acolo
+            // acțiunile se întorc în bara ecranului.
+            actionsInBrandBar && 'hidden min-[900px]:flex',
+          )}
+        >
+          {actions}
+        </div>
       </div>
       {bottom}
     </>,

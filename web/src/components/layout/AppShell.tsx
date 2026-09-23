@@ -113,6 +113,7 @@ export function AppShell() {
   const [editingShortcuts, setEditingShortcuts] = useState(false);
   // Nodul în care ecranul curent își desenează bara de sus (vezi ScreenHeader).
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  const [brandSlot, setBrandSlot] = useState<HTMLElement | null>(null);
   const location = useLocation();
 
   const openShortcutsEditor = useCallback(() => {
@@ -198,6 +199,8 @@ export function AppShell() {
               </span>
               <span className="truncate font-display text-base font-bold">ShelfShare</span>
             </Link>
+            {/* Acțiunile pe care ecranul le urcă aici (`actionsInBrandBar`). */}
+            <div ref={setBrandSlot} className="ml-auto flex shrink-0 items-center" />
           </div>
 
           {/* Goală până o umple ecranul, deci fără înălțime proprie: un ecran
@@ -206,7 +209,7 @@ export function AppShell() {
         </div>
 
         <main className="min-w-0 flex-1">
-          <ScreenHeaderSlot slot={headerSlot}>
+          <ScreenHeaderSlot slot={headerSlot} brandSlot={brandSlot}>
             <Outlet />
           </ScreenHeaderSlot>
         </main>
