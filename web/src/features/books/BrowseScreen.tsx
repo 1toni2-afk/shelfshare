@@ -47,7 +47,14 @@ const CONDITIONS = [
 export function BrowseScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  useDocumentMeta(BROWSE_META);
+  // Traduse, din același motiv ca la PublicLandingScreen: serverul livrează
+  // deja pagina în limba vizitatorului, iar o constantă românească aici ar
+  // răsturna titlul din tab înapoi pe română după încărcare.
+  useDocumentMeta({
+    ...BROWSE_META,
+    title: t('seoBrowseTitle'),
+    description: t('seoBrowseDescription'),
+  });
   const [params, setParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
 

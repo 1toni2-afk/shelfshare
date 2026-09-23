@@ -19,6 +19,7 @@ const {
   buildSitemap,
   isPrivatePath,
   metaFor,
+  negotiateLocale,
   renderPage,
 } = require('./beta-seo');
 
@@ -169,7 +170,21 @@ http
         });
     }
 
-    const pageMeta = metaFor(reqPath);
+    /*
+      Limba primului cadru, din `Accept-Language`.
+
+      Pana acum HTML-ul pre-randat era scris fix in romana, deci un om cu
+      browserul pe engleza vedea o clipa romana inainte ca aplicatia sa
+      porneasca si sa comute. Antetul asta e exact sursa din care isi alege
+      limba si aplicatia (`navigator.languages`), deci cele doua ajung la
+      acelasi rezultat si tranzitia nu se mai vede.
+
+      Nu e cloaking si nu incalca regula casei: nu ne uitam la User-Agent
+      nicaieri. Un robot care cere engleza primeste ce primeste si un om
+      care cere engleza.
+    */
+    const locale = negotiateLocale(req.headers['accept-language']);
+    const pageMeta = metaFor(reqPath, locale);
     if (pageMeta) {
       /*
         Pagină publică: livrăm shell-ul aplicației CU metadatele și conținutul
@@ -191,12 +206,22 @@ http
           // `meta` null = anunț/profil inexistent sau API mut. Servim shell-ul
           // ca atare: routerul din browser va afișa ecranul de „nu există",
           // iar metadatele rămân cele implicite.
-          .then((meta) => (meta ? renderPage(template, meta) : template))
+          .then((meta) => (meta ? renderPage(template, meta, locale) : template))
           .catch(() => template)
           .then((html) => {
             res.writeHead(200, {
               ...COMMON_HEADERS,
               'Content-Type': mime['.html'],
+              'Content-Language': locale,
+              /*
+                OBLIGATORIU alaturi de negocierea de mai sus: raspunsul
+                depinde acum de `Accept-Language`, deci orice cache de pe drum
+                - inclusiv Cloudflare - trebuie sa tina variante separate. Fara
+                el, primul vizitator ar fixa limba pentru toti ceilalti, iar
+                simptomul ar fi un site care apare in germana pentru romani,
+                intermitent si imposibil de reprodus local.
+              */
+              Vary: 'Accept-Language',
               'Cache-Control': 'no-cache, must-revalidate',
             });
             res.end(html);

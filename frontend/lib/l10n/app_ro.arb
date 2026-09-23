@@ -2884,5 +2884,9 @@
     "guestSellerHidden": "Creează-ți cont ca să vezi cine vinde cartea",
     "loginMadeInEurope": "Europa",
     "commonCountryRomania": "România",
-    "commonCountryEurope": "Uniunea Europeană"
+    "commonCountryEurope": "Uniunea Europeană",
+    "seoLandingTitle": "ShelfShare - schimbă și cumpără cărți second-hand în România",
+    "seoLandingDescription": "Comunitatea de cititori din România unde cărțile citite își găsesc un cititor nou. Îți listezi cărțile, cauți ce vrei să citești și te înțelegi direct cu proprietarul - prin schimb sau la un preț stabilit de voi.",
+    "seoBrowseTitle": "Catalog de cărți second-hand | ShelfShare",
+    "seoBrowseDescription": "Caută printre cărțile puse la schimb sau la vânzare de cititorii ShelfShare. Filtrează după titlu, autor, gen, stare și oraș."
 }

@@ -1992,5 +1992,9 @@
     "guestSellerHidden": "Create an account to see who's selling the book",
     "loginMadeInEurope": "Europe",
     "commonCountryRomania": "Romania",
-    "commonCountryEurope": "European Union"
+    "commonCountryEurope": "European Union",
+    "seoLandingTitle": "ShelfShare - swap and buy second-hand books in Romania",
+    "seoLandingDescription": "The community of readers in Romania where books that have been read find a new reader. You list your books, look for what you want to read and settle it directly with the owner - by swap or at a price the two of you set.",
+    "seoBrowseTitle": "Second-hand book catalogue | ShelfShare",
+    "seoBrowseDescription": "Search through the books put up for swap or sale by ShelfShare readers. Filter by title, author, genre, condition and city."
 }

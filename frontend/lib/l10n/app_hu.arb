@@ -1847,5 +1847,9 @@
     "loginMadeWithLove": "Made with ❤️ in Transylvania",
     "loginMadeInEurope": "Európa",
     "commonCountryRomania": "Románia",
-    "commonCountryEurope": "Európai Unió"
+    "commonCountryEurope": "Európai Unió",
+    "seoLandingTitle": "ShelfShare - használt könyvek cseréje és vásárlása Romániában",
+    "seoLandingDescription": "A romániai olvasók közössége, ahol az elolvasott könyvek új olvasóra találnak. Felteszed a könyveidet, megkeresed, amit olvasni szeretnél, és közvetlenül megegyezel a tulajdonossal - cserével vagy olyan áron, amelyben ti ketten állapodtok meg.",
+    "seoBrowseTitle": "Használt könyvek katalógusa | ShelfShare",
+    "seoBrowseDescription": "Keress a ShelfShare olvasói által cserére vagy eladásra feltett könyvek között. Szűrj cím, szerző, műfaj, állapot és város szerint."
 }

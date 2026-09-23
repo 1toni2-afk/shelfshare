@@ -1847,5 +1847,9 @@
     "loginMadeWithLove": "Made with ❤️ in Transylvania",
     "loginMadeInEurope": "Europa",
     "commonCountryRomania": "Rumänien",
-    "commonCountryEurope": "Europäische Union"
+    "commonCountryEurope": "Europäische Union",
+    "seoLandingTitle": "ShelfShare - gebrauchte Bücher tauschen und kaufen in Rumänien",
+    "seoLandingDescription": "Die Lesergemeinschaft in Rumänien, in der gelesene Bücher einen neuen Leser finden. Du stellst deine Bücher ein, suchst, was du lesen willst, und einigst dich direkt mit dem Besitzer - per Tausch oder zu einem Preis, den ihr beide festlegt.",
+    "seoBrowseTitle": "Katalog gebrauchter Bücher | ShelfShare",
+    "seoBrowseDescription": "Durchsuche die Bücher, die ShelfShare-Leser zum Tausch oder Verkauf eingestellt haben. Filtere nach Titel, Autor, Genre, Zustand und Stadt."
 }

@@ -71,7 +71,23 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
     deveni cele ale paginii de prezentare, iar un link către /login distribuit
     de cineva ar arăta ca pagina principală.
   */
-  useDocumentMeta(decorative ? null : LANDING_META);
+  /*
+    Titlul și descrierea se iau din traduceri, nu din constanta fixă:
+    beta-server.js servește deja pagina în limba din `Accept-Language`, iar
+    dacă aplicația ar rescrie `<head>`-ul cu varianta românească, titlul din
+    tab ar sări înapoi pe română la o secundă după ce s-a încărcat - exact
+    tranziția pe care o eliminăm. Valorile rămân în oglindă cu STRINGS din
+    scripts/beta-seo.js.
+  */
+  useDocumentMeta(
+    decorative
+      ? null
+      : {
+          ...LANDING_META,
+          title: t('seoLandingTitle'),
+          description: t('seoLandingDescription'),
+        },
+  );
 
   // Recalculate doar la schimbarea limbii: un tablou nou la fiecare randare ar
   // reporni animația din prima literă (vezi comentariul din TypewriterText).
