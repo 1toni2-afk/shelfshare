@@ -73,19 +73,21 @@ export function ScreenHeader({
       <div className="grid h-16 grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4">
         <div className="flex min-w-0 items-center justify-start">
           {/*
-            Săgeata apare doar pe desktop. Sub pragul de sidebar, butonul de
-            meniu plutitor stă exact în colțul ăsta și ar acoperi-o - pe telefon
-            întoarcerea o fac gestul sau butonul de sistem (vezi comentariul din
-            main_scaffold.dart). Slotul gol rămâne, ca titlul să nu fie acoperit
-            de buton pe ecranele foarte înguste.
+            Săgeata se vede pe ORICE lățime.
+
+            Era ascunsă sub pragul de sidebar, iar alături stătea un slot gol de
+            48px - amândouă pentru că butonul de meniu plutea fix în colțul
+            ăsta și ar fi acoperit-o. De când butonul stă în bara de brand din
+            AppShell, colțul e liber: ascunderea lăsa ecranele de pe telefon
+            fără niciun drum înapoi în interfață, iar slotul gol ar fi împins
+            acum săgeata cu 48px spre dreapta, degeaba.
           */}
-          <span className="w-12 shrink-0 min-[900px]:hidden" />
           {back && (
             <button
               onClick={() => (typeof back === 'string' ? void navigate(back) : void navigate(-1))}
               aria-label={t('commonBack')}
               title={t('commonBack')}
-              className="hidden shrink-0 rounded-full p-2.5 hover:bg-muted min-[900px]:block"
+              className="shrink-0 rounded-full p-2.5 hover:bg-muted"
             >
               <ArrowLeft size={22} />
             </button>
