@@ -2,24 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import {
-  Bell,
-  BookMarked,
-  BookOpen,
-  Compass,
-  Heart,
-  Images,
-  LayoutGrid,
-  Map as MapIcon,
-  MessageCircle,
-  Repeat,
-  Rss,
-  Search,
-  Sparkles,
-  TrendingUp,
-  Trophy,
-  Users,
-} from 'lucide-react';
+import { BookOpen, Repeat, Search } from 'lucide-react';
 import { booksKeys, booksRepository } from '@/features/books/booksRepository';
 import { BookCard } from '@/features/books/BookCard';
 import { BookGrid, useBookGridColumns } from '@/features/books/BookGrid';
@@ -29,6 +12,8 @@ import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
 import { LANDING_META } from '@/lib/seo/routes';
 import type { UserBook } from '@/types/models';
 import { staticPageUrl } from '@/lib/staticPages';
+import { BookMatchDemo } from './BookMatchDemo';
+import { LandingFeatures } from './LandingFeatures';
 
 /**
  * Câte RÂNDURI de anunțuri vede vizitatorul: ultimele adăugate, o tăietură.
@@ -164,6 +149,8 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
 
         <RecentListings items={recent.data?.items ?? []} loading={recent.isPending} />
 
+        {!decorative && <BookMatchDemo />}
+
         <section className="mt-14">
           <h2 className="font-display text-2xl font-bold">
             {t('landingHowTitle', 'Cum funcționează')}
@@ -196,7 +183,7 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
           </div>
         </section>
 
-        <MenuGuide />
+        <LandingFeatures />
 
         <section className="mt-14 rounded-[16px] border border-border bg-card p-6 min-[900px]:p-8">
           <h2 className="font-display text-2xl font-bold">
@@ -298,134 +285,6 @@ function RecentListings({ items, loading }: { items: UserBook[]; loading: boolea
           </div>
         </div>
       )}
-    </section>
-  );
-}
-
-/**
- * Ce e în meniul din stânga, explicat pe îndelete.
- *
- * Vizitatorul VEDE bara laterală completă (același shell ca userul logat), dar
- * fiecare rând îi cere un cont. Fără explicația asta, meniul e o listă de
- * cuvinte care se termină în același dialog - omul nu are de unde să știe ce
- * primește dacă își face cont. Aici scrie, în ordinea din meniu.
- *
- * Iconițele sunt EXACT cele din AppShell: rândul din explicație și rândul din
- * meniu trebuie să se recunoască unul pe altul dintr-o privire.
- */
-function MenuGuide() {
-  const { t } = useTranslation();
-
-  const main = [
-    {
-      icon: <LayoutGrid size={20} />,
-      title: t('navHome', 'Acasă'),
-      text: t(
-        'landingMenuHome',
-        'Cele mai noi anunțuri, plus rânduri tematice: ce se caută mult, ce e aproape de tine și ce ți s-ar potrivi după cărțile tale.',
-      ),
-    },
-    {
-      icon: <Compass size={20} />,
-      title: t('navSearch', 'Descoperă'),
-      text: t(
-        'landingMenuSearch',
-        'Căutare după titlu, autor sau gen, cu filtre de oraș, stare și preț. Căutările pe care le repeți des se salvează.',
-      ),
-    },
-    {
-      icon: <BookOpen size={20} />,
-      title: t('navLibrary', 'Raftul meu'),
-      text: t(
-        'landingMenuLibrary',
-        'Cărțile tale. Le adaugi scanând ISBN-ul sau le imporți dintr-un fișier Goodreads, apoi spui care sunt la schimb și care la vânzare.',
-      ),
-    },
-    {
-      icon: <Rss size={20} />,
-      title: t('navActivityFeed', 'Activitate'),
-      text: t(
-        'landingMenuFeed',
-        'Ce au mai pus pe raft cititorii pe care îi urmărești - de obicei de acolo apar cărțile bune înainte să le ia altcineva.',
-      ),
-    },
-    {
-      icon: <MessageCircle size={20} />,
-      title: t('navChat', 'Chat'),
-      text: t(
-        'landingMenuChat',
-        'Vorbești direct cu omul care are cartea. Cererile de schimb și ofertele de preț ajung tot aici, ca un card în discuție.',
-      ),
-    },
-    {
-      icon: <Bell size={20} />,
-      title: t('navNotifications', 'Notificări'),
-      text: t(
-        'landingMenuNotifications',
-        'Când cineva îți cere o carte, îți răspunde la o ofertă sau apare pe site un titlu de pe lista ta de dorințe.',
-      ),
-    },
-  ];
-
-  const shortcuts = [
-    { icon: <BookMarked size={18} />, label: t('bookshelfTitle', 'Raftul meu de cărți'), text: t('landingMenuBookshelf', 'Rafturile tale, așa cum le vede lumea.') },
-    { icon: <Repeat size={18} />, label: t('navMyExchanges', 'Schimburile mele'), text: t('landingMenuExchanges', 'Cererile trimise și primite, de la propunere până la predare.') },
-    { icon: <Heart size={18} />, label: t('navWishlist', 'Lista de dorințe'), text: t('landingMenuWishlist', 'Cărțile pe care le vrei; primești un semn când apar.') },
-    { icon: <Images size={18} />, label: t('collectionsTitle', 'Colecții'), text: t('landingMenuCollections', 'Îți grupezi cărțile cum vrei tu: de citit, de dat, de păstrat.') },
-    { icon: <Sparkles size={18} />, label: t('smartMatchesTitle', 'Potriviri de schimb'), text: t('landingMenuMatches', 'Oameni care au ce vrei tu și vor ce ai tu.') },
-    { icon: <Users size={18} />, label: t('shortcutFollowing', 'Urmăriți'), text: t('landingMenuFollowing', 'Cititorii ale căror rafturi le ții aproape.') },
-    { icon: <MapIcon size={18} />, label: t('mapTitle', 'Cărți din apropiere'), text: t('landingMenuMap', 'Aceleași anunțuri, puse pe hartă.') },
-    { icon: <Users size={18} />, label: t('groupsTitle', 'Grupuri'), text: t('landingMenuGroups', 'Cluburi de lectură, cu discuție și cartea lunii.') },
-    { icon: <Trophy size={18} />, label: t('shortcutLeaderboard', 'Clasament'), text: t('landingMenuLeaderboard', 'Cine a dat cele mai multe cărți mai departe.') },
-    { icon: <TrendingUp size={18} />, label: t('globalStatsTitle', 'Statistici globale'), text: t('landingMenuStats', 'Cărțile și autorii care circulă cel mai mult.') },
-  ];
-
-  return (
-    <section className="mt-14">
-      <h2 className="font-display text-2xl font-bold">
-        {t('landingMenuTitle', 'Ce găsești în meniu')}
-      </h2>
-      <p className="mt-2 max-w-[70ch] text-muted-foreground">
-        {t(
-          'landingMenuIntro',
-          'Meniul din stânga e aplicația întreagă. Îl vezi de pe acum; ca să-l deschizi, ai nevoie de un cont.',
-        )}
-      </p>
-
-      <div className="mt-6 grid gap-4 min-[700px]:grid-cols-2 min-[1100px]:grid-cols-3">
-        {main.map((item) => (
-          <div key={item.title} className="rounded-[16px] border border-border bg-card p-5">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-flex rounded-lg bg-accent/15 p-2 text-accent">
-                {item.icon}
-              </span>
-              <h3 className="font-display text-lg font-bold">{item.title}</h3>
-            </div>
-            <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
-          </div>
-        ))}
-      </div>
-
-      <h3 className="mt-8 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-        {t('navShortcuts', 'SCURTĂTURI')}
-      </h3>
-      <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground">
-        {t(
-          'landingMenuShortcutsIntro',
-          'Sub meniul principal îți alegi singur ce scurtături stau la vedere. Astea sunt toate:',
-        )}
-      </p>
-      <ul className="mt-4 grid gap-x-8 gap-y-3 min-[700px]:grid-cols-2">
-        {shortcuts.map((item) => (
-          <li key={item.label} className="flex items-start gap-2.5">
-            <span className="mt-0.5 shrink-0 text-accent">{item.icon}</span>
-            <span className="text-sm leading-relaxed">
-              <span className="font-semibold">{item.label}</span>{' '}
-              <span className="text-muted-foreground">{item.text}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
