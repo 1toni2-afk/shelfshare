@@ -9,8 +9,9 @@ import {
   Check,
   Compass,
   Heart,
+  House,
   Images,
-  LayoutGrid,
+  Instagram,
   Map,
   Menu,
   MessageCircle,
@@ -50,6 +51,8 @@ import { staticPageUrl, type StaticPageSlug } from '@/lib/staticPages';
 /** kSidebarBreakpoint din main_scaffold.dart. */
 const DESKTOP_BREAKPOINT = 900;
 
+const INSTAGRAM_URL = 'https://www.instagram.com/shelfshare.ro';
+
 const ShellContext = createContext<{ openShortcutsEditor: () => void }>({
   openShortcutsEditor: () => {},
 });
@@ -71,7 +74,7 @@ interface NavItem {
 }
 
 const MAIN_NAV: NavItem[] = [
-  { to: '/', labelKey: 'navHome', icon: LayoutGrid },
+  { to: '/', labelKey: 'navHome', icon: House },
   { to: '/search', labelKey: 'navSearch', icon: Compass },
   { to: '/library', labelKey: 'navLibrary', icon: BookOpen },
   { to: '/activity-feed', labelKey: 'navActivityFeed', icon: Rss },
@@ -403,6 +406,17 @@ function SidebarContent({
       </nav>
 
       <div className="border-t border-border">
+        {/* Link extern, deci `<a>` și nu `SidebarTile`: nu e o rută a
+            aplicației, iar vizitatorul fără cont îl poate deschide la fel. */}
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mx-3 mt-2 flex items-center gap-3 rounded-[12px] px-3 py-2.5 text-sm text-foreground transition hover:bg-muted"
+        >
+          <Instagram size={20} className="shrink-0" />
+          <span className="flex-1 truncate">Instagram</span>
+        </a>
         <SidebarTile to="/settings" icon={Settings} label={t('profileSettings')} />
         <ProfileFooter />
       </div>
