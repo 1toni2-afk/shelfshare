@@ -37,6 +37,7 @@ import { api } from '@/lib/api/client';
 import { Avatar } from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils/cn';
 import { ScreenHeaderSlot, type MobileBar, type MobileBarUsage } from './ScreenHeader';
+import { LanguageMenu } from './LanguageMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { GuestGateProvider, useGuestGate } from '@/features/auth/GuestGate';
 import {
@@ -121,6 +122,10 @@ export function AppShell() {
   const [barTitle, setBarTitle] = useState<HTMLElement | null>(null);
   const [barActions, setBarActions] = useState<HTMLElement | null>(null);
   const [barUsage, setBarUsage] = useState<MobileBarUsage | null>(null);
+  // Aceeași regulă ca în GuestGate: cât timp sesiunea se restaurează, nu
+  // e vizitator. `useGuestGate` nu merge aici, provider-ul e randat mai jos.
+  const { status } = useAuth();
+  const isGuest = status.kind !== 'authenticated' && status.kind !== 'restoring';
   const mobileBar = useMemo<MobileBar>(
     () => ({ left: barLeft, title: barTitle, actions: barActions, setUsage: setBarUsage }),
     [barLeft, barTitle, barActions],
@@ -223,11 +228,25 @@ export function AppShell() {
               </Link>
             )}
             <div ref={setBarActions} className="flex shrink-0 items-center" />
+            {isGuest && <LanguageMenu />}
           </div>
 
           {/* Goală până o umple ecranul, deci fără înălțime proprie: un ecran
               care nu-și pune bară nu rămâne cu o fâșie albă în cap. */}
-          <header ref={setHeaderSlot} className="flex shrink-0 flex-col" />
+          <header
+            ref={setHeaderSlot}
+            // Loc pentru limba vizitatorului, ca să nu stea peste acțiunile ecranului.
+            className={cn('flex shrink-0 flex-col', isGuest && 'min-[900px]:pr-20')}
+          />
+
+          {/*
+            Limba, pentru vizitatorul fără cont, pe desktop: plutește în colț,
+            nu într-un rând al ei. Un rând de 64px doar pentru „RO" ar fi adus
+            înapoi exact bara goală scoasă de pe pagina publică.
+          */}
+          {isGuest && (
+            <LanguageMenu className="absolute right-4 top-3 hidden min-[900px]:block" />
+          )}
         </div>
 
         <main className="min-w-0 flex-1">
