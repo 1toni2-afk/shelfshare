@@ -174,6 +174,7 @@
     },
     "profileReferralCopied": "Kód a vágólapra másolva",
     "profileFeedbackHint": "Mit szeretnél elmondani nekünk?",
+    "feedbackPageIntro": "Mi tetszett, mi akadályozott, mi hiányzik. Írj szabadon - mindent elolvasunk. Képernyőképet is csatolhatsz.",
     "profileFeedbackThanks": "Köszönjük a visszajelzést!",
     "profileFeedbackError": "Nem sikerült elküldeni a visszajelzést",
     "profileFeedbackAddPhoto": "Fénykép hozzáadása",
@@ -724,6 +725,46 @@
     "chatMeetingAt": "{date}, {time}-kor",
     "chatSafetyAdvisorLabel": "Biztonsági tanácsadó",
     "chatSafetyAdvisorBody": "Ügyelj a biztonsági irányelvek betartására a találkozón.",
+    "chatQuizTitle": "Gyors biztonsági teszt",
+    "chatQuizIntro": "Öt helyzet, ami tényleg előfordul a csevegésben. Válaszd ki, mit tennél - minden válasz után megkapod az indoklást.",
+    "chatQuizStart": "Teszt indítása",
+    "chatQuizProgress": "Kérdés: {current}/{total}",
+    "chatQuizCorrect": "Helyes",
+    "chatQuizWrong": "Nem egészen",
+    "chatQuizNext": "Tovább",
+    "chatQuizSeeResult": "Eredmény megtekintése",
+    "chatQuizScore": "{score}/{total} helyes válasz",
+    "chatQuizResultPerfect": "Hibátlan. Pontosan így néz ki egy biztonságos csere.",
+    "chatQuizResultGood": "Szép munka. Olvasd át újra a kihagyott kérdések magyarázatát.",
+    "chatQuizResultPoor": "Érdemes átnézni a Biztonsági központot a következő csere előtt.",
+    "chatQuizRestart": "Újrakezdés",
+    "chatQuizQ1": "Valaki kéri a könyvedet, és megígéri, hogy elküldi a pénzt, „amint megkapja”. Mit teszel?",
+    "chatQuizQ1A": "Először elküldöm a könyvet - bizalom nélkül nincs csere.",
+    "chatQuizQ1B": "Feladás előtt megbeszéljük a fizetést, utánvétet kérek, vagy személyesen találkozunk.",
+    "chatQuizQ1C": "Megadom a kártyaadataimat, hogy közvetlenül tudja küldeni a pénzt.",
+    "chatQuizQ1Explain": "A „majd fizetek, ha megkaptam” a leggyakoribb átverés minden cserés felületen. Az előre fizetés, az utánvét vagy a személyes átadás azok a megoldások, amelyeknél nem maradsz könyv és pénz nélkül. Pénz FOGADÁSÁHOZ soha nincs szükség a kártyaadataidra.",
+    "chatQuizQ2": "Kapsz a csevegésben egy linket egy oldalra, ami ShelfShare-nek néz ki, és újra kéri az e-mail-címedet és a jelszavadat, hogy „megerősítsd a szállítást”.",
+    "chatQuizQ2A": "Gyorsan bejelentkezem, nehogy elvesszen a szállítás.",
+    "chatQuizQ2B": "Bejelentkezem, de utána azonnal jelszót cserélek.",
+    "chatQuizQ2C": "Nem nyitom meg a linket, semmit nem írok be, és jelentem a beszélgetést.",
+    "chatQuizQ2Explain": "A ShelfShare soha nem kéri a jelszavadat csevegésben küldött linken keresztül. Az ilyen oldal másolat, amit a fiókod ellopására készítettek - az ott beírt jelszó már odaveszett, akkor is, ha utána lecseréled.",
+    "chatQuizQ3": "Egy felhasználó elkéri az e-mailben vagy SMS-ben kapott ellenőrző kódodat, „hogy igazolja, valódi személy vagy”.",
+    "chatQuizQ3A": "Soha nem küldöm el - az a kód a fiókomat nyitja, rólam semmit nem igazol.",
+    "chatQuizQ3B": "Elküldöm, ha jó értékelései vannak.",
+    "chatQuizQ3C": "Elküldöm, de én is elkérem az övét.",
+    "chatQuizQ3Explain": "Az ellenőrző kódok csak neked szólnak. Aki elkéri, a fiókodba akar bejutni, vagy a nevedben akar megerősíteni egy műveletet, amit nem te indítottál.",
+    "chatQuizQ4": "Megegyeztetek a cserében, most találkoznotok kell. Hol javaslod?",
+    "chatQuizQ4A": "Nálam otthon - az a legegyszerűbb.",
+    "chatQuizQ4B": "Nyilvános, forgalmas helyen, nappal, és szólok valakinek, hogy hová megyek.",
+    "chatQuizQ4C": "A ház mögötti parkolóban, este, hogy nyugodt legyen.",
+    "chatQuizQ4Explain": "Egy kávézó, egy könyvesbolt vagy egy forgalmas megálló nappal semmivel nem kerül többe, és mindent megváltoztat, ha valami nem stimmel. A lakcímed a tiéd marad.",
+    "chatQuizQ5": "Mielőtt bármiben megállapodnátok, valaki erősködik, hogy másik alkalmazásba menjetek át, és elkéri a teljes címedet.",
+    "chatQuizQ5A": "Megadom mindkettőt - különben úgy tűnik, nem bízom benne.",
+    "chatQuizQ5B": "Csak a címet adom meg, a telefonszámot nem.",
+    "chatQuizQ5C": "Maradok az alkalmazás csevegésében, amíg meg nem egyezünk; a címet csak házhozszállítás esetén adom meg.",
+    "chatQuizQ5Explain": "Az alkalmazáson belüli beszélgetés jelenthető és a csapat által ellenőrizhető, a máshová átvitt nem. Már önmagában jelzés, ha valaki bármilyen megállapodás előtt ki akar lépni az alkalmazásból.",
+    "homeNearbyTitle": "A közeledben ({km} km)",
+    "homeNearestTitle": "A hozzád legközelebbiek",
     "chatOfferActionError": "Nem sikerült frissíteni az ajánlatot. Próbáld újra.",
     "chatOfferCardTitle": "Ártajánlat",
     "chatOfferCardFrom": "ehhez: {bookTitle}",
@@ -1620,5 +1661,191 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "importTitle": "Könyveid importálása",
+    "importIntro": "Hozd át a könyvtáradat a Goodreadsről vagy a StoryGraphról. Nincs fiókod egyiken sem? Töltsd ki a sablonunkat Excelben, és töltsd fel itt.",
+    "importStep1Title": "1. lépés · Szerezd meg a fájlt",
+    "importStep1Goodreads": "Exportálás a Goodreadsről",
+    "importStep1StoryGraph": "Exportálás a StoryGraphról",
+    "importStep1Hint": "A gomb új lapon nyitja meg az oldalukat. A Goodreadsen kattints az „Export Library” gombra, és várj pár percet a letöltési linkre.",
+    "importStep1Template": "Sablon letöltése",
+    "importStep1TemplateHint": "Excelben vagy Google Sheetsben nyílik meg. Töltsd ki, mentsd CSV-ként, majd töltsd fel alább.",
+    "importStep2Title": "2. lépés · Töltsd fel a fájlt",
+    "importStep2Choose": "Fájl kiválasztása",
+    "importStep2Change": "Másik fájl",
+    "importStep2NoFile": "Nincs kiválasztott fájl",
+    "importStep3Title": "3. lépés · Indítsd el az importot",
+    "importStep3Button": "Könyvek importálása",
+    "importRunning": "Dolgozunk a fájlon. Ne zárd be az oldalt.",
+    "importResultTitle": "Kész",
+    "importResultEmpty": "Nem találtunk importálható sort a fájlban.",
+    "importResultListed": "{count} a piactéren",
+    "@importResultListed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultUpdated": "{count} frissítve",
+    "@importResultUpdated": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultShelved": "{count} a polcodon",
+    "@importResultShelved": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFavorited": "{count} a kedvencek közt",
+    "@importResultFavorited": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultSkipped": "{count} kihagyva",
+    "@importResultSkipped": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFailed": "{count} sikertelen",
+    "@importResultFailed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importSkippedTitle": "Kihagyott sorok",
+    "importSkippedShelf": "„{shelf}” polc - nem tudjuk, hova tartozik",
+    "@importSkippedShelf": {
+        "placeholders": {
+            "shelf": {
+                "type": "String"
+            }
+        }
+    },
+    "importGoToShelf": "Polcom megnyitása",
+    "importGoToLibrary": "Könyveim megnyitása",
+    "importGuidelinesTitle": "Mi történik az egyes sorokkal",
+    "importGuidelineShelfRead": "A „read” és a „currently-reading” az olvasási polcodra kerül, nem a piactérre.",
+    "importGuidelineShelfToRead": "A „to-read” és a „favorites” nevű polcok a kedvenceid közé kerülnek, hogy szólhassunk, ha valaki meghirdeti őket.",
+    "importGuidelineListing": "A polc nélküli vagy „swap” jelölésű sorokból hirdetés lesz a piactéren.",
+    "importGuidelineSkipped": "Az általunk nem ismert polcokat („did-not-finish”, saját polcnevek) kihagyjuk, hogy véletlenül se kerüljön cserére olyan könyv, amit nem adnál oda.",
+    "importGuidelineNoDuplicates": "Az importot bármikor megismételheted: a polcodon vagy a kedvenceid közt már meglévő könyv nem duplázódik.",
+    "importGuidelineColumns": "Beolvasott oszlopok: {columns}. A nevek maradjanak angolul - a Goodreads és a StoryGraph is így írja őket.",
+    "@importGuidelineColumns": {
+        "placeholders": {
+            "columns": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineConditions": "A „condition” lehetséges értékei: {conditions}. Bármi más BUNA lesz.",
+    "@importGuidelineConditions": {
+        "placeholders": {
+            "conditions": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineLimit": "Fájlonként legfeljebb 500 sor, és csak CSV - az .xlsx fájlt előbb mentsd CSV-ként.",
+    "todoTitle": "Fedezd fel a ShelfShare-t",
+    "todoSubtitle": "Nézd meg gyorsan, hogyan működik az alkalmazás",
+    "todoProgress": "{done} / {total}",
+    "@todoProgress": {
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "todoDismiss": "Lista elrejtése",
+    "todoTutorial": "Nézd meg két perc alatt, hogyan működik az alkalmazás",
+    "todoBookMatch": "Találj könyvet a Book Match-csel",
+    "todoImport": "Importáld a könyveidet a Goodreadsről vagy a StoryGraphról",
+    "todoShortcuts": "Tedd a menübe a gyorsindítókat, amiket használsz",
+    "tutorialTitle": "Gyors körút",
+    "tutorialSkip": "Bezárás",
+    "tutorialNext": "Tovább",
+    "tutorialDone": "Értem",
+    "tutorialShelfTitle": "A polcod",
+    "tutorialShelfBody": "Vedd fel a könyveket, amiket birtokolsz. Amiktől megválnál, megjelennek a piactéren; a többi a polcodon marad, hogy lásd, mit olvastál.",
+    "tutorialMatchTitle": "Book Match",
+    "tutorialMatchBody": "Lapozz a könyvek között: jobbra, ha tetszik, balra, ha nem. Amit megjelölsz, a kedvenceid közé kerül, és pontosítja az ajánlásokat.",
+    "tutorialSwapTitle": "Cserélj vagy vásárolj",
+    "tutorialSwapBody": "Kérj cserét vagy tegyél ajánlatot. A részleteket chaten beszélitek meg, találkoztok, a könyv pedig hivatalosan gazdát cserél.",
+    "tutorialWishlistTitle": "Kedvencek és értesítések",
+    "tutorialWishlistBody": "Jelöld kedvencnek a könyvet, amit nem találsz. Szólunk abban a percben, amikor valaki a városodban meghirdeti.",
+    "tutorialShortcutsTitle": "Alakítsd magadra",
+    "tutorialShortcutsBody": "A menüben kiválaszthatod, mely gyorsindítók legyenek kéznél. A nyelv, az értesítések és a többi a beállításokban van.",
+    "commonBack": "Vissza",
+    "bookDetailNegotiableChip": "alkuképes",
+    "filtersAny": "Mind",
+    "browseResultsCount": "{count, plural, one{egy könyv} other{{count} könyv}}",
+    "landingHeadline": "Add tovább az elolvasott könyveidet",
+    "landingHeadline2": "Az elolvasott könyv új olvasót érdemel",
+    "landingHeadline3": "Ne hagyd, hogy port fogjon",
+    "landingHeadline4": "A következő könyved valaki más polcán van",
+    "landingIntro": "A ShelfShare a romániai olvasók közössége, ahol a használt könyvek új olvasóra találnak. Felteszed a polcodra azokat a könyveket, amelyeket elolvastál, megkeresed, amit ezután szeretnél olvasni, és közvetlenül megegyezel azzal, akinél megvan - cserével vagy olyan áron, amelyben ti ketten állapodtok meg.",
+    "landingCtaRegister": "Ingyenes fiók létrehozása",
+    "landingCtaBrowse": "Elérhető könyvek megtekintése",
+    "landingHowTitle": "Hogyan működik",
+    "landingStep1Title": "1. Felteszed a könyveidet",
+    "landingStep1Text": "Beolvasod az ISBN-kódot vagy rákeresel a címre, a könyv adatai pedig maguktól kitöltődnek. Megadod, milyen állapotban van, és hogy cserélnéd, eladnád, vagy mindkettő.",
+    "landingStep2Title": "2. Megkeresed, amit olvasni szeretnél",
+    "landingStep2Text": "Keress cím, szerző vagy műfaj szerint, és szűrj a városodra. Ha egy könyv még nincs fenn, tedd a kívánságlistádra, és értesítést kapsz, amint megjelenik.",
+    "landingStep3Title": "3. Közvetlenül megegyeztek",
+    "landingStep3Text": "Az alkalmazás csevegőjében beszélitek meg az átadást - a városban vagy futárral. A ShelfShare semmiből nem kér jutalékot.",
+    "landingSafetyTitle": "Biztonságban, olvasótól olvasóig",
+    "landingSafetyText": "Minden fiókhoz megerősített e-mail-cím kell, a profilok pedig minden csere után értékeléseket gyűjtenek. Ha valami nem stimmel, az alkalmazásból jelentheted a hirdetést vagy a személyt.",
+    "settingsSafetyCenter": "Biztonsági központ",
+    "settingsHelpCenter": "Gyakori kérdések",
+    "landingRecentTitle": "Nemrég hozzáadott könyvek",
+    "landingRecentText": "Néhány könyv azok közül, amelyeket az ország minden részéről olvasók tettek fel cserére vagy eladásra.",
+    "landingRecentMore": "A teljes katalógus megtekintése",
+    "guestMoreBooksText": "Több könyv is van - és néhány percenként érkezik egy új.",
+    "guestMoreBooksCta": "Hozz létre fiókot, hogy többet láss",
+    "landingMenuHome": "A legújabb hirdetések, valamint tematikus sorok: mit keresnek sokan, mi van a közeledben, és mi illene hozzád a könyveid alapján.",
+    "landingMenuSearch": "Keresés cím, szerző vagy műfaj szerint, város, állapot és ár szerinti szűrőkkel. A gyakran ismételt kereséseid elmentődnek.",
+    "landingMenuLibrary": "A te könyveid. ISBN-beolvasással adod hozzá őket, vagy Goodreads-fájlból importálod, majd megadod, melyik cserére és melyik eladásra való.",
+    "landingMenuFeed": "Amit az általad követett olvasók a polcukra tettek - a jó könyvek általában itt bukkannak fel, mielőtt más elvinné őket.",
+    "landingMenuChat": "Közvetlenül azzal beszélsz, akinél a könyv van. A cserekérések és az árajánlatok is ide érkeznek, kártyaként a beszélgetésben.",
+    "landingMenuNotifications": "Amikor valaki könyvet kér tőled, választ ad egy ajánlatra, vagy megjelenik az oldalon egy cím a kívánságlistádról.",
+    "landingMenuBookshelf": "A polcaid, ahogy mások látják őket.",
+    "landingMenuExchanges": "Az elküldött és kapott kérések, a javaslattól az átadásig.",
+    "landingMenuWishlist": "A könyvek, amelyeket szeretnél; jelzést kapsz, amikor felbukkannak.",
+    "landingMenuCollections": "Úgy csoportosítod a könyveidet, ahogy szeretnéd: elolvasandó, továbbadandó, megtartandó.",
+    "landingMenuMatches": "Emberek, akiknél megvan, amit szeretnél, és szeretnék, ami nálad van.",
+    "landingMenuFollowing": "Azok az olvasók, akiknek a polcát szemmel tartod.",
+    "landingMenuMap": "Ugyanazok a hirdetések, térképre téve.",
+    "landingMenuGroups": "Olvasókörök, beszélgetéssel és a hónap könyvével.",
+    "landingMenuLeaderboard": "Ki adta tovább a legtöbb könyvet.",
+    "landingMenuStats": "A legtöbbet körbejáró könyvek és szerzők.",
+    "landingMenuTitle": "Mi található a menüben",
+    "landingMenuIntro": "A bal oldali menü maga az egész alkalmazás. Már most látod; a megnyitásához fiókra van szükséged.",
+    "landingMenuShortcutsIntro": "A főmenü alatt magad választod ki, mely gyorsgombok maradjanak láthatók. Ezek az összes:",
+    "guestGateTitle": "Hozz létre fiókot a folytatáshoz",
+    "guestGateText": "A könyvtárad, az üzeneteid, a cseréid és az, hogy ki árulja az egyes könyveket, a fiókkal rendelkező olvasóké. Egy perc alatt létrehozod, és ingyenes.",
+    "guestGateRegister": "Ingyenes fiók létrehozása",
+    "guestGateLogin": "Már van fiókom",
+    "guestSellerHidden": "Hozz létre fiókot, hogy lásd, ki árulja a könyvet",
+    "loginMadeWithLove": "Made with ❤️ in Transylvania",
+    "loginMadeInEurope": "Európa",
+    "commonCountryRomania": "Románia",
+    "commonCountryEurope": "Európai Unió"
 }

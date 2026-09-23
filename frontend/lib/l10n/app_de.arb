@@ -174,6 +174,7 @@
     },
     "profileReferralCopied": "Code in die Zwischenablage kopiert",
     "profileFeedbackHint": "Was möchtest du uns mitteilen?",
+    "feedbackPageIntro": "Was dir gefallen hat, was dich gestört hat, was fehlt. Schreib frei - wir lesen alles. Ein Screenshot kann mit dabei sein.",
     "profileFeedbackThanks": "Danke für dein Feedback!",
     "profileFeedbackError": "Dein Feedback konnte nicht gesendet werden",
     "profileFeedbackAddPhoto": "Foto hinzufügen",
@@ -724,6 +725,46 @@
     "chatMeetingAt": "{date} um {time}",
     "chatSafetyAdvisorLabel": "Sicherheitsberater",
     "chatSafetyAdvisorBody": "Achte darauf, die Sicherheitshinweise für dieses Treffen zu befolgen.",
+    "chatQuizTitle": "Kurzer Sicherheitscheck",
+    "chatQuizIntro": "Fünf Situationen, die im Chat wirklich vorkommen. Wähle, was du tun würdest - nach jeder Antwort siehst du die Begründung.",
+    "chatQuizStart": "Test starten",
+    "chatQuizProgress": "Frage {current} von {total}",
+    "chatQuizCorrect": "Richtig",
+    "chatQuizWrong": "Nicht ganz",
+    "chatQuizNext": "Weiter",
+    "chatQuizSeeResult": "Ergebnis ansehen",
+    "chatQuizScore": "{score} von {total} richtig",
+    "chatQuizResultPerfect": "Tadellos. Genau so sieht ein sicherer Tausch aus.",
+    "chatQuizResultGood": "Gut gemacht. Lies die Erklärungen zu den verpassten Fragen noch einmal.",
+    "chatQuizResultPoor": "Ein Blick ins Sicherheitscenter lohnt sich vor dem nächsten Tausch.",
+    "chatQuizRestart": "Noch einmal",
+    "chatQuizQ1": "Jemand will dein Buch und verspricht, das Geld zu schicken, „sobald es ankommt”. Was tust du?",
+    "chatQuizQ1A": "Ich schicke das Buch zuerst - ohne Vertrauen kommt kein Tausch zustande.",
+    "chatQuizQ1B": "Zahlung vor dem Versand, Nachnahme oder persönliche Übergabe.",
+    "chatQuizQ1C": "Ich gebe meine Kartendaten weiter, damit das Geld direkt kommen kann.",
+    "chatQuizQ1Explain": "„Ich zahle, sobald ich es habe” ist der häufigste Betrug auf jeder Tauschplattform. Zahlung vorab, Nachnahme oder persönliche Übergabe sind die Wege, bei denen du nicht ohne Buch und ohne Geld dastehst. Um Geld zu ERHALTEN, braucht niemand deine Kartendaten.",
+    "chatQuizQ2": "Du bekommst im Chat einen Link zu einer Seite, die wie ShelfShare aussieht und erneut nach E-Mail und Passwort fragt, um „die Lieferung zu bestätigen”.",
+    "chatQuizQ2A": "Ich melde mich schnell an, damit die Lieferung nicht verloren geht.",
+    "chatQuizQ2B": "Ich melde mich an und ändere danach sofort mein Passwort.",
+    "chatQuizQ2C": "Ich öffne den Link nicht, gebe nichts ein und melde die Unterhaltung.",
+    "chatQuizQ2Explain": "ShelfShare fragt dich nie über einen Chat-Link nach deinem Passwort. Eine Seite, die das tut, ist eine Kopie, die dein Konto stehlen soll - ein dort eingegebenes Passwort ist bereits weg, ob du es danach änderst oder nicht.",
+    "chatQuizQ3": "Ein Nutzer verlangt den Bestätigungscode, den du per E-Mail oder SMS bekommen hast, „um zu bestätigen, dass du eine echte Person bist”.",
+    "chatQuizQ3A": "Ich schicke ihn nie - dieser Code öffnet mein Konto, er bestätigt nichts über mich.",
+    "chatQuizQ3B": "Ich schicke ihn, wenn das Profil gute Bewertungen hat.",
+    "chatQuizQ3C": "Ich schicke ihn, verlange aber auch seinen Code.",
+    "chatQuizQ3Explain": "Bestätigungscodes sind nur für dich. Wer deinen verlangt, will in dein Konto oder eine Aktion in deinem Namen bestätigen, die du nie ausgelöst hast.",
+    "chatQuizQ4": "Der Tausch ist vereinbart, jetzt müsst ihr euch treffen. Was schlägst du vor?",
+    "chatQuizQ4A": "Bei mir zu Hause - am einfachsten.",
+    "chatQuizQ4B": "An einem öffentlichen, belebten Ort, tagsüber, und ich sage einer nahestehenden Person, wohin ich gehe.",
+    "chatQuizQ4C": "Auf dem Parkplatz hinter dem Haus, abends, damit es ruhig ist.",
+    "chatQuizQ4Explain": "Ein Café, eine Buchhandlung oder eine belebte Haltestelle bei Tageslicht kostet nichts extra und ändert alles, falls etwas nicht stimmt. Deine Wohnadresse bleibt deine.",
+    "chatQuizQ5": "Bevor überhaupt etwas vereinbart ist, besteht jemand darauf, in eine andere App zu wechseln, und fragt nach deiner vollständigen Adresse.",
+    "chatQuizQ5A": "Ich gebe beides - sonst wirkt es, als würde ich misstrauen.",
+    "chatQuizQ5B": "Ich gebe nur die Adresse, nicht die Nummer.",
+    "chatQuizQ5C": "Ich bleibe im Chat der App, bis wir uns einig sind; die Adresse nur bei Lieferung nach Hause.",
+    "chatQuizQ5Explain": "Eine Unterhaltung in der App kann gemeldet und vom Team geprüft werden, eine verlagerte nicht. Der Druck, die App vor jeder Absprache zu verlassen, ist selbst ein Warnsignal.",
+    "homeNearbyTitle": "In deiner Nähe ({km} km)",
+    "homeNearestTitle": "Am nächsten bei dir",
     "chatOfferActionError": "Angebot konnte nicht aktualisiert werden. Versuche es erneut.",
     "chatOfferCardTitle": "Preisangebot",
     "chatOfferCardFrom": "für {bookTitle}",
@@ -1620,5 +1661,191 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "importTitle": "Deine Bücher importieren",
+    "importIntro": "Hol dir deine Bibliothek von Goodreads oder StoryGraph herüber. Kein Konto dort? Füll unsere Vorlage in Excel aus und lade sie hier hoch.",
+    "importStep1Title": "Schritt 1 · Datei besorgen",
+    "importStep1Goodreads": "Aus Goodreads exportieren",
+    "importStep1StoryGraph": "Aus StoryGraph exportieren",
+    "importStep1Hint": "Der Button öffnet deren Seite in einem neuen Tab. Bei Goodreads klickst du auf „Export Library“ und wartest ein paar Minuten auf den Download-Link.",
+    "importStep1Template": "Vorlage herunterladen",
+    "importStep1TemplateHint": "Öffnet sich in Excel oder Google Sheets. Ausfüllen, als CSV speichern und unten hochladen.",
+    "importStep2Title": "Schritt 2 · Datei hochladen",
+    "importStep2Choose": "Datei wählen",
+    "importStep2Change": "Andere Datei",
+    "importStep2NoFile": "Keine Datei gewählt",
+    "importStep3Title": "Schritt 3 · Import starten",
+    "importStep3Button": "Bücher importieren",
+    "importRunning": "Wir arbeiten an deiner Datei. Bitte die Seite nicht schließen.",
+    "importResultTitle": "Fertig",
+    "importResultEmpty": "In dieser Datei war nichts zu importieren.",
+    "importResultListed": "{count} im Marktplatz",
+    "@importResultListed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultUpdated": "{count} aktualisiert",
+    "@importResultUpdated": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultShelved": "{count} im Regal",
+    "@importResultShelved": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFavorited": "{count} bei den Favoriten",
+    "@importResultFavorited": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultSkipped": "{count} übersprungen",
+    "@importResultSkipped": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFailed": "{count} fehlgeschlagen",
+    "@importResultFailed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importSkippedTitle": "Übersprungene Zeilen",
+    "importSkippedShelf": "Regal „{shelf}“ - wir wissen nicht, wohin damit",
+    "@importSkippedShelf": {
+        "placeholders": {
+            "shelf": {
+                "type": "String"
+            }
+        }
+    },
+    "importGoToShelf": "Regal öffnen",
+    "importGoToLibrary": "Meine Bücher öffnen",
+    "importGuidelinesTitle": "Was mit jeder Zeile passiert",
+    "importGuidelineShelfRead": "„read“ und „currently-reading“ landen in deinem Leseregal, nicht im Marktplatz.",
+    "importGuidelineShelfToRead": "„to-read“ und Regale namens „favorites“ landen bei deinen Favoriten - so können wir dich benachrichtigen, sobald jemand das Buch einstellt.",
+    "importGuidelineListing": "Zeilen ohne Regal oder mit „swap“ werden zu Anzeigen im Marktplatz.",
+    "importGuidelineSkipped": "Ein Regal, das wir nicht kennen („did-not-finish“, eigene Regalnamen), wird übersprungen - so landet kein Buch versehentlich im Tausch, das du gar nicht hergeben willst.",
+    "importGuidelineNoDuplicates": "Du kannst den Import jederzeit wiederholen: Bücher, die schon im Regal oder bei den Favoriten sind, werden nicht doppelt angelegt.",
+    "importGuidelineColumns": "Gelesene Spalten: {columns}. Die Namen bleiben englisch - so schreiben sie auch Goodreads und StoryGraph.",
+    "@importGuidelineColumns": {
+        "placeholders": {
+            "columns": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineConditions": "Werte für „condition“: {conditions}. Alles andere wird zu BUNA.",
+    "@importGuidelineConditions": {
+        "placeholders": {
+            "conditions": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineLimit": "Höchstens 500 Zeilen pro Datei und nur CSV - eine .xlsx-Datei zuerst als CSV speichern.",
+    "todoTitle": "ShelfShare entdecken",
+    "todoSubtitle": "Sieh dir kurz an, wie die App funktioniert",
+    "todoProgress": "{done} von {total}",
+    "@todoProgress": {
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "todoDismiss": "Liste ausblenden",
+    "todoTutorial": "In zwei Minuten sehen, wie die App funktioniert",
+    "todoBookMatch": "Finde ein Buch mit Book Match",
+    "todoImport": "Bücher aus Goodreads oder StoryGraph importieren",
+    "todoShortcuts": "Leg dir die Verknüpfungen ins Menü, die du nutzt",
+    "tutorialTitle": "Kurze Tour",
+    "tutorialSkip": "Schließen",
+    "tutorialNext": "Weiter",
+    "tutorialDone": "Alles klar",
+    "tutorialShelfTitle": "Dein Regal",
+    "tutorialShelfBody": "Trag die Bücher ein, die du besitzt. Was du hergeben magst, erscheint im Marktplatz; der Rest bleibt in deinem Regal, als Notiz über das Gelesene.",
+    "tutorialMatchTitle": "Book Match",
+    "tutorialMatchBody": "Wisch dich durch Bücher: nach rechts, wenn es dich reizt, nach links, wenn nicht. Alles, was dir gefällt, landet bei den Favoriten und schärft deine Empfehlungen.",
+    "tutorialSwapTitle": "Tauschen oder kaufen",
+    "tutorialSwapBody": "Frag einen Tausch an oder mach ein Angebot. Ihr klärt alles im Chat, trefft euch, und das Buch wechselt offiziell den Besitzer.",
+    "tutorialWishlistTitle": "Favoriten und Benachrichtigungen",
+    "tutorialWishlistBody": "Setz ein Buch, das du nicht findest, auf die Favoriten. Wir sagen dir Bescheid, sobald jemand in deiner Stadt es einstellt.",
+    "tutorialShortcutsTitle": "Mach's dir passend",
+    "tutorialShortcutsBody": "Im Menü wählst du die Verknüpfungen, die du griffbereit haben willst. Sprache, Benachrichtigungen und der Rest stehen in den Einstellungen.",
+    "commonBack": "Zurück",
+    "bookDetailNegotiableChip": "verhandelbar",
+    "filtersAny": "Alle",
+    "browseResultsCount": "{count, plural, one{ein Buch} other{{count} Bücher}}",
+    "landingHeadline": "Gib deine gelesenen Bücher weiter",
+    "landingHeadline2": "Ein gelesenes Buch verdient einen neuen Leser",
+    "landingHeadline3": "Lass es nicht verstauben",
+    "landingHeadline4": "Dein nächstes Buch steht bei jemand anderem",
+    "landingIntro": "ShelfShare ist die Lesergemeinschaft in Rumänien, in der gebrauchte Bücher einen neuen Leser finden. Du stellst die Bücher, die du ausgelesen hast, in dein Regal, suchst, was du als Nächstes lesen willst, und einigst dich direkt mit der Person, die es hat - per Tausch oder zu einem Preis, den ihr beide festlegt.",
+    "landingCtaRegister": "Kostenloses Konto erstellen",
+    "landingCtaBrowse": "Verfügbare Bücher ansehen",
+    "landingHowTitle": "So funktioniert es",
+    "landingStep1Title": "1. Du stellst deine Bücher ein",
+    "landingStep1Text": "Scanne die ISBN oder suche den Titel - die Buchdaten füllen sich von selbst aus. Du gibst an, in welchem Zustand es ist und ob du es tauschst, verkaufst oder beides.",
+    "landingStep2Title": "2. Du suchst, was du lesen willst",
+    "landingStep2Text": "Suche nach Titel, Autor oder Genre und filtere nach deiner Stadt. Ist ein Buch noch nicht auf der Seite, setz es auf deine Wunschliste - du bekommst eine Nachricht, sobald es auftaucht.",
+    "landingStep3Title": "3. Ihr einigt euch direkt",
+    "landingStep3Text": "Ihr schreibt im Chat der App und klärt die Übergabe - in der Stadt oder per Kurier. ShelfShare nimmt an nichts eine Provision.",
+    "landingSafetyTitle": "Sicher, von Leser zu Leser",
+    "landingSafetyText": "Jedes Konto braucht eine bestätigte E-Mail-Adresse, und Profile sammeln nach jedem Tausch Bewertungen. Stimmt etwas nicht, kannst du die Anzeige oder die Person in der App melden.",
+    "settingsSafetyCenter": "Sicherheitszentrum",
+    "settingsHelpCenter": "Häufige Fragen",
+    "landingRecentTitle": "Neu hinzugefügte Bücher",
+    "landingRecentText": "Ein Teil der Bücher, die Leser aus dem ganzen Land zum Tausch oder Verkauf eingestellt haben.",
+    "landingRecentMore": "Den ganzen Katalog ansehen",
+    "guestMoreBooksText": "Es gibt mehr Bücher - und alle paar Minuten kommt ein neues dazu.",
+    "guestMoreBooksCta": "Erstelle ein Konto, um mehr zu sehen",
+    "landingMenuHome": "Die neuesten Anzeigen, dazu thematische Reihen: was stark gesucht wird, was in deiner Nähe ist und was zu deinen Büchern passt.",
+    "landingMenuSearch": "Suche nach Titel, Autor oder Genre, mit Filtern für Stadt, Zustand und Preis. Suchen, die du oft wiederholst, werden gespeichert.",
+    "landingMenuLibrary": "Deine Bücher. Du fügst sie per ISBN-Scan hinzu oder importierst sie aus einer Goodreads-Datei und legst dann fest, welche zum Tausch und welche zum Verkauf stehen.",
+    "landingMenuFeed": "Was die Leser, denen du folgst, neu ins Regal gestellt haben - meist tauchen die guten Bücher dort auf, bevor sie jemand anderes nimmt.",
+    "landingMenuChat": "Du sprichst direkt mit der Person, die das Buch hat. Tauschanfragen und Preisangebote landen ebenfalls hier, als Karte im Gespräch.",
+    "landingMenuNotifications": "Wenn dich jemand nach einem Buch fragt, auf ein Angebot antwortet oder ein Titel von deiner Wunschliste auf der Seite auftaucht.",
+    "landingMenuBookshelf": "Deine Regale, so wie andere sie sehen.",
+    "landingMenuExchanges": "Gesendete und erhaltene Anfragen, vom Vorschlag bis zur Übergabe.",
+    "landingMenuWishlist": "Die Bücher, die du willst; du bekommst Bescheid, wenn sie auftauchen.",
+    "landingMenuCollections": "Du gruppierst deine Bücher, wie du magst: zu lesen, zu verschenken, zu behalten.",
+    "landingMenuMatches": "Menschen, die haben, was du willst, und wollen, was du hast.",
+    "landingMenuFollowing": "Die Leser, deren Regale du im Blick behältst.",
+    "landingMenuMap": "Dieselben Anzeigen, auf einer Karte.",
+    "landingMenuGroups": "Lesekreise, mit Diskussion und Buch des Monats.",
+    "landingMenuLeaderboard": "Wer die meisten Bücher weitergegeben hat.",
+    "landingMenuStats": "Die Bücher und Autoren, die am meisten zirkulieren.",
+    "landingMenuTitle": "Was im Menü steckt",
+    "landingMenuIntro": "Das Menü links ist die ganze App. Du siehst es schon jetzt; um es zu öffnen, brauchst du ein Konto.",
+    "landingMenuShortcutsIntro": "Unter dem Hauptmenü wählst du selbst, welche Verknüpfungen sichtbar bleiben. Das sind alle:",
+    "guestGateTitle": "Erstelle ein Konto, um fortzufahren",
+    "guestGateText": "Deine Bibliothek, deine Nachrichten, deine Tausche und wer welches Buch verkauft, sind für Leser mit Konto. Eins anzulegen dauert weniger als eine Minute und ist kostenlos.",
+    "guestGateRegister": "Kostenloses Konto erstellen",
+    "guestGateLogin": "Ich habe schon ein Konto",
+    "guestSellerHidden": "Erstelle ein Konto, um zu sehen, wer das Buch verkauft",
+    "loginMadeWithLove": "Made with ❤️ in Transylvania",
+    "loginMadeInEurope": "Europa",
+    "commonCountryRomania": "Rumänien",
+    "commonCountryEurope": "Europäische Union"
 }

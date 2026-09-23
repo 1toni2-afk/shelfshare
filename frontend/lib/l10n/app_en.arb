@@ -177,6 +177,7 @@
     },
     "profileReferralCopied": "Code copied to clipboard",
     "profileFeedbackHint": "What would you like to tell us?",
+    "feedbackPageIntro": "What worked, what got in your way, what is missing. Write freely - we read everything. You can attach a screenshot too.",
     "profileFeedbackThanks": "Thanks for your feedback!",
     "profileFeedbackError": "We couldn't send your feedback",
     "profileFeedbackAddPhoto": "Add a photo",
@@ -1207,9 +1208,10 @@
     "profileKeepAliveSubtitle": "ShelfShare runs on a home server. A coffee helps.",
     "aboutDevTitle": "About dev",
     "aboutDevOpenError": "Couldn't open the link. Please try again.",
-    "loginMadeWithLove": "Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺",
+    "loginMadeWithLove": "Made with ❤️ in Transylvania",
     "homeRecommendedTitle": "Recommended for you",
     "homeNearbyTitle": "Close near you ({km} km)",
+    "homeNearestTitle": "Closest to you",
     "shareTagsSuggestions": "Suggestions:",
     "shareCityUnknown": "Pick a city from the list",
     "gamificationHowItWorks": "How XP works",
@@ -1281,6 +1283,17 @@
     "chatFilterAll": "All",
     "chatFilterUnread": "Unread",
     "chatFilterArchived": "Archived",
+    "chatFiltersLabel": "Conversation filters",
+    "usernameChooseOnceHint": "Choose carefully: your username is unique and cannot be changed once you save.",
+    "usernameLockedHint": "Your username has been set and cannot be changed.",
+    "chatSelectedCount": "{count, plural, one{# selected} other{# selected}}",
+    "@chatSelectedCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "chatFilterModerator": "Moderator",
     "chatEmptySearch": "No conversation matches your search.",
     "chatEmptyUnread": "All conversations are read.",
@@ -1296,6 +1309,44 @@
     "chatSafetyReportBody": "A user asking for personal data, insisting on unusual payments, or whose profile is blank — tap „…\" in the header and report.",
     "chatSafetyOpenCenter": "Open Safety Center",
     "chatSafetyHint": "You can come back here anytime — the page opens when no conversation is selected.",
+    "chatQuizTitle": "Quick safety check",
+    "chatQuizIntro": "Five situations that really happen in chat. Pick what you would do - you get the reasoning after each answer.",
+    "chatQuizStart": "Start the quiz",
+    "chatQuizProgress": "Question {current} of {total}",
+    "chatQuizCorrect": "Correct",
+    "chatQuizWrong": "Not quite",
+    "chatQuizNext": "Next",
+    "chatQuizSeeResult": "See result",
+    "chatQuizScore": "{score} out of {total} correct",
+    "chatQuizResultPerfect": "Flawless. That is exactly what a safe swap looks like.",
+    "chatQuizResultGood": "Nicely done. Reread the explanations for the ones you missed.",
+    "chatQuizResultPoor": "Worth a pass through the Safety Center before your next swap.",
+    "chatQuizRestart": "Take it again",
+    "chatQuizQ1": "Someone wants your book and promises to send the money “as soon as it arrives”. What do you do?",
+    "chatQuizQ1A": "Ship the book first - no swap happens without trust.",
+    "chatQuizQ1B": "Settle payment before shipping, use cash on delivery, or meet in person.",
+    "chatQuizQ1C": "Give them my card details so they can send the money directly.",
+    "chatQuizQ1Explain": "“I'll pay once I get it” is the most common scam on any swap platform. Payment upfront, cash on delivery or an in-person handover are the options where you don't end up without the book and without the money. You never need card details to RECEIVE money.",
+    "chatQuizQ2": "You get a chat link to a page that looks like ShelfShare and asks for your email and password again, to “confirm the delivery”.",
+    "chatQuizQ2A": "Sign in quickly so the delivery isn't lost.",
+    "chatQuizQ2B": "Sign in, then change my password right after.",
+    "chatQuizQ2C": "Don't open the link, don't type anything, and report the conversation.",
+    "chatQuizQ2Explain": "ShelfShare never asks for your password through a link sent in chat. A page that does is a copy built to steal your account, and a password typed there is already gone - changed afterwards or not.",
+    "chatQuizQ3": "A user asks for the verification code you received by email or SMS, “to confirm you're a real person”.",
+    "chatQuizQ3A": "Never send it - that code opens my account, it confirms nothing about me.",
+    "chatQuizQ3B": "Send it if their profile has good reviews.",
+    "chatQuizQ3C": "Send it, but ask for their code too.",
+    "chatQuizQ3Explain": "Verification codes are for you alone. Anyone asking for yours is trying to get into your account, or to confirm an action in your name that you never took.",
+    "chatQuizQ4": "You've agreed on a swap and now you have to meet. Where do you suggest?",
+    "chatQuizQ4A": "At my place - simplest option.",
+    "chatQuizQ4B": "Somewhere public and busy, during the day, and I tell someone close to me where I'm going.",
+    "chatQuizQ4C": "The parking lot behind the building, in the evening, so it's quiet.",
+    "chatQuizQ4Explain": "A café, a bookshop or a busy station, in daylight, costs you nothing extra and changes everything if something is off. Your home address stays yours.",
+    "chatQuizQ5": "Before anything is agreed, someone insists on moving the conversation to another app and asks for your full address.",
+    "chatQuizQ5A": "Give both - otherwise it looks like I don't trust them.",
+    "chatQuizQ5B": "Give the address only, not the number.",
+    "chatQuizQ5C": "Stay in the app's chat until we agree; the address only if I choose home delivery.",
+    "chatQuizQ5Explain": "A conversation inside the app can be reported and reviewed by the team; one moved elsewhere cannot. Pushing to leave the app before anything is agreed is itself a signal.",
     "greetReaderFallback": "Reader",
     "greetMorningSun": "Good morning, sunshine! ☀️",
     "greetMorningNamed": "Good morning, {name}!",
@@ -1756,5 +1807,190 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "importTitle": "Import your books",
+    "importIntro": "Bring your library over from Goodreads or StoryGraph. No account on either? Fill in our template in Excel and upload it here.",
+    "importStep1Title": "Step 1 · Get your file",
+    "importStep1Goodreads": "Export from Goodreads",
+    "importStep1StoryGraph": "Export from StoryGraph",
+    "importStep1Hint": "The button opens their site in a new tab. On Goodreads, click \"Export Library\" and wait a few minutes for the download link.",
+    "importStep1Template": "Download the template",
+    "importStep1TemplateHint": "It opens in Excel or Google Sheets. Fill it in, save it as CSV and upload it below.",
+    "importStep2Title": "Step 2 · Upload the file",
+    "importStep2Choose": "Choose file",
+    "importStep2Change": "Change file",
+    "importStep2NoFile": "No file chosen",
+    "importStep3Title": "Step 3 · Start the import",
+    "importStep3Button": "Import the books",
+    "importRunning": "Working on your file. Don't close this page.",
+    "importResultTitle": "Done",
+    "importResultEmpty": "We found nothing to import in this file.",
+    "importResultListed": "{count} listed",
+    "@importResultListed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultUpdated": "{count} updated",
+    "@importResultUpdated": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultShelved": "{count} on your shelf",
+    "@importResultShelved": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFavorited": "{count} in favourites",
+    "@importResultFavorited": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultSkipped": "{count} skipped",
+    "@importResultSkipped": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFailed": "{count} failed",
+    "@importResultFailed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importSkippedTitle": "Skipped rows",
+    "importSkippedShelf": "shelf \"{shelf}\" - we don't know where it belongs",
+    "@importSkippedShelf": {
+        "placeholders": {
+            "shelf": {
+                "type": "String"
+            }
+        }
+    },
+    "importGoToShelf": "Open my shelf",
+    "importGoToLibrary": "Open my books",
+    "importGuidelinesTitle": "What happens to each row",
+    "importGuidelineShelfRead": "\"read\" and \"currently-reading\" go on your reading shelf, not to the marketplace.",
+    "importGuidelineShelfToRead": "\"to-read\" and shelves named \"favorites\" go to your favourites, so we can alert you when someone lists them.",
+    "importGuidelineListing": "Rows with no shelf, or with \"swap\", become listings in the marketplace.",
+    "importGuidelineSkipped": "A shelf we don't recognise (\"did-not-finish\", your own custom shelves) is skipped, so a book you are not giving away never ends up for swap.",
+    "importGuidelineNoDuplicates": "You can run the import again: a book already on your shelf or in favourites won't be duplicated.",
+    "importGuidelineColumns": "Columns we read: {columns}. Keep the names in English - that's how Goodreads and StoryGraph write them too.",
+    "@importGuidelineColumns": {
+        "placeholders": {
+            "columns": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineConditions": "Values for \"condition\": {conditions}. Anything else becomes BUNA.",
+    "@importGuidelineConditions": {
+        "placeholders": {
+            "conditions": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineLimit": "Up to 500 rows per file, CSV only - save an .xlsx as CSV first.",
+    "todoTitle": "Discover ShelfShare",
+    "todoSubtitle": "A quick look at how the app works",
+    "todoProgress": "{done} of {total}",
+    "@todoProgress": {
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "todoDismiss": "Hide the list",
+    "todoTutorial": "See how the app works, in two minutes",
+    "todoBookMatch": "Find a book with Book Match",
+    "todoImport": "Import your books from Goodreads or StoryGraph",
+    "todoShortcuts": "Put the shortcuts you use in the menu",
+    "tutorialTitle": "Quick tour",
+    "tutorialSkip": "Close",
+    "tutorialNext": "Next",
+    "tutorialDone": "Got it",
+    "tutorialShelfTitle": "Your shelf",
+    "tutorialShelfBody": "Add the books you own. The ones you're happy to part with show up in the marketplace; the rest stay on your shelf, as a record of what you've read.",
+    "tutorialMatchTitle": "Book Match",
+    "tutorialMatchBody": "Swipe through books: right if it appeals to you, left if it doesn't. Everything you like goes to your favourites and sharpens your recommendations.",
+    "tutorialSwapTitle": "Swap or buy",
+    "tutorialSwapBody": "Ask for a swap or make an offer. You agree the details in chat, meet up, and the book officially changes owner.",
+    "tutorialWishlistTitle": "Favourites and alerts",
+    "tutorialWishlistBody": "Favourite a book you can't find. We'll tell you the moment someone in your city lists it.",
+    "tutorialShortcutsTitle": "Customise the quick menu",
+    "tutorialShortcutsBody": "Pick the shortcuts you want within reach from the menu. Language, notifications and the rest live in settings.",
+    "commonBack": "Back",
+    "bookDetailNegotiableChip": "negotiable",
+    "filtersAny": "All",
+    "browseResultsCount": "{count, plural, one{one book} other{{count} books}}",
+    "landingHeadline": "Pass your read books on",
+    "landingHeadline2": "A finished book deserves another reader",
+    "landingHeadline3": "Don't let it gather dust",
+    "landingHeadline4": "Your next book is on someone else's shelf",
+    "landingIntro": "ShelfShare is the community of readers in Romania where second-hand books find a new reader. You put the books you've finished on your shelf, look for what you want to read next, and settle it directly with the person who has it - by swap or at a price the two of you set.",
+    "landingCtaRegister": "Create a free account",
+    "landingCtaBrowse": "See the books available",
+    "landingHowTitle": "How it works",
+    "landingStep1Title": "1. You list your books",
+    "landingStep1Text": "Scan the ISBN or search the title and the book's details fill themselves in. You say what condition it's in and whether you're swapping it, selling it, or both.",
+    "landingStep2Title": "2. You look for what you want to read",
+    "landingStep2Text": "Search by title, author or genre and filter by your city. If a book isn't on the site yet, put it on your wishlist and you'll get a notification when it shows up.",
+    "landingStep3Title": "3. You agree directly",
+    "landingStep3Text": "You talk in the app's chat and settle how to hand the book over - in town or by courier. ShelfShare takes no commission on anything.",
+    "landingSafetyTitle": "Safe, from one reader to another",
+    "landingSafetyText": "Every account needs a confirmed email address, and profiles collect reviews after each swap. If something isn't right, you can report the listing or the person from inside the app.",
+    "settingsSafetyCenter": "Safety Center",
+    "settingsHelpCenter": "FAQ",
+    "landingRecentTitle": "Recently added books",
+    "landingRecentText": "Some of the books put up for swap or sale by readers all over the country.",
+    "landingRecentMore": "See the whole catalogue",
+    "guestMoreBooksText": "There are more books - and a new one every few minutes.",
+    "guestMoreBooksCta": "Create an account to see more",
+    "landingMenuHome": "The newest listings, plus themed rows: what's in demand, what's near you and what would suit you based on your books.",
+    "landingMenuSearch": "Search by title, author or genre, with filters for city, condition and price. Searches you repeat often get saved.",
+    "landingMenuLibrary": "Your books. You add them by scanning the ISBN or import them from a Goodreads file, then say which are for swap and which for sale.",
+    "landingMenuFeed": "What the readers you follow have put on their shelves - usually the good books show up there before someone else takes them.",
+    "landingMenuChat": "You talk directly with the person who has the book. Swap requests and price offers land here too, as a card in the conversation.",
+    "landingMenuNotifications": "When someone asks you for a book, replies to an offer, or a title from your wishlist appears on the site.",
+    "landingMenuBookshelf": "Your shelves, the way everyone else sees them.",
+    "landingMenuExchanges": "Requests sent and received, from the proposal to the handover.",
+    "landingMenuWishlist": "The books you want; you get a nudge when they show up.",
+    "landingMenuCollections": "You group your books however you like: to read, to give away, to keep.",
+    "landingMenuMatches": "People who have what you want and want what you have.",
+    "landingMenuFollowing": "The readers whose shelves you keep an eye on.",
+    "landingMenuMap": "The same listings, put on a map.",
+    "landingMenuGroups": "Reading clubs, with discussion and a book of the month.",
+    "landingMenuLeaderboard": "Who has passed on the most books.",
+    "landingMenuStats": "The books and authors that circulate the most.",
+    "landingMenuTitle": "What's in the menu",
+    "landingMenuIntro": "The menu on the left is the whole app. You can see it already; to open it, you need an account.",
+    "landingMenuShortcutsIntro": "Below the main menu you pick yourself which shortcuts stay in sight. These are all of them:",
+    "guestGateTitle": "Create an account to continue",
+    "guestGateText": "Your library, your messages, your swaps and who's selling each book are for readers with an account. Making one takes less than a minute and it's free.",
+    "guestGateRegister": "Create a free account",
+    "guestGateLogin": "I already have an account",
+    "guestSellerHidden": "Create an account to see who's selling the book",
+    "loginMadeInEurope": "Europe",
+    "commonCountryRomania": "Romania",
+    "commonCountryEurope": "European Union"
 }

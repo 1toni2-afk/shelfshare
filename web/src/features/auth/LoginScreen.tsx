@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Field } from '@/components/ui';
 import { AuthLayout } from './AuthLayout';
 import { useAuth } from './AuthProvider';
+import { EuropeanFlag, RomanianFlag } from '@/components/ui/Flag';
 import { API_BASE_URL } from '@/lib/api/client';
 
 /**
@@ -156,7 +157,19 @@ export function LoginScreen() {
           </Link>
         </p>
 
-      <p className="mt-8 text-center text-xs text-muted-foreground">{t('loginMadeWithLove')}</p>
+      {/*
+        Steagurile sunt SVG, nu emoji: `🇷🇴` și `🇪🇺` sunt perechi de „regional
+        indicator", iar Windows nu are glifele de steag - Chrome afișa literele
+        `RO` și `EU` în mijlocul frazei. Textul e rupt în două chei tocmai ca
+        fiecare steag să stea lângă locul lui, în orice limbă.
+      */}
+      <p className="mt-8 flex flex-wrap items-center justify-center gap-x-1.5 text-center text-xs text-muted-foreground">
+        <span>{t('loginMadeWithLove')}</span>
+        <RomanianFlag title={t('commonCountryRomania')} />
+        <span aria-hidden="true">·</span>
+        <span>{t('loginMadeInEurope')}</span>
+        <EuropeanFlag title={t('commonCountryEurope')} />
+      </p>
     </AuthLayout>
   );
 }

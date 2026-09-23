@@ -268,6 +268,7 @@
     },
     "profileReferralCopied": "Cod copiat în clipboard",
     "profileFeedbackHint": "Ce ai vrea să ne spui?",
+    "feedbackPageIntro": "Ce ți-a plăcut, ce te-a încurcat sau ce lipsește. Scrie liber - citim tot. Poți atașa și o captură de ecran.",
     "profileFeedbackThanks": "Mulțumim pentru feedback!",
     "profileFeedbackError": "Nu am putut trimite feedback-ul",
     "profileFeedbackAddPhoto": "Adaugă o poză",
@@ -1923,9 +1924,10 @@
     "profileKeepAliveSubtitle": "ShelfShare rulează pe un server de acasă. O cafea ne ajută.",
     "aboutDevTitle": "About dev",
     "aboutDevOpenError": "Nu am putut deschide linkul. Încearcă din nou.",
-    "loginMadeWithLove": "Made with ❤️ in Transylvania 🇷🇴 · Europe 🇪🇺",
+    "loginMadeWithLove": "Made with ❤️ in Transylvania",
     "homeRecommendedTitle": "Recomandări pentru tine",
     "homeNearbyTitle": "În apropierea ta ({km} km)",
+    "homeNearestTitle": "Cele mai apropiate de tine",
     "@homeNearbyTitle": {
         "placeholders": {
             "km": {
@@ -2018,6 +2020,19 @@
     "chatFilterAll": "Toate",
     "chatFilterUnread": "Necitite",
     "chatFilterArchived": "Arhivate",
+    "chatFiltersLabel": "Filtre conversații",
+    "usernameChooseOnceHint": "Alege cu grijă: username-ul e unic și nu mai poate fi schimbat după ce salvezi.",
+    "@usernameChooseOnceHint": {},
+    "usernameLockedHint": "Username-ul a fost ales și nu mai poate fi schimbat.",
+    "@usernameLockedHint": {},
+    "chatSelectedCount": "{count, plural, one{# selectată} few{# selectate} other{# de selectate}}",
+    "@chatSelectedCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "chatFilterModerator": "Moderator",
     "chatEmptySearch": "Nicio conversație nu se potrivește căutării.",
     "chatEmptyUnread": "Toate conversațiile sunt citite.",
@@ -2033,6 +2048,64 @@
     "chatSafetyReportBody": "Un utilizator care cere date personale, care insistă cu plăți neobișnuite sau al cărui profil e gol — apasă pe „…\" din header și raportează.",
     "chatSafetyOpenCenter": "Deschide Centrul de siguranță",
     "chatSafetyHint": "Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.",
+    "chatQuizTitle": "Test rapid de siguranță",
+    "chatQuizIntro": "Cinci situații reale din chat. Alege ce ai face - după fiecare răspuns vezi de ce.",
+    "chatQuizStart": "Începe testul",
+    "chatQuizProgress": "Întrebarea {current} din {total}",
+    "@chatQuizProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "chatQuizCorrect": "Corect",
+    "chatQuizWrong": "Nu chiar",
+    "chatQuizNext": "Mai departe",
+    "chatQuizSeeResult": "Vezi rezultatul",
+    "chatQuizScore": "{score} din {total} corecte",
+    "@chatQuizScore": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "chatQuizResultPerfect": "Impecabil. Exact așa arată un schimb în siguranță.",
+    "chatQuizResultGood": "Bună treabă. Recitește explicațiile de la întrebările ratate.",
+    "chatQuizResultPoor": "Merită să treci prin Centrul de siguranță înainte de următorul schimb.",
+    "chatQuizRestart": "Reia testul",
+    "chatQuizQ1": "Cineva îți vrea cartea și promite că trimite banii „imediat ce o primește”. Ce faci?",
+    "chatQuizQ1A": "Trimit cartea prima - fără încredere nu se face niciun schimb.",
+    "chatQuizQ1B": "Stabilim plata înainte de expediere, livrare cu ramburs, sau ne vedem în persoană.",
+    "chatQuizQ1C": "Îi dau datele cardului meu, ca să poată trimite banii direct.",
+    "chatQuizQ1Explain": "„Plătesc după ce primesc” e cea mai frecventă țeapă de pe orice platformă de schimb. Plata înainte, rambursul sau o întâlnire în persoană sunt variantele în care nu rămâi și fără carte, și fără bani. Datele cardului nu-ți trebuie niciodată ca să PRIMEȘTI bani.",
+    "chatQuizQ2": "Primești pe chat un link către o pagină care arată ca ShelfShare și îți cere din nou emailul și parola, ca să „confirmi livrarea”.",
+    "chatQuizQ2A": "Mă autentific repede, ca să nu pierd livrarea.",
+    "chatQuizQ2B": "Mă autentific, dar îmi schimb parola imediat după.",
+    "chatQuizQ2C": "Nu deschid linkul, nu introduc nimic și raportez conversația.",
+    "chatQuizQ2Explain": "ShelfShare nu îți cere niciodată parola printr-un link primit pe chat. O pagină care o cere e o copie făcută ca să-ți fure contul, iar parola introdusă acolo e deja pierdută - schimbată după sau nu.",
+    "chatQuizQ3": "Un utilizator îți cere codul de verificare primit pe email sau SMS, „ca să confirme că ești o persoană reală”.",
+    "chatQuizQ3A": "Nu îl trimit niciodată - codul acela îmi deschide contul, nu confirmă nimic despre mine.",
+    "chatQuizQ3B": "Îl trimit, dacă are profil cu recenzii bune.",
+    "chatQuizQ3C": "Îl trimit, dar îi cer și eu codul lui.",
+    "chatQuizQ3Explain": "Codurile de verificare sunt doar pentru tine. Cine ți-l cere încearcă să intre în contul tău sau să confirme, în numele tău, o acțiune pe care n-ai făcut-o.",
+    "chatQuizQ4": "Ați bătut palma pe un schimb și urmează să vă vedeți. Unde propui întâlnirea?",
+    "chatQuizQ4A": "La mine acasă - e cel mai simplu.",
+    "chatQuizQ4B": "Într-un loc public și circulat, în timpul zilei, și îi spun cuiva apropiat unde merg.",
+    "chatQuizQ4C": "În parcarea din spatele blocului, seara, ca să fie liniște.",
+    "chatQuizQ4Explain": "O cafenea, o librărie sau o stație aglomerată, ziua, nu costă nimic în plus și schimbă complet situația dacă ceva nu e în regulă. Adresa de acasă rămâne a ta.",
+    "chatQuizQ5": "Înainte să stabiliți orice, cineva insistă să mutați discuția pe altă aplicație și îți cere adresa completă.",
+    "chatQuizQ5A": "I le dau pe amândouă - altfel pare că nu am încredere.",
+    "chatQuizQ5B": "Îi dau doar adresa, numărul nu.",
+    "chatQuizQ5C": "Rămân în chatul din aplicație până batem palma; adresa o dau doar dacă aleg livrare la domiciliu.",
+    "chatQuizQ5Explain": "Conversația din aplicație poate fi raportată și verificată de echipă; una mutată în altă parte, nu. Insistența de a ieși din aplicație înainte de orice înțelegere e, în sine, un semnal.",
     "greetReaderFallback": "Cititorule",
     "greetMorningSun": "Bună dimineața, Soare! ☀️",
     "greetMorningNamed": "Bună dimineața, {name}!",
@@ -2578,5 +2651,238 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "importTitle": "Importă-ți cărțile",
+    "@importTitle": {},
+    "importIntro": "Adu-ți biblioteca din Goodreads sau StoryGraph. Dacă n-ai cont pe niciuna, completează șablonul nostru în Excel și încarcă-l tot aici.",
+    "@importIntro": {},
+    "importStep1Title": "Pasul 1 · Ia-ți fișierul",
+    "@importStep1Title": {},
+    "importStep1Goodreads": "Exportă din Goodreads",
+    "@importStep1Goodreads": {},
+    "importStep1StoryGraph": "Exportă din StoryGraph",
+    "@importStep1StoryGraph": {},
+    "importStep1Hint": "Butonul deschide site-ul lor într-o filă nouă. Pe Goodreads apeși „Export Library\" și aștepți câteva minute până apare linkul de descărcare.",
+    "@importStep1Hint": {},
+    "importStep1Template": "Descarcă șablonul",
+    "@importStep1Template": {},
+    "importStep1TemplateHint": "Se deschide în Excel sau Google Sheets. Completează-l, salvează-l ca CSV și încarcă-l mai jos.",
+    "@importStep1TemplateHint": {},
+    "importStep2Title": "Pasul 2 · Încarcă fișierul",
+    "@importStep2Title": {},
+    "importStep2Choose": "Alege fișierul",
+    "@importStep2Choose": {},
+    "importStep2Change": "Schimbă fișierul",
+    "@importStep2Change": {},
+    "importStep2NoFile": "Niciun fișier ales",
+    "@importStep2NoFile": {},
+    "importStep3Title": "Pasul 3 · Pornește importul",
+    "@importStep3Title": {},
+    "importStep3Button": "Importă cărțile",
+    "@importStep3Button": {},
+    "importRunning": "Lucrăm la fișier. Nu închide pagina.",
+    "@importRunning": {},
+    "importResultTitle": "Gata",
+    "@importResultTitle": {},
+    "importResultEmpty": "N-am găsit niciun rând de importat în fișier.",
+    "@importResultEmpty": {},
+    "importResultListed": "{count} în piață",
+    "@importResultListed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultUpdated": "{count} actualizate",
+    "@importResultUpdated": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultShelved": "{count} pe raft",
+    "@importResultShelved": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFavorited": "{count} la favorite",
+    "@importResultFavorited": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultSkipped": "{count} sărite",
+    "@importResultSkipped": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importResultFailed": "{count} eșuate",
+    "@importResultFailed": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "importSkippedTitle": "Rânduri sărite",
+    "@importSkippedTitle": {},
+    "importSkippedShelf": "raftul „{shelf}\" - nu știm unde să-l punem",
+    "@importSkippedShelf": {
+        "placeholders": {
+            "shelf": {
+                "type": "String"
+            }
+        }
+    },
+    "importGoToShelf": "Vezi raftul",
+    "@importGoToShelf": {},
+    "importGoToLibrary": "Vezi cărțile mele",
+    "@importGoToLibrary": {},
+    "importGuidelinesTitle": "Ce se întâmplă cu fiecare rând",
+    "@importGuidelinesTitle": {},
+    "importGuidelineShelfRead": "„read\" și „currently-reading\" ajung pe raftul tău de lectură, nu în piață.",
+    "@importGuidelineShelfRead": {},
+    "importGuidelineShelfToRead": "„to-read\" și rafturile numite „favorites\" ajung la favorite, ca să te anunțăm când apare cartea la cineva.",
+    "@importGuidelineShelfToRead": {},
+    "importGuidelineListing": "Rândurile fără raft, sau cu „swap\", devin anunțuri în piață.",
+    "@importGuidelineListing": {},
+    "importGuidelineSkipped": "Un raft pe care nu-l recunoaștem („did-not-finish\", rafturi inventate de tine) e sărit, ca să nu ajungă din greșeală la schimb o carte pe care n-o dai.",
+    "@importGuidelineSkipped": {},
+    "importGuidelineNoDuplicates": "Poți relua importul oricând: o carte deja pusă pe raft sau la favorite nu se dublează.",
+    "@importGuidelineNoDuplicates": {},
+    "importGuidelineColumns": "Coloane citite: {columns}. Numele lor rămân în engleză - la fel le scriu și Goodreads, și StoryGraph.",
+    "@importGuidelineColumns": {
+        "placeholders": {
+            "columns": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineConditions": "Valori pentru „condition\": {conditions}. Orice altceva devine BUNA.",
+    "@importGuidelineConditions": {
+        "placeholders": {
+            "conditions": {
+                "type": "String"
+            }
+        }
+    },
+    "importGuidelineLimit": "Maximum 500 de rânduri per fișier și doar CSV - un .xlsx trebuie salvat întâi ca CSV.",
+    "@importGuidelineLimit": {},
+    "todoTitle": "Descoperă ShelfShare",
+    "@todoTitle": {},
+    "todoSubtitle": "Vezi rapid cum funcționează aplicația",
+    "@todoSubtitle": {},
+    "todoProgress": "{done} din {total}",
+    "@todoProgress": {
+        "placeholders": {
+            "done": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "todoDismiss": "Ascunde lista",
+    "@todoDismiss": {},
+    "todoTutorial": "Vezi în două minute cum merge aplicația",
+    "@todoTutorial": {},
+    "todoBookMatch": "Găsește-ți o carte cu Book Match",
+    "@todoBookMatch": {},
+    "todoImport": "Importă-ți cărțile din Goodreads sau StoryGraph",
+    "@todoImport": {},
+    "todoShortcuts": "Pune-ți în meniu scurtăturile pe care le folosești",
+    "@todoShortcuts": {},
+    "tutorialTitle": "Tur rapid",
+    "@tutorialTitle": {},
+    "tutorialSkip": "Închide",
+    "@tutorialSkip": {},
+    "tutorialNext": "Mai departe",
+    "@tutorialNext": {},
+    "tutorialDone": "Am înțeles",
+    "@tutorialDone": {},
+    "tutorialShelfTitle": "Raftul tău",
+    "@tutorialShelfTitle": {},
+    "tutorialShelfBody": "Adaugă cărțile pe care le ai. Cele pe care vrei să le dai ajung în piață; restul rămân doar pe raftul tău, ca să știi ce-ai citit.",
+    "@tutorialShelfBody": {},
+    "tutorialMatchTitle": "Book Match",
+    "@tutorialMatchTitle": {},
+    "tutorialMatchBody": "Treci prin cărți cu un swipe: dreapta dacă te atrage, stânga dacă nu. Ce-ți place ajunge la favorite și ne ajută să-ți recomandăm mai bine.",
+    "@tutorialMatchBody": {},
+    "tutorialSwapTitle": "Schimbă sau cumpără",
+    "@tutorialSwapTitle": {},
+    "tutorialSwapBody": "Ceri un schimb sau faci o ofertă. Vorbiți în chat, stabiliți unde vă vedeți, iar la final cartea trece oficial la noul proprietar.",
+    "@tutorialSwapBody": {},
+    "tutorialWishlistTitle": "Favorite și alerte",
+    "@tutorialWishlistTitle": {},
+    "tutorialWishlistBody": "Pune la favorite o carte pe care n-o găsești. Te anunțăm în clipa în care o listează cineva din orașul tău.",
+    "@tutorialWishlistBody": {},
+    "tutorialShortcutsTitle": "Personalizează meniul rapid",
+    "@tutorialShortcutsTitle": {},
+    "tutorialShortcutsBody": "Din meniu îți alegi scurtăturile pe care le vrei la îndemână. Limba, notificările și restul se schimbă din setări.",
+    "@tutorialShortcutsBody": {},
+    "commonBack": "Înapoi",
+    "bookDetailNegotiableChip": "negociabil",
+    "filtersAny": "Toate",
+    "browseResultsCount": "{count, plural, one{o carte} few{{count} cărți} other{{count} de cărți}}",
+    "landingHeadline": "Dă-ți cărțile citite mai departe",
+    "landingHeadline2": "Cartea citită merită alt cititor",
+    "landingHeadline3": "Nu o lăsa să adune praf",
+    "landingHeadline4": "Următoarea carte e la alt om",
+    "landingIntro": "ShelfShare este comunitatea de cititori din România unde cărțile second-hand își găsesc un cititor nou. Îți pui pe raft cărțile pe care le-ai terminat, cauți ce vrei să citești în continuare și te înțelegi direct cu omul care o are - prin schimb sau la un preț pe care îl stabiliți voi.",
+    "landingCtaRegister": "Creează cont gratuit",
+    "landingCtaBrowse": "Vezi cărțile disponibile",
+    "landingHowTitle": "Cum funcționează",
+    "landingStep1Title": "1. Îți listezi cărțile",
+    "landingStep1Text": "Scanezi codul ISBN sau cauți titlul, iar datele cărții se completează singure. Spui în ce stare e și dacă o dai la schimb, o vinzi, sau amândouă.",
+    "landingStep2Title": "2. Cauți ce vrei să citești",
+    "landingStep2Text": "Cauți după titlu, autor sau gen și filtrezi după orașul tău. Dacă o carte nu e încă pe site, o pui pe lista de dorințe și primești o notificare când apare.",
+    "landingStep3Title": "3. Vă înțelegeți direct",
+    "landingStep3Text": "Vorbiți în chatul din aplicație și stabiliți cum faceți predarea - în oraș sau prin curier. ShelfShare nu ia comision din nimic.",
+    "landingSafetyTitle": "În siguranță, de la un cititor la altul",
+    "landingSafetyText": "Fiecare cont are nevoie de un email confirmat, iar profilurile adună recenzii după fiecare schimb. Dacă ceva nu e în regulă, poți raporta anunțul sau omul din aplicație.",
+    "settingsSafetyCenter": "Centrul de siguranță",
+    "settingsHelpCenter": "Întrebări frecvente",
+    "landingRecentTitle": "Cărți adăugate recent",
+    "landingRecentText": "O parte din cărțile puse la schimb sau la vânzare de cititori din toată țara.",
+    "landingRecentMore": "Vezi tot catalogul",
+    "guestMoreBooksText": "Mai sunt cărți - și încă una nouă la fiecare câteva minute.",
+    "guestMoreBooksCta": "Creează-ți cont ca să vezi mai multe",
+    "landingMenuHome": "Cele mai noi anunțuri, plus rânduri tematice: ce se caută mult, ce e aproape de tine și ce ți s-ar potrivi după cărțile tale.",
+    "landingMenuSearch": "Căutare după titlu, autor sau gen, cu filtre de oraș, stare și preț. Căutările pe care le repeți des se salvează.",
+    "landingMenuLibrary": "Cărțile tale. Le adaugi scanând ISBN-ul sau le imporți dintr-un fișier Goodreads, apoi spui care sunt la schimb și care la vânzare.",
+    "landingMenuFeed": "Ce au mai pus pe raft cititorii pe care îi urmărești - de obicei de acolo apar cărțile bune înainte să le ia altcineva.",
+    "landingMenuChat": "Vorbești direct cu omul care are cartea. Cererile de schimb și ofertele de preț ajung tot aici, ca un card în discuție.",
+    "landingMenuNotifications": "Când cineva îți cere o carte, îți răspunde la o ofertă sau apare pe site un titlu de pe lista ta de dorințe.",
+    "landingMenuBookshelf": "Rafturile tale, așa cum le vede lumea.",
+    "landingMenuExchanges": "Cererile trimise și primite, de la propunere până la predare.",
+    "landingMenuWishlist": "Cărțile pe care le vrei; primești un semn când apar.",
+    "landingMenuCollections": "Îți grupezi cărțile cum vrei tu: de citit, de dat, de păstrat.",
+    "landingMenuMatches": "Oameni care au ce vrei tu și vor ce ai tu.",
+    "landingMenuFollowing": "Cititorii ale căror rafturi le ții aproape.",
+    "landingMenuMap": "Aceleași anunțuri, puse pe hartă.",
+    "landingMenuGroups": "Cluburi de lectură, cu discuție și cartea lunii.",
+    "landingMenuLeaderboard": "Cine a dat cele mai multe cărți mai departe.",
+    "landingMenuStats": "Cărțile și autorii care circulă cel mai mult.",
+    "landingMenuTitle": "Ce găsești în meniu",
+    "landingMenuIntro": "Meniul din stânga e aplicația întreagă. Îl vezi de pe acum; ca să-l deschizi, ai nevoie de un cont.",
+    "landingMenuShortcutsIntro": "Sub meniul principal îți alegi singur ce scurtături stau la vedere. Astea sunt toate:",
+    "guestGateTitle": "Creează-ți cont ca să continui",
+    "guestGateText": "Biblioteca ta, mesajele, schimburile și cine vinde fiecare carte sunt pentru cititorii cu cont. Îți faci unul în mai puțin de un minut și e gratuit.",
+    "guestGateRegister": "Creează cont gratuit",
+    "guestGateLogin": "Am deja cont",
+    "guestSellerHidden": "Creează-ți cont ca să vezi cine vinde cartea",
+    "loginMadeInEurope": "Europa",
+    "commonCountryRomania": "România",
+    "commonCountryEurope": "Uniunea Europeană"
 }

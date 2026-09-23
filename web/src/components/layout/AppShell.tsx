@@ -513,6 +513,10 @@ function OnlineUsersBadge() {
   );
 }
 
+/** Aplicația publicată în Play Store - vezi `applicationId` din build.gradle. */
+const PLAY_STORE_URL =
+  'https://play.google.com/store/apps/details?id=ro.shelfshare.shelfshare';
+
 /**
  * Invitația de a instala aplicația de Android. Apare doar în meniul de
  * desktop: pe telefon aceeași invitație e banda lipită jos, iar în panoul
@@ -553,8 +557,16 @@ function AndroidInstallCard() {
         </button>
       </div>
       <p className="mb-2 text-xs leading-snug text-muted-foreground">{t('installCardText')}</p>
+      {/*
+        Direct în Play Store, nu pe o pagină intermediară: `/get-the-app` nu
+        există nici ca rută a aplicației, nici ca pagină statică, deci butonul
+        ducea la „Pagină inexistentă". `rel="noreferrer"` merge împreună cu
+        `target="_blank"` - fără el, pagina deschisă primește `window.opener`.
+      */}
       <a
-        href="/get-the-app"
+        href={PLAY_STORE_URL}
+        target="_blank"
+        rel="noreferrer"
         className="block rounded-full bg-primary px-3 py-2 text-center text-xs font-bold text-primary-foreground"
       >
         {t('installCardAction')}

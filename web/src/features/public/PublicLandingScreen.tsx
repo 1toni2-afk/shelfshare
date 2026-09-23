@@ -62,9 +62,16 @@ const GUEST_PREVIEW_LIMIT = 24;
  * pornește descoperirea restului site-ului, iar varianta pre-randată din
  * scripts/beta-seo.js trebuie să spună același lucru.
  */
-export function PublicLandingScreen() {
+export function PublicLandingScreen({ decorative = false }: { decorative?: boolean } = {}) {
   const { t } = useTranslation();
-  useDocumentMeta(LANDING_META);
+  /*
+    `decorative`: aceeași pagină e randată și estompat, ca fundal al ecranelor
+    de autentificare (vezi AuthLayout). Acolo NU are voie să atingă `<head>` -
+    altfel titlul din tab și cardul de „distribuie" al paginii de login ar
+    deveni cele ale paginii de prezentare, iar un link către /login distribuit
+    de cineva ar arăta ca pagina principală.
+  */
+  useDocumentMeta(decorative ? null : LANDING_META);
 
   // Recalculate doar la schimbarea limbii: un tablou nou la fiecare randare ar
   // reporni animația din prima literă (vezi comentariul din TypewriterText).
