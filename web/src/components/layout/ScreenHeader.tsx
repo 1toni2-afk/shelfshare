@@ -1,4 +1,4 @@
-import { createContext, use, type ReactNode } from 'react';
+import { createContext, use, useLayoutEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,22 +16,59 @@ import { useEdgeFade } from '@/lib/hooks/useEdgeFade';
  * infinită de „setState în efect fără dependențe stabile".
  */
 const SlotContext = createContext<HTMLElement | null>(null);
-/** Colțul din dreapta al barei de brand, care există doar pe telefon. */
-const BrandSlotContext = createContext<HTMLElement | null>(null);
+
+/**
+ * Bara de sus de pe telefon (cea cu meniul și logo-ul, din AppShell): trei
+ * locuri în care ecranul își poate muta săgeata, titlul și acțiunile, plus
+ * funcția prin care îi spune shell-ului ce a ocupat - ca acesta să-și ascundă
+ * butonul de meniu și numele ShelfShare.
+ */
+export interface MobileBar {
+  left: HTMLElement | null;
+  title: HTMLElement | null;
+  actions: HTMLElement | null;
+  setUsage: (usage: MobileBarUsage | null) => void;
+}
+
+export interface MobileBarUsage {
+  back: boolean;
+  title: boolean;
+}
+
+const MobileBarContext = createContext<MobileBar | null>(null);
 
 export function ScreenHeaderSlot({
   slot,
-  brandSlot,
+  mobileBar,
   children,
 }: {
   slot: HTMLElement | null;
-  brandSlot: HTMLElement | null;
+  mobileBar: MobileBar;
   children: ReactNode;
 }) {
   return (
     <SlotContext value={slot}>
-      <BrandSlotContext value={brandSlot}>{children}</BrandSlotContext>
+      <MobileBarContext value={mobileBar}>{children}</MobileBarContext>
     </SlotContext>
+  );
+}
+
+/**
+ * Săgeata de back: portocalie, pe fundalul temei, cu un contur tot portocaliu -
+ * aceeași pe telefon și pe desktop.
+ */
+export function BackButton({ to }: { to: true | string }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={() => (typeof to === 'string' ? void navigate(to) : void navigate(-1))}
+      aria-label={t('commonBack')}
+      title={t('commonBack')}
+      className="shrink-0 rounded-full border-[1.5px] border-accent bg-background p-2 text-accent transition hover:bg-accent/10"
+    >
+      <ArrowLeft size={20} />
+    </button>
   );
 }
 
@@ -49,7 +86,7 @@ export function ScreenHeader({
   actions,
   bottom,
   back,
-  actionsInBrandBar = false,
+  keepBrandOnMobile = false,
 }: {
   title?: ReactNode;
   actions?: ReactNode;
@@ -58,22 +95,48 @@ export function ScreenHeader({
   /** Săgeata de back: `true` = un pas înapoi, string = rută fixă. */
   back?: boolean | string;
   /**
-   * Pe telefon, acțiunile urcă în bara de brand, lângă logo. Pentru titlurile
-   * lungi (salutul de pe Home): pe lățimea unui telefon titlul centrat nu mai
-   * lasă loc iconițelor, coloana lor se strângea la zero și ele ajungeau peste
-   * text. Așa stau și în Flutter, în capul ecranului.
+   * Doar pentru Home. Pe telefon, bara de sus păstrează meniul, logo-ul și
+   * numele ShelfShare, iar titlul (salutul) rămâne pe rândul lui, dedesubt.
+   * Doar acțiunile urcă lângă logo: pe lățimea unui telefon, salutul centrat
+   * nu le mai lăsa loc și ajungeau peste text.
+   *
+   * Pe restul ecranelor, pe telefon, săgeata și titlul iau locul butonului
+   * de meniu și al numelui ShelfShare. Altfel numele și titlul ecranului
+   * ar ocupa două bare una sub alta, doar cu titluri.
    */
-  actionsInBrandBar?: boolean;
+  keepBrandOnMobile?: boolean;
 }) {
-  const { t } = useTranslation();
   const slot = use(SlotContext);
-  const brandSlot = use(BrandSlotContext);
-  const navigate = useNavigate();
+  const mobileBar = use(MobileBarContext);
+  const setUsage = mobileBar?.setUsage;
+  const usesBack = !keepBrandOnMobile && !!back;
+  const usesTitle = !keepBrandOnMobile && title != null && title !== '';
+
+  // Doar booleeni în dependențe, deci efectul nu rulează la fiecare randare
+  // (titlul e JSX nou de fiecare dată). Layout effect: shell-ul își ascunde
+  // meniul și numele înainte de primul cadru, fără o clipire cu ambele.
+  useLayoutEffect(() => {
+    if (!setUsage) return;
+    setUsage({ back: usesBack, title: usesTitle });
+    return () => setUsage(null);
+  }, [setUsage, usesBack, usesTitle]);
+
   if (!slot) return null;
 
   return createPortal(
     <>
-      {actionsInBrandBar && actions && brandSlot && createPortal(actions, brandSlot)}
+      {mobileBar && !keepBrandOnMobile && (
+        <>
+          {back && mobileBar.left && createPortal(<BackButton to={back} />, mobileBar.left)}
+          {usesTitle &&
+            mobileBar.title &&
+            createPortal(
+              <h1 className="truncate font-display text-base font-bold">{title}</h1>,
+              mobileBar.title,
+            )}
+        </>
+      )}
+      {actions && mobileBar?.actions && createPortal(actions, mobileBar.actions)}
       {/*
         Grilă cu trei coloane, nu un rând flex.
 
@@ -88,42 +151,26 @@ export function ScreenHeader({
         iconițe sunt într-o parte. Contragreutatea scrisă de mână nu mai e
         necesară.
       */}
-      <div className="grid h-16 grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4">
+      {/*
+        Pe telefon rândul acesta există doar pe Home (`keepBrandOnMobile`),
+        pentru salut. Pe celelalte ecrane tot ce era în el a urcat în bara
+        de sus, iar un rând gol ar fi furat 64px din ecran.
+      */}
+      <div
+        className={cn(
+          'h-16 grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4',
+          keepBrandOnMobile ? 'grid' : 'hidden min-[900px]:grid',
+        )}
+      >
         <div className="flex min-w-0 items-center justify-start">
-          {/*
-            Săgeata se vede pe ORICE lățime.
-
-            Era ascunsă sub pragul de sidebar, iar alături stătea un slot gol de
-            48px - amândouă pentru că butonul de meniu plutea fix în colțul
-            ăsta și ar fi acoperit-o. De când butonul stă în bara de brand din
-            AppShell, colțul e liber: ascunderea lăsa ecranele de pe telefon
-            fără niciun drum înapoi în interfață, iar slotul gol ar fi împins
-            acum săgeata cu 48px spre dreapta, degeaba.
-          */}
-          {back && (
-            <button
-              onClick={() => (typeof back === 'string' ? void navigate(back) : void navigate(-1))}
-              aria-label={t('commonBack')}
-              title={t('commonBack')}
-              className="shrink-0 rounded-full p-2.5 hover:bg-muted"
-            >
-              <ArrowLeft size={22} />
-            </button>
-          )}
+          {back && <BackButton to={back} />}
         </div>
 
         <h1 className="truncate text-center font-display text-lg font-bold">{title}</h1>
 
-        <div
-          className={cn(
-            'flex min-w-0 items-center justify-end',
-            // Bara de brand dispare de la pragul de sidebar în sus, deci acolo
-            // acțiunile se întorc în bara ecranului.
-            actionsInBrandBar && 'hidden min-[900px]:flex',
-          )}
-        >
-          {actions}
-        </div>
+        {/* Pe telefon acțiunile stau în bara de sus; aici doar de la pragul
+            de sidebar în sus, unde bara aceea nu există. */}
+        <div className="hidden min-w-0 items-center justify-end min-[900px]:flex">{actions}</div>
       </div>
       {bottom}
     </>,

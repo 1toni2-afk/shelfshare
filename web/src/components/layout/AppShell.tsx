@@ -36,7 +36,7 @@ import { adminKeys } from '@/features/admin/adminRepository';
 import { api } from '@/lib/api/client';
 import { Avatar } from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils/cn';
-import { ScreenHeaderSlot } from './ScreenHeader';
+import { ScreenHeaderSlot, type MobileBar, type MobileBarUsage } from './ScreenHeader';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { GuestGateProvider, useGuestGate } from '@/features/auth/GuestGate';
 import {
@@ -116,7 +116,15 @@ export function AppShell() {
   const [editingShortcuts, setEditingShortcuts] = useState(false);
   // Nodul în care ecranul curent își desenează bara de sus (vezi ScreenHeader).
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
-  const [brandSlot, setBrandSlot] = useState<HTMLElement | null>(null);
+  // Locurile din bara de sus de pe telefon și ce a ocupat ecranul din ele.
+  const [barLeft, setBarLeft] = useState<HTMLElement | null>(null);
+  const [barTitle, setBarTitle] = useState<HTMLElement | null>(null);
+  const [barActions, setBarActions] = useState<HTMLElement | null>(null);
+  const [barUsage, setBarUsage] = useState<MobileBarUsage | null>(null);
+  const mobileBar = useMemo<MobileBar>(
+    () => ({ left: barLeft, title: barTitle, actions: barActions, setUsage: setBarUsage }),
+    [barLeft, barTitle, barActions],
+  );
   const location = useLocation();
 
   const openShortcutsEditor = useCallback(() => {
@@ -188,22 +196,33 @@ export function AppShell() {
             PublicLandingScreen), iar cine uita compensarea primea un buton
             peste primul rând de text.
           */}
-          <div className="flex items-center gap-1.5 px-2 py-2 min-[900px]:hidden">
-            <button
-              onClick={() => setDrawerOpen(true)}
-              aria-label={t('navOpenMenu')}
-              className="rounded-full p-2.5 hover:bg-muted"
-            >
-              <Menu size={22} />
-            </button>
-            <Link to="/" className="flex min-w-0 items-center gap-2">
-              <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
-                <BookOpen size={18} />
-              </span>
-              <span className="truncate font-display text-base font-bold">ShelfShare</span>
-            </Link>
-            {/* Acțiunile pe care ecranul le urcă aici (`actionsInBrandBar`). */}
-            <div ref={setBrandSlot} className="ml-auto flex shrink-0 items-center" />
+          {/*
+            Ecranul își pune aici săgeata, titlul și acțiunile (vezi
+            ScreenHeader). Butonul de meniu rămâne doar pe ecranele principale,
+            fără săgeată; logo-ul și numele, doar unde ecranul nu are titlu -
+            în practică pe Home.
+          */}
+          <div className="flex h-14 items-center gap-1.5 px-2 min-[900px]:hidden">
+            <div ref={setBarLeft} className="flex shrink-0 items-center empty:hidden [&:not(:empty)]:px-1" />
+            {!barUsage?.back && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                aria-label={t('navOpenMenu')}
+                className="rounded-full p-2.5 hover:bg-muted"
+              >
+                <Menu size={22} />
+              </button>
+            )}
+            <div ref={setBarTitle} className="min-w-0 flex-1 empty:hidden" />
+            {!barUsage?.title && (
+              <Link to="/" className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
+                  <BookOpen size={18} />
+                </span>
+                <span className="truncate font-display text-base font-bold">ShelfShare</span>
+              </Link>
+            )}
+            <div ref={setBarActions} className="flex shrink-0 items-center" />
           </div>
 
           {/* Goală până o umple ecranul, deci fără înălțime proprie: un ecran
@@ -212,7 +231,7 @@ export function AppShell() {
         </div>
 
         <main className="min-w-0 flex-1">
-          <ScreenHeaderSlot slot={headerSlot} brandSlot={brandSlot}>
+          <ScreenHeaderSlot slot={headerSlot} mobileBar={mobileBar}>
             <Outlet />
           </ScreenHeaderSlot>
         </main>

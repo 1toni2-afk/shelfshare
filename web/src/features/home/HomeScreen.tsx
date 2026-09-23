@@ -126,7 +126,7 @@ export function HomeScreen() {
   const header = (
     <ScreenHeader
       title={<TypewriterText phrases={greetings} />}
-      actionsInBrandBar
+      keepBrandOnMobile
       actions={
         <>
           <HeaderAction
