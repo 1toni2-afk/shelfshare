@@ -1,5 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { BookOpen } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, BookOpen } from 'lucide-react';
 
 /*
   Pagina publică, randată ESTOMPAT în spatele formularului.
@@ -70,7 +72,14 @@ export function AuthLayout({
 
       <div className="relative flex min-h-dvh flex-col items-center justify-center px-5 py-10">
         <div className="w-full max-w-[400px] rounded-[20px] border border-border bg-card/80 p-6 shadow-xl backdrop-blur-xl min-[560px]:p-8">
-          <div className="mb-8 flex flex-col items-center gap-3 text-center">
+          {/*
+            `relative` pe antet, iar săgeata așezată absolut peste el: coloana
+            din mijloc rămâne centrată pe card, nu pe spațiul rămas la dreapta
+            butonului. Un rând flex cu săgeata în stânga ar fi împins logo-ul și
+            titlul cu jumătate de buton spre dreapta - suficient cât să se vadă.
+          */}
+          <div className="relative mb-8 flex flex-col items-center gap-3 text-center">
+            <BackButton />
             <span className="rounded-2xl bg-accent/15 p-3 text-accent">
               <BookOpen size={32} />
             </span>
@@ -84,5 +93,37 @@ export function AuthLayout({
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Săgeata de ieșire din ecranele de autentificare.
+ *
+ * Ecranele astea nu stau în shell-ul aplicației, deci n-au nici bara laterală,
+ * nici `ScreenHeader` - până acum, cine ajungea pe /login dintr-un link nu avea
+ * niciun drum înapoi în interfață, doar butonul browserului.
+ *
+ * `location.key === 'default'` înseamnă că pagina asta e PRIMA intrare din
+ * istoricul aplicației: s-a intrat direct pe adresă, dintr-un email sau de pe
+ * un motor de căutare. Acolo `navigate(-1)` ar scoate omul de pe site cu totul
+ * (înapoi la Google), deci îl ducem pe pagina principală. Altfel, un pas
+ * înapoi - exact de unde a venit.
+ */
+function BackButton() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isFirstEntry = location.key === 'default';
+
+  return (
+    <button
+      type="button"
+      onClick={() => (isFirstEntry ? void navigate('/') : void navigate(-1))}
+      aria-label={t('commonBack')}
+      title={t('commonBack')}
+      className="absolute left-0 top-0 rounded-full p-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+    >
+      <ArrowLeft size={22} />
+    </button>
   );
 }
