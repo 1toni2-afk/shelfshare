@@ -2035,5 +2035,7 @@
     "adminScoreOverrideSaved": "Überschreibung gespeichert.",
     "adminScoreOverrideActive": "Manuelle Überschreibung aktiv",
     "adminScoreEventsTitle": "Ereignisse (letzte 30 Tage)",
-    "adminScoreManualLabel": "Manueller Wert"
+    "adminScoreManualLabel": "Manueller Wert",
+    "navOpenMenu": "Menü öffnen",
+    "navCloseMenu": "Menü schließen"
 }

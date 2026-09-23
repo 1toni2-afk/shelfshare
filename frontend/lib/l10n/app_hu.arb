@@ -2035,5 +2035,7 @@
     "adminScoreOverrideSaved": "A felülírás elmentve.",
     "adminScoreOverrideActive": "Kézi felülírás aktív",
     "adminScoreEventsTitle": "Események (elmúlt 30 nap)",
-    "adminScoreManualLabel": "Kézi pontszám"
+    "adminScoreManualLabel": "Kézi pontszám",
+    "navOpenMenu": "Menü megnyitása",
+    "navCloseMenu": "Menü bezárása"
 }

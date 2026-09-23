@@ -2042,5 +2042,7 @@
     "adminScoreOverrideSaved": "Override saved.",
     "adminScoreOverrideActive": "Manual override active",
     "adminScoreEventsTitle": "Events (last 30 days)",
-    "adminScoreManualLabel": "Manual score"
+    "adminScoreManualLabel": "Manual score",
+    "navOpenMenu": "Open menu",
+    "navCloseMenu": "Close menu"
 }

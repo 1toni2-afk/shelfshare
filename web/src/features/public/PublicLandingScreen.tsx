@@ -116,15 +116,15 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
   return (
     <>
       {/*
-        Fără bară de sus: un antet care scria doar „ShelfShare" repeta numele
-        de pe bara laterală și împingea titlul în jos cu 64px degeaba. Pagina
-        începe direct cu titlul.
+        Fără bară proprie de ecran: pe desktop un antet care scria doar
+        „ShelfShare" repeta numele de pe bara laterală și împingea titlul în jos
+        cu 64px degeaba. Pagina începe direct cu titlul.
 
-        `pt-16` sub pragul de sidebar: acolo butonul de meniu plutește fix în
-        colțul din stânga-sus, iar fără spațiul ăsta ar sta peste primul rând
-        de text.
+        Nici `pt-16` nu mai e nevoie sub pragul de sidebar: butonul de meniu nu
+        mai plutește peste conținut, stă în bara de brand din AppShell, care își
+        ocupă singură spațiul.
       */}
-      <div className="mx-auto w-full max-w-[1350px] px-4 pb-16 pt-16 min-[900px]:px-6 min-[900px]:pt-8">
+      <div className="mx-auto w-full max-w-[1350px] px-4 pb-16 pt-4 min-[900px]:px-6 min-[900px]:pt-8">
         <section className="pt-4">
           {/*
             Titlul se scrie literă cu literă, ca salutul de pe pagina

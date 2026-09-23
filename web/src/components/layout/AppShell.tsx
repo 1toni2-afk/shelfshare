@@ -105,6 +105,7 @@ const SHORTCUT_ICONS: Record<string, typeof BookOpen> = {
  * click pe Notificări" venea exact de aici.
  */
 export function AppShell() {
+  const { t } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   // Editarea scurtăturilor stă aici, nu în `SidebarContent`: bara laterală e
   // randată de două ori (fixă pe desktop, glisantă pe telefon), iar starea
@@ -149,7 +150,7 @@ export function AppShell() {
       {drawerOpen && (
         <div className="fixed inset-0 z-50 min-[900px]:hidden">
           <button
-            aria-label="Close menu"
+            aria-label={t('navCloseMenu')}
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 bg-black/50"
           />
@@ -164,23 +165,45 @@ export function AppShell() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Butonul de meniu stă fix în același colț pe orice ecran; în Flutter
-            se muta la dreapta când ecranul avea o săgeată de back, iar poziția
-            „sărea" stânga-dreapta la navigare. */}
-        <button
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
-          className="fixed left-2 top-2 z-40 rounded-full bg-card p-3.5 shadow-md min-[900px]:hidden"
-        >
-          <Menu size={22} />
-        </button>
+        {/*
+          Antetul lipit de sus, dintr-o bucată: bara de brand (doar pe telefon)
+          plus locul în care ecranul curent își desenează propria bară.
 
-        {/* Goală până o umple ecranul, deci fără înălțime proprie: un ecran
-            care nu-și pune bară nu rămâne cu o fâșie albă în cap. */}
-        <header
-          ref={setHeaderSlot}
-          className="sticky top-0 z-30 flex shrink-0 flex-col bg-background"
-        />
+          Într-un SINGUR container sticky, nu două: două elemente cu `top-0` se
+          suprapun, iar bara ecranului ar aluneca sub cea de brand la derulare.
+          Așa se comportă ca un bloc, exact cum arată pe ecran.
+        */}
+        <div className="sticky top-0 z-30 flex flex-col bg-background">
+          {/*
+            Numele și logo-ul, pe telefon. Până acum butonul de meniu plutea
+            singur într-un colț, deci ecranul nu spunea nicăieri pe ce site
+            ești - lucru pe care pe desktop îl rezolvă bara laterală.
+
+            Butonul de meniu intră ÎN bară: plutind peste conținut, trebuia
+            compensat de fiecare ecran cu spațiu gol în cap (vezi `pt-16` din
+            PublicLandingScreen), iar cine uita compensarea primea un buton
+            peste primul rând de text.
+          */}
+          <div className="flex items-center gap-1.5 px-2 py-2 min-[900px]:hidden">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              aria-label={t('navOpenMenu')}
+              className="rounded-full p-2.5 hover:bg-muted"
+            >
+              <Menu size={22} />
+            </button>
+            <Link to="/" className="flex min-w-0 items-center gap-2">
+              <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
+                <BookOpen size={18} />
+              </span>
+              <span className="truncate font-display text-base font-bold">ShelfShare</span>
+            </Link>
+          </div>
+
+          {/* Goală până o umple ecranul, deci fără înălțime proprie: un ecran
+              care nu-și pune bară nu rămâne cu o fâșie albă în cap. */}
+          <header ref={setHeaderSlot} className="flex shrink-0 flex-col" />
+        </div>
 
         <main className="min-w-0 flex-1">
           <ScreenHeaderSlot slot={headerSlot}>
@@ -303,7 +326,7 @@ function SidebarContent({
         <span className="font-display text-base font-bold">ShelfShare</span>
         <OnlineUsersBadge />
         {onClose && (
-          <button onClick={onClose} aria-label="Close menu" className="ml-auto p-1">
+          <button onClick={onClose} aria-label={t('navCloseMenu')} className="ml-auto p-1">
             <X size={18} />
           </button>
         )}
