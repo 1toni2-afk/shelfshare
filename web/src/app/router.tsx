@@ -1,7 +1,6 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
-import { PublicShell } from '@/components/layout/PublicShell';
 import { FullScreenLoader } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { NotPortedYet } from './NotPortedYet';
@@ -316,26 +315,27 @@ function onboardingRedirect(
 /**
  * Rutele PUBLICE: aceeași adresă arată conținut și fără cont.
  *
- * Alege shell-ul după starea sesiunii - `AppShell` (cu bara laterală și
- * badge-urile ei) pentru userul logat, `PublicShell` (antet + subsol simple)
- * pentru vizitator. Ambele randează `<Outlet/>`, deci ECRANUL e același: un
- * link primit din Google către o carte duce în același loc, indiferent cine
- * îl deschide.
+ * ACELAȘI shell pentru amândoi. Vizitatorul avea până acum un antet-subsol
+ * separat (`PublicShell`), deci interfața se schimba complet în secunda de
+ * după înregistrare - alt meniu, alt aranjament, alt loc pentru fiecare lucru.
+ * Acum vede bara laterală obișnuită, iar diferența e doar ce se întâmplă la
+ * click: `GuestGateProvider` din AppShell oprește tot ce nu e pagina
+ * principală și cere un cont (vezi features/auth/GuestGate.tsx).
  *
- * Fără asta, tot ce ține de conținut stătea în spatele lui `RequireAuth`, deci
- * orice vizitator - inclusiv un crawler - era trimis la /login și nu vedea
- * niciodată catalogul, o carte sau un profil.
+ * Fără ramura asta, tot ce ține de conținut ar sta în spatele lui
+ * `RequireAuth`, deci orice vizitator - inclusiv un crawler - ar fi trimis la
+ * /login și n-ar vedea niciodată catalogul, o carte sau un profil.
  *
  * `restoring` afișează încărcătorul, din același motiv ca în `RequireAuth`:
- * tratat ca „neautentificat", un user logat ar vedea o clipă antetul public
- * la fiecare reîncărcare.
+ * tratată ca „neautentificat", sesiunea încă necitită i-ar arăta unui user
+ * logat, pentru o clipă, interfața de vizitator.
  */
 function PublicOrAppShell() {
   const { status } = useAuth();
   const location = useLocation();
 
   if (status.kind === 'restoring') return <FullScreenLoader />;
-  if (status.kind !== 'authenticated') return <PublicShell />;
+  if (status.kind !== 'authenticated') return <AppShell />;
 
   const redirect = onboardingRedirect(status.user, location.pathname);
   return redirect ?? <AppShell />;

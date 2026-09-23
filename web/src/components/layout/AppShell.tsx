@@ -1,5 +1,5 @@
 import { createContext, useCallback, useEffect, useMemo, useState, use } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -37,6 +37,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils/cn';
 import { ScreenHeaderSlot } from './ScreenHeader';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { GuestGateProvider, useGuestGate } from '@/features/auth/GuestGate';
 import {
   availableShortcuts,
   readShortcuts,
@@ -135,6 +136,7 @@ export function AppShell() {
   }, [drawerOpen]);
 
   return (
+    <GuestGateProvider>
     <ShellContext value={shellValue}>
     <div className="flex min-h-dvh bg-background">
       {/* `sticky top-0 h-dvh`: fără ele, bara laterală derulează odată cu
@@ -184,9 +186,59 @@ export function AppShell() {
             <Outlet />
           </ScreenHeaderSlot>
         </main>
+
+        {/* Legăturile legale și de ajutor, pentru vizitatorul fără cont. Userul
+            logat le are în Setări; vizitatorul n-are unde altundeva, iar Play
+            Console și motoarele de căutare se așteaptă să le găsească la un
+            click de pe pagina publică. */}
+        <GuestFooter />
       </div>
     </div>
     </ShellContext>
+    </GuestGateProvider>
+  );
+}
+
+/**
+ * Paginile plain-HTML servite de beta-server.js (nu sunt rute ale aplicației).
+ * Deci `<a>` obișnuit, nu `<Link>`: un `<Link>` le-ar rezolva prin routerul din
+ * browser, care n-are rutele astea și ar afișa „pagină inexistentă".
+ */
+const FOOTER_LINKS: Array<{ href: string; labelKey: string; fallback: string }> = [
+  { href: '/help-center', labelKey: 'settingsHelpCenter', fallback: 'Întrebări frecvente' },
+  { href: '/safety-center', labelKey: 'settingsSafetyCenter', fallback: 'Centrul de siguranță' },
+  { href: '/about-dev', labelKey: 'settingsAboutDev', fallback: 'Despre dezvoltator' },
+  { href: '/privacy', labelKey: 'settingsPrivacy', fallback: 'Confidențialitate' },
+  { href: '/terms', labelKey: 'settingsTerms', fallback: 'Termeni și condiții' },
+];
+
+function GuestFooter() {
+  const { t } = useTranslation();
+  const { isGuest } = useGuestGate();
+  if (!isGuest) return null;
+
+  return (
+    <footer className="mt-12 border-t border-border bg-card">
+      <div className="mx-auto w-full max-w-[1100px] px-5 py-8 min-[900px]:px-8">
+        <nav className="flex flex-wrap gap-x-6 gap-y-2">
+          {FOOTER_LINKS.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t(item.labelKey, item.fallback)}
+            </a>
+          ))}
+        </nav>
+        <p className="mt-5 text-xs text-muted-foreground">
+          {t(
+            'publicFooterTagline',
+            'ShelfShare - comunitatea de cititori din România care își dau cărțile mai departe.',
+          )}
+        </p>
+      </div>
+    </footer>
   );
 }
 
@@ -201,6 +253,7 @@ function SidebarContent({
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { isGuest } = useGuestGate();
   const [shortcuts, setShortcuts] = useState<string[]>(readShortcuts);
   const completeTodo = useCompleteOnboardingTodo();
 
@@ -267,6 +320,9 @@ function SidebarContent({
             label={t(item.labelKey)}
             badge={badges[item.to]}
             exact={item.to === '/'}
+            // Pagina principală e singurul lucru pe care îl poate deschide un
+            // vizitator din meniu; restul îi arată dialogul de cont.
+            openToGuests={item.to === '/'}
           />
         ))}
 
@@ -274,17 +330,22 @@ function SidebarContent({
           <span className="flex-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             {t('navShortcuts')}
           </span>
-          <button
-            onClick={() => setEditing(!editing)}
-            aria-label={t(editing ? 'shortcutsDoneTooltip' : 'shortcutsEditTooltip')}
-            title={t(editing ? 'shortcutsDoneTooltip' : 'shortcutsEditTooltip')}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
-          >
-            {editing ? <Check size={16} /> : <Pencil size={16} />}
-          </button>
+          {/* Fără cont n-ai unde salva alegerea (lista stă pe acest browser,
+              dar scurtăturile duc oricum în dialogul de cont), deci creionul
+              ar promite o setare fără efect. */}
+          {!isGuest && (
+            <button
+              onClick={() => setEditing(!editing)}
+              aria-label={t(editing ? 'shortcutsDoneTooltip' : 'shortcutsEditTooltip')}
+              title={t(editing ? 'shortcutsDoneTooltip' : 'shortcutsEditTooltip')}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
+            >
+              {editing ? <Check size={16} /> : <Pencil size={16} />}
+            </button>
+          )}
         </div>
 
-        {editing ? (
+        {editing && !isGuest ? (
           // În editare se arată TOATE scurtăturile disponibile, bifate sau nu -
           // altfel n-ar exista nicio cale de a adăuga una scoasă anterior.
           <div className="mt-1">
@@ -331,13 +392,40 @@ function SidebarTile({
   label,
   badge,
   exact = false,
+  openToGuests = false,
 }: {
   to: string;
   icon: typeof BookOpen;
   label: string;
   badge?: number;
   exact?: boolean;
+  /** Rută pe care o poate deschide și cineva fără cont. */
+  openToGuests?: boolean;
 }) {
+  const { isGuest, block } = useGuestGate();
+
+  /*
+    Pentru vizitator rândul rămâne EXACT la fel - aceeași iconiță, același
+    text, același loc în listă - dar clicul deschide dialogul de cont în loc
+    să navigheze. Ascuns, meniul ar fi arătat altfel înainte și după
+    înregistrare, adică fix discrepanța pe care o reparăm aici.
+
+    `<button>`, nu un `<NavLink>` cu `preventDefault`: un link care nu duce
+    nicăieri e un `<a href>` real în HTML, deci un robot l-ar urma și ar cere
+    o pagină pe care noi tocmai am refuzat-o.
+  */
+  if (isGuest && !openToGuests) {
+    return (
+      <button
+        onClick={block}
+        className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-3 rounded-[12px] px-3 py-2.5 text-left text-sm text-foreground transition hover:bg-muted"
+      >
+        <Icon size={20} className="shrink-0" />
+        <span className="flex-1 truncate">{label}</span>
+      </button>
+    );
+  }
+
   return (
     <NavLink
       to={to}
@@ -477,6 +565,14 @@ function AndroidInstallCard() {
 
 function ProfileFooter() {
   const { user } = useAuth();
+  const { isGuest } = useGuestGate();
+
+  /*
+    Colțul din stânga-jos e locul în care userul logat își are numele; pentru
+    vizitator, tot acolo stă invitația de a-și face cont. Același loc, aceeași
+    greutate vizuală - doar conținutul diferă.
+  */
+  if (isGuest) return <GuestAccountCta />;
   if (!user) return null;
 
   const displayName = user.name?.trim() ? user.name : user.email;
@@ -498,6 +594,27 @@ function ProfileFooter() {
         )}
       </span>
     </NavLink>
+  );
+}
+
+function GuestAccountCta() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col gap-2 px-4 py-4">
+      <Link
+        to="/register"
+        className="rounded-[12px] bg-primary px-4 py-3 text-center text-sm font-bold text-primary-foreground hover:brightness-110"
+      >
+        {t('guestGateRegister', 'Creează cont gratuit')}
+      </Link>
+      <Link
+        to="/login"
+        className="rounded-[12px] px-4 py-2 text-center text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+      >
+        {t('authLoginSubmit', 'Conectare')}
+      </Link>
+    </div>
   );
 }
 

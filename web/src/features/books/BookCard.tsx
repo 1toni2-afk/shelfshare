@@ -16,6 +16,7 @@ import {
 import { BookCover } from '@/components/ui/BookCover';
 import { listsKeys, wishlistRepository } from '@/features/lists/listsRepository';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { useGuestGate } from '@/features/auth/GuestGate';
 import { useToast } from '@/components/ui/Toast';
 import { useListingScore } from './useListingScore';
 import { toNumber, type UserBook } from '@/types/models';
@@ -213,6 +214,7 @@ function Badge({
 function WishlistHeart({ bookId, userBookId }: { bookId: string; userBookId: string }) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const guest = useGuestGate();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -264,6 +266,24 @@ function WishlistHeart({ bookId, userBookId }: { bookId: string; userBookId: str
     if (busy) return;
     setBusy(true);
     toggle.mutate(undefined, { onSettled: () => setBusy(false) });
+  }
+
+  /*
+    Vizitatorul vede inima, dar apăsarea ei cere un cont: ascunsă, cardul ar
+    arăta altfel înainte și după înregistrare, iar omul n-ar afla niciodată că
+    poate urmări o carte.
+  */
+  if (guest.isGuest) {
+    return (
+      <button
+        onClick={guest.block}
+        aria-label={t('workWantToRead')}
+        className="absolute right-1.5 top-1.5 flex size-[30px] items-center justify-center rounded-full bg-white/90 transition"
+        style={{ boxShadow: '0 0 4px rgb(0 0 0 / 0.15)' }}
+      >
+        <Heart size={17} className="text-muted-foreground" />
+      </button>
+    );
   }
 
   if (!user) return null;

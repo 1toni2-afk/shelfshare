@@ -13,9 +13,10 @@ import { BookGrid } from './BookGrid';
 import { BookCover } from '@/components/ui/BookCover';
 import { Button, ErrorNotice, Spinner } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { SellerName, useGuestGate } from '@/features/auth/GuestGate';
 import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
 import { bookTitle, type DocumentMeta } from '@/lib/seo/routes';
-import { toNumber, type BookCondition, type UserBook } from '@/types/models';
+import { toNumber, type BookCondition, type PublicUser, type UserBook } from '@/types/models';
 
 /**
  * Metadatele paginii unui anunț.
@@ -29,6 +30,55 @@ import { toNumber, type BookCondition, type UserBook } from '@/types/models';
  * proprietarul oprește vânzarea), iar un preț declarat pe o carte care nu se
  * vinde ar fi un rezultat fals în Google.
  */
+/**
+ * Cine vinde cartea.
+ *
+ * Pentru vizitatorul fără cont numele e estompat, iar cardul nu mai duce la
+ * profil, ci deschide dialogul de cont: cine are cartea e exact lucrul pentru
+ * care merită să-ți faci cont, iar dat pe gratis n-ar mai rămâne niciun motiv.
+ *
+ * Rândul rămâne ÎN ACELAȘI LOC și cu aceeași formă ca pentru userul logat -
+ * scos cu totul, pagina ar arăta altfel înainte și după înregistrare.
+ */
+function SellerCard({ user }: { user: PublicUser }) {
+  const guest = useGuestGate();
+  const name = user.name ?? user.username ?? '?';
+
+  const inner = (
+    <>
+      <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted font-bold">
+        {user.profileImage ? (
+          <img src={user.profileImage} alt="" className="size-full object-cover" />
+        ) : (
+          // Fără cont, până și inițiala e un indiciu; punem semnul de întrebare.
+          (guest.isGuest ? '?' : name).charAt(0).toUpperCase()
+        )}
+      </div>
+      <div className="min-w-0">
+        <SellerName name={name} className="block font-medium" />
+        {user.city && <p className="truncate text-sm text-muted-foreground">{user.city}</p>}
+      </div>
+    </>
+  );
+
+  const className =
+    'mt-6 flex w-full items-center gap-3 rounded-[16px] border border-border bg-card p-3 text-left hover:bg-muted';
+
+  if (guest.isGuest) {
+    return (
+      <button type="button" onClick={guest.open} className={className}>
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <Link to={`/users/${user.id}`} className={className}>
+      {inner}
+    </Link>
+  );
+}
+
 function bookDocumentMeta(item: UserBook, userBookId: string): DocumentMeta {
   const price = toNumber(item.salePrice);
   const forSale = item.isForSale && price !== null && price > 0;
@@ -78,6 +128,7 @@ function bookDocumentMeta(item: UserBook, userBookId: string): DocumentMeta {
 export function BookDetailScreen() {
   const { userBookId = '' } = useParams();
   const { t } = useTranslation();
+  const guest = useGuestGate();
   const toast = useToast();
   const { user } = useAuth();
   const [sheet, setSheet] = useState<'exchange' | 'offer' | null>(null);
@@ -252,37 +303,15 @@ export function BookDetailScreen() {
             </span>
           </div>
 
-          {item.user && (
-            <Link
-              to={`/users/${item.user.id}`}
-              className="mt-6 flex items-center gap-3 rounded-[16px] border border-border bg-card p-3 hover:bg-muted"
-            >
-              <div className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-muted font-bold">
-                {item.user.profileImage ? (
-                  <img src={item.user.profileImage} alt="" className="size-full object-cover" />
-                ) : (
-                  (item.user.name ?? item.user.username ?? '?').charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate font-medium">{item.user.name ?? item.user.username}</p>
-                {item.user.city && (
-                  <p className="truncate text-sm text-muted-foreground">{item.user.city}</p>
-                )}
-              </div>
-            </Link>
-          )}
+          {item.user && <SellerCard user={item.user} />}
 
           {/* Vizitatorul fără cont vede anunțul, dar ca să ceară cartea are
-              nevoie de un cont - butoanele ar duce la un 401. */}
-          {!user && (
+              nevoie de un cont - butoanele ar duce la un 401. Dialogul apare
+              PESTE pagină, cu fundalul estompat, în loc să-l mute pe om pe
+              ecranul de autentificare: așa nu pierde cartea la care se uita. */}
+          {guest.isGuest && (
             <div className="mt-8">
-              <Link
-                to="/login"
-                className="inline-flex rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground"
-              >
-                {t('bookDetailRequestExchange')}
-              </Link>
+              <Button onClick={guest.open}>{t('bookDetailRequestExchange')}</Button>
             </div>
           )}
 
