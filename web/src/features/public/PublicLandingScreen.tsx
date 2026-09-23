@@ -153,12 +153,6 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
             >
               {t('landingCtaRegister', 'Creează cont gratuit')}
             </Link>
-            <Link
-              to="/browse"
-              className="rounded-full border border-border px-6 py-3 text-sm font-bold text-foreground hover:bg-muted"
-            >
-              {t('landingCtaBrowse', 'Vezi cărțile disponibile')}
-            </Link>
           </div>
         </section>
 
