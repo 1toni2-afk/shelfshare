@@ -70,4 +70,10 @@ frontend/test/demo/
 
 # Mediul de test (docker-compose.test.yml) - valori fictive, dar tot un fisier de mediu.
 .env.test
+# Copii de siguranta ale fisierelor de mediu, sub orice nume: `.env.backup-*`
+# prindea doar o parte, iar `.env.bak-*` / `.env.test.bak-*` ramaneau vizibile
+# pentru `git add .` - adica secretele de productie la un singur gest distanta
+# de un commit public.
 .env.backup-*
+.env*.bak-*
+.env.bak-*
