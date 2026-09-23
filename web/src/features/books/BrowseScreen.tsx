@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader, HeaderAction } from '@/components/layout/ScreenHeader';
 import { Map as MapIcon, Search, SlidersHorizontal, X } from 'lucide-react';
@@ -9,11 +9,26 @@ import { BookCard } from './BookCard';
 import { BookGrid } from './BookGrid';
 import { Button, ErrorNotice, Spinner } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { useGuestGate } from '@/features/auth/GuestGate';
 import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
 import { BROWSE_META } from '@/lib/seo/routes';
 import { cn } from '@/lib/utils/cn';
 
 const PAGE_SIZE = 24;
+
+/**
+ * Cate carti vede un vizitator fara cont inainte de estompare.
+ *
+ * Catalogul RAMANE public - e singurul drum pe care vin oamenii din Google,
+ * iar scripts/beta-seo.js il pre-randeaza intreg pentru crawlere. Ce se
+ * opreste aici e derularea la nesfarsit, cautarea si filtrele: fara ele,
+ * taietura de pe pagina principala era ocolita de un singur clic.
+ *
+ * 12, nu un numar rotund oarecare: la orice latime a grilei (2-6 coloane)
+ * iese un numar intreg de randuri, deci taietura nu lasa doua carti razlete
+ * pe ultimul rand.
+ */
+const GUEST_BROWSE_LIMIT = 12;
 
 const SORT_OPTIONS = [
   { value: 'popularity', labelKey: 'discoverSortPopular' },
@@ -47,6 +62,7 @@ const CONDITIONS = [
 export function BrowseScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const guest = useGuestGate();
   // Traduse, din același motiv ca la PublicLandingScreen: serverul livrează
   // deja pagina în limba vizitatorului, iar o constantă românească aici ar
   // răsturna titlul din tab înapoi pe română după încărcare.
@@ -54,6 +70,30 @@ export function BrowseScreen() {
     ...BROWSE_META,
     title: t('seoBrowseTitle'),
     description: t('seoBrowseDescription'),
+    /*
+      Marcajul de continut partial inchis.
+
+      Crawlerul primeste catalogul intreg (varianta pre-randata de
+      scripts/beta-seo.js, care nu executa JavaScript), iar un om fara cont
+      vede primele GUEST_BROWSE_LIMIT carti. Diferenta asta trebuie DECLARATA,
+      altfel se citeste ca cloaking - adica exact lucrul pentru care Google
+      scoate un site din index. `isAccessibleForFree: false` plus `hasPart` cu
+      selectorul zonei inchise e mecanismul oficial pentru abonamente si tot
+      el acopera cazul de aici.
+
+      Acelasi obiect e generat si de beta-seo.js: marcajul trebuie sa fie in
+      HTML-ul SERVIT, nu doar pus de aplicatie dupa pornire.
+    */
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      isAccessibleForFree: false,
+      hasPart: {
+        '@type': 'WebPageElement',
+        isAccessibleForFree: false,
+        cssSelector: '.ss-guest-restricted',
+      },
+    },
   });
   const [params, setParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -108,6 +148,11 @@ export function BrowseScreen() {
   const items = results.data?.pages.flatMap((page) => page.items) ?? [];
   const total = results.data?.pages[0]?.total ?? 0;
 
+  // Contorul ramane cel real ("38 de carti"): vizitatorul vede cate sunt, nu
+  // doar cate i se arata - asta e chiar argumentul pentru care si-ar face cont.
+  const visible = guest.isGuest ? items.slice(0, GUEST_BROWSE_LIMIT) : items;
+  const cut = guest.isGuest && (items.length > visible.length || results.hasNextPage);
+
   function updateFilter(key: string, value: string | undefined) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -140,6 +185,12 @@ export function BrowseScreen() {
         <form
           onSubmit={(event) => {
             event.preventDefault();
+            // Cautarea e a userului cu cont: altfel taietura de mai jos s-ar
+            // ocoli cautand titlu cu titlu.
+            if (guest.isGuest) {
+              guest.open();
+              return;
+            }
             updateFilter('title', titleDraft.trim() || undefined);
           }}
           className="flex min-w-[240px] flex-1 items-center gap-2 rounded-[16px] bg-muted px-4"
@@ -168,7 +219,10 @@ export function BrowseScreen() {
         </form>
 
         <button
-          onClick={() => setFiltersOpen((open) => !open)}
+          onClick={(event) => {
+            if (guest.isGuest) return guest.block(event);
+            setFiltersOpen((open) => !open);
+          }}
           className={cn(
             'flex items-center gap-2 rounded-[12px] border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted',
             filtersOpen && 'bg-muted',
@@ -253,17 +307,41 @@ export function BrowseScreen() {
           <p className="mb-4 text-sm text-muted-foreground">
             {t('browseResultsCount', { count: total })}
           </p>
-          <BookGrid>
-            {items.map((item, index) => (
-              <BookCard key={item.id} item={item} eager={index < 5} />
-            ))}
-          </BookGrid>
+          <div className={cn('relative', guest.isGuest && 'ss-guest-restricted')}>
+            <BookGrid>
+              {visible.map((item, index) => (
+                <BookCard key={item.id} item={item} eager={index < 5} />
+              ))}
+            </BookGrid>
 
-          <InfiniteScrollSentinel
-            hasMore={results.hasNextPage}
-            loading={results.isFetchingNextPage}
-            onReach={() => void results.fetchNextPage()}
-          />
+            {/*
+              `pointer-events-none` pe stratul de estompare, dar NU pe butonul
+              dinauntru - acelasi motiv ca pe pagina principala: altfel
+              dreptunghiul ar inghiti clicurile pe cartile de sub el.
+            */}
+            {cut && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center justify-end gap-3 bg-gradient-to-t from-background via-background/95 to-transparent pb-6 pt-24">
+                <p className="max-w-[40ch] px-4 text-center text-sm text-muted-foreground">
+                  {t('guestMoreBooksText')}
+                </p>
+                <Link
+                  to="/register"
+                  className="pointer-events-auto rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-lg hover:brightness-110"
+                >
+                  {t('guestMoreBooksCta')}
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Derularea la nesfarsit e a userului cu cont. */}
+          {!guest.isGuest && (
+            <InfiniteScrollSentinel
+              hasMore={results.hasNextPage}
+              loading={results.isFetchingNextPage}
+              onReach={() => void results.fetchNextPage()}
+            />
+          )}
         </>
       )}
     </div>

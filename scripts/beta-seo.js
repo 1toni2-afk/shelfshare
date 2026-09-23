@@ -705,6 +705,29 @@ async function browseMeta(locale) {
   return {
     ...meta,
     path: '/browse',
+    /*
+      Pagina e PARTIAL inchisa si o spunem explicit.
+
+      Aici, in HTML-ul servit, crawlerul primeste catalogul intreg; aplicatia
+      arata unui om fara cont doar primele cateva carti, apoi estompeaza (vezi
+      GUEST_BROWSE_LIMIT din web/src/features/books/BrowseScreen.tsx).
+      Diferenta dintre ce vede robotul si ce vede omul TREBUIE declarata -
+      nedeclarata, se citeste ca cloaking, iar pedeapsa e scoaterea din index.
+      `isAccessibleForFree: false` e mecanismul oficial pentru exact asta.
+
+      Marcajul sta si in `useDocumentMeta` din ecran: cele doua cai trebuie sa
+      spuna acelasi lucru, ca si titlul sau descrierea.
+    */
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      isAccessibleForFree: false,
+      hasPart: {
+        '@type': 'WebPageElement',
+        isAccessibleForFree: false,
+        cssSelector: '.ss-guest-restricted',
+      },
+    },
     bodyHtml: `
       <h1>${escapeHtml(t.browseHeadline)}</h1>
       <p>${escapeHtml(meta.description)}</p>
