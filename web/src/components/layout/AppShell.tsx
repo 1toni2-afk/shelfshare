@@ -679,7 +679,7 @@ function GuestAccountCta() {
       </Link>
       <Link
         to="/login"
-        className="rounded-[12px] px-4 py-2 text-center text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="rounded-[12px] border-[1.5px] border-accent px-4 py-2.5 text-center text-sm font-semibold text-foreground hover:bg-accent/10"
       >
         {t('authLoginSubmit', 'Conectare')}
       </Link>
