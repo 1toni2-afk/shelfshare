@@ -1,5 +1,5 @@
 import { api } from '@/lib/api/client';
-import type { UserBook } from '@/types/models';
+import type { ListingHistoryEntry, UserBook } from '@/types/models';
 
 export interface BrowseResult {
   items: UserBook[];
@@ -44,6 +44,11 @@ export const booksRepository = {
 
   getSimilar(userBookId: string, signal?: AbortSignal): Promise<UserBook[]> {
     return api.get<UserBook[]>(`/books/${userBookId}/similar`, { signal });
+  },
+
+  /** Lanțul de proprietari al exemplarului (GET /books/:id/history, public). */
+  getHistory(userBookId: string, signal?: AbortSignal): Promise<ListingHistoryEntry[]> {
+    return api.get<ListingHistoryEntry[]>(`/books/${userBookId}/history`, { signal });
   },
 
   // --- secțiunile din Descoperă ---
@@ -227,6 +232,7 @@ export const booksKeys = {
   detail: (id: string) => ['books', 'detail', id] as const,
   recommended: () => ['books', 'recommended'] as const,
   similar: (id: string) => ['books', 'similar', id] as const,
+  history: (id: string) => ['books', 'history', id] as const,
   trending: () => ['books', 'trending-listings'] as const,
   mostWished: () => ['books', 'most-wished'] as const,
   hiddenGems: () => ['books', 'hidden-gems'] as const,

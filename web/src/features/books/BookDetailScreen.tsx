@@ -17,7 +17,13 @@ import { SellerName, useGuestGate } from '@/features/auth/GuestGate';
 import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
 import { SITE_NAME, type DocumentMeta } from '@/lib/seo/routes';
 import i18n from '@/lib/i18n';
-import { toNumber, type BookCondition, type PublicUser, type UserBook } from '@/types/models';
+import {
+  toNumber,
+  type BookCondition,
+  type ListingHistoryEntry,
+  type PublicUser,
+  type UserBook,
+} from '@/types/models';
 
 /**
  * Metadatele paginii unui anunț.
@@ -348,6 +354,8 @@ export function BookDetailScreen() {
       )}
       {sheet === 'offer' && <MakeOfferSheet book={item} onClose={() => setSheet(null)} />}
 
+      <HistorySection userBookId={userBookId} />
+
       {similar.data && similar.data.length > 0 && (
         <section className="mt-12">
           <h2 className="mb-4 font-display text-lg font-bold">{t('bookDetailSimilarBooksTitle')}</h2>
@@ -359,6 +367,98 @@ export function BookDetailScreen() {
         </section>
       )}
     </div>
+  );
+}
+
+/**
+ * „Istoricul acestei cărți": prin mâinile cui a trecut exemplarul, ca în
+ * `_HistorySection` din aplicație (book_detail_screen.dart). Apare doar când
+ * cartea a avut cel puțin un proprietar înainte - o singură verigă nu e
+ * istoric.
+ *
+ * Numele foștilor proprietari trec prin `SellerName`, ca oriunde altundeva:
+ * vizitatorul fără cont le vede estompate.
+ */
+function HistorySection({ userBookId }: { userBookId: string }) {
+  const { t } = useTranslation();
+  const history = useQuery({
+    queryKey: booksKeys.history(userBookId),
+    queryFn: ({ signal }) => booksRepository.getHistory(userBookId, signal),
+    enabled: !!userBookId,
+  });
+
+  if (!history.data || history.data.length <= 1) return null;
+
+  return (
+    <section className="mt-12 max-w-[640px]">
+      <h2 className="font-display text-lg font-bold">{t('bookDetailHistoryTitle')}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{t('bookDetailHistorySubtitle')}</p>
+      <ol className="mt-4">
+        {history.data.map((entry, index) => (
+          <HistoryHop
+            key={entry.userBookId}
+            entry={entry}
+            last={index === history.data.length - 1}
+          />
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function HistoryHop({ entry, last }: { entry: ListingHistoryEntry; last: boolean }) {
+  const { t } = useTranslation();
+  const date = (value: string) => {
+    const d = new Date(value);
+    return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+  };
+
+  let details = '';
+  if (entry.condition && CONDITION_KEYS[entry.condition]) {
+    details += `${t(CONDITION_KEYS[entry.condition])} · `;
+  }
+  details += t('bookDetailHistoryListedOn', { date: date(entry.listedAt) });
+  if (entry.transferredAt) {
+    details += t('bookDetailHistoryTransferredOn', {
+      action:
+        entry.transferType === 'sale'
+          ? t('bookDetailHistorySold')
+          : t('bookDetailHistoryExchanged'),
+      date: date(entry.transferredAt),
+    });
+  } else if (entry.isCurrent) {
+    details += t('bookDetailHistoryCurrentlyOwned');
+  }
+
+  return (
+    <li className="flex gap-3">
+      <div className="flex flex-col items-center pt-1.5">
+        <span
+          className={`size-3 shrink-0 rounded-full ${entry.isCurrent ? 'bg-accent' : 'bg-muted-foreground'}`}
+        />
+        {!last && <span className="mt-1 w-0.5 flex-1 bg-border" />}
+      </div>
+      <div className="min-w-0 pb-5">
+        <p className="text-sm font-semibold">
+          <SellerName name={entry.ownerName ?? t('commonUnknownUser')} />
+        </p>
+        <p className="text-xs text-muted-foreground">{details}</p>
+        {entry.photos.length > 0 && (
+          <div className="mt-2 flex gap-1.5 overflow-x-auto">
+            {entry.photos.map((photo) => (
+              <a key={photo} href={photo} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={photo}
+                  alt=""
+                  loading="lazy"
+                  className="size-14 shrink-0 rounded-md object-cover"
+                />
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </li>
   );
 }
 

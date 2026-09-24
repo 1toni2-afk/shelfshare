@@ -13,7 +13,8 @@
  *   4. Groups            - 2 grupuri cu membri, postări și un eveniment
  *   5. Leaderboard       - contoare de schimburi, XP și rating
  *   6. Global statistics - vin din anunțurile/schimburile de mai sus
- *   7. Book history      - o carte trecută prin 3 mâini (lanț previousListingId)
+ *   7. Book history      - Silo, trecută prin 4 mâini (3 foști proprietari),
+ *                          plus o carte cu 3 (lanț previousListingId)
  *   8. My shelf          - citite / în curs (cu progres pe pagini) / de citit
  *   9. Trade system      - schimb finalizat cu recenzii, schimb acceptat cu
  *                          întâlnire și telefoane partajate, cerere în așteptare,
@@ -22,8 +23,8 @@
  *
  * Idempotent: la fiecare rulare ȘTERGE conturile de demo de mai jos (cascadă
  * pe tot ce le aparține) și le recreează. Nu atinge niciun alt cont. Cărțile
- * se iau din catalogul existent (cele cu copertă, cele mai populare întâi),
- * deci nu se adaugă nimic în `books`.
+ * se iau din catalogul existent (cele cu copertă, cele mai populare întâi);
+ * singura carte adăugată, dacă lipsește, e Silo (Hugh Howey), pentru istoric.
  *
  * Parola implicită e DEMO_PASSWORD din env, altfel cea de mai jos.
  *
@@ -110,7 +111,12 @@ async function main() {
   const MAIN_BOOKS = 27;
   const MATCHES = 3;
   const books = await prisma.book.findMany({
-    where: { coverUrl: { not: null } },
+    where: {
+      coverUrl: { not: null },
+      // Silo e adăugată de scriptul ăsta doar pentru istoric (vezi 11b) - nu
+      // trebuie să apară și ca anunț obișnuit al vreunui vecin.
+      OR: [{ source: null }, { source: { not: 'demo-seed' } }],
+    },
     orderBy: [{ popularityScore: { sort: 'desc', nulls: 'last' } }, { createdAt: 'asc' }],
     take: 80,
   });
@@ -383,6 +389,8 @@ async function main() {
         meetingAcceptedAt: daysAgo(at + 2),
         requesterDoneAt: daysAgo(at),
         ownerDoneAt: daysAgo(at),
+        // Istoricul cărții afișează `updatedAt` ca dată a transferului.
+        updatedAt: daysAgo(at),
         requesterRatingForOwner: 5,
         ownerRatingForRequester: 5,
         requesterReviewForOwner: 'Cartea exact ca în descriere, predare rapidă. Mulțumesc!',
@@ -398,6 +406,56 @@ async function main() {
   await completedExchange(mina.id, matei.id, h1.id, 300);
   await completedExchange(toni.id, mina.id, h2.id, 90);
   console.log(`Istoric creat pentru „${historyBook.title}" (${h3.id})`);
+
+  // 11b. Silo (Hugh Howey) - exemplarul cu cel mai lung istoric: trei foști
+  //      proprietari, din trei orașe, cu un schimb, o vânzare și încă un schimb.
+  //      Matei (Brașov) -> Andrada (Sibiu) -> Mina (Cluj) -> Toni.
+  let silo = await prisma.book.findFirst({
+    where: { title: { equals: 'Silo', mode: 'insensitive' }, author: { contains: 'Howey', mode: 'insensitive' } },
+  });
+  if (!silo) {
+    silo = await prisma.book.create({
+      data: {
+        title: 'Silo',
+        author: 'Hugh Howey',
+        coverUrl: 'https://covers.openlibrary.org/b/id/11297214-L.jpg',
+        publishedYear: 2011,
+        pageCount: 560,
+        genre: 'Science-fiction',
+        description:
+          'Într-o lume ruinată și toxică, o comunitate trăiește într-un siloz uriaș, adânc în pământ. Cine cere să iasă afară primește exact ce și-a dorit - și nimeni nu se mai întoarce.',
+        source: 'demo-seed',
+      },
+    });
+  }
+  const s1 = await listing(matei.id, silo, {
+    permanentlyTransferred: true, deletedAt: daysAgo(600), createdAt: daysAgo(720), city: 'Brașov',
+  });
+  const s2 = await listing(andrada.id, silo, {
+    permanentlyTransferred: true, deletedAt: daysAgo(400), createdAt: daysAgo(590), city: 'Sibiu', previousListingId: s1.id,
+  });
+  const s3 = await listing(mina.id, silo, {
+    permanentlyTransferred: true, deletedAt: daysAgo(60), createdAt: daysAgo(390), condition: 'BUNA', previousListingId: s2.id,
+  });
+  const s4 = await listing(toni.id, silo, { createdAt: daysAgo(50), condition: 'BUNA', previousListingId: s3.id });
+  await completedExchange(andrada.id, matei.id, s1.id, 600);
+  // Andrada -> Mina e o vânzare: istoricul o recunoaște după oferta ACCEPTED.
+  await prisma.priceOffer.create({
+    data: {
+      buyerId: mina.id,
+      ownerId: andrada.id,
+      userBookId: s2.id,
+      amount: 35,
+      status: 'ACCEPTED',
+      acceptedAt: daysAgo(402),
+      buyerDoneAt: daysAgo(400),
+      ownerDoneAt: daysAgo(400),
+      createdAt: daysAgo(405),
+      updatedAt: daysAgo(400),
+    },
+  });
+  await completedExchange(toni.id, mina.id, s3.id, 60);
+  console.log(`Istoric creat pentru „Silo" (${s4.id}) - 3 foști proprietari`);
 
   // 12. Sistemul de schimb: toate stările, cu chat.
   const conversation = async (a, b) => {
