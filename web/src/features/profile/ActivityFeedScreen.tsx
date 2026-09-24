@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -137,9 +138,10 @@ function ActivityDescription({ entry }: { entry: ActivityEntry }) {
 }
 
 /**
- * Un schimb finalizat de cineva urmărit: CU CINE (link spre profil, sau „cu
- * tine" când partenerul e chiar cel care citește) și ce carte a plecat / a
- * venit. La un schimb fără carte oferită apare doar partea care există.
+ * Un schimb finalizat de cineva urmărit, ca o singură propoziție: „Andrada
+ * [Schimb] Jane Eyre pe Solenoid cu Alina Dumitru". Partenerul e link spre
+ * profil, sau „tine" când e chiar cel care citește. La un schimb fără carte
+ * oferită, propoziția spune doar ce a primit / ce a dat.
  */
 function ExchangeRow({ entry, locale }: { entry: ActivityEntry; locale: string }) {
   const { t } = useTranslation();
@@ -154,89 +156,90 @@ function ExchangeRow({ entry, locale }: { entry: ActivityEntry; locale: string }
   const received = entry.receivedBookTitle
     ? { title: entry.receivedBookTitle, cover: entry.receivedBookCoverUrl ?? null }
     : null;
-  // Răspuns de la un backend vechi, fără câmpurile orientate: cade pe cartea
-  // principală, fără etichetă de direcție.
-  const books = given || received ? [given, received] : null;
+  // Fără câmpurile orientate (backend vechi) rămâne coperta cărții principale.
+  const covers =
+    given || received
+      ? [given, received].filter((b): b is { title: string; cover: string | null } => !!b)
+      : [{ title: entry.bookTitle, cover: entry.bookCoverUrl }];
+
+  const you = withViewer ? 'You' : '';
+  const [key, values] =
+    given && received
+      ? [`activityExchangeSwap${you}`, { given: SLOT.given, received: SLOT.received }]
+      : received
+        ? [`activityExchangeGot${you}`, { book: SLOT.received }]
+        : given
+          ? [`activityExchangeGave${you}`, { book: SLOT.given }]
+          : [`activityExchangeWith${you}`, {}];
+
+  const slots: Record<string, ReactNode> = {
+    given: <strong className="font-semibold text-foreground">{given?.title}</strong>,
+    received: <strong className="font-semibold text-foreground">{received?.title}</strong>,
+    counterparty: entry.counterpartyId ? (
+      <Link
+        to={`/users/${entry.counterpartyId}`}
+        className="inline-flex items-center gap-1 align-middle font-semibold text-foreground hover:underline"
+      >
+        <Avatar src={entry.counterpartyAvatar} name={counterpartyName} size={18} />
+        {counterpartyName}
+      </Link>
+    ) : (
+      <strong className="font-semibold text-foreground">{counterpartyName}</strong>
+    ),
+  };
+  const sentence = fillSlots(t(key, { ...values, counterparty: SLOT.counterparty }), slots);
 
   return (
     <div className="flex gap-3 rounded-[16px] border border-border bg-card p-3">
       <div className="flex shrink-0 items-center gap-1">
-        {books ? (
-          books.map((book, i) =>
-            book ? (
-              <div key={i} className="flex items-center gap-1">
-                {i === 1 && given && (
-                  <ArrowLeftRight size={14} className="text-muted-foreground" aria-hidden />
-                )}
-                <div className="h-[72px] w-[52px] overflow-hidden rounded-lg bg-muted">
-                  <BookCover url={book.cover} title={book.title} />
-                </div>
-              </div>
-            ) : null,
-          )
-        ) : (
-          <div className="h-[72px] w-[52px] overflow-hidden rounded-lg bg-muted">
-            <BookCover url={entry.bookCoverUrl} title={entry.bookTitle} />
+        {covers.map((book, i) => (
+          <div key={i} className="flex items-center gap-1">
+            {i === 1 && <ArrowLeftRight size={14} className="text-muted-foreground" aria-hidden />}
+            <div className="h-[72px] w-[52px] overflow-hidden rounded-lg bg-muted">
+              <BookCover url={book.cover} title={book.title} />
+            </div>
           </div>
-        )}
+        ))}
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Link to={`/users/${entry.userId}`} className="flex min-w-0 items-center gap-2">
+        <p className="text-sm leading-6 text-muted-foreground">
+          <Link
+            to={`/users/${entry.userId}`}
+            className="mr-1.5 inline-flex items-center gap-1.5 align-middle font-semibold text-foreground hover:underline"
+          >
             <Avatar src={entry.userAvatar} name={name} size={20} />
-            <span className="truncate text-sm font-semibold hover:underline">{name}</span>
+            {name}
           </Link>
-          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+          <span className="mr-1.5 inline-block rounded-full border border-border px-2 align-middle text-[11px] leading-5">
             {t('activityBadgeExchange')}
           </span>
-        </div>
-
-        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-muted-foreground">
-          {withViewer ? (
-            t('activityExchangeWithYou')
-          ) : (
-            <>
-              <span>{t('activityExchangeWith')}</span>
-              {entry.counterpartyId ? (
-                <Link
-                  to={`/users/${entry.counterpartyId}`}
-                  className="inline-flex min-w-0 items-center gap-1.5 font-semibold text-foreground hover:underline"
-                >
-                  <Avatar src={entry.counterpartyAvatar} name={counterpartyName} size={18} />
-                  <span className="truncate">{counterpartyName}</span>
-                </Link>
-              ) : (
-                <span className="font-semibold text-foreground">{counterpartyName}</span>
-              )}
-            </>
-          )}
+          {sentence}
         </p>
-
-        {books ? (
-          <div className="mt-1 flex flex-col gap-0.5 text-sm">
-            {given && (
-              <p className="truncate">
-                <span className="text-muted-foreground">{t('activityExchangeGave')}: </span>
-                <span className="font-medium">{given.title}</span>
-              </p>
-            )}
-            {received && (
-              <p className="truncate">
-                <span className="text-muted-foreground">{t('activityExchangeGot')}: </span>
-                <span className="font-medium">{received.title}</span>
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="truncate font-medium">{entry.bookTitle}</p>
-        )}
-
         <p className="mt-1 text-xs text-muted-foreground">
           {formatRelativeTime(entry.date, locale)}
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Marcaje puse în locul variabilelor la traducere, ca propoziția să poată fi
+ * tăiată apoi în bucăți și variabilele înlocuite cu JSX (titluri îngroșate,
+ * link spre profil). Ordinea lor diferă de la o limbă la alta, deci nu putem
+ * lipi bucăți fixe de text în cod.
+ */
+const SLOT = {
+  given: '[[given]]',
+  received: '[[received]]',
+  counterparty: '[[counterparty]]',
+};
+
+function fillSlots(text: string, slots: Record<string, ReactNode>) {
+  return text.split(/\[\[(\w+)\]\]/).map((part, i) =>
+    // split cu grup de captură: pozițiile impare sunt numele marcajelor.
+    i % 2 === 1 ? <Fragment key={i}>{slots[part]}</Fragment> : part,
   );
 }
 
