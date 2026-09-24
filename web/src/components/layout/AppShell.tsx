@@ -9,8 +9,9 @@ import {
   Check,
   Compass,
   Heart,
+  House,
   Images,
-  LayoutGrid,
+  Instagram,
   Map,
   Menu,
   MessageCircle,
@@ -35,7 +36,8 @@ import { adminKeys } from '@/features/admin/adminRepository';
 import { api } from '@/lib/api/client';
 import { Avatar } from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils/cn';
-import { ScreenHeaderSlot } from './ScreenHeader';
+import { ScreenHeaderSlot, type MobileBar, type MobileBarUsage } from './ScreenHeader';
+import { LanguageMenu } from './LanguageMenu';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { GuestGateProvider, useGuestGate } from '@/features/auth/GuestGate';
 import {
@@ -49,6 +51,8 @@ import { staticPageUrl, type StaticPageSlug } from '@/lib/staticPages';
 
 /** kSidebarBreakpoint din main_scaffold.dart. */
 const DESKTOP_BREAKPOINT = 900;
+
+const INSTAGRAM_URL = 'https://www.instagram.com/shelfshare.ro';
 
 const ShellContext = createContext<{ openShortcutsEditor: () => void }>({
   openShortcutsEditor: () => {},
@@ -71,7 +75,7 @@ interface NavItem {
 }
 
 const MAIN_NAV: NavItem[] = [
-  { to: '/', labelKey: 'navHome', icon: LayoutGrid },
+  { to: '/', labelKey: 'navHome', icon: House },
   { to: '/search', labelKey: 'navSearch', icon: Compass },
   { to: '/library', labelKey: 'navLibrary', icon: BookOpen },
   { to: '/activity-feed', labelKey: 'navActivityFeed', icon: Rss },
@@ -113,6 +117,19 @@ export function AppShell() {
   const [editingShortcuts, setEditingShortcuts] = useState(false);
   // Nodul în care ecranul curent își desenează bara de sus (vezi ScreenHeader).
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  // Locurile din bara de sus de pe telefon și ce a ocupat ecranul din ele.
+  const [barLeft, setBarLeft] = useState<HTMLElement | null>(null);
+  const [barTitle, setBarTitle] = useState<HTMLElement | null>(null);
+  const [barActions, setBarActions] = useState<HTMLElement | null>(null);
+  const [barUsage, setBarUsage] = useState<MobileBarUsage | null>(null);
+  // Aceeași regulă ca în GuestGate: cât timp sesiunea se restaurează, nu
+  // e vizitator. `useGuestGate` nu merge aici, provider-ul e randat mai jos.
+  const { status } = useAuth();
+  const isGuest = status.kind !== 'authenticated' && status.kind !== 'restoring';
+  const mobileBar = useMemo<MobileBar>(
+    () => ({ left: barLeft, title: barTitle, actions: barActions, setUsage: setBarUsage }),
+    [barLeft, barTitle, barActions],
+  );
   const location = useLocation();
 
   const openShortcutsEditor = useCallback(() => {
@@ -184,29 +201,56 @@ export function AppShell() {
             PublicLandingScreen), iar cine uita compensarea primea un buton
             peste primul rând de text.
           */}
-          <div className="flex items-center gap-1.5 px-2 py-2 min-[900px]:hidden">
-            <button
-              onClick={() => setDrawerOpen(true)}
-              aria-label={t('navOpenMenu')}
-              className="rounded-full p-2.5 hover:bg-muted"
-            >
-              <Menu size={22} />
-            </button>
-            <Link to="/" className="flex min-w-0 items-center gap-2">
-              <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
-                <BookOpen size={18} />
-              </span>
-              <span className="truncate font-display text-base font-bold">ShelfShare</span>
-            </Link>
+          {/*
+            Ecranul își pune aici săgeata, titlul și acțiunile (vezi
+            ScreenHeader). Butonul de meniu rămâne doar pe ecranele principale,
+            fără săgeată; logo-ul și numele, doar unde ecranul nu are titlu -
+            în practică pe Home.
+          */}
+          <div className="flex h-14 items-center gap-1.5 px-2 min-[900px]:hidden">
+            <div ref={setBarLeft} className="flex shrink-0 items-center empty:hidden [&:not(:empty)]:px-1" />
+            {!barUsage?.back && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                aria-label={t('navOpenMenu')}
+                className="rounded-full p-2.5 hover:bg-muted"
+              >
+                <Menu size={22} />
+              </button>
+            )}
+            <div ref={setBarTitle} className="min-w-0 flex-1 empty:hidden" />
+            {!barUsage?.title && (
+              <Link to="/" className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
+                  <BookOpen size={18} />
+                </span>
+                <span className="truncate font-display text-base font-bold">ShelfShare</span>
+              </Link>
+            )}
+            <div ref={setBarActions} className="flex shrink-0 items-center" />
+            {isGuest && <LanguageMenu />}
           </div>
 
           {/* Goală până o umple ecranul, deci fără înălțime proprie: un ecran
               care nu-și pune bară nu rămâne cu o fâșie albă în cap. */}
-          <header ref={setHeaderSlot} className="flex shrink-0 flex-col" />
+          <header
+            ref={setHeaderSlot}
+            // Loc pentru limba vizitatorului, ca să nu stea peste acțiunile ecranului.
+            className={cn('flex shrink-0 flex-col', isGuest && 'min-[900px]:pr-20')}
+          />
+
+          {/*
+            Limba, pentru vizitatorul fără cont, pe desktop: plutește în colț,
+            nu într-un rând al ei. Un rând de 64px doar pentru „RO" ar fi adus
+            înapoi exact bara goală scoasă de pe pagina publică.
+          */}
+          {isGuest && (
+            <LanguageMenu className="absolute right-4 top-3 hidden min-[900px]:block" />
+          )}
         </div>
 
         <main className="min-w-0 flex-1">
-          <ScreenHeaderSlot slot={headerSlot}>
+          <ScreenHeaderSlot slot={headerSlot} mobileBar={mobileBar}>
             <Outlet />
           </ScreenHeaderSlot>
         </main>
@@ -400,6 +444,17 @@ function SidebarContent({
       </nav>
 
       <div className="border-t border-border">
+        {/* Link extern, deci `<a>` și nu `SidebarTile`: nu e o rută a
+            aplicației, iar vizitatorul fără cont îl poate deschide la fel. */}
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mx-3 mt-2 flex items-center gap-3 rounded-[12px] px-3 py-2.5 text-sm text-foreground transition hover:bg-muted"
+        >
+          <Instagram size={20} className="shrink-0" />
+          <span className="flex-1 truncate">Instagram</span>
+        </a>
         <SidebarTile to="/settings" icon={Settings} label={t('profileSettings')} />
         <ProfileFooter />
       </div>
@@ -643,7 +698,7 @@ function GuestAccountCta() {
       </Link>
       <Link
         to="/login"
-        className="rounded-[12px] px-4 py-2 text-center text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="rounded-[12px] border-[1.5px] border-accent px-4 py-2.5 text-center text-sm font-semibold text-foreground hover:bg-accent/10"
       >
         {t('authLoginSubmit', 'Conectare')}
       </Link>

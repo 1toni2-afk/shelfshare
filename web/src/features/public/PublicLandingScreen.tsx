@@ -80,8 +80,8 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
   const headlines = useMemo<TypewriterPhrase[]>(
     () => [
       { text: t('landingHeadline', 'Dă-ți cărțile citite mai departe'), holdMs: 10000 },
-      // Fraze scurte, sub ~34 de semne: la lățimea titlului (18ch) una mai
-      // lungă ar trece pe al treilea rând și ar muta tot ce urmează.
+      // Fraze scurte, sub ~34 de semne: pe telefon titlul are 18ch și una mai
+      // lungă ar trece pe al treilea rând; pe desktop (36ch) încap pe un rând.
       { text: t('landingHeadline2', 'Cartea citită merită alt cititor'), holdMs: 5000 },
       { text: t('landingHeadline3', 'Nu o lăsa să adune praf'), holdMs: 5000 },
       { text: t('landingHeadline4', 'Următoarea carte e la alt om'), holdMs: 5000 },
@@ -121,7 +121,7 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
             Prima frază rămâne cea pre-randată de scripts/beta-seo.js în `<h1>`,
             deci ce vede robotul e și ce se scrie primul pe ecran.
           */}
-          <h1 className="min-h-[2.5em] max-w-[18ch] font-display text-3xl font-bold leading-tight min-[900px]:text-5xl">
+          <h1 className="min-h-[2.5em] max-w-[18ch] font-display text-3xl font-bold leading-tight min-[900px]:max-w-[36ch] min-[900px]:text-5xl">
             <TypewriterText phrases={headlines} />
           </h1>
           <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-muted-foreground">
@@ -137,12 +137,6 @@ export function PublicLandingScreen({ decorative = false }: { decorative?: boole
               className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground"
             >
               {t('landingCtaRegister', 'Creează cont gratuit')}
-            </Link>
-            <Link
-              to="/browse"
-              className="rounded-full border border-border px-6 py-3 text-sm font-bold text-foreground hover:bg-muted"
-            >
-              {t('landingCtaBrowse', 'Vezi cărțile disponibile')}
             </Link>
           </div>
         </section>
