@@ -78,15 +78,26 @@ async function main() {
   const removed = await prisma.user.deleteMany({ where: { email: { in: ALL_EMAILS } } });
   console.log(`Conturi demo vechi șterse: ${removed.count}`);
 
-  // 2. Cărțile: cele mai populare din catalog, cu copertă și număr de pagini.
+  // 2. Cărțile: cele mai populare din catalog, cu copertă.
+  //
+  // Contul Mariei are nevoie de MARIA_BOOKS titluri distincte (raftul,
+  // colecțiile și lista de dorințe nu acceptă aceeași carte de două ori),
+  // plus câte una distinctă pentru fiecare potrivire de schimb. Vecinii pot
+  // repeta titlurile ei - pe baza de test catalogul e mic (~40 de cărți).
+  const MARIA_BOOKS = 27;
+  const MATCHES = 3;
   const books = await prisma.book.findMany({
-    where: { coverUrl: { not: null }, pageCount: { gt: 0 } },
+    where: { coverUrl: { not: null } },
     orderBy: [{ popularityScore: { sort: 'desc', nulls: 'last' } }, { createdAt: 'asc' }],
-    take: 70,
+    take: 80,
   });
-  if (books.length < 55) {
-    throw new Error(`Catalogul are doar ${books.length} cărți cu copertă - trebuie cel puțin 55.`);
+  if (books.length < MARIA_BOOKS + MATCHES) {
+    throw new Error(
+      `Catalogul are doar ${books.length} cărți cu copertă - trebuie cel puțin ${MARIA_BOOKS + MATCHES}.`,
+    );
   }
+  // Fără număr de pagini, progresul lecturii n-ar avea din ce să se calculeze.
+  const pagesOf = (book) => book.pageCount || 320;
   const take = (() => {
     let i = 0;
     return (n) => {
@@ -94,6 +105,12 @@ async function main() {
       i += n;
       return slice;
     };
+  })();
+  // Vecinii încep după cărțile Mariei și reiau catalogul de la capăt dacă se
+  // termină - primele lor anunțuri (cele din potriviri) rămân distincte.
+  const takeForNeighbour = (() => {
+    let i = MARIA_BOOKS;
+    return (n) => Array.from({ length: n }, () => books[i++ % books.length]);
   })();
 
   // 3. Conturile.
@@ -189,7 +206,7 @@ async function main() {
   const neighbourListings = new Map();
   for (const n of neighbours) {
     const own = [];
-    for (const book of take(5)) own.push(await listing(n.id, book, { isForSale: Math.random() > 0.5, salePrice: 30 }));
+    for (const book of takeForNeighbour(5)) own.push(await listing(n.id, book, { isForSale: Math.random() > 0.5, salePrice: 30 }));
     neighbourListings.set(n.id, own);
   }
 
@@ -211,7 +228,7 @@ async function main() {
   const wantToRead = take(5);
   for (const [i, book] of reading.entries()) {
     await prisma.bookshelfEntry.create({ data: { userId: maria.id, bookId: book.id, status: 'READING' } });
-    const total = book.pageCount;
+    const total = pagesOf(book);
     await prisma.readingProgress.create({
       data: { userId: maria.id, bookId: book.id, currentPage: Math.round(total * [0.18, 0.52, 0.86][i]), totalPages: total },
     });
@@ -239,7 +256,7 @@ async function main() {
     const current = reading[i % reading.length];
     await prisma.bookshelfEntry.create({ data: { userId: n.id, bookId: current.id, status: 'READING' } });
     await prisma.readingProgress.create({
-      data: { userId: n.id, bookId: current.id, currentPage: Math.round(current.pageCount * 0.4), totalPages: current.pageCount, updatedAt: daysAgo(i) },
+      data: { userId: n.id, bookId: current.id, currentPage: Math.round(pagesOf(current) * 0.4), totalPages: pagesOf(current), updatedAt: daysAgo(i) },
     });
   }
 
