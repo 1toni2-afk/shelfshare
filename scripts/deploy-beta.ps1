@@ -4,17 +4,21 @@
 # care gazduieste site-ul; beta-server.js citeste web/dist la fiecare cerere,
 # deci NU e nevoie sa-l repornesti - cum se termina build-ul, e live.
 #
-# Backendul nu se atinge in niciun fel: acelasi API, aceleasi endpointuri.
-# Implicit se construieste contra API-ului de PRODUCTIE, ca beta sa arate date
-# reale. Pentru zona de test, treci -ApiBaseUrl http://localhost:3999.
+# Backendul nu se atinge in niciun fel: acelasi cod, aceleasi endpointuri.
+# Implicit se construieste contra api-beta.shelfshare.ro, adica backendul de
+# TEST (docker-compose.test.yml, portul 3999, baza lui separata) - acelasi pe
+# care il foloseste si scripts/beta-seo.js pentru varianta pre-randata. Asa,
+# ce vede robotul si ce vede omul vin din aceeasi baza, iar conturile de demo
+# (backend/prisma/seed-demo-accounts.js) si orice test de pe beta nu ajung in
+# productie. Pentru beta contra datelor reale: -ApiBaseUrl https://api.shelfshare.ro
 #
 # Usage:
 #   ./scripts/deploy-beta.ps1
 #   ./scripts/deploy-beta.ps1 -Pull
-#   ./scripts/deploy-beta.ps1 -ApiBaseUrl http://localhost:3999
+#   ./scripts/deploy-beta.ps1 -ApiBaseUrl https://api.shelfshare.ro
 
 param(
-    [string]$ApiBaseUrl = "https://api.shelfshare.ro",
+    [string]$ApiBaseUrl = "https://api-beta.shelfshare.ro",
     [switch]$Pull
 )
 

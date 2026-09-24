@@ -29,10 +29,12 @@
  *
  * Versiune .js (nu .ts): imaginea de producție nu are pnpm/ts-node.
  *
- * Rulare:
- *   docker cp backend/prisma/seed-demo-accounts.js shelfshare-backend-1:/app/prisma/
- *   docker compose -f docker-compose.prod.yml exec backend \
- *     node prisma/seed-demo-accounts.js
+ * Rulare - pe backendul de TEST (api-beta.shelfshare.ro, cel folosit de beta),
+ * nu pe producție: conturile ar apărea altfel în clasamentul, harta și
+ * statisticile userilor reali. Containerul de test montează ./backend, deci
+ * scriptul e deja acolo după checkout, fără `docker cp`:
+ *   docker compose -f docker-compose.test.yml --env-file .env.test \
+ *     exec backend node prisma/seed-demo-accounts.js
  */
 require('dotenv/config');
 const { PrismaClient } = require('@prisma/client');
