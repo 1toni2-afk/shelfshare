@@ -135,6 +135,22 @@ export interface AuctionCardSummary {
   buyNowPrice: DecimalString | null;
 }
 
+/**
+ * O verigă din istoricul unui exemplar (GET /books/:id/history): fiecare
+ * proprietar e un anunț separat, legat de cel dinainte prin previousListingId.
+ */
+export interface ListingHistoryEntry {
+  userBookId: string;
+  isCurrent: boolean;
+  ownerId: string;
+  ownerName: string | null;
+  condition: BookCondition | null;
+  photos: string[];
+  listedAt: string;
+  transferredAt: string | null;
+  transferType: 'sale' | 'exchange' | null;
+}
+
 export interface UserBook {
   id: string;
   userId: string;
