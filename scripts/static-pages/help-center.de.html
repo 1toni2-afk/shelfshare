@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Häufige Fragen | ShelfShare</title>
+<meta name="description" content="Antworten zu Tausch, Preisen, Vertrauen und Sicherheit bei ShelfShare.">
+<meta name="theme-color" content="#7C3A1E">
+<link rel="canonical" href="https://shelfshare.ro/de/help-center">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shelfshare.ro/help-center">
+<meta property="og:site_name" content="ShelfShare">
+<meta property="og:title" content="Häufige Fragen | ShelfShare">
+<meta property="og:description" content="Antworten zu Tausch, Preisen, Vertrauen und Sicherheit bei ShelfShare.">
+<meta property="og:image" content="https://shelfshare.ro/icons/Icon-512.png">
+<meta property="og:locale" content="de_DE">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Wie funktioniert ein Büchertausch?", "acceptedAnswer": {"@type": "Answer", "text": "Du fragst ein Buch aus dem Inserat einer anderen Person an (du kannst auch selbst ein Buch anbieten), die Eigentümerin oder der Eigentümer nimmt an oder lehnt ab, und danach vereinbart ihr im Chat ein Treffen. Nach dem Tausch vor Ort markiert eine oder einer von euch den Tausch als abgeschlossen."}},
+    {"@type": "Question", "name": "Was passiert mit dem Buch, nachdem ich es verkauft oder getauscht habe?", "acceptedAnswer": {"@type": "Answer", "text": "Das Inserat wird dauerhaft nicht mehr verfügbar. Wer das Buch erhalten hat, kann es über den Bildschirm „Tausch/Angebote“ erneut inserieren („Zu deiner Bibliothek hinzufügen“) – die Geschichte des Buches bleibt auf seiner Detailseite nachvollziehbar, mit Fotos aller bisherigen Eigentümer."}},
+    {"@type": "Question", "name": "Warum erscheint ein Buch nicht unter Kategorien oder Ähnliche Bücher?", "acceptedAnswer": {"@type": "Answer", "text": "Das Genre eines Buches stammt beim Hinzufügen aus Open Library oder Google Books – bei manchen Büchern ist dort kein Genre hinterlegt, vor allem bei selteneren Ausgaben."}},
+    {"@type": "Question", "name": "Wie wird der „Buchhandelspreis“ ermittelt?", "acceptedAnswer": {"@type": "Answer", "text": "Wenn du ein Buch mit ISBN hinzufügst, versuchen wir, den Listenpreis bei Google Books zu finden. Die Abdeckung ist lückenhaft – nicht für jedes Buch gibt es dort einen Preis, vor allem nicht für ältere oder rumänische Ausgaben."}},
+    {"@type": "Question", "name": "Was bedeutet „Festpreis, nicht verhandelbar“?", "acceptedAnswer": {"@type": "Answer", "text": "Wenn die verkaufende Person das aktiviert, können Käuferinnen und Käufer keine Preisangebote mehr senden – das Buch ist nur zum angezeigten Preis zu haben."}},
+    {"@type": "Question", "name": "Was ist der Vertrauenswert?", "acceptedAnswer": {"@type": "Answer", "text": "Ein Wert von 0 bis 100, der automatisch aus deiner Aktivität in der App berechnet wird: Alter des Kontos, bestätigte E-Mail-Adresse, Anzahl abgeschlossener Tauschgeschäfte, erhaltene Bewertungen, wie oft du antwortest und wie selten du Anfragen absagst. Das ist keine Identitätsprüfung, sondern nur ein Hinweis auf das Verhalten."}},
+    {"@type": "Question", "name": "Wie melde oder blockiere ich eine Person?", "acceptedAnswer": {"@type": "Answer", "text": "Über das Menü oben rechts in einer Unterhaltung oder über die Detailseite eines Inserats (das Flaggensymbol). Eine Blockierung stoppt Nachrichten in beide Richtungen."}}
+  ]
+}
+</script>
+<style>
+  :root {
+    --background: #F8F4EC;
+    --foreground: #2A1A0E;
+    --card: #FDFAF4;
+    --primary: #7C3A1E;
+    --primary-foreground: #FDF9F3;
+    --accent: #C8783A;
+    --accent-foreground: #FDF9F3;
+    --muted-foreground: #655A4A;
+    --border: rgba(42, 26, 14, 0.13);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0E0E0F;
+      --foreground: #F5F3F0;
+      --card: #19191B;
+      --muted-foreground: #A8A6A3;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  .lang {
+    display: flex;
+    gap: 4px;
+    flex: none;
+  }
+  .lang a {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .lang a[aria-current='page'] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: transparent;
+  }
+  header a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    margin: 0 0 24px;
+  }
+  .group-label {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    margin: 24px 0 10px;
+  }
+  .group-label:first-of-type { margin-top: 0; }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px 18px;
+    margin-bottom: 10px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 0;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '+';
+    float: right;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  details[open] summary::after { content: '−'; }
+  details p {
+    margin: 0 0 16px;
+    color: var(--foreground);
+    font-size: 14px;
+  }
+  .footer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted-foreground);
+    max-width: 460px;
+  }
+  .contact-btn {
+    flex: none;
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <a class="back" href="/">← ShelfShare</a>
+    <nav class="lang" aria-label="Sprache">
+      <a href="/help-center" hreflang="ro" lang="ro">RO</a>
+      <a href="/en/help-center" hreflang="en" lang="en">EN</a>
+      <a href="/de/help-center" hreflang="de" lang="de" aria-current="page">DE</a>
+      <a href="/hu/help-center" hreflang="hu" lang="hu">HU</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Häufige Fragen</h1>
+
+    <div class="group-label">Tausch</div>
+    <details open>
+      <summary>Wie funktioniert ein Büchertausch?</summary>
+      <p>Du fragst ein Buch aus dem Inserat einer anderen Person an (du kannst auch selbst ein Buch anbieten), die Eigentümerin oder der Eigentümer nimmt an oder lehnt ab, und danach vereinbart ihr im Chat ein Treffen. Nach dem Tausch vor Ort markiert eine oder einer von euch den Tausch als abgeschlossen.</p>
+    </details>
+    <details>
+      <summary>Was passiert mit dem Buch, nachdem ich es verkauft oder getauscht habe?</summary>
+      <p>Das Inserat wird dauerhaft nicht mehr verfügbar. Wer das Buch erhalten hat, kann es über den Bildschirm „Tausch/Angebote“ erneut inserieren („Zu deiner Bibliothek hinzufügen“) – die Geschichte des Buches bleibt auf seiner Detailseite nachvollziehbar, mit Fotos aller bisherigen Eigentümer.</p>
+    </details>
+    <details>
+      <summary>Warum erscheint ein Buch nicht unter Kategorien oder Ähnliche Bücher?</summary>
+      <p>Das Genre eines Buches stammt beim Hinzufügen aus Open Library oder Google Books – bei manchen Büchern ist dort kein Genre hinterlegt, vor allem bei selteneren Ausgaben.</p>
+    </details>
+
+    <div class="group-label">Preise</div>
+    <details>
+      <summary>Wie wird der „Buchhandelspreis“ ermittelt?</summary>
+      <p>Wenn du ein Buch mit ISBN hinzufügst, versuchen wir, den Listenpreis bei Google Books zu finden. Die Abdeckung ist lückenhaft – nicht für jedes Buch gibt es dort einen Preis, vor allem nicht für ältere oder rumänische Ausgaben.</p>
+    </details>
+    <details>
+      <summary>Was bedeutet „Festpreis, nicht verhandelbar“?</summary>
+      <p>Wenn die verkaufende Person das aktiviert, können Käuferinnen und Käufer keine Preisangebote mehr senden – das Buch ist nur zum angezeigten Preis zu haben.</p>
+    </details>
+
+    <div class="group-label">Vertrauen und Sicherheit</div>
+    <details>
+      <summary>Was ist der Vertrauenswert?</summary>
+      <p>Ein Wert von 0 bis 100, der automatisch aus deiner Aktivität in der App berechnet wird: Alter des Kontos, bestätigte E-Mail-Adresse, Anzahl abgeschlossener Tauschgeschäfte, erhaltene Bewertungen, wie oft du antwortest und wie selten du Anfragen absagst. Das ist keine Identitätsprüfung, sondern nur ein Hinweis auf das Verhalten.</p>
+    </details>
+    <details>
+      <summary>Wie melde oder blockiere ich eine Person?</summary>
+      <p>Über das Menü oben rechts in einer Unterhaltung oder über die Detailseite eines Inserats (das Flaggensymbol). Eine Blockierung stoppt Nachrichten in beide Richtungen.</p>
+    </details>
+
+    <div class="footer-card">
+      <p>Keine Antwort gefunden? Du kannst ein Problem direkt aus der Unterhaltung mit der betreffenden Person melden oder einer Moderatorin bzw. einem Moderator schreiben.</p>
+      <a class="contact-btn" href="mailto:contact@shelfshare.ro">Moderator kontaktieren</a>
+    </div>
+  </main>
+</body>
+</html>

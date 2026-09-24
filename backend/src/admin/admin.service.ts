@@ -55,20 +55,20 @@ export class AdminService {
    * deschisă și pe telefon, și în browser, contează o dată la primul și de
    * două ori la al doilea. Lista de nume e plafonată - contorul din bara
    * laterală are nevoie doar de număr, restul e pentru curiozitate.
+   *
+   * Cine întreabă NU se numără pe sine: adminul are aplicația deschisă exact
+   * ca să vadă contorul, deci se găsea mereu în listă și cifra nu spunea
+   * niciodată dacă mai e cineva pe site.
    */
-  async getOnlinePresence(limit = 20) {
-    const ids = this.presence.onlineUserIds();
-    const users = ids.length
+  async getOnlinePresence(viewerUserId?: string, limit = 20) {
+    const { users, connections, ids } = this.presence.snapshot(viewerUserId);
+    const sample = ids.length
       ? await this.prisma.user.findMany({
           where: { id: { in: ids.slice(0, limit) } },
           select: { id: true, name: true, profileImage: true },
         })
       : [];
-    return {
-      users: this.presence.onlineCount(),
-      connections: this.presence.connectionCount(),
-      sample: users,
-    };
+    return { users, connections, sample };
   }
 
   async getStats() {

@@ -64,6 +64,31 @@ export class PresenceService {
   }
 
   /**
+   * Aceleași trei cifre ca metodele de mai sus, dar dintr-o singură citire a
+   * hărții și cu posibilitatea de a scoate un user din socoteală.
+   *
+   * `excludeUserId` e adminul care se uită la contor: el are aplicația
+   * deschisă tocmai ca să-l vadă, deci se număra pe sine la fiecare privire
+   * și „1 online" nu însemna niciodată nimic. Excluderea se face aici, nu în
+   * UI, ca să iasă din TOATE cele trei cifre deodată - un „2 online" cu două
+   * nume dintre care unul e al tău e la fel de inutil.
+   */
+  snapshot(excludeUserId?: string): {
+    users: number;
+    connections: number;
+    ids: string[];
+  } {
+    const ids: string[] = [];
+    let connections = 0;
+    for (const [userId, count] of this.connections) {
+      if (userId === excludeUserId) continue;
+      ids.push(userId);
+      connections += count;
+    }
+    return { users: ids.length, connections, ids };
+  }
+
+  /**
    * Scriem lastSeenAt doar la deconectarea completă - cât timp e online,
    * „Last seen" nu se afișează oricum, deci un update pe fiecare mesaj ar fi
    * trafic degeaba către DB.

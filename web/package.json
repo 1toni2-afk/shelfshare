@@ -1,0 +1,49 @@
+{
+  "name": "shelfshare-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "i18n": "node scripts/arb-to-json.mjs",
+    "dev": "npm run i18n && vite",
+    "build": "npm run i18n && tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@tanstack/react-query": "^5.62.0",
+    "@types/leaflet": "^1.9.22",
+    "@types/qrcode": "^1.5.6",
+    "clsx": "^2.1.1",
+    "i18next": "^24.2.0",
+    "i18next-icu": "^2.3.0",
+    "intl-messageformat": "^10.7.0",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.468.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^15.4.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.1.0",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

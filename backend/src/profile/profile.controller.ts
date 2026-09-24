@@ -20,6 +20,7 @@ import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { SetReadingChallengeDto } from './dto/set-reading-challenge.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
+import { OnboardingTodoDto } from './dto/onboarding-todo.dto';
 import { BOOK_GENRES } from '../common/constants/book-genres';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
@@ -42,6 +43,25 @@ export class ProfileController {
   updateMyProfile(@Req() req: Request, @Body() dto: UpdateProfileDto) {
     const { userId } = req.user as AuthenticatedUser;
     return this.profileService.updateMyProfile(userId!, dto);
+  }
+
+  /**
+   * Lista „Primii pași" de pe Home. Rutele stau înaintea lui `@Get(':userId')`
+   * - altfel „me" ar fi fost citit ca id de user.
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('me/onboarding-todo')
+  getOnboardingTodo(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.getOnboardingTodo(userId!);
+  }
+
+  /** Bifează pași (cumulativ) și/sau ascunde lista. Răspunde cu starea nouă. */
+  @UseGuards(JwtAuthGuard)
+  @Post('me/onboarding-todo')
+  saveOnboardingTodo(@Req() req: Request, @Body() dto: OnboardingTodoDto) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.profileService.saveOnboardingTodo(userId!, dto);
   }
 
   /** Lista de genuri propusă în chestionar - ca UI-ul să n-o dubleze local. */
