@@ -2064,7 +2064,6 @@
     "landingFeaturesMoreTitle": "Und vieles mehr…",
     "landingFeaturesMoreText": "Book Match, Wunschliste mit Benachrichtigungen, Auktionen, gespeicherte Suchen, Chat, Buch des Monats und vieles mehr - alles in einem kostenlosen Konto.",
     "landingMatchDemoTitle": "Probier Book Match aus",
-    "landingMatchDemoText": "Wir zeigen dir {count} Bücher. Sag „ja\", „nein\" oder „überspringen\", und am Ende siehst du, was für ein Leser du bist. In der App landet jedes „ja\" direkt auf deiner Wunschliste.",
     "landingMatchDemoResultsTitle": "Dein Ergebnis",
     "landingMatchDemoLiked": "Gefallen",
     "landingMatchDemoRejected": "Abgelehnt",
@@ -2073,5 +2072,18 @@
     "landingMatchDemoOtherGenre": "Sonstige",
     "landingMatchDemoAuthors": "Autoren, die du gewählt hast:",
     "landingMatchDemoCta": "Mit einem Konto landen die Bücher, die dir gefallen, auf deiner Wunschliste, und du bekommst Bescheid, wenn sie auf der Seite auftauchen.",
-    "landingMatchDemoRestart": "Noch einmal"
+    "landingMatchDemoRestart": "Noch einmal",
+    "landingMatchDemoIntro": "Book Match zeigt dir Bücher eins nach dem anderen: nach rechts wischen, wenn es dich interessiert, nach links, wenn nicht. Aus jeder Wahl lernt die App, was für ein Leser du bist - und der Rest der App richtet sich danach.",
+    "landingMatchBenefitMatchesTitle": "Bessere Tausch-Matches",
+    "landingMatchBenefitMatchesText": "Jedes „Ja\" landet auf deiner Wunschliste, und die Tausch-Matches suchen genau die Leute, die diese Bücher haben und etwas aus deinem Regal wollen.",
+    "landingMatchBenefitProfileTitle": "Dein Leserprofil",
+    "landingMatchBenefitProfileText": "Die Genres, Autoren und Epochen, die du magst, ergeben ein Profil, das mit jedem Wischen genauer wird. Du kannst es jederzeit neu kalibrieren.",
+    "landingMatchBenefitNotificationsTitle": "Benachrichtigungen, die zählen",
+    "landingMatchBenefitNotificationsText": "Du bekommst Bescheid, wenn ein Buch, das du gewählt hast, oder eines aus deinen Lieblingsgenres in deiner Nähe auftaucht - nicht bei jeder neuen Anzeige.",
+    "landingMatchBenefitHomeTitle": "Empfehlungen, die zu dir passen",
+    "landingMatchBenefitHomeText": "Die Reihe „Könnte dir gefallen\" auf der Startseite entsteht aus deinem Geschmack, nicht nur aus dem, was zuletzt hinzugefügt wurde.",
+    "landingMatchBenefitDiscoveryTitle": "Entdeckungen jenseits des Üblichen",
+    "landingMatchBenefitDiscoveryText": "Ab und zu taucht ein „Entdeckung\"-Buch außerhalb deiner Komfortzone auf, damit du nicht immer bei denselben drei Genres bleibst.",
+    "landingMatchDemoTryHint": "Probier es daneben aus: {count} Bücher, dann siehst du, was für ein Leser du bist.",
+    "landingMatchDemoNoDescription": "Dieses Buch hat noch keine Beschreibung."
 }

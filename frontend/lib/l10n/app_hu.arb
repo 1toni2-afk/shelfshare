@@ -2064,7 +2064,6 @@
     "landingFeaturesMoreTitle": "És még sok más…",
     "landingFeaturesMoreText": "Book Match, kívánságlista értesítésekkel, aukciók, mentett keresések, chat, a hónap könyve és még sok más - mind egyetlen ingyenes fiókban.",
     "landingMatchDemoTitle": "Próbáld ki a Book Matchet",
-    "landingMatchDemoText": "{count} könyvet mutatunk. Mondd, hogy „igen\", „nem\" vagy „kihagyom\", és a végén meglátod, milyen olvasó vagy. Az alkalmazásban minden „igen\" egyenesen a kívánságlistádra kerül.",
     "landingMatchDemoResultsTitle": "Az eredményed",
     "landingMatchDemoLiked": "Tetszett",
     "landingMatchDemoRejected": "Elutasítva",
@@ -2073,5 +2072,18 @@
     "landingMatchDemoOtherGenre": "Egyéb",
     "landingMatchDemoAuthors": "Az általad választott szerzők:",
     "landingMatchDemoCta": "Fiókkal a tetsző könyvek a kívánságlistádra kerülnek, és szólunk, amikor megjelennek az oldalon.",
-    "landingMatchDemoRestart": "Még egyszer"
+    "landingMatchDemoRestart": "Még egyszer",
+    "landingMatchDemoIntro": "A Book Match egyenként mutat könyveket: húzd jobbra, ha érdekel, balra, ha nem. Minden választásból tanul az alkalmazás, hogy milyen olvasó vagy - és az egész alkalmazás ehhez igazodik.",
+    "landingMatchBenefitMatchesTitle": "Jobb csere-párosítások",
+    "landingMatchBenefitMatchesText": "Minden „igen\" a kívánságlistádra kerül, a csere-párosítások pedig pontosan azokat keresik, akiknél megvannak ezek a könyvek, és a te polcodról szeretnének valamit.",
+    "landingMatchBenefitProfileTitle": "Az olvasói profilod",
+    "landingMatchBenefitProfileText": "A kedvelt műfajok, szerzők és korszakok egy profillá állnak össze, amely minden húzással pontosabb lesz. Bármikor újrakalibrálhatod.",
+    "landingMatchBenefitNotificationsTitle": "Értesítések, amelyek számítanak",
+    "landingMatchBenefitNotificationsText": "Szólunk, ha a közeledben megjelenik egy általad választott könyv vagy egy kedvenc műfajodból - nem minden új hirdetésnél.",
+    "landingMatchBenefitHomeTitle": "Neked szóló ajánlások",
+    "landingMatchBenefitHomeText": "A Kezdőlap „Neked tetszhet\" sora az ízlésedből épül, nem csak a legutóbb feltöltöttekből.",
+    "landingMatchBenefitDiscoveryTitle": "Felfedezések a megszokotton túl",
+    "landingMatchBenefitDiscoveryText": "Időnként felbukkan egy „Felfedezés\" könyv a komfortzónádon kívülről, hogy ne ragadj le ugyanannál a három műfajnál.",
+    "landingMatchDemoTryHint": "Próbáld ki mellette: {count} könyv, aztán meglátod, milyen olvasó vagy.",
+    "landingMatchDemoNoDescription": "Ennek a könyvnek még nincs leírása."
 }

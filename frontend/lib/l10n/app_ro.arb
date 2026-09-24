@@ -2963,7 +2963,6 @@
     "landingFeaturesMoreTitle": "Și multe altele…",
     "landingFeaturesMoreText": "Book Match, lista de dorințe cu notificări, licitații, căutări salvate, chat, cartea lunii și încă multe - toate într-un singur cont gratuit.",
     "landingMatchDemoTitle": "Încearcă Book Match",
-    "landingMatchDemoText": "Îți arătăm {count} cărți. Spui „da\", „nu\" sau „sari peste\", iar la final vezi ce fel de cititor ești. În aplicație, fiecare „da\" ajunge direct în lista ta de dorințe.",
     "landingMatchDemoResultsTitle": "Rezultatul tău",
     "landingMatchDemoLiked": "Ți-au plăcut",
     "landingMatchDemoRejected": "Respinse",
@@ -2972,5 +2971,18 @@
     "landingMatchDemoOtherGenre": "Altele",
     "landingMatchDemoAuthors": "Autori pe care i-ai ales:",
     "landingMatchDemoCta": "Cu un cont, cărțile care ți-au plăcut ajung în lista ta de dorințe și primești un semn când apar pe site.",
-    "landingMatchDemoRestart": "Încă o dată"
+    "landingMatchDemoRestart": "Încă o dată",
+    "landingMatchDemoIntro": "Book Match îți arată cărți una câte una: tragi la dreapta dacă te interesează, la stânga dacă nu. Din fiecare alegere, aplicația învață ce fel de cititor ești - și tot restul aplicației se așază după asta.",
+    "landingMatchBenefitMatchesTitle": "Potriviri de schimb mai bune",
+    "landingMatchBenefitMatchesText": "Fiecare „da\" ajunge în lista ta de dorințe, iar potrivirile de schimb caută exact oamenii care au acele cărți și vor ceva de pe raftul tău.",
+    "landingMatchBenefitProfileTitle": "Profilul tău de cititor",
+    "landingMatchBenefitProfileText": "Genurile, autorii și epocile care îți plac se adună într-un profil care se rafinează cu fiecare swipe. Îl poți recalibra oricând.",
+    "landingMatchBenefitNotificationsTitle": "Notificări care contează",
+    "landingMatchBenefitNotificationsText": "Primești un semn când apare lângă tine o carte aleasă de tine sau una din genurile tale preferate - nu la fiecare anunț nou.",
+    "landingMatchBenefitHomeTitle": "Recomandări pe măsura ta",
+    "landingMatchBenefitHomeText": "Rândul „Ți s-ar potrivi\" de pe Acasă se construiește din gusturile tale, nu doar din ce s-a adăugat ultima dată.",
+    "landingMatchBenefitDiscoveryTitle": "Descoperiri dincolo de obișnuit",
+    "landingMatchBenefitDiscoveryText": "Din când în când apare o carte „Descoperire\", din afara zonei tale de confort, ca să nu rămâi mereu la aceleași trei genuri.",
+    "landingMatchDemoTryHint": "Încearcă alături: {count} cărți, apoi vezi ce fel de cititor ești.",
+    "landingMatchDemoNoDescription": "Cartea nu are încă o descriere."
 }
