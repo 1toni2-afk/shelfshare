@@ -4,7 +4,7 @@ Pagina vizitatorilor (`src/features/public/LandingFeatures.tsx`) deschide
 `/demo/<id>.webp` când se apasă „See Demo". O captură lipsă nu strică nimic -
 dialogul arată doar descrierea.
 
-Capturile se fac logat ca `demo@shelfshare.demo` (conturile se creează cu
+Capturile se fac logat ca `toni@ss.com` (parola `pass123`) (conturile se creează cu
 `backend/prisma/seed-demo-accounts.js`). Lățime recomandată: ~1600px, WebP.
 
 | Fișier             | Ecran                                   |
@@ -17,5 +17,5 @@ Capturile se fac logat ca `demo@shelfshare.demo` (conturile se creează cu
 | `stats.webp`       | Statistici globale                      |
 | `history.webp`     | Istoria cărții (cartea cu 3 proprietari)|
 | `shelf.webp`       | Raftul meu (în curs, cu progres)        |
-| `trade.webp`       | Schimbul cu Andrei (întâlnire, telefon) |
+| `trade.webp`       | Schimbul cu Andrada (întâlnire, telefon) |
 | `feed.webp`        | Activitate                              |
