@@ -41,6 +41,7 @@ require('dotenv/config');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const bcrypt = require('bcrypt');
+const { seedFeed } = require('./seed-demo-feed');
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -551,6 +552,9 @@ async function main() {
       { userId: toni.id, type: 'GROUP_POST', message: 'Postare nouă în Clubul de lectură Cluj.', createdAt: daysAgo(1), isRead: true },
     ],
   });
+
+  // 14. Activitate din ultimele zile în feed (schimburi, cărți noi, progres).
+  await seedFeed(prisma);
 
   console.log('\nGata. Conturi de demo:');
   for (const email of ALL_EMAILS) console.log(`  ${email}`);

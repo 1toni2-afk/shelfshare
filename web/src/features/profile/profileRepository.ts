@@ -36,7 +36,15 @@ export interface ActivityEntry {
   /** doar `completed_exchange` */
   offeredBookTitle?: string | null;
   offeredBookCoverUrl?: string | null;
+  /** Cărțile văzute din partea celui urmărit: ce a primit, ce a dat. Oricare
+   *  poate lipsi la un schimb care n-a fost carte-contra-carte. */
+  receivedBookTitle?: string | null;
+  receivedBookCoverUrl?: string | null;
+  givenBookTitle?: string | null;
+  givenBookCoverUrl?: string | null;
+  counterpartyId?: string;
   counterpartyName?: string | null;
+  counterpartyAvatar?: string | null;
   /** doar `sale` - convertit deja la number pe server */
   amount?: number;
   /** doar `reading_progress` */

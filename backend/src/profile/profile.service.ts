@@ -1099,7 +1099,11 @@ export class ProfileService {
 
     const [newListings, finishedBooks, completedExchanges, completedSales, readingProgress] = await Promise.all([
       this.prisma.userBook.findMany({
-        where: { userId: { in: followingIds } },
+        // Doar cărți puse pe raft de mână. Exemplarul primit la un schimb
+        // (previousListingId) apare deja ca „a făcut un schimb cu…" - altfel
+        // fiecare schimb ar dubla în feed ca „a adăugat o carte nouă".
+        // Anunțurile șterse sau ascunse de moderare nu au ce căuta aici.
+        where: { userId: { in: followingIds }, previousListingId: null, deletedAt: null, hiddenAt: null },
         select: {
           userId: true,
           createdAt: true,
@@ -1159,6 +1163,7 @@ export class ProfileService {
         select: {
           userId: true,
           currentPage: true,
+          totalPages: true,
           updatedAt: true,
           book: { select: bookSelect },
           user: { select: userSelect },
@@ -1202,6 +1207,15 @@ export class ProfileService {
         const actor = isRequesterFollowed ? exchange.requester : exchange.owner;
         const actorId = isRequesterFollowed ? exchange.requesterId : exchange.ownerId;
         const counterparty = isRequesterFollowed ? exchange.owner : exchange.requester;
+        const counterpartyId = isRequesterFollowed ? exchange.ownerId : exchange.requesterId;
+        // Cărțile din perspectiva celui urmărit. Requesterul primește cartea
+        // cerută și dă cartea oferită; ownerul invers. Fără orientarea asta,
+        // „X a schimbat A cu B" ar fi ieșit pe dos ori de câte ori cel urmărit
+        // era ownerul.
+        const requested = exchange.requestedBook.book;
+        const offered = exchange.offeredBook?.book ?? null;
+        const received = isRequesterFollowed ? requested : offered;
+        const given = isRequesterFollowed ? offered : requested;
         return [
           {
             type: 'completed_exchange' as const,
@@ -1216,7 +1230,13 @@ export class ProfileService {
             // (offeredBookId poate lipsi la o vânzare cu bani reconvertită).
             offeredBookTitle: exchange.offeredBook?.book.title ?? null,
             offeredBookCoverUrl: exchange.offeredBook?.book.coverUrl ?? null,
+            receivedBookTitle: received?.title ?? null,
+            receivedBookCoverUrl: received?.coverUrl ?? null,
+            givenBookTitle: given?.title ?? null,
+            givenBookCoverUrl: given?.coverUrl ?? null,
+            counterpartyId,
             counterpartyName: publicName(counterparty),
+            counterpartyAvatar: counterparty.profileImage,
             date: exchange.updatedAt,
           },
         ];
@@ -1247,7 +1267,9 @@ export class ProfileService {
         bookCoverUrl: p.book.coverUrl,
         genre: p.book.genre,
         currentPage: p.currentPage,
-        totalPages: p.book.pageCount,
+        // Ediția userului are prioritate față de cea din catalog - altfel
+        // „pagina 300 din 250" pe o ediție mai groasă.
+        totalPages: p.totalPages ?? p.book.pageCount,
         date: p.updatedAt,
       })),
     ];

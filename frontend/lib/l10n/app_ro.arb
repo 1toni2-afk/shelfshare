@@ -505,6 +505,10 @@
     "activityBadgeSale": "Vânzare",
     "activityBadgeProgress": "Citește",
     "activityReadingProgress": "citește acum",
+    "activityExchangeWith": "a făcut un schimb cu",
+    "activityExchangeWithYou": "a făcut un schimb cu tine",
+    "activityExchangeGave": "A dat",
+    "activityExchangeGot": "A primit",
     "activitySwapCaption": "{name} a schimbat {bookA} cu {bookB}, de la {counterparty}",
     "@activitySwapCaption": {
         "placeholders": {

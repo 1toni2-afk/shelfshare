@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ArrowLeftRight } from 'lucide-react';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { profileKeys, profileRepository, type ActivityEntry } from './profileRepository';
 import { BookCover } from '@/components/ui/BookCover';
 import { Avatar } from '@/components/ui/Avatar';
 import { ErrorNotice, Spinner } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/time';
+import { useAuth } from '@/features/auth/AuthProvider';
 
 const BADGE_KEYS: Record<ActivityEntry['type'], string> = {
   new_listing: 'activityBadgeNew',
@@ -69,6 +71,10 @@ function ActivityRow({ entry, locale }: { entry: ActivityEntry; locale: string }
   const { t } = useTranslation();
   const name = entry.userName ?? t('commonUnknownUser');
 
+  if (entry.type === 'completed_exchange') {
+    return <ExchangeRow entry={entry} locale={locale} />;
+  }
+
   return (
     <div className="flex gap-3 rounded-[16px] border border-border bg-card p-3">
       <div className="h-[72px] w-[52px] shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -94,15 +100,12 @@ function ActivityRow({ entry, locale }: { entry: ActivityEntry; locale: string }
           <p className="truncate text-sm text-muted-foreground">{entry.bookAuthor}</p>
         )}
 
+        {entry.type === 'new_listing' && entry.caption && (
+          <p className="mt-1 line-clamp-2 text-sm italic text-muted-foreground">„{entry.caption}”</p>
+        )}
+
         {entry.type === 'reading_progress' && entry.currentPage !== undefined && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            {entry.totalPages
-              ? t('bookshelfProgressLabel', {
-                  current: entry.currentPage,
-                  total: entry.totalPages,
-                })
-              : t('bookshelfProgressLabelNoTotal', { current: entry.currentPage })}
-          </p>
+          <ReadingProgressBar current={entry.currentPage} total={entry.totalPages ?? null} />
         )}
 
         <p className="mt-1 text-xs text-muted-foreground">
@@ -128,16 +131,139 @@ function ActivityDescription({ entry }: { entry: ActivityEntry }) {
     case 'reading_progress':
       return t('activityReadingProgress');
     case 'completed_exchange':
-      // Textul complet („X a schimbat A cu B, de la Y") are nevoie de ambele
-      // cărți. Fără cartea oferită - schimb cu bani, nu carte-pe-carte - cade
-      // pe formularea scurtă.
-      return entry.offeredBookTitle && entry.counterpartyName
-        ? t('activitySwapCaption', {
-            name: entry.userName ?? '',
-            bookA: entry.offeredBookTitle,
-            bookB: entry.bookTitle,
-            counterparty: entry.counterpartyName,
-          })
-        : t('activityCompletedExchange');
+      // Randat de ExchangeRow; ramura rămâne doar ca switch-ul să fie complet.
+      return t('activityCompletedExchange');
   }
+}
+
+/**
+ * Un schimb finalizat de cineva urmărit: CU CINE (link spre profil, sau „cu
+ * tine" când partenerul e chiar cel care citește) și ce carte a plecat / a
+ * venit. La un schimb fără carte oferită apare doar partea care există.
+ */
+function ExchangeRow({ entry, locale }: { entry: ActivityEntry; locale: string }) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const name = entry.userName ?? t('commonUnknownUser');
+  const counterpartyName = entry.counterpartyName ?? t('commonUnknownUser');
+  const withViewer = !!user && entry.counterpartyId === user.id;
+
+  const given = entry.givenBookTitle
+    ? { title: entry.givenBookTitle, cover: entry.givenBookCoverUrl ?? null }
+    : null;
+  const received = entry.receivedBookTitle
+    ? { title: entry.receivedBookTitle, cover: entry.receivedBookCoverUrl ?? null }
+    : null;
+  // Răspuns de la un backend vechi, fără câmpurile orientate: cade pe cartea
+  // principală, fără etichetă de direcție.
+  const books = given || received ? [given, received] : null;
+
+  return (
+    <div className="flex gap-3 rounded-[16px] border border-border bg-card p-3">
+      <div className="flex shrink-0 items-center gap-1">
+        {books ? (
+          books.map((book, i) =>
+            book ? (
+              <div key={i} className="flex items-center gap-1">
+                {i === 1 && given && (
+                  <ArrowLeftRight size={14} className="text-muted-foreground" aria-hidden />
+                )}
+                <div className="h-[72px] w-[52px] overflow-hidden rounded-lg bg-muted">
+                  <BookCover url={book.cover} title={book.title} />
+                </div>
+              </div>
+            ) : null,
+          )
+        ) : (
+          <div className="h-[72px] w-[52px] overflow-hidden rounded-lg bg-muted">
+            <BookCover url={entry.bookCoverUrl} title={entry.bookTitle} />
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <Link to={`/users/${entry.userId}`} className="flex min-w-0 items-center gap-2">
+            <Avatar src={entry.userAvatar} name={name} size={20} />
+            <span className="truncate text-sm font-semibold hover:underline">{name}</span>
+          </Link>
+          <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+            {t('activityBadgeExchange')}
+          </span>
+        </div>
+
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-muted-foreground">
+          {withViewer ? (
+            t('activityExchangeWithYou')
+          ) : (
+            <>
+              <span>{t('activityExchangeWith')}</span>
+              {entry.counterpartyId ? (
+                <Link
+                  to={`/users/${entry.counterpartyId}`}
+                  className="inline-flex min-w-0 items-center gap-1.5 font-semibold text-foreground hover:underline"
+                >
+                  <Avatar src={entry.counterpartyAvatar} name={counterpartyName} size={18} />
+                  <span className="truncate">{counterpartyName}</span>
+                </Link>
+              ) : (
+                <span className="font-semibold text-foreground">{counterpartyName}</span>
+              )}
+            </>
+          )}
+        </p>
+
+        {books ? (
+          <div className="mt-1 flex flex-col gap-0.5 text-sm">
+            {given && (
+              <p className="truncate">
+                <span className="text-muted-foreground">{t('activityExchangeGave')}: </span>
+                <span className="font-medium">{given.title}</span>
+              </p>
+            )}
+            {received && (
+              <p className="truncate">
+                <span className="text-muted-foreground">{t('activityExchangeGot')}: </span>
+                <span className="font-medium">{received.title}</span>
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="truncate font-medium">{entry.bookTitle}</p>
+        )}
+
+        <p className="mt-1 text-xs text-muted-foreground">
+          {formatRelativeTime(entry.date, locale)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Cât a citit, ca bară plus „pagina X din Y · 47%". Fără total, doar pagina. */
+function ReadingProgressBar({ current, total }: { current: number; total: number | null }) {
+  const { t } = useTranslation();
+  const percent = total ? Math.min(100, Math.round((current / total) * 100)) : null;
+
+  return (
+    <div className="mt-1.5">
+      {percent !== null && (
+        <div
+          className="h-1.5 w-full max-w-[260px] overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+        </div>
+      )}
+      <p className="mt-1 text-xs text-muted-foreground">
+        {total
+          ? t('bookshelfProgressLabel', { current, total })
+          : t('bookshelfProgressLabelNoTotal', { current })}
+        {percent !== null && ` · ${percent}%`}
+      </p>
+    </div>
+  );
 }
