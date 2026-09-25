@@ -259,6 +259,8 @@ model User {
   createdGroups            Group[]                   @relation("GroupCreator")
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
+  feedLikes                FeedLike[]
+  feedComments             FeedComment[]
   securityEvents           SecurityEvent[]
   featureFlags             UserFeatureFlag[]
   bookSwipes               BookSwipe[]
@@ -363,6 +365,7 @@ enum ReportTargetType {
   CONVERSATION
   GROUP_POST
   EXCHANGE
+  FEED_COMMENT
 }
 
 /// Coadă de moderare pentru Report (Batch "Report status & assignee") - fără
@@ -406,6 +409,9 @@ model Report {
 
   reviewId String?
   review   Review? @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+
+  feedCommentId String?
+  feedComment   FeedComment? @relation(fields: [feedCommentId], references: [id], onDelete: SetNull)
 
   /// Tinta, in forma pe care se poate numara si filtra. Derivata din cheile
   /// straine de mai sus la creare (vezi ReportsService.create) - nu se scrie
@@ -637,6 +643,49 @@ model GroupPost {
   reports Report[]
 
   @@map("group_posts")
+}
+
+/// Aprecierea unui eveniment din feed. Feedul nu are o tabelă proprie de
+/// evenimente (se recompune la citire din anunțuri, raft, schimburi, vânzări și
+/// progres - vezi ProfileService.getActivityFeed), deci ținta e o CHEIE:
+/// `tip:idSursă`, de exemplu `reading_progress:<id ReadingProgress>`. Cheia e
+/// stabilă cât trăiește rândul sursă; la ștergerea lui, aprecierile rămân
+/// orfane și inofensive - nu mai apare nicăieri evenimentul care să le afișeze.
+model FeedLike {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventKey String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventKey])
+  @@index([eventKey])
+  @@map("feed_likes")
+}
+
+/// Comentariu la un eveniment din feed - aceeași cheie ca FeedLike.
+/// Se poate raporta și ascunde automat ca orice conținut public (vezi
+/// ReportsService); `hiddenAt` îl scoate din afișare fără să-l șteargă.
+model FeedComment {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventKey String
+  text     String
+
+  hiddenAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  reports Report[]
+
+  @@index([eventKey, createdAt])
+  @@map("feed_comments")
 }
 
 /// Întâlniri/evenimente opționale ale grupului ("Community Events" din

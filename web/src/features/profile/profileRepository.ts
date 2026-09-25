@@ -61,6 +61,20 @@ export interface Compatibility {
  */
 export interface ActivityEntry {
   type: 'new_listing' | 'finished_book' | 'completed_exchange' | 'sale' | 'reading_progress';
+  /** Cheia stabilă `tip:idSursă` - ținta aprecierilor și comentariilor. */
+  id: string;
+  /** Cartea din catalog; la un schimb, cea primită de cel din feed. */
+  bookId: string;
+  /** doar `new_listing` - anunțul, pentru „Vezi cartea" */
+  userBookId?: string;
+  likeCount: number;
+  likedByMe: boolean;
+  commentCount: number;
+  wishlistedByMe: boolean;
+  readingByMe: boolean;
+  /** doar `finished_book` - nota și părerea din recenzia lui, dacă a lăsat una */
+  rating?: number | null;
+  reviewText?: string | null;
   userId: string;
   userName: string | null;
   userAvatar: string | null;
@@ -88,6 +102,21 @@ export interface ActivityEntry {
   /** doar `reading_progress` */
   currentPage?: number;
   totalPages?: number | null;
+}
+
+/** Ale cui evenimente: urmăriți, din oraș, sau ambele. */
+export type FeedScope = 'following' | 'nearby' | 'all';
+/** Restrânge tipurile pe server: citit (progres + terminate) sau schimburi. */
+export type FeedKind = 'reading' | 'exchanges';
+export const FEED_PAGE_SIZE = 20;
+
+export interface FeedComment {
+  id: string;
+  text: string;
+  createdAt: string;
+  user: { id: string; name: string | null; profileImage: string | null };
+  isMine: boolean;
+  canDelete: boolean;
 }
 
 export interface NotificationPreferences {
@@ -145,8 +174,44 @@ export const profileRepository = {
     return api.get<Compatibility>(`/profile/${userId}/compatibility`, { signal });
   },
 
-  activityFeed(signal?: AbortSignal): Promise<ActivityEntry[]> {
-    return api.get<ActivityEntry[]>('/profile/activity-feed', { signal });
+  activityFeed(
+    params: { scope: FeedScope; kind?: FeedKind; offset?: number; limit?: number },
+    signal?: AbortSignal,
+  ): Promise<ActivityEntry[]> {
+    const query = new URLSearchParams({
+      scope: params.scope,
+      limit: String(params.limit ?? FEED_PAGE_SIZE),
+      offset: String(params.offset ?? 0),
+      ...(params.kind ? { kind: params.kind } : {}),
+    });
+    return api.get<ActivityEntry[]>(`/profile/activity-feed?${query}`, { signal });
+  },
+
+  likeFeedEvent(eventKey: string, like: boolean): Promise<{ likeCount: number; likedByMe: boolean }> {
+    const path = `/profile/activity-feed/${encodeURIComponent(eventKey)}/like`;
+    return like ? api.put(path, {}) : api.delete(path);
+  },
+
+  feedComments(eventKey: string, signal?: AbortSignal): Promise<FeedComment[]> {
+    return api.get<FeedComment[]>(
+      `/profile/activity-feed/${encodeURIComponent(eventKey)}/comments`,
+      { signal },
+    );
+  },
+
+  addFeedComment(eventKey: string, text: string): Promise<FeedComment> {
+    return api.post<FeedComment>(
+      `/profile/activity-feed/${encodeURIComponent(eventKey)}/comments`,
+      { text },
+    );
+  },
+
+  deleteFeedComment(commentId: string): Promise<void> {
+    return api.delete(`/profile/activity-feed/comments/${commentId}`);
+  },
+
+  reportFeedComment(commentId: string, reason: string): Promise<void> {
+    return api.post(`/profile/activity-feed/comments/${commentId}/report`, { reason });
   },
 
   async uploadPhoto(file: File): Promise<AppUser> {
@@ -237,7 +302,9 @@ export const profileKeys = {
   all: ['profile'] as const,
   me: () => ['profile', 'me'] as const,
   public: (userId: string) => ['profile', 'public', userId] as const,
-  activityFeed: () => ['profile', 'activity-feed'] as const,
+  activityFeed: (filter?: string) =>
+    filter ? (['profile', 'activity-feed', filter] as const) : (['profile', 'activity-feed'] as const),
+  feedComments: (eventKey: string) => ['profile', 'feed-comments', eventKey] as const,
   notificationPreferences: () => ['profile', 'notification-preferences'] as const,
   following: () => ['profile', 'following'] as const,
   leaderboard: (scope: string) => ['profile', 'leaderboard', scope] as const,

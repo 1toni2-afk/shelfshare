@@ -17,6 +17,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { ProfileService } from './profile.service';
+import { FeedSocialService } from './feed-social.service';
+import { FeedCommentDto } from './dto/feed-comment.dto';
+import { ReportPostDto } from '../groups/dto/report-post.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { SetReadingChallengeDto } from './dto/set-reading-challenge.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
@@ -29,7 +32,10 @@ const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024;
 
 @Controller('profile')
 export class ProfileController {
-  constructor(private profileService: ProfileService) {}
+  constructor(
+    private profileService: ProfileService,
+    private feedSocial: FeedSocialService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
@@ -147,19 +153,81 @@ export class ProfileController {
     );
   }
 
+  /**
+   * `scope` și `kind` sunt opționale: fără ele răspunsul e feedul vechi (doar
+   * cei urmăriți, toate tipurile), cel pe care îl cere aplicația Flutter.
+   * Câmpurile sociale adăugate de FeedSocialService sunt doar în plus.
+   */
   @UseGuards(JwtAuthGuard)
   @Get('activity-feed')
-  getActivityFeed(
+  async getActivityFeed(
     @Req() req: Request,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @Query('scope') scope?: string,
+    @Query('kind') kind?: string,
   ) {
     const { userId } = req.user as AuthenticatedUser;
-    return this.profileService.getActivityFeed(
+    const events = await this.profileService.getActivityFeed(
       userId!,
       limit ? parseInt(limit, 10) : undefined,
       offset ? parseInt(offset, 10) : undefined,
+      {
+        scope: scope === 'nearby' || scope === 'all' ? scope : 'following',
+        kind: kind === 'reading' || kind === 'exchanges' ? kind : undefined,
+      },
     );
+    return this.feedSocial.decorate(userId!, events);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('activity-feed/:eventKey/like')
+  likeFeedEvent(@Req() req: Request, @Param('eventKey') eventKey: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.feedSocial.like(userId!, eventKey);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('activity-feed/:eventKey/like')
+  unlikeFeedEvent(@Req() req: Request, @Param('eventKey') eventKey: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.feedSocial.unlike(userId!, eventKey);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('activity-feed/:eventKey/comments')
+  getFeedComments(@Req() req: Request, @Param('eventKey') eventKey: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.feedSocial.comments(userId!, eventKey);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('activity-feed/:eventKey/comments')
+  addFeedComment(
+    @Req() req: Request,
+    @Param('eventKey') eventKey: string,
+    @Body() dto: FeedCommentDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.feedSocial.addComment(userId!, eventKey, dto.text);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('activity-feed/comments/:commentId')
+  deleteFeedComment(@Req() req: Request, @Param('commentId') commentId: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.feedSocial.deleteComment(userId!, commentId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('activity-feed/comments/:commentId/report')
+  reportFeedComment(
+    @Req() req: Request,
+    @Param('commentId') commentId: string,
+    @Body() dto: ReportPostDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.feedSocial.reportComment(userId!, commentId, dto.reason, dto.details);
   }
 
   @UseGuards(JwtAuthGuard)

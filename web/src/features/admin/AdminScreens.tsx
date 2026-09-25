@@ -272,6 +272,7 @@ const REPORT_TARGET_KEYS: Record<string, string> = {
   CONVERSATION: 'adminReportTargetConversation',
   GROUP_POST: 'adminReportTargetGroupPost',
   EXCHANGE: 'adminReportTargetExchange',
+  FEED_COMMENT: 'adminReportTargetFeedComment',
 };
 
 export function AdminReportsScreen() {

@@ -484,6 +484,11 @@ export class AdminService {
             hiddenAt: true,
           },
         },
+        // Comentariile din feed (vezi FeedComment) - textul, ca moderatorul
+        // să nu judece un raport fără să vadă ce s-a scris.
+        feedComment: {
+          select: { id: true, text: true, eventKey: true, hiddenAt: true },
+        },
       },
       // OPEN/IN_PROGRESS întâi, ca un moderator să vadă coada de lucru
       // înaintea raportelor deja închise.
@@ -590,6 +595,11 @@ export class AdminService {
             bookId: true,
             hiddenAt: true,
           },
+        },
+        // Comentariile din feed (vezi FeedComment) - textul, ca moderatorul
+        // să nu judece un raport fără să vadă ce s-a scris.
+        feedComment: {
+          select: { id: true, text: true, eventKey: true, hiddenAt: true },
         },
       },
     });

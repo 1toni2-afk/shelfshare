@@ -36,6 +36,9 @@ function publicListingsWhere(userId: string): Prisma.UserBookWhereInput {
   };
 }
 
+export type FeedScope = 'following' | 'nearby' | 'all';
+export type FeedKind = 'reading' | 'exchanges';
+
 @Injectable()
 export class ProfileService {
   constructor(
@@ -1177,6 +1180,45 @@ export class ProfileService {
   }
 
   /**
+   * Ale cui evenimente intră în feed. `following` e forma veche (doar cei
+   * urmăriți - ce primește aplicația Flutter, care nu trimite `scope`);
+   * `nearby` sunt cititorii din același oraș, urmăriți sau nu; `all` le
+   * reunește. Userii suspendați nu apar în „aproape de tine": acolo nu i-a
+   * ales nimeni explicit.
+   */
+  private async feedActorIds(userId: string, scope: FeedScope): Promise<string[]> {
+    const ids = new Set<string>();
+    if (scope !== 'nearby') {
+      const follows = await this.prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      });
+      follows.forEach((f) => ids.add(f.followingId));
+    }
+    if (scope !== 'following') {
+      const me = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { city: true },
+      });
+      if (me?.city) {
+        const neighbours = await this.prisma.user.findMany({
+          where: {
+            id: { not: userId },
+            city: { equals: me.city, mode: 'insensitive' },
+            isBanned: false,
+            deletionScheduledAt: null,
+          },
+          select: { id: true },
+          orderBy: { createdAt: 'desc' },
+          take: 300,
+        });
+        neighbours.forEach((n) => ids.add(n.id));
+      }
+    }
+    return [...ids];
+  }
+
+  /**
    * Reading Activity Feed - evenimente recente din activitatea userilor
    * URMĂRIȚI (vezi Follow), nu globale - altfel ar fi zgomot pe o platformă
    * cu mulți useri necunoscuți între ei. Fără o tabelă de evenimente
@@ -1184,7 +1226,12 @@ export class ProfileService {
    * cărți terminate, schimburi finalizate), la fel ca restul statisticilor
    * "derivate" din aplicație.
    */
-  async getActivityFeed(userId: string, limit = 30, offset = 0) {
+  async getActivityFeed(
+    userId: string,
+    limit = 30,
+    offset = 0,
+    options: { scope?: FeedScope; kind?: FeedKind } = {},
+  ) {
     const boundedLimit = Math.min(Math.max(limit, 1), 50);
     const boundedOffset = Math.max(offset, 0);
     // Fără cursor real pe un feed compus din 4 surse eterogene - cerem
@@ -1193,24 +1240,31 @@ export class ProfileService {
     // cât timp per-source take rămâne rezonabil (capped mai jos).
     const perSourceTake = Math.min(boundedOffset + boundedLimit, 100);
 
-    const follows = await this.prisma.follow.findMany({
-      where: { followerId: userId },
-      select: { followingId: true },
-    });
-    const followingIds = follows.map((f) => f.followingId);
+    const followingIds = await this.feedActorIds(userId, options.scope ?? 'following');
     if (followingIds.length === 0) return [];
+    // `kind` restrânge sursele pe server, nu după paginare: filtrat la client,
+    // „Citesc acum" ar fi arătat doar câte evenimente de citit încăpeau între
+    // primele 30 din toate tipurile.
+    const kind = options.kind;
+    const want = (source: 'listing' | 'finished' | 'exchange' | 'sale' | 'progress') =>
+      !kind ||
+      (kind === 'reading' && (source === 'progress' || source === 'finished')) ||
+      (kind === 'exchanges' && source === 'exchange');
+    const skip = Promise.resolve([] as never[]);
 
     const userSelect = { name: true, nameVisible: true, profileImage: true };
     const bookSelect = { title: true, author: true, coverUrl: true, genre: true, pageCount: true };
 
     const [newListings, finishedBooks, completedExchanges, completedSales, readingProgress] = await Promise.all([
-      this.prisma.userBook.findMany({
+      !want('listing') ? skip : this.prisma.userBook.findMany({
         // Doar cărți puse pe raft de mână. Exemplarul primit la un schimb
         // (previousListingId) apare deja ca „a făcut un schimb cu…" - altfel
         // fiecare schimb ar dubla în feed ca „a adăugat o carte nouă".
         // Anunțurile șterse sau ascunse de moderare nu au ce căuta aici.
         where: { userId: { in: followingIds }, previousListingId: null, deletedAt: null, hiddenAt: null },
         select: {
+          id: true,
+          bookId: true,
           userId: true,
           createdAt: true,
           description: true,
@@ -1220,9 +1274,11 @@ export class ProfileService {
         orderBy: { createdAt: 'desc' },
         take: perSourceTake,
       }),
-      this.prisma.bookshelfEntry.findMany({
+      !want('finished') ? skip : this.prisma.bookshelfEntry.findMany({
         where: { userId: { in: followingIds }, status: 'FINISHED' },
         select: {
+          id: true,
+          bookId: true,
           userId: true,
           updatedAt: true,
           book: { select: bookSelect },
@@ -1231,14 +1287,15 @@ export class ProfileService {
         orderBy: { updatedAt: 'desc' },
         take: perSourceTake,
       }),
-      this.prisma.exchangeRequest.findMany({
+      !want('exchange') ? skip : this.prisma.exchangeRequest.findMany({
         where: { status: 'COMPLETED', OR: [{ requesterId: { in: followingIds } }, { ownerId: { in: followingIds } }] },
         select: {
+          id: true,
           requesterId: true,
           ownerId: true,
           updatedAt: true,
-          requestedBook: { select: { book: { select: bookSelect } } },
-          offeredBook: { select: { book: { select: bookSelect } } },
+          requestedBook: { select: { bookId: true, book: { select: bookSelect } } },
+          offeredBook: { select: { bookId: true, book: { select: bookSelect } } },
           requester: { select: userSelect },
           owner: { select: userSelect },
         },
@@ -1248,13 +1305,14 @@ export class ProfileService {
       // Doar vânzătorul contează aici (vezi comentariul de mai jos la
       // maparea `sale`), deci filtrăm direct pe ownerId - nu are rost să
       // aducem oferte unde doar cumpărătorul e urmărit.
-      this.prisma.priceOffer.findMany({
+      !want('sale') ? skip : this.prisma.priceOffer.findMany({
         where: { status: 'COMPLETED', ownerId: { in: followingIds } },
         select: {
+          id: true,
           ownerId: true,
           amount: true,
           updatedAt: true,
-          userBook: { select: { book: { select: bookSelect } } },
+          userBook: { select: { bookId: true, book: { select: bookSelect } } },
           owner: { select: userSelect },
         },
         orderBy: { updatedAt: 'desc' },
@@ -1264,9 +1322,11 @@ export class ProfileService {
       // (ReadingProgress). Excludem paginile mici (< 5) ca zgomot - un user
       // care abia a pus cartea pe raft și a bifat "pagina 1" din greșeală
       // n-ar trebui să apară ca "update de progres" în feed-ul altora.
-      this.prisma.readingProgress.findMany({
+      !want('progress') ? skip : this.prisma.readingProgress.findMany({
         where: { userId: { in: followingIds }, currentPage: { gte: 5 } },
         select: {
+          id: true,
+          bookId: true,
           userId: true,
           currentPage: true,
           totalPages: true,
@@ -1279,9 +1339,13 @@ export class ProfileService {
       }),
     ]);
 
+    const actorSet = new Set(followingIds);
     const events = [
       ...newListings.map((l) => ({
         type: 'new_listing' as const,
+        id: `new_listing:${l.id}`,
+        bookId: l.bookId,
+        userBookId: l.id,
         userId: l.userId,
         userName: publicName(l.user),
         userAvatar: l.user.profileImage,
@@ -1296,6 +1360,8 @@ export class ProfileService {
       })),
       ...finishedBooks.map((f) => ({
         type: 'finished_book' as const,
+        id: `finished_book:${f.id}`,
+        bookId: f.bookId,
         userId: f.userId,
         userName: publicName(f.user),
         userAvatar: f.user.profileImage,
@@ -1309,7 +1375,7 @@ export class ProfileService {
         // Evenimentul apare o singură dată, atribuit userului urmărit
         // implicat (dacă amândoi sunt urmăriți, apare pentru requester -
         // simplificare acceptabilă, nu dublăm evenimentul).
-        const isRequesterFollowed = followingIds.includes(exchange.requesterId);
+        const isRequesterFollowed = actorSet.has(exchange.requesterId);
         const actor = isRequesterFollowed ? exchange.requester : exchange.owner;
         const actorId = isRequesterFollowed ? exchange.requesterId : exchange.ownerId;
         const counterparty = isRequesterFollowed ? exchange.owner : exchange.requester;
@@ -1325,6 +1391,13 @@ export class ProfileService {
         return [
           {
             type: 'completed_exchange' as const,
+            id: `completed_exchange:${exchange.id}`,
+            // Cartea din prim-plan e cea PRIMITĂ de cel urmărit - la ea duce
+            // „Vezi cartea"; fără carte primită (a dat-o pe bani), cea dată.
+            bookId:
+              (isRequesterFollowed
+                ? exchange.requestedBook.bookId
+                : exchange.offeredBook?.bookId) ?? exchange.requestedBook.bookId,
             userId: actorId,
             userName: publicName(actor),
             userAvatar: actor.profileImage,
@@ -1353,6 +1426,8 @@ export class ProfileService {
       // urmărit, nu achizițiile lui (acelea rămân private).
       ...completedSales.map((sale) => ({
         type: 'sale' as const,
+        id: `sale:${sale.id}`,
+        bookId: sale.userBook.bookId,
         userId: sale.ownerId,
         userName: publicName(sale.owner),
         userAvatar: sale.owner.profileImage,
@@ -1365,6 +1440,8 @@ export class ProfileService {
       })),
       ...readingProgress.map((p) => ({
         type: 'reading_progress' as const,
+        id: `reading_progress:${p.id}`,
+        bookId: p.bookId,
         userId: p.userId,
         userName: publicName(p.user),
         userAvatar: p.user.profileImage,
