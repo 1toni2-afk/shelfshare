@@ -30,6 +30,7 @@ import { ReviewsService } from '../reviews/reviews.service';
 import { ResolveWorkDto } from './dto/resolve-work.dto';
 import { StoresService } from '../stores/stores.service';
 import { isSuperAdmin } from '../common/utils/is-super-admin';
+import { PUBLICLY_VISIBLE_LISTING_OR } from '../common/constants/public-listings';
 
 /// Unde ajunge un rând dintr-un CSV de import: în piață (anunț), pe raftul de
 /// lectură, doar la favorite - sau nicăieri, dacă raftul scris în fișier nu
@@ -86,29 +87,6 @@ const MAX_TOTAL_LISTING_PHOTOS_PER_USER = 300;
 /// prețul vechi tăiat lângă cel nou, asta ar fi devenit o unealtă de marketing
 /// fals. 72h e și intervalul în care o reducere reală rămâne vizibilă.
 const PRICE_UPDATE_COOLDOWN_MS = 72 * 60 * 60 * 1000;
-
-/**
- * Anunțurile pe care le vede publicul. Un anunț poate fi simultan de mai
- * multe tipuri (și la schimb, și la vânzare), deci vizibilitatea se decide
- * per-tip, nu printr-un flag pe anunț: apare dacă ARE MĂCAR UN tip pe care
- * proprietarul nu l-a ascuns (vezi User în schema.prisma). Aceeași listă e
- * folosită de căutare/discover ȘI de pagina operei, ca un anunț ascuns să nu
- * reapară pe o altă rută.
- */
-const PUBLICLY_VISIBLE_LISTING_OR: Prisma.UserBookWhereInput[] = [
-  { availableForSwap: true, user: { hideSwapListingsPublic: false } },
-  {
-    isForSale: true,
-    salePrice: { gt: 0 },
-    user: { hideSaleListingsPublic: false },
-  },
-  {
-    isForSale: true,
-    salePrice: { equals: 0 },
-    user: { hideDonationListingsPublic: false },
-  },
-  { isAuction: true, user: { hideAuctionListingsPublic: false } },
-];
 
 const OWNER_SELECT = {
   id: true,

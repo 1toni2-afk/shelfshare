@@ -18,6 +18,23 @@ import { isOnboardingTodoStep } from '../common/constants/onboarding-todo';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_PER_LEVEL, XP_REWARDS } from '../common/utils/xp';
 import { ADVANCED_STATISTICS_FLAG } from '../common/constants/feature-flags';
+import { PUBLICLY_VISIBLE_LISTING_OR } from '../common/constants/public-listings';
+
+/**
+ * Anunțurile unui user pe care le vede oricine: aceleași reguli ca în căutare
+ * (vezi PUBLICLY_VISIBLE_LISTING_OR), deci și cele DOAR de vânzare sau
+ * donație - profilul public le arăta numai pe cele de schimb, iar filtrul
+ * „De vânzare" n-ar fi avut ce afișa.
+ */
+function publicListingsWhere(userId: string): Prisma.UserBookWhereInput {
+  return {
+    userId,
+    deletedAt: null,
+    hiddenAt: null,
+    permanentlyTransferred: false,
+    OR: PUBLICLY_VISIBLE_LISTING_OR,
+  };
+}
 
 @Injectable()
 export class ProfileService {
@@ -180,6 +197,8 @@ export class ProfileService {
       // cardul „Top genuri" din coloana laterală (același pe care profilul
       // public îl afișa de mult).
       readingStats: await this.getReadingStats(userId),
+      // Zona „Citesc acum" de pe profilul din beta.
+      currentlyReading: await this.getCurrentlyReading(userId),
       gamification: this.getGamificationStats(user),
       // Frontend-ul ascunde intrarea catre „Advanced Analytics" cand e
       // false - altfel ar arata un rand care duce garantat intr-un 403.
@@ -259,12 +278,20 @@ export class ProfileService {
       throw new NotFoundException('Utilizator negăsit');
     }
 
-    const [listedBooks, listingsCount] = await Promise.all([
+    // `listedBooks` rămâne forma veche (doar schimb) pentru aplicația Flutter
+    // din producție; `availableBooks` e lista completă, citită de beta.
+    const [listedBooks, availableBooks, listingsCount] = await Promise.all([
       this.prisma.userBook.findMany({
         where: { userId, availableForSwap: true },
         include: { book: true },
         orderBy: { createdAt: 'desc' },
         take: 20,
+      }),
+      this.prisma.userBook.findMany({
+        where: publicListingsWhere(userId),
+        include: { book: true },
+        orderBy: { createdAt: 'desc' },
+        take: 60,
       }),
       this.prisma.userBook.count({ where: { userId } }),
     ]);
@@ -273,13 +300,15 @@ export class ProfileService {
       ? await this.getAcquisitionHistory(userId)
       : null;
 
-    const [reviews, readingStats, achievements, impactStats, bookshelf] = await Promise.all([
-      this.getReviews(userId),
-      this.getReadingStats(userId),
-      this.getAchievements(user),
-      this.getImpactStats(userId),
-      this.bookshelf.getPublicShelf(userId),
-    ]);
+    const [reviews, readingStats, achievements, impactStats, bookshelf, currentlyReading] =
+      await Promise.all([
+        this.getReviews(userId),
+        this.getReadingStats(userId),
+        this.getAchievements(user),
+        this.getImpactStats(userId),
+        this.bookshelf.getPublicShelf(userId),
+        this.getCurrentlyReading(userId),
+      ]);
 
     return {
       id: user.id,
@@ -302,6 +331,7 @@ export class ProfileService {
       booksReceivedCount: user.booksReceivedCount,
       memberSince: user.createdAt,
       listedBooks,
+      availableBooks,
       listingsCount,
       acquisitionHistory,
       trustScore: await this.computeTrustScore(user),
@@ -310,8 +340,84 @@ export class ProfileService {
       achievements,
       impactStats,
       bookshelf,
+      currentlyReading,
       gamification: this.getGamificationStats(user),
     };
+  }
+
+  /**
+   * Cartea la care userul lucrează acum: cea mai recent atinsă intrare READING
+   * de pe raft, cu progresul ei dacă a introdus vreodată o pagină. Același
+   * raft e deja public (vezi getPublicShelf), deci nu expune nimic în plus.
+   * `startedAt` e momentul primei pagini introduse - raftul nu ține o dată de
+   * început, iar `updatedAt` s-ar muta la fiecare pagină nouă.
+   */
+  async getCurrentlyReading(userId: string) {
+    const entry = await this.prisma.bookshelfEntry.findFirst({
+      where: { userId, status: 'READING' },
+      include: { book: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+    if (!entry) return null;
+
+    const progress = await this.prisma.readingProgress.findUnique({
+      where: { userId_bookId: { userId, bookId: entry.bookId } },
+    });
+    return {
+      book: entry.book,
+      currentPage: progress?.currentPage ?? 0,
+      totalPages: progress?.totalPages ?? entry.book.pageCount ?? null,
+      startedAt: progress?.createdAt ?? entry.createdAt,
+    };
+  }
+
+  /**
+   * „Tu & X" de pe profilul altcuiva: ce cărți de-ale lui îți sunt pe
+   * wishlist și ce cărți de-ale tale sunt pe al lui. Potrivirea e pe OPERĂ
+   * (bookId), nu pe exemplar - inima pusă pe anunțul altcuiva tot înseamnă că
+   * vrei titlul. Doar anunțurile publice intră la socoteală: unul ascuns din
+   * setări nu trebuie să se vadă nici pe calea asta.
+   */
+  async getCompatibility(viewerId: string, otherUserId: string) {
+    if (viewerId === otherUserId) {
+      return { theirBooksYouWant: [], yourBooksTheyWant: [] };
+    }
+
+    const [myWishlist, theirWishlist] = await Promise.all([
+      this.prisma.wishlistItem.findMany({
+        where: { userId: viewerId },
+        select: { bookId: true },
+      }),
+      this.prisma.wishlistItem.findMany({
+        where: { userId: otherUserId },
+        select: { bookId: true },
+      }),
+    ]);
+
+    const [theirBooksYouWant, yourBooksTheyWant] = await Promise.all([
+      myWishlist.length === 0
+        ? []
+        : this.prisma.userBook.findMany({
+            where: {
+              ...publicListingsWhere(otherUserId),
+              bookId: { in: myWishlist.map((w) => w.bookId) },
+            },
+            include: { book: true },
+            orderBy: { createdAt: 'desc' },
+          }),
+      theirWishlist.length === 0
+        ? []
+        : this.prisma.userBook.findMany({
+            where: {
+              ...publicListingsWhere(viewerId),
+              bookId: { in: theirWishlist.map((w) => w.bookId) },
+            },
+            include: { book: true },
+            orderBy: { createdAt: 'desc' },
+          }),
+    ]);
+
+    return { theirBooksYouWant, yourBooksTheyWant };
   }
 
   /**

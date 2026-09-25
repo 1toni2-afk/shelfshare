@@ -75,6 +75,34 @@ export interface AppUser {
   trustScore?: TrustScore | null;
   /** Statistici derivate din biblioteca proprie - alimentează „Top genuri". */
   readingStats?: ReadingStats | null;
+  /** Ultima carte READING de pe raft, cu progresul ei. Lipsește pe API-uri vechi. */
+  currentlyReading?: CurrentlyReading | null;
+  /** Toate insignele, obținute sau nu - `achieved` le desparte. */
+  achievements?: Achievement[];
+}
+
+/**
+ * O insignă din getAchievements (profile.service.ts). `label` și `description`
+ * vin de pe server doar în română; ecranul le traduce după `key` și cade pe
+ * ele numai pentru o insignă nouă, încă netradusă.
+ */
+export interface Achievement {
+  key: string;
+  label: string;
+  description: string;
+  achieved: boolean;
+}
+
+/**
+ * „Citesc acum" de pe profil (vezi getCurrentlyReading din profile.service.ts).
+ * `totalPages` e null când nici userul, nici catalogul nu știu câte pagini are
+ * cartea - atunci nu se desenează bară, n-avem din ce calcula un procent.
+ */
+export interface CurrentlyReading {
+  book: Book;
+  currentPage: number;
+  totalPages: number | null;
+  startedAt: string;
 }
 
 export interface TrustScore {

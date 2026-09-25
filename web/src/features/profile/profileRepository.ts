@@ -1,5 +1,13 @@
 import { api } from '@/lib/api/client';
-import type { AppUser, PublicUser, ReadingChallenge, UserBook } from '@/types/models';
+import type {
+  AppUser,
+  CurrentlyReading,
+  PublicUser,
+  ReadingChallenge,
+  ReadingStats,
+  TrustScore,
+  UserBook,
+} from '@/types/models';
 
 export interface PublicProfile extends PublicUser {
   bio: string | null;
@@ -7,11 +15,41 @@ export interface PublicProfile extends PublicUser {
   booksSharedCount: number;
   booksReceivedCount: number;
   languages: string[];
-  createdAt: string | null;
+  /**
+   * Data înscrierii. API-ul o trimite ca `memberSince`, nu `createdAt` - tipul
+   * vechi citea `createdAt`, mereu undefined, deci „Membru din" nu apărea.
+   */
+  memberSince: string | null;
+  /** Doar anunțurile de schimb - forma veche, păstrată pentru Flutter. */
   listedBooks?: UserBook[];
+  /** Toate anunțurile publice: schimb, vânzare, donație, licitație. */
+  availableBooks?: UserBook[];
+  reviews?: PublicReview[];
+  readingStats?: ReadingStats | null;
+  trustScore?: TrustScore | null;
+  currentlyReading?: CurrentlyReading | null;
   isFollowing?: boolean;
   followersCount?: number;
   followingCount?: number;
+}
+
+/** O recenzie text primită după un schimb finalizat (vezi getReviews). */
+export interface PublicReview {
+  reviewerId: string;
+  reviewerName: string | null;
+  reviewerImage: string | null;
+  rating: number | null;
+  comment: string | null;
+  date: string;
+}
+
+/**
+ * „Tu & X": anunțurile lui care îți sunt pe wishlist și anunțurile tale care îi
+ * sunt lui pe wishlist. Potrivirea e pe operă, nu pe exemplar.
+ */
+export interface Compatibility {
+  theirBooksYouWant: UserBook[];
+  yourBooksTheyWant: UserBook[];
 }
 
 /**
@@ -101,6 +139,10 @@ export const profileRepository = {
 
   publicProfile(userId: string, signal?: AbortSignal): Promise<PublicProfile> {
     return api.get<PublicProfile>(`/profile/${userId}`, { signal });
+  },
+
+  compatibility(userId: string, signal?: AbortSignal): Promise<Compatibility> {
+    return api.get<Compatibility>(`/profile/${userId}/compatibility`, { signal });
   },
 
   activityFeed(signal?: AbortSignal): Promise<ActivityEntry[]> {
@@ -201,4 +243,5 @@ export const profileKeys = {
   leaderboard: (scope: string) => ['profile', 'leaderboard', scope] as const,
   sellerAnalytics: () => ['profile', 'seller-analytics'] as const,
   readingChallenge: () => ['profile', 'reading-challenge'] as const,
+  compatibility: (userId: string) => ['profile', 'compatibility', userId] as const,
 };

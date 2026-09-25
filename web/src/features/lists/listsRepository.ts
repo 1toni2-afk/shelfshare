@@ -72,17 +72,45 @@ export const wishlistRepository = {
   },
 };
 
+/**
+ * Forma reală a unei colecții din API: Prisma cu `include: { items: { book } }`
+ * și `_count.items`. Nu există nici `books`, nici `bookCount` în răspuns -
+ * fără maparea de mai jos, detaliul cădea pe `books.length` (undefined).
+ */
+interface RawCollection {
+  id: string;
+  name: string;
+  isPublic: boolean;
+  createdAt: string;
+  items?: { book: Book }[];
+  _count?: { items: number };
+}
+
+function toCollectionDetail(raw: RawCollection): CollectionDetail {
+  const books = (raw.items ?? []).map((item) => item.book).filter(Boolean);
+  return {
+    id: raw.id,
+    name: raw.name,
+    isPublic: raw.isPublic,
+    createdAt: raw.createdAt,
+    bookCount: raw._count?.items ?? books.length,
+    books,
+  };
+}
+
 export const collectionsRepository = {
-  mine(signal?: AbortSignal): Promise<Collection[]> {
-    return api.get<Collection[]>('/collections/mine', { signal });
+  async mine(signal?: AbortSignal): Promise<CollectionDetail[]> {
+    const raw = await api.get<RawCollection[]>('/collections/mine', { signal });
+    return raw.map(toCollectionDetail);
   },
 
-  ofUser(userId: string, signal?: AbortSignal): Promise<Collection[]> {
-    return api.get<Collection[]>(`/collections/user/${userId}`, { signal });
+  async ofUser(userId: string, signal?: AbortSignal): Promise<Collection[]> {
+    const raw = await api.get<RawCollection[]>(`/collections/user/${userId}`, { signal });
+    return raw.map(toCollectionDetail);
   },
 
-  detail(id: string, signal?: AbortSignal): Promise<CollectionDetail> {
-    return api.get<CollectionDetail>(`/collections/${id}`, { signal });
+  async detail(id: string, signal?: AbortSignal): Promise<CollectionDetail> {
+    return toCollectionDetail(await api.get<RawCollection>(`/collections/${id}`, { signal }));
   },
 
   create(input: { name: string; isPublic: boolean }): Promise<Collection> {

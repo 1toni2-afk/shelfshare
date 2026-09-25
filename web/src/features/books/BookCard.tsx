@@ -30,7 +30,16 @@ import { cn } from '@/lib/utils/cn';
  * Port fidel al shared/widgets/book_card.dart - aceleași poziții (6px de la
  * colțuri), aceleași raze (12 pentru copertă și badge-uri) și aceeași umbră.
  */
-export function BookCard({ item, eager = false }: { item: UserBook; eager?: boolean }) {
+export function BookCard({
+  item,
+  eager = false,
+  hideLocation = false,
+}: {
+  item: UserBook;
+  eager?: boolean;
+  /** Pe profilul unui user toate cărțile sunt ale lui, iar orașul e deja sus. */
+  hideLocation?: boolean;
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
 
@@ -91,7 +100,7 @@ export function BookCard({ item, eager = false }: { item: UserBook; eager?: bool
         <p className="truncate text-sm text-muted-foreground">{item.book.author}</p>
       )}
 
-      {(item.user?.city || item.city || item.user?.isStore) && (
+      {!hideLocation && (item.user?.city || item.city || item.user?.isStore) && (
         <div className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
           {/* Anunțul unui anticariat arată altfel decât cel al unui om: are
               preț fix, stoc și program - merită spus pe card. */}

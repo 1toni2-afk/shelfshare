@@ -3,22 +3,31 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  ArrowRight,
   BadgeCheck,
+  BookMarked,
   BookOpen,
+  BookOpenCheck,
   Camera,
   CalendarDays,
   Globe,
+  Heart,
+  Library,
   MapPin,
   Pencil,
   QrCode,
+  Repeat,
   Settings as SettingsIcon,
   Share2,
+  ShieldCheck,
   Star,
+  Target,
 } from 'lucide-react';
 import { ScreenHeader, HeaderAction } from '@/components/layout/ScreenHeader';
 import { profileKeys, profileRepository } from './profileRepository';
 import { booksKeys, booksRepository } from '@/features/books/booksRepository';
 import { listsKeys, collectionsRepository, wishlistRepository } from '@/features/lists/listsRepository';
+import { shelfKeys, shelfRepository } from '@/features/shelf/shelfRepository';
 import { BookCover } from '@/components/ui/BookCover';
 import { Avatar } from '@/components/ui/Avatar';
 import { ErrorNotice, Spinner } from '@/components/ui';
@@ -26,19 +35,19 @@ import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { ProfileQrDialog } from '@/components/ui/ProfileQrDialog';
 import { shareAppLink } from '@/lib/utils/shareLink';
-import type { AppUser, GenreCount, UserBook } from '@/types/models';
+import { cn } from '@/lib/utils/cn';
+import { ProgressBar, readingFraction } from './ReadingProgress';
+import { BadgesCard } from './Badges';
+import type { AppUser, CurrentlyReading, GenreCount, UserBook } from '@/types/models';
 
 /**
- * Lățimea unei coperte din rândurile de preview. Fixă intenționat: calculată ca
- * fracțiune din ecran, pe desktop patru cărți acopereau o treime de pagină.
- */
-const COVER_TILE_WIDTH = 74;
-
-/**
- * Profilul propriu. Port al `my_profile_screen.dart`: header cu avatar și trust
- * score, o linie de statistici, acțiunile principale, apoi preview-urile
- * (challenge, bibliotecă, colecții, activitate). Pe desktop se adaugă coloana
- * din dreapta cu „Despre / Info / Statistici / Top genuri".
+ * Profilul propriu.
+ *
+ * Coloana principală: header (avatar, nume, trust, statistici), „Citesc acum"
+ * și provocarea anuală, apoi raftul - vedeta paginii, cu coperți mari -,
+ * colecțiile și activitatea recentă. Pe ecran lat se adaugă coloana din
+ * dreapta: acțiunile, „Despre mine", informațiile de cont și un singur card
+ * „Profil de cititor" cu statistici care NU repetă ce e deja în header.
  *
  * Setările, deconectarea și ștergerea contului stau pe `/settings`, accesibil
  * prin „⚙" din bară - profilul rămâne scurt și scanabil.
@@ -105,14 +114,38 @@ export function MyProfileScreen() {
   const me = profile.data;
   const displayName = me.name?.trim() ? me.name : me.email;
 
+  const actions = (
+    <div className="flex gap-2">
+      <Link
+        to="/profile/edit"
+        className="flex flex-1 items-center justify-center gap-2 rounded-[12px] bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:brightness-110"
+      >
+        <Pencil size={16} />
+        {t('profileEditProfile')}
+      </Link>
+      <IconButton label={t('profileQrTooltip')} onClick={() => setQrOpen(true)}>
+        <QrCode size={20} />
+      </IconButton>
+      <IconButton
+        label={t('profileCopyLink')}
+        onClick={() => void shareAppLink(`/users/${me.id}`, toast.show)}
+      >
+        <Share2 size={20} />
+      </IconButton>
+    </div>
+  );
+
   return (
     <>
       {header}
-      {/* Două coloane peste pragul de desktop: conținutul la 560px și cardurile
-          laterale la 340px - aceleași valori ca `kProfileContentMaxWidth` și
-          `kProfileSideColumnWidth`. */}
-      <div className="mx-auto flex w-full max-w-[1024px] flex-col items-start gap-0 px-0 pb-16 min-[900px]:flex-row">
-        <div className="mx-auto w-full max-w-[560px] px-5 py-5">
+      {/*
+        Două coloane doar de la 1180px în sus: sub prag, coloana laterală de
+        380px ar strânge raftul sub lățimea la care coperțile mai arată a
+        coperți. Conținutul principal crește până la ~900px, cât să nu lase
+        jumătate de monitor goală, dar nici să întindă rândurile de text.
+      */}
+      <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 items-start gap-x-8 px-4 pb-16 pt-4 sm:px-6 min-[1180px]:grid-cols-[minmax(0,1fr)_360px] min-[1180px]:px-8">
+        <div className="min-w-0">
           <input
             ref={fileInput}
             type="file"
@@ -125,7 +158,7 @@ export function MyProfileScreen() {
             }}
           />
 
-          <div className="flex items-start gap-4">
+          <div className="flex items-center gap-4 sm:gap-6">
             {/* Avatarul e și butonul de schimbare a pozei - insigna cu aparatul
                 de fotografiat e singurul indiciu că se poate apăsa. */}
             <button
@@ -134,89 +167,88 @@ export function MyProfileScreen() {
               aria-label={t('profilePhotoChoose')}
               className="relative shrink-0"
             >
-              <Avatar src={me.profileImage} name={displayName} size={72} />
-              <span className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground">
-                {photo.isPending ? <Spinner size={12} /> : <Camera size={12} />}
+              <span className="sm:hidden">
+                <Avatar src={me.profileImage} name={displayName} size={80} />
+              </span>
+              <span className="hidden sm:block">
+                <Avatar src={me.profileImage} name={displayName} size={112} />
+              </span>
+              <span className="absolute bottom-0.5 right-0.5 flex size-7 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground">
+                {photo.isPending ? <Spinner size={12} /> : <Camera size={13} />}
               </span>
             </button>
 
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5">
-                <span className="min-w-0 truncate font-display text-xl font-bold">
+              <h1 className="flex items-center gap-2">
+                <span className="min-w-0 truncate font-display text-2xl font-bold leading-tight sm:text-[34px]">
                   {displayName}
                 </span>
                 {me.isEmailVerified && (
-                  <BadgeCheck size={16} className="shrink-0 text-accent" />
+                  <BadgeCheck size={22} className="shrink-0 text-accent" />
                 )}
-              </p>
-              <p className="truncate text-sm text-muted-foreground">
+              </h1>
+              <p className="mt-0.5 truncate text-muted-foreground sm:text-lg">
                 {[me.username ? `@${me.username}` : null, me.city].filter(Boolean).join(' · ')}
               </p>
+              {me.trustScore && (
+                <p
+                  title={t('profileTrustTooltip')}
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent"
+                >
+                  <ShieldCheck size={13} />
+                  {t('profileTrustBadge', { score: me.trustScore.score })}
+                </p>
+              )}
             </div>
-
-            {me.trustScore && (
-              <div className="shrink-0 text-center">
-                <p className="text-xl font-semibold text-accent">{me.trustScore.score}</p>
-                <p className="text-[10px] text-muted-foreground">trust</p>
-              </div>
-            )}
           </div>
 
-          {/* Bio-ul stă inline doar pe mobil; pe desktop e pe cardul „Despre
-              mine" din dreapta, deci aici ar apărea de două ori. */}
+          {/* Bio-ul stă aici doar cât nu se vede coloana din dreapta; acolo
+              are cardul „Despre mine" și ar apărea de două ori. */}
           {me.bio?.trim() && (
-            <p className="mt-3 text-[13px] leading-snug text-muted-foreground min-[900px]:hidden">
+            <p className="mt-4 leading-snug text-muted-foreground min-[1180px]:hidden">
               {me.bio.trim()}
             </p>
           )}
 
-          <div className="mt-4 grid grid-cols-3 gap-2 border-y border-border py-3 text-center">
-            <Stat value={String(me.booksSharedCount)} label={t('profileStatBooks')} />
-            <Stat value={String(me.booksExchangedCount)} label={t('profileStatSwaps')} />
+          <div className="mt-5 grid grid-cols-3 border-y border-border py-4 text-center">
             <Stat
+              icon={<BookOpen size={20} />}
+              value={String(me.booksSharedCount)}
+              label={t('profileStatBooks')}
+            />
+            <Stat
+              icon={<Repeat size={20} />}
+              value={String(me.booksExchangedCount)}
+              label={t('profileStatSwaps')}
+            />
+            <Stat
+              icon={<Star size={20} className="fill-warning text-warning" />}
               value={me.rating > 0 ? me.rating.toFixed(1) : '—'}
               label={t('profileStatRating')}
-              icon={<Star size={14} className="fill-warning text-warning" />}
             />
           </div>
 
-          <div className="mt-5 flex gap-2">
-            <Link
-              to="/profile/edit"
-              className="flex flex-1 items-center justify-center gap-2 rounded-[12px] bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:brightness-110"
-            >
-              <Pencil size={16} />
-              {t('profileEditProfile')}
-            </Link>
-            <button
-              onClick={() => setQrOpen(true)}
-              aria-label={t('profileQrTooltip')}
-              title={t('profileQrTooltip')}
-              className="flex size-11 shrink-0 items-center justify-center rounded-[8px] border border-border hover:bg-muted"
-            >
-              <QrCode size={20} />
-            </button>
-            <button
-              onClick={() => void shareAppLink(`/users/${me.id}`, toast.show)}
-              aria-label={t('profileCopyLink')}
-              title={t('profileCopyLink')}
-              className="flex size-11 shrink-0 items-center justify-center rounded-[8px] border border-border hover:bg-muted"
-            >
-              <Share2 size={20} />
-            </button>
-          </div>
+          <div className="mt-5 min-[1180px]:hidden">{actions}</div>
 
-          <ReadingChallengeMini />
+          <ReadingNow current={me.currentlyReading ?? null} />
           <LibraryPreview />
           <CollectionsPreview />
           <RecentActivityPreview />
+
+          {/* Sub pragul de două coloane, cardul de cititor coboară aici - altfel
+              statisticile lui nu s-ar vedea nicăieri pe ecran îngust. */}
+          <div className="mt-8 flex flex-col gap-4 min-[1180px]:hidden">
+            <ReadingProfileCard me={me} />
+            <BadgesCard achievements={me.achievements ?? []} />
+          </div>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
             {t('profileMoreInSettings')}
           </p>
         </div>
 
-        <aside className="hidden w-[340px] shrink-0 flex-col gap-4 px-3 py-5 min-[900px]:flex">
+        <aside className="hidden flex-col gap-4 min-[1180px]:flex">
+          {actions}
           <SideCards me={me} />
         </aside>
       </div>
@@ -226,11 +258,32 @@ export function MyProfileScreen() {
   );
 }
 
-function Stat({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
+function IconButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
-      <p className="flex items-center justify-center gap-1 font-display text-lg font-bold">
-        {icon}
+    <button
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="flex size-11 shrink-0 items-center justify-center rounded-[12px] border border-border hover:bg-muted"
+    >
+      {children}
+    </button>
+  );
+}
+
+function Stat({ value, label, icon }: { value: string; label: string; icon: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center">
+      <p className="flex items-center gap-2 font-display text-2xl font-bold">
+        <span className="text-muted-foreground">{icon}</span>
         {value}
       </p>
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -239,36 +292,137 @@ function Stat({ value, label, icon }: { value: string; label: string; icon?: Rea
 }
 
 /**
- * Reading challenge condensat: „anul challenge · x/goal" plus o bară subțire.
- * Ascuns dacă userul n-a setat obiectivul anual.
+ * „Citesc acum" și provocarea anuală, alăturate pe ecran lat. Fiecare dispare
+ * singur când n-are date; dacă rămâne doar unul, ocupă tot rândul.
  */
-function ReadingChallengeMini() {
+function ReadingNow({ current }: { current: CurrentlyReading | null }) {
   const challenge = useQuery({
     queryKey: profileKeys.readingChallenge(),
     queryFn: ({ signal }) => profileRepository.readingChallenge(signal),
   });
+  const hasChallenge = !!challenge.data?.goal;
 
-  if (!challenge.data?.goal) return null;
-  const progress = Math.min(1, challenge.data.progress / challenge.data.goal);
+  if (!current && !hasChallenge) return null;
 
   return (
-    <section className="mt-6">
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{challenge.data.year} challenge</span>
-        <span>
-          {challenge.data.progress} / {challenge.data.goal}
-        </span>
+    <div className={cn('mt-6 grid gap-4', current && hasChallenge && 'md:grid-cols-2')}>
+      {current && <CurrentlyReadingCard current={current} />}
+      {hasChallenge && challenge.data && (
+        <ReadingChallengeCard
+          year={challenge.data.year}
+          goal={challenge.data.goal!}
+          progress={challenge.data.progress}
+        />
+      )}
+    </div>
+  );
+}
+
+function CurrentlyReadingCard({ current }: { current: CurrentlyReading }) {
+  const { t, i18n } = useTranslation();
+  const fraction = readingFraction(current);
+
+  return (
+    <Link
+      to="/bookshelf"
+      className="flex gap-4 rounded-[16px] border border-border bg-card p-4 transition-colors hover:bg-muted/40"
+    >
+      <div className="aspect-[2/3] w-[72px] shrink-0 overflow-hidden rounded-[6px] bg-muted shadow-md">
+        <BookCover url={current.book.coverUrl} title={current.book.title} />
       </div>
-      <div className="mt-2 h-1 overflow-hidden rounded-sm bg-muted">
-        <div className="h-full rounded-sm bg-accent" style={{ width: `${progress * 100}%` }} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p className="font-display text-lg font-bold">{t('profileCurrentlyReading')}</p>
+        <p className="mt-1 truncate font-semibold">{current.book.title}</p>
+        {current.book.author && (
+          <p className="truncate text-sm text-muted-foreground">{current.book.author}</p>
+        )}
+        <div className="mt-auto pt-2">
+          {fraction !== null ? (
+            <ProgressBar fraction={fraction} />
+          ) : (
+            current.currentPage > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {t('profileReadingPageOf', { current: current.currentPage, total: '?' })}
+              </p>
+            )
+          )}
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {t('profileReadingStarted', {
+              date: new Intl.DateTimeFormat(i18n.language, {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              }).format(new Date(current.startedAt)),
+            })}
+          </p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function ReadingChallengeCard({
+  year,
+  goal,
+  progress,
+}: {
+  year: number;
+  goal: number;
+  progress: number;
+}) {
+  const { t } = useTranslation();
+  const fraction = Math.min(1, progress / goal);
+  const left = Math.max(0, goal - progress);
+
+  return (
+    <section className="flex flex-col rounded-[16px] border border-border bg-card p-4">
+      <p className="flex items-center gap-2 font-display text-lg font-bold">
+        <Target size={20} className="shrink-0 text-accent" />
+        {t('profileReadingChallengeTitle', { year })}
+      </p>
+      <p className="mt-2 font-display text-xl font-bold">
+        {t('profileChallengeProgress', { progress, goal })}
+      </p>
+      <div className="mt-auto pt-3">
+        <ProgressBar fraction={fraction} />
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          {left > 0 ? t('profileChallengeToGo', { n: left }) : t('profileChallengeDone')}
+        </p>
       </div>
     </section>
   );
 }
 
+function SectionHeader({
+  title,
+  to,
+  meta,
+}: {
+  title: string;
+  to?: string;
+  meta?: string;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <h2 className="font-display text-xl font-bold">{title}</h2>
+      <div className="flex shrink-0 items-baseline gap-4 text-sm">
+        {meta && <span className="text-muted-foreground">{meta}</span>}
+        {to && (
+          <Link to={to} className="flex items-center gap-1 font-medium text-accent hover:underline">
+            {t('commonSeeAll')}
+            <ArrowRight size={14} />
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /**
- * Preview bibliotecă: titlu, „N disponibile", și un rând de coperți de lățime
- * fixă, câte încap, urmat de un tile „+N".
+ * Raftul: cinci coperți mari și un tile final „+N · Vezi raftul". Pe telefon
+ * aceleași șase piese se așază pe două rânduri de câte trei, ca fiecare
+ * copertă să rămână lizibilă.
  */
 function LibraryPreview() {
   const { t } = useTranslation();
@@ -281,41 +435,46 @@ function LibraryPreview() {
   const active = (library.data ?? []).filter((item) => !item.permanentlyTransferred);
   if (active.length === 0) return null;
 
-  // Șase sloturi la 560px de coloană; ultimul e tile-ul cu restul.
-  const slots = 6;
-  const covers = active.slice(0, slots - 1);
+  const covers = active.slice(0, 5);
   const remaining = active.length - covers.length;
 
   return (
-    <Link to="/library" className="mt-6 block">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">{t('libraryTitle')}</h2>
-        <span className="text-[11px] text-muted-foreground">
-          {t('profileLibraryAvailable', { n: active.length })}
-        </span>
-      </div>
-      <div className="mt-2.5 flex gap-[7px]">
+    <section className="mt-8">
+      <SectionHeader
+        title={t('libraryTitle')}
+        to="/library"
+        meta={t('profileLibraryAvailable', { n: active.length })}
+      />
+      <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
         {covers.map((item: UserBook) => (
-          <div
+          <Link
             key={item.id}
-            style={{ width: COVER_TILE_WIDTH }}
-            className="aspect-[2/3] shrink-0 overflow-hidden rounded-[5px] bg-muted"
+            to={`/books/${item.id}`}
+            className="group aspect-[2/3] overflow-hidden rounded-[8px] bg-muted shadow-md"
           >
-            <BookCover url={item.book.coverUrl} fallbackUrl={item.mainPhotoUrl} title={item.book.title} />
-          </div>
+            <BookCover
+              url={item.mainPhotoUrl ?? item.book.coverUrl}
+              fallbackUrl={item.book.coverUrl}
+              title={item.book.title}
+              className="transition duration-300 group-hover:scale-[1.03]"
+            />
+          </Link>
         ))}
-        <div
-          style={{ width: COVER_TILE_WIDTH }}
-          className="flex aspect-[2/3] shrink-0 items-center justify-center rounded-[5px] bg-muted text-xs text-muted-foreground"
+        <Link
+          to="/library"
+          className="flex aspect-[2/3] flex-col items-center justify-center gap-1 rounded-[8px] border border-border bg-card text-center hover:bg-muted"
         >
-          {remaining > 0 ? `+${remaining}` : '—'}
-        </div>
+          {remaining > 0 && (
+            <span className="font-display text-2xl font-bold">+{remaining}</span>
+          )}
+          <span className="px-2 text-sm text-muted-foreground">{t('profileViewShelf')}</span>
+        </Link>
       </div>
-    </Link>
+    </section>
   );
 }
 
-/** Preview colecții: pastile „nume · număr". Ascuns dacă nu are colecții. */
+/** Colecțiile ca mici carduri: nume, număr și o fâșie de coperți. */
 function CollectionsPreview() {
   const { t } = useTranslation();
 
@@ -327,16 +486,36 @@ function CollectionsPreview() {
   if (!collections.data || collections.data.length === 0) return null;
 
   return (
-    <section className="mt-6">
-      <h2 className="font-semibold">{t('collectionsTitle')}</h2>
-      <div className="mt-2.5 flex flex-wrap gap-[7px]">
-        {collections.data.slice(0, 6).map((collection) => (
+    <section className="mt-8">
+      <SectionHeader title={t('collectionsTitle')} to="/collections" />
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {collections.data.slice(0, 3).map((collection) => (
           <Link
             key={collection.id}
             to={`/collections/${collection.id}`}
-            className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted"
+            className="rounded-[14px] border border-border bg-card p-3.5 transition-colors hover:bg-muted/40"
           >
-            {collection.name} · {collection.bookCount}
+            <div className="flex items-start gap-2.5">
+              <Library size={20} className="mt-0.5 shrink-0 text-accent" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{collection.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('profileCollectionBooks', { count: collection.bookCount })}
+                </p>
+              </div>
+            </div>
+            {collection.books.length > 0 && (
+              <div className="mt-3 flex gap-1.5">
+                {collection.books.slice(0, 5).map((book) => (
+                  <div
+                    key={book.id}
+                    className="aspect-[2/3] w-[34px] shrink-0 overflow-hidden rounded-[3px] bg-muted"
+                  >
+                    <BookCover url={book.coverUrl} title={book.title} />
+                  </div>
+                ))}
+              </div>
+            )}
           </Link>
         ))}
       </div>
@@ -345,8 +524,8 @@ function CollectionsPreview() {
 }
 
 /**
- * „Activitate recentă": ultimele patru cărți adăugate în bibliotecă. Text la
- * stânga, vârstă relativă la dreapta - format compact, ca un timeline.
+ * „Activitate recentă": ultimele cărți adăugate, fiecare cu mini-coperta ei -
+ * profilul arată viu, nu ca un tabel.
  */
 function RecentActivityPreview() {
   const { t } = useTranslation();
@@ -360,19 +539,37 @@ function RecentActivityPreview() {
   if (events.length === 0) return null;
 
   return (
-    <section className="mt-6">
-      <h2 className="font-semibold">{t('profileRecentActivity')}</h2>
-      <ul className="mt-2.5 flex flex-col gap-2.5">
-        {events.map((item) => (
-          <li key={item.id} className="flex items-center gap-3 text-[12.5px]">
-            <span className="min-w-0 flex-1 truncate text-muted-foreground">
-              {t('profileActivityAdded')} <span className="text-foreground">{item.book.title}</span>
-            </span>
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {relativeAge(item.createdAt)}
-            </span>
-          </li>
-        ))}
+    <section className="mt-8">
+      <SectionHeader title={t('profileRecentActivity')} to="/library" />
+      <ul className="mt-2 divide-y divide-border">
+        {events.map((item) => {
+          // Titlul e bold în mijlocul propoziției, iar ordinea cuvintelor
+          // diferă între limbi - deci se taie traducerea în jurul lui.
+          const [before, after = ''] = t('profileActivityAddedToShelf', {
+            title: '\u0000',
+          }).split('\u0000');
+          return (
+            <li key={item.id}>
+              <Link to={`/books/${item.id}`} className="flex items-center gap-3 py-2.5 hover:bg-muted/30">
+                <div className="aspect-[2/3] w-7 shrink-0 overflow-hidden rounded-[3px] bg-muted">
+                  <BookCover
+                    url={item.mainPhotoUrl ?? item.book.coverUrl}
+                    fallbackUrl={item.book.coverUrl}
+                    title={item.book.title}
+                  />
+                </div>
+                <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+                  {before}
+                  <span className="font-medium text-foreground">{item.book.title}</span>
+                  {after}
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {relativeAge(item.createdAt)}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
@@ -391,31 +588,18 @@ function relativeAge(iso: string): string {
 }
 
 /**
- * Coloana din dreapta, doar pe desktop. Fiecare card e independent: dacă unul
- * n-are date, arată starea goală, restul rămân neatinse.
+ * Coloana din dreapta, doar pe ecran lat. „Despre mine" și informațiile de
+ * cont, apoi cardul de cititor.
  */
 function SideCards({ me }: { me: AppUser }) {
   const { t, i18n } = useTranslation();
-
-  const wishlist = useQuery({
-    queryKey: listsKeys.wishlist(),
-    queryFn: ({ signal }) => wishlistRepository.list(signal),
-  });
-
-  const shelf = useQuery({
-    queryKey: booksKeys.myLibrary(),
-    queryFn: ({ signal }) => booksRepository.getMyLibrary(signal),
-  });
-
   const bio = me.bio?.trim();
-  const genres = me.readingStats?.topGenres?.slice(0, 3) ?? [];
-  const finishedCount = me.readingStats?.totalListed ?? (shelf.data?.length ?? 0);
 
   return (
     <>
       <Card>
         <div className="flex items-start gap-2">
-          <h2 className="min-w-0 flex-1 font-semibold">{t('profileAboutMe')}</h2>
+          <h2 className="min-w-0 flex-1 font-display text-lg font-bold">{t('profileAboutMe')}</h2>
           <Link
             to="/profile/edit"
             aria-label={t('profileEditProfile')}
@@ -461,35 +645,85 @@ function SideCards({ me }: { me: AppUser }) {
         </ul>
       </Card>
 
-      <Card>
-        <h2 className="mb-3 font-semibold">{t('profileStatsTitle')}</h2>
-        <div className="grid grid-cols-2 gap-2">
-          <StatTile value={finishedCount} label={t('profileStatBooksRead')} />
-          <StatTile value={me.booksExchangedCount} label={t('profileStatSwaps')} />
-          <StatTile value={me.booksSharedCount} label={t('profileStatBooksShared')} />
-          <StatTile value={wishlist.data?.length ?? 0} label={t('profileStatWishlisted')} />
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="mb-3 font-semibold">{t('profileTopGenresTitle')}</h2>
-        {genres.length === 0 ? (
-          <p className="flex items-start gap-2 text-[13px] text-muted-foreground">
-            <BookOpen size={18} className="mt-0.5 shrink-0" />
-            {t('profileTopGenresEmpty')}
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {genres.map((genre: GenreCount) => (
-              <li key={genre.genre} className="flex items-center justify-between gap-3">
-                <span className="min-w-0 truncate">{genre.genre}</span>
-                <span className="shrink-0 text-muted-foreground">{genre.count}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      <ReadingProfileCard me={me} />
+      <BadgesCard achievements={me.achievements ?? []} />
     </>
+  );
+}
+
+/**
+ * „Profil de cititor": statistici și genuri într-un singur card, în locul a
+ * două dreptunghiuri separate. Deliberat fără cărți/schimburi/rating - acelea
+ * sunt deja în header, iar aici ar apărea a doua oară.
+ */
+function ReadingProfileCard({ me }: { me: AppUser }) {
+  const { t } = useTranslation();
+
+  const wishlist = useQuery({
+    queryKey: listsKeys.wishlist(),
+    queryFn: ({ signal }) => wishlistRepository.list(signal),
+  });
+  const shelf = useQuery({
+    queryKey: shelfKeys.bookshelf(),
+    queryFn: ({ signal }) => shelfRepository.mine(signal),
+  });
+  const challenge = useQuery({
+    queryKey: profileKeys.readingChallenge(),
+    queryFn: ({ signal }) => profileRepository.readingChallenge(signal),
+  });
+
+  const genres = me.readingStats?.topGenres?.slice(0, 3) ?? [];
+  const maxGenre = Math.max(1, ...genres.map((genre) => genre.count));
+
+  return (
+    <Card>
+      <h2 className="mb-3 font-display text-lg font-bold">{t('profileReadingProfile')}</h2>
+      <div className="grid grid-cols-2 gap-2">
+        <StatTile
+          icon={<BookOpenCheck size={20} />}
+          value={challenge.data?.progress ?? 0}
+          label={t('profileStatReadThisYear')}
+        />
+        <StatTile
+          icon={<BookMarked size={20} />}
+          value={shelf.data?.finished.length ?? 0}
+          label={t('profileStatFinishedAll')}
+        />
+        <StatTile
+          icon={<BookOpen size={20} />}
+          value={shelf.data?.wantToRead.length ?? 0}
+          label={t('profileStatWantToRead')}
+        />
+        <StatTile
+          icon={<Heart size={20} />}
+          value={wishlist.data?.length ?? 0}
+          label={t('profileStatWishlisted')}
+        />
+      </div>
+
+      <h3 className="mb-2 mt-5 font-display font-bold">{t('profileTopGenresTitle')}</h3>
+      {genres.length === 0 ? (
+        <p className="flex items-start gap-2 text-[13px] text-muted-foreground">
+          <BookOpen size={18} className="mt-0.5 shrink-0" />
+          {t('profileTopGenresEmpty')}
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-2.5">
+          {genres.map((genre: GenreCount) => (
+            <li key={genre.genre} className="grid grid-cols-[minmax(0,7rem)_1fr_1.5rem] items-center gap-3 text-sm">
+              <span className="truncate">{genre.genre}</span>
+              <span className="h-2 overflow-hidden rounded-full bg-muted">
+                <span
+                  className="block h-full rounded-full bg-accent"
+                  style={{ width: `${(genre.count / maxGenre) * 100}%` }}
+                />
+              </span>
+              <span className="text-right text-muted-foreground">{genre.count}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }
 
@@ -517,11 +751,22 @@ function InfoRow({
   );
 }
 
-function StatTile({ value, label }: { value: number; label: string }) {
+function StatTile({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+}) {
   return (
-    <div className="rounded-[12px] bg-muted/50 p-3 text-center">
-      <p className="font-display text-xl font-bold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="flex items-center gap-3 rounded-[12px] bg-muted/50 p-3">
+      <span className="shrink-0 text-muted-foreground">{icon}</span>
+      <span className="min-w-0">
+        <span className="block font-display text-xl font-bold leading-tight">{value}</span>
+        <span className="block text-xs leading-tight text-muted-foreground">{label}</span>
+      </span>
     </div>
   );
 }

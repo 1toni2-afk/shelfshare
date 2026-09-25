@@ -169,6 +169,13 @@ export class ProfileController {
     return this.profileService.getSellerAnalytics(userId!);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/compatibility')
+  getCompatibility(@Req() req: Request, @Param('userId') userId: string) {
+    const { userId: viewerId } = req.user as AuthenticatedUser;
+    return this.profileService.getCompatibility(viewerId!, userId);
+  }
+
   @Get(':userId')
   getPublicProfile(@Param('userId') userId: string) {
     return this.profileService.getPublicProfile(userId);
