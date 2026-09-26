@@ -3,9 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { bookRequestsRepository, shelfKeys, type BookRequestStatus } from './shelfRepository';
-import { Button, ErrorNotice, Field, Spinner } from '@/components/ui';
+import { Button, CloseButton, ErrorNotice, Field, Spinner } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/utils/time';
 import { cn } from '@/lib/utils/cn';
 
@@ -169,14 +169,11 @@ export function BookRequestsScreen() {
               )}
 
               {request.status === 'PENDING' && (
-                <button
+                <CloseButton
                   onClick={() => cancel.mutate(request.id)}
-                  aria-label={t('commonCancel')}
-                  title={t('commonCancel')}
-                  className="shrink-0 rounded-[12px] p-2.5 text-muted-foreground hover:bg-muted hover:text-danger-text"
-                >
-                  <X size={18} />
-                </button>
+                  label={t('commonCancel')}
+                  className="hover:text-danger-text"
+                />
               )}
             </li>
           ))}

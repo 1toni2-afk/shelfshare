@@ -18,7 +18,6 @@ import {
   Star,
   UserMinus,
   UserPlus,
-  X,
 } from 'lucide-react';
 import {
   followRepository,
@@ -32,7 +31,7 @@ import { BookCard } from '@/features/books/BookCard';
 import { BookGrid } from '@/features/books/BookGrid';
 import { BookCover } from '@/components/ui/BookCover';
 import { Avatar } from '@/components/ui/Avatar';
-import { Button, ErrorNotice, Spinner } from '@/components/ui';
+import { Button, CloseButton, ErrorNotice, Spinner } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useDocumentMeta } from '@/lib/seo/useDocumentMeta';
@@ -613,13 +612,7 @@ function ReviewsDialog({
           <h2 className="flex-1 font-display text-lg font-bold">
             {rating.toFixed(1)} · {t('publicProfileReviewsLink', { count: reviews.length })}
           </h2>
-          <button
-            onClick={onClose}
-            aria-label={t('commonClose')}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
-          >
-            <X size={20} />
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
         <div className="overflow-y-auto p-5">
           {reviews.length === 0 ? (

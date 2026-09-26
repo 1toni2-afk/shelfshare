@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
@@ -12,13 +11,12 @@ import {
   Sparkles,
   Trophy,
   Users,
-  X,
 } from 'lucide-react';
+import { CloseButton } from '@/components/ui';
 
 /**
  * Funcțiile aplicației, fiecare cu un „See Demo" care deschide o captură de
- * ecran peste pagină - în același dialog estompat ca poarta de cont, ca omul
- * să vadă cum arată de fapt ecranul înainte să-și facă cont.
+ * ecran peste pagină, în același dialog estompat ca poarta de cont.
  *
  * Capturile stau în `public/demo/<id>.webp` (vezi README-ul de acolo) și se
  * fac pe conturile de demo create de backend/prisma/seed-demo.ts. O captură
@@ -216,22 +214,21 @@ function FeatureDemoDialog({ feature, onClose }: { feature: Feature; onClose: ()
         className="absolute inset-0 bg-background/70 backdrop-blur-md"
       />
 
-      <div className="relative flex max-h-[92dvh] w-full max-w-[880px] flex-col overflow-hidden rounded-t-[20px] border border-border bg-card shadow-xl min-[560px]:rounded-[20px]">
-        <button
-          onClick={onClose}
-          aria-label={t('commonClose', 'Închide')}
-          className="absolute right-3 top-3 z-10 rounded-full bg-card/80 p-2 text-muted-foreground hover:bg-muted"
-        >
-          <X size={18} />
-        </button>
+      <div className="relative flex max-h-[92dvh] w-full max-w-[min(880px,calc(92dvh-170px))] flex-col overflow-hidden rounded-t-[20px] border border-border bg-card shadow-xl min-[560px]:rounded-[20px]">
+        <CloseButton onClick={onClose} className="absolute right-3 top-3 z-10" />
 
+        {/*
+          Capturile sunt pătrate (1600x1600). Zona pornește pătrată și se
+          strânge cât să încapă textul sub 92dvh; imaginea, absolută și cu
+          `object-contain`, se vede mereu întreagă - fără scroll în dialog.
+        */}
         {!imageFailed && (
-          <div className="min-h-0 flex-1 overflow-auto bg-muted">
+          <div className="relative aspect-square min-h-0 w-full shrink bg-muted">
             <img
               src={`/demo/${feature.id}.webp`}
               alt={feature.title}
               onError={() => setImageFailed(true)}
-              className="mx-auto block h-auto w-full"
+              className="absolute inset-0 size-full object-contain"
             />
           </div>
         )}
@@ -244,23 +241,6 @@ function FeatureDemoDialog({ feature, onClose }: { feature: Feature; onClose: ()
             <h2 className="font-display text-xl font-bold">{feature.title}</h2>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.text}</p>
-
-          <div className="mt-5 flex flex-col gap-2 min-[560px]:flex-row">
-            <Link
-              to="/register"
-              onClick={onClose}
-              className="rounded-[12px] bg-primary px-6 py-3 text-center text-[15px] font-bold text-primary-foreground hover:brightness-110"
-            >
-              {t('guestGateRegister', 'Creează cont gratuit')}
-            </Link>
-            <Link
-              to="/login"
-              onClick={onClose}
-              className="rounded-[12px] border border-border px-6 py-3 text-center text-[15px] font-bold text-foreground hover:bg-muted"
-            >
-              {t('guestGateLogin', 'Am deja cont')}
-            </Link>
-          </div>
         </div>
       </div>
     </div>

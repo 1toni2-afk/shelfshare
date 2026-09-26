@@ -17,11 +17,11 @@ import {
   Sparkles,
   Sprout,
   Trophy,
-  X,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import type { Achievement } from '@/types/models';
+import { CloseButton } from '@/components/ui';
 
 /** Iconița fiecărei insigne. O cheie necunoscută (insignă nouă) primește trofeul. */
 const BADGE_ICONS: Record<string, LucideIcon> = {
@@ -160,13 +160,7 @@ function BadgesDialog({
       <div className="relative flex max-h-[80vh] w-full max-w-[480px] flex-col rounded-[20px] bg-card">
         <div className="flex items-center gap-3 border-b border-border p-5">
           <h2 className="flex-1 font-display text-lg font-bold">{t('profileBadgesTitle')}</h2>
-          <button
-            onClick={onClose}
-            aria-label={t('commonClose')}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
-          >
-            <X size={20} />
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
         <div className="flex flex-col gap-6 overflow-y-auto p-5">
           {earned.length > 0 && (

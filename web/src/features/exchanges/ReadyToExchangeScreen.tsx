@@ -16,7 +16,6 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
-  X,
 } from 'lucide-react';
 import {
   exchangeKeys,
@@ -27,7 +26,7 @@ import {
 } from './exchangesRepository';
 import { Avatar } from '@/components/ui/Avatar';
 import { BookCover } from '@/components/ui/BookCover';
-import { Button, ErrorNotice, Spinner } from '@/components/ui';
+import { Button, CloseButton, ErrorNotice, Spinner } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api/client';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -755,13 +754,7 @@ function SafetyDialog({
         className="absolute inset-0 bg-background/70 backdrop-blur-md"
       />
       <div className="relative max-h-[90dvh] w-full max-w-[480px] overflow-y-auto rounded-t-[20px] border border-border bg-card p-6 shadow-xl min-[560px]:rounded-[20px]">
-        <button
-          onClick={onClose}
-          aria-label={t('commonClose')}
-          className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-muted"
-        >
-          <X size={18} />
-        </button>
+        <CloseButton onClick={onClose} className="absolute right-3 top-3" />
 
         <span className="inline-flex rounded-[12px] bg-accent/15 p-2.5 text-accent">
           <ShieldCheck size={22} />

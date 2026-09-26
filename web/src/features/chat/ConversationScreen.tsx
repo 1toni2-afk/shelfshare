@@ -3,12 +3,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HeaderAction, ScreenHeader } from '@/components/layout/ScreenHeader';
-import { ImageOff, ImagePlus, MoreVertical, Search, Send, X } from 'lucide-react';
+import { ImageOff, ImagePlus, MoreVertical, Search, Send } from 'lucide-react';
 import { chatKeys, chatRepository, type ChatMessage } from './chatRepository';
 import { ReportReasonDialog } from '@/components/ui/ReportReasonDialog';
 import { chatSocket } from '@/lib/socket/chatSocket';
 import { Avatar } from '@/components/ui/Avatar';
-import { ErrorNotice, Spinner } from '@/components/ui';
+import { CloseButton, ErrorNotice, Spinner } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { formatDay, formatTime } from '@/lib/utils/time';
@@ -628,13 +628,7 @@ function ConversationSearch({
           aria-label={t('chatSearchInConversation')}
           className="min-w-0 flex-1 bg-transparent py-1.5 focus:outline-none"
         />
-        <button
-          onClick={onClose}
-          aria-label={t('commonClose')}
-          className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-muted"
-        >
-          <X size={18} />
-        </button>
+        <CloseButton onClick={onClose} size={16} className="p-1.5" />
       </div>
 
       {debounced.length >= 2 && (

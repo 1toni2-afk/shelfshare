@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
-import { Spinner } from '@/components/ui';
+import { CloseButton, Spinner } from '@/components/ui';
 import { cn } from '@/lib/utils/cn';
 
 export type ReportReason =
@@ -68,13 +67,7 @@ export function ReportReasonDialog({
       <div className="relative w-full max-w-[420px] rounded-[20px] bg-card p-5">
         <div className="flex items-center gap-3">
           <h2 className="flex-1 font-display text-lg font-bold">{title ?? t('reportDialogTitle')}</h2>
-          <button
-            onClick={onClose}
-            aria-label={t('commonClose')}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
-          >
-            <X size={20} />
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
 
         <div className="mt-3 flex flex-col">

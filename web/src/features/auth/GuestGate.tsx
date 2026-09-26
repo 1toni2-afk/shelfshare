@@ -9,10 +9,11 @@ import {
 } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Lock, X } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { BrandMark } from '@/components/ui/BrandMark';
 import { useAuth } from './AuthProvider';
 import { cn } from '@/lib/utils/cn';
+import { CloseButton } from '@/components/ui';
 
 /**
  * „Poarta" vizitatorului fără cont.
@@ -116,13 +117,7 @@ function GuestGateDialog({ onClose }: { onClose: () => void }) {
       />
 
       <div className="relative w-full max-w-[420px] rounded-t-[20px] border border-border bg-card p-6 shadow-xl min-[560px]:rounded-[20px]">
-        <button
-          onClick={onClose}
-          aria-label={t('commonClose', 'Închide')}
-          className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-muted"
-        >
-          <X size={18} />
-        </button>
+        <CloseButton onClick={onClose} className="absolute right-3 top-3" />
 
         <BrandMark size={42} />
 

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { booksKeys, booksRepository } from '@/features/books/booksRepository';
 import { BookCover } from '@/components/ui/BookCover';
-import { Spinner } from '@/components/ui';
+import { CloseButton, Spinner } from '@/components/ui';
 import type { Book } from '@/types/models';
 
 /** Câte cărți are teancul de probă. */
@@ -423,13 +423,7 @@ function MatchCard({
               {book.author && <p className="mt-0.5 text-sm text-muted-foreground">{book.author}</p>}
               {meta && <p className="mt-1 text-xs text-muted-foreground">{meta}</p>}
             </div>
-            <button
-              onClick={onCloseInfo}
-              aria-label={t('commonClose', 'Închide')}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
-            >
-              <X size={18} />
-            </button>
+            <CloseButton onClick={onCloseInfo} size={16} className="p-1.5" />
           </div>
           <p className="mt-4 min-h-0 flex-1 overflow-y-auto text-sm leading-relaxed">
             {book.description || t('landingMatchDemoNoDescription', 'Cartea nu are încă o descriere.')}

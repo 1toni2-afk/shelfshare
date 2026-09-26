@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 /**
@@ -124,6 +125,36 @@ export function Field({
         hint && <p className="text-sm text-muted-foreground">{hint}</p>
       )}
     </div>
+  );
+}
+
+/**
+ * Butonul „X" de închidere: cerc cu contur subțire, în același stil ca
+ * pastilele „See Demo" - un singur aspect pentru toate dialogurile și
+ * panourile, nu câte o variantă per ecran.
+ */
+export function CloseButton({
+  label,
+  size = 18,
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; size?: number }) {
+  const { t } = useTranslation();
+  const text = label ?? t('commonClose', 'Închide');
+  return (
+    <button
+      type="button"
+      aria-label={text}
+      title={text}
+      className={cn(
+        'inline-flex shrink-0 items-center justify-center rounded-full border border-border bg-card p-2',
+        'text-foreground transition hover:bg-muted',
+        className,
+      )}
+      {...props}
+    >
+      <X size={size} />
+    </button>
   );
 }
 

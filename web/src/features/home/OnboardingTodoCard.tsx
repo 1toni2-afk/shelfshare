@@ -9,7 +9,6 @@ import {
   PlayCircle,
   SlidersHorizontal,
   Upload,
-  X,
 } from 'lucide-react';
 import {
   ONBOARDING_TODOS,
@@ -19,6 +18,7 @@ import {
 } from './onboardingTodo';
 import { useOpenShortcutsEditor } from '@/components/layout/AppShell';
 import { cn } from '@/lib/utils/cn';
+import { CloseButton } from '@/components/ui';
 
 /**
  * „Descoperă ShelfShare" - lista de bifat a celui abia venit, sus în feed,
@@ -77,14 +77,7 @@ export function OnboardingTodoCard() {
           <p className="mt-0.5 text-xs text-muted-foreground">{t('todoSubtitle')}</p>
         </div>
 
-        <button
-          onClick={() => dismiss.mutate()}
-          title={t('todoDismiss')}
-          aria-label={t('todoDismiss')}
-          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <X size={18} />
-        </button>
+        <CloseButton onClick={() => dismiss.mutate()} label={t('todoDismiss')} size={16} className="p-1.5" />
       </div>
 
       <div className="mt-1">

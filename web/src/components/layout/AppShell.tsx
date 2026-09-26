@@ -49,6 +49,7 @@ import {
 } from './sidebarShortcuts';
 import { useCompleteOnboardingTodo } from '@/features/home/onboardingTodo';
 import { staticPageUrl, type StaticPageSlug } from '@/lib/staticPages';
+import { CloseButton } from '@/components/ui';
 
 /** kSidebarBreakpoint din main_scaffold.dart. */
 const DESKTOP_BREAKPOINT = 900;
@@ -387,9 +388,7 @@ function SidebarContent({
         <span className="font-display text-base font-bold">ShelfShare</span>
         <OnlineUsersBadge />
         {onClose && (
-          <button onClick={onClose} aria-label={t('navCloseMenu')} className="ml-auto p-1">
-            <X size={18} />
-          </button>
+          <CloseButton onClick={onClose} label={t('navCloseMenu')} size={16} className="ml-auto p-1.5" />
         )}
       </div>
 
