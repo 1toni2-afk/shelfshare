@@ -10,6 +10,8 @@ import { CaptchaService } from '../common/captcha/captcha.service';
 import { AttemptGuardService } from '../common/captcha/attempt-guard.service';
 import { SecurityEventsService } from '../security-events/security-events.service';
 import { RevokedTokenService } from '../common/security/revoked-token.service';
+import { UserSessionsService } from '../common/security/user-sessions.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 jest.mock('bcrypt');
 
@@ -19,6 +21,15 @@ describe('AuthService', () => {
   let service: AuthService;
   let users: jest.Mocked<UsersService>;
   let mail: jest.Mocked<MailService>;
+  const prisma = {
+    refreshSession: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      deleteMany: jest.fn(),
+    },
+  };
+  const userSessions = { revokeAll: jest.fn() };
 
   const baseUser = {
     id: 'user-1',
@@ -26,6 +37,7 @@ describe('AuthService', () => {
     password: 'hashed-password',
     isEmailVerified: true,
     isAdmin: false,
+    isBanned: false,
     refreshTokenHash: null,
     resetPasswordExpiry: null,
     emailVerifyExpiry: null,
@@ -52,7 +64,12 @@ describe('AuthService', () => {
         },
         {
           provide: JwtService,
-          useValue: { sign: jest.fn().mockReturnValue('signed-token') },
+          useValue: {
+            sign: jest.fn().mockReturnValue('signed-token'),
+            decode: jest
+              .fn()
+              .mockReturnValue({ exp: Math.floor(Date.now() / 1000) + 3600 }),
+          },
         },
         {
           provide: ConfigService,
@@ -86,6 +103,8 @@ describe('AuthService', () => {
             isRevoked: jest.fn().mockReturnValue(false),
           },
         },
+        { provide: PrismaService, useValue: prisma },
+        { provide: UserSessionsService, useValue: userSessions },
       ],
     }).compile();
 
@@ -287,12 +306,29 @@ describe('AuthService', () => {
       expect(result.refreshToken).toBe('signed-token');
       expect(result.user.email).toBe(baseUser.email);
       expect(result.user.isAdmin).toBe(false);
-      expect(users.update).toHaveBeenCalledWith(
+      // O sesiune nouă per login; hash-ul vechi nu se mai scrie (bcrypt taie
+      // JWT-ul la 72 de octeți, deci se potrivea cu orice token vechi).
+      expect(prisma.refreshSession.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ userId: baseUser.id }) as unknown,
+      });
+      expect(users.update).not.toHaveBeenCalledWith(
         baseUser.id,
         expect.objectContaining({
-          refreshTokenHash: expect.any(String) as unknown,
+          refreshTokenHash: expect.anything() as unknown,
         }),
       );
+    });
+
+    it('respinge un cont banat, chiar cu parola corecta', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        isBanned: true,
+      } as never);
+
+      await expect(
+        service.login({ email: baseUser.email, password: 'parola123' }, IP),
+      ).rejects.toThrow('suspendat');
+      expect(prisma.refreshSession.create).not.toHaveBeenCalled();
     });
   });
 
@@ -330,6 +366,71 @@ describe('AuthService', () => {
       const result = await service.refresh(baseUser.id, 'correct-token');
 
       expect(result.accessToken).toBe('signed-token');
+      // Token-ul vechi (fără sid) e mutat pe loc într-o sesiune.
+      expect(prisma.refreshSession.create).toHaveBeenCalled();
+    });
+
+    it('prelungeste sesiunea cand token-ul are sid', async () => {
+      users.findById.mockResolvedValue(baseUser as never);
+      prisma.refreshSession.findUnique.mockResolvedValue({
+        id: 'sid-1',
+        userId: baseUser.id,
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+
+      const result = await service.refresh(baseUser.id, 'token', 'sid-1');
+
+      expect(result.refreshToken).toBe('signed-token');
+      expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'sid-1', userId: baseUser.id },
+        }),
+      );
+      expect(bcrypt.compare).not.toHaveBeenCalled();
+    });
+
+    it('respinge o sesiune stearsa (logout, ban, parola resetata)', async () => {
+      users.findById.mockResolvedValue(baseUser as never);
+      prisma.refreshSession.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.refresh(baseUser.id, 'token', 'sid-1'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('respinge sesiunea altui user', async () => {
+      users.findById.mockResolvedValue(baseUser as never);
+      prisma.refreshSession.findUnique.mockResolvedValue({
+        id: 'sid-1',
+        userId: 'altcineva',
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+
+      await expect(
+        service.refresh(baseUser.id, 'token', 'sid-1'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('respinge refresh-ul unui user banat', async () => {
+      users.findById.mockResolvedValue({
+        ...baseUser,
+        isBanned: true,
+      } as never);
+
+      await expect(
+        service.refresh(baseUser.id, 'token', 'sid-1'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('logout', () => {
+    it('inchide doar sesiunea dispozitivului curent', async () => {
+      await service.logout(baseUser.id, 'jti-1', 123, 'sid-1');
+
+      expect(prisma.refreshSession.deleteMany).toHaveBeenCalledWith({
+        where: { id: 'sid-1', userId: baseUser.id },
+      });
+      expect(users.update).not.toHaveBeenCalled();
     });
   });
 
@@ -352,6 +453,28 @@ describe('AuthService', () => {
       await expect(
         service.verifyResetCode(baseUser.email, '000000'),
       ).rejects.toThrow('Cod de resetare invalid');
+    });
+
+    it('anuleaza codul dupa prea multe incercari gresite pe acelasi cont', async () => {
+      users.findByEmail.mockResolvedValue({
+        ...baseUser,
+        resetPasswordToken: '123456',
+        resetPasswordExpiry: new Date(Date.now() + 1000 * 60 * 60),
+      } as never);
+
+      for (let i = 0; i < 4; i++) {
+        await expect(
+          service.verifyResetCode(baseUser.email, '000000'),
+        ).rejects.toThrow('Cod de resetare invalid');
+      }
+      // A cincea: plafonul, pe oricare din cele două rute care primesc codul.
+      await expect(
+        service.resetPassword(baseUser.email, '000000', 'parolaNoua1', IP),
+      ).rejects.toThrow('Prea multe');
+      expect(users.update).toHaveBeenCalledWith(baseUser.id, {
+        resetPasswordToken: null,
+        resetPasswordExpiry: null,
+      });
     });
 
     it('respinge un cod expirat', async () => {
@@ -418,11 +541,10 @@ describe('AuthService', () => {
 
       expect(users.update).toHaveBeenCalledWith(
         baseUser.id,
-        expect.objectContaining({
-          refreshTokenHash: null,
-          resetPasswordToken: null,
-        }),
+        expect.objectContaining({ resetPasswordToken: null }),
       );
+      // Toate sesiunile, token-urile de acces și socket-urile - nu doar hash-ul.
+      expect(userSessions.revokeAll).toHaveBeenCalledWith(baseUser.id);
       expect(result.message).toContain('succes');
     });
   });

@@ -12,8 +12,31 @@ import { Injectable } from '@nestjs/common';
 export class RevokedTokenService {
   private revoked = new Map<string, number>(); // jti -> exp (seconds since epoch)
 
+  // userId -> seconds since epoch. Every access token issued to that user
+  // BEFORE this moment is invalid (ban, password reset) - otherwise a banned
+  // user, or whoever stole a session, kept working for the rest of the
+  // token's 15 minutes, and kept an open chat socket indefinitely.
+  private userCutoffs = new Map<string, number>();
+
   revoke(jti: string, exp: number) {
     this.revoked.set(jti, exp);
+  }
+
+  revokeAllForUser(userId: string) {
+    this.userCutoffs.set(userId, Math.floor(Date.now() / 1000));
+  }
+
+  /**
+   * `iat < cutoff`, strictly: a token issued in the same second as the cutoff
+   * is the fresh login that FOLLOWS a password reset, and must keep working.
+   */
+  isRevokedForUser(
+    userId: string | undefined,
+    iat: number | undefined,
+  ): boolean {
+    if (!userId || iat == null) return false;
+    const cutoff = this.userCutoffs.get(userId);
+    return cutoff != null && iat < cutoff;
   }
 
   isRevoked(jti: string | undefined): boolean {

@@ -108,16 +108,16 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(@Req() req: Request) {
-    const { userId, refreshToken } = req.user as AuthenticatedUser;
-    return this.authService.refresh(userId!, refreshToken!);
+    const { userId, refreshToken, sid } = req.user as AuthenticatedUser;
+    return this.authService.refresh(userId!, refreshToken!, sid);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@Req() req: Request) {
-    const { userId, jti, exp } = req.user as AuthenticatedUser;
-    return this.authService.logout(userId!, jti, exp);
+    const { userId, jti, exp, sid } = req.user as AuthenticatedUser;
+    return this.authService.logout(userId!, jti, exp, sid);
   }
 
   // ---------- Google OAuth ----------

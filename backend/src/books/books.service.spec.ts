@@ -10,6 +10,7 @@ import { ListingScoreService } from './listing-score.service';
 import { SavedSearchesService } from '../saved-searches/saved-searches.service';
 import { ReviewsService } from '../reviews/reviews.service';
 import { StoresService } from '../stores/stores.service';
+import { CatalogMatchService } from './catalog-match.service';
 import { ROMANIAN_CITY_COORDINATES } from '../common/constants/romanian-city-coordinates';
 
 describe('BooksService', () => {
@@ -57,6 +58,7 @@ describe('BooksService', () => {
         },
         { provide: FollowService, useValue: {} },
         { provide: StoresService, useValue: {} },
+        { provide: CatalogMatchService, useValue: { findByTitle: jest.fn().mockResolvedValue(null) } },
         { provide: ReviewsService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: lookup },

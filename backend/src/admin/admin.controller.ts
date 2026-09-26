@@ -37,9 +37,12 @@ export class AdminController {
   /// Contorul „online acum" din bara laterală a panoului de admin. Starea e
   /// în memoria procesului (PresenceService), deci răspunsul e instant și nu
   /// atinge baza decât pentru numele din `sample`.
+  ///
+  /// Userul care întreabă e scos din numărătoare - vezi getOnlinePresence.
   @Get('stats/online')
-  getOnlinePresence() {
-    return this.adminService.getOnlinePresence();
+  getOnlinePresence(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.adminService.getOnlinePresence(userId);
   }
 
   @Get('stats/marketplace')

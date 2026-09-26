@@ -10,6 +10,7 @@ import { ListingScoreService } from './listing-score.service';
 import { SavedSearchesService } from '../saved-searches/saved-searches.service';
 import { ReviewsService } from '../reviews/reviews.service';
 import { StoresService } from '../stores/stores.service';
+import { CatalogMatchService } from './catalog-match.service';
 
 /**
  * Importul CSV din „Cărțile mele" citește rafturile Goodreads/StoryGraph.
@@ -80,6 +81,7 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
         { provide: ListingScoreService, useValue: {} },
         { provide: SavedSearchesService, useValue: {} },
         { provide: StoresService, useValue: {} },
+        { provide: CatalogMatchService, useValue: { findByTitle: jest.fn().mockResolvedValue(null) } },
       ],
     }).compile();
 
@@ -145,6 +147,22 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
     expect(result.favorited).toHaveLength(0);
     expect(result.shelved).toHaveLength(0);
     expect(prisma.userBook.create).toHaveBeenCalled();
+  });
+
+  it('un raft pe care nu-l intelegem („did-not-finish") se sare, nu devine anunt', async () => {
+    const result = await service.importListingsCsv(
+      'user-1',
+      csv('Title,Read Status\nDune,did-not-finish\nSolaris,scoala\n'),
+    );
+
+    expect(result.skipped).toEqual([
+      { title: 'Dune', shelf: 'did-not-finish' },
+      { title: 'Solaris', shelf: 'scoala' },
+    ]);
+    expect(result.failed).toHaveLength(0);
+    expect(prisma.userBook.create).not.toHaveBeenCalled();
+    expect(prisma.bookshelfEntry.upsert).not.toHaveBeenCalled();
+    expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
   });
 
   it('un CSV fara coloane de raft se comporta exact ca inainte: anunturi', async () => {

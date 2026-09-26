@@ -15,6 +15,7 @@ import { FeatureFlagValueDto } from './dto/set-feature-flags.dto';
 import { ListingScoreService } from '../books/listing-score.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { PresenceService } from '../chat/presence.service';
+import { UserSessionsService } from '../common/security/user-sessions.service';
 
 /// Tabelele din care se scoate seria pe zile a statisticilor de folosire.
 /// Numele sunt cele DIN BAZA (`@@map` din schema.prisma), nu ale modelelor
@@ -44,6 +45,7 @@ export class AdminService {
     private reports: ReportsService,
     private activityLog: ActivityLogService,
     private presence: PresenceService,
+    private userSessions: UserSessionsService,
   ) {}
 
   /**
@@ -55,20 +57,20 @@ export class AdminService {
    * deschisă și pe telefon, și în browser, contează o dată la primul și de
    * două ori la al doilea. Lista de nume e plafonată - contorul din bara
    * laterală are nevoie doar de număr, restul e pentru curiozitate.
+   *
+   * Cine întreabă NU se numără pe sine: adminul are aplicația deschisă exact
+   * ca să vadă contorul, deci se găsea mereu în listă și cifra nu spunea
+   * niciodată dacă mai e cineva pe site.
    */
-  async getOnlinePresence(limit = 20) {
-    const ids = this.presence.onlineUserIds();
-    const users = ids.length
+  async getOnlinePresence(viewerUserId?: string, limit = 20) {
+    const { users, connections, ids } = this.presence.snapshot(viewerUserId);
+    const sample = ids.length
       ? await this.prisma.user.findMany({
           where: { id: { in: ids.slice(0, limit) } },
           select: { id: true, name: true, profileImage: true },
         })
       : [];
-    return {
-      users: this.presence.onlineCount(),
-      connections: this.presence.connectionCount(),
-      sample: users,
-    };
+    return { users, connections, sample };
   }
 
   async getStats() {
@@ -308,11 +310,16 @@ export class AdminService {
       throw new NotFoundException('Utilizator negăsit');
     }
 
-    return this.prisma.user.update({
+    const banned = await this.prisma.user.update({
       where: { id: userId },
       data: { isBanned: true, refreshTokenHash: null },
       select: { id: true, email: true, isBanned: true },
     });
+    // Nu ajunge să blocăm login-ul (AuthService.login verifică isBanned):
+    // sesiunile deschise, token-urile de acces deja emise și socket-ul de chat
+    // mergeau mai departe, deci un user banat continua să scrie mesaje.
+    await this.userSessions.revokeAll(userId);
+    return banned;
   }
 
   async unbanUser(userId: string) {
@@ -484,6 +491,11 @@ export class AdminService {
             hiddenAt: true,
           },
         },
+        // Comentariile din feed (vezi FeedComment) - textul, ca moderatorul
+        // să nu judece un raport fără să vadă ce s-a scris.
+        feedComment: {
+          select: { id: true, text: true, eventKey: true, hiddenAt: true },
+        },
       },
       // OPEN/IN_PROGRESS întâi, ca un moderator să vadă coada de lucru
       // înaintea raportelor deja închise.
@@ -590,6 +602,11 @@ export class AdminService {
             bookId: true,
             hiddenAt: true,
           },
+        },
+        // Comentariile din feed (vezi FeedComment) - textul, ca moderatorul
+        // să nu judece un raport fără să vadă ce s-a scris.
+        feedComment: {
+          select: { id: true, text: true, eventKey: true, hiddenAt: true },
         },
       },
     });

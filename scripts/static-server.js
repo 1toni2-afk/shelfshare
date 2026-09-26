@@ -115,6 +115,21 @@ function fetchJson(url) {
   });
 }
 
+/**
+ * JSON sigur de pus într-un `<script>`. `JSON.stringify` nu escapează `<`,
+ * deci un titlu de carte sau un nume de user cu `</script><script>...` închidea
+ * blocul JSON-LD și rula JavaScript pe shelfshare.ro (XSS stocat). Secvențele
+ * de forma „backslash-u003c" sunt JSON valid și se citesc identic.
+ */
+function jsonForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 function escapeHtml(value) {
   return String(value ?? '').replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 }
@@ -155,22 +170,19 @@ function renderPageHtml(template, meta) {
   const url = escapeHtml(meta.url);
 
   let html = template
-    .replace('<title>ShelfShare</title>', `<title>${title}</title>`)
-    .replace(
-      `content="${DEFAULT_DESCRIPTION}">`,
-      `content="${description}">`,
-    )
-    .replace('href="https://shelfshare.ro/">', `href="${url}">`)
-    .replace('<meta property="og:url" content="https://shelfshare.ro">', `<meta property="og:url" content="${url}">`)
-    .replace('<meta property="og:title" content="ShelfShare">', `<meta property="og:title" content="${title}">`)
-    .replace(`<meta property="og:description" content="${DEFAULT_DESCRIPTION}">`, `<meta property="og:description" content="${description}">`)
-    .replace(`<meta property="og:image" content="${DEFAULT_IMAGE}">`, `<meta property="og:image" content="${image}">`)
-    .replace('<meta name="twitter:title" content="ShelfShare">', `<meta name="twitter:title" content="${title}">`)
-    .replace(`<meta name="twitter:description" content="${DEFAULT_DESCRIPTION}">`, `<meta name="twitter:description" content="${description}">`)
-    .replace(`<meta name="twitter:image" content="${DEFAULT_IMAGE}">`, `<meta name="twitter:image" content="${image}">`);
+    .replace('<title>ShelfShare</title>', () => `<title>${title}</title>`)
+    .replace(`content="${DEFAULT_DESCRIPTION}">`, () => `content="${description}">`)
+    .replace('href="https://shelfshare.ro/">', () => `href="${url}">`)
+    .replace('<meta property="og:url" content="https://shelfshare.ro">', () => `<meta property="og:url" content="${url}">`)
+    .replace('<meta property="og:title" content="ShelfShare">', () => `<meta property="og:title" content="${title}">`)
+    .replace(`<meta property="og:description" content="${DEFAULT_DESCRIPTION}">`, () => `<meta property="og:description" content="${description}">`)
+    .replace(`<meta property="og:image" content="${DEFAULT_IMAGE}">`, () => `<meta property="og:image" content="${image}">`)
+    .replace('<meta name="twitter:title" content="ShelfShare">', () => `<meta name="twitter:title" content="${title}">`)
+    .replace(`<meta name="twitter:description" content="${DEFAULT_DESCRIPTION}">`, () => `<meta name="twitter:description" content="${description}">`)
+    .replace(`<meta name="twitter:image" content="${DEFAULT_IMAGE}">`, () => `<meta name="twitter:image" content="${image}">`);
 
   if (meta.jsonLd) {
-    html = html.replace('</head>', `  <script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>\n</head>`);
+    html = html.replace('</head>', () => `  <script type="application/ld+json">${jsonForScript(meta.jsonLd)}</script>\n</head>`);
   }
 
   // Conținut real, vizibil, randat pe server pentru crawlere - Flutter randează
@@ -179,10 +191,7 @@ function renderPageHtml(template, meta) {
   // dă mai puțină greutate textului ascuns) și eliminat la 'flutter-first-frame'
   // exact ca #splash, ca să nu rămână sub/peste UI-ul real după hidratare.
   if (meta.bodyHtml) {
-    html = html.replace(
-      '<div id="splash">',
-      `<div id="seo-content">${meta.bodyHtml}</div>\n  <div id="splash">`,
-    );
+    html = html.replace('<div id="splash">', () => `<div id="seo-content">${meta.bodyHtml}</div>\n  <div id="splash">`);
   }
   return html;
 }
@@ -343,8 +352,7 @@ Allow: /
 Sitemap: ${siteUrl}/sitemap.xml
 `;
 
-const APP_ADS_TXT = `google.com, pub-7014376175927154, DIRECT, f08c47fec0942fa0
-`;
+const { APP_ADS_TXT } = require('./app-ads');
 
 const mime = {
   '.html': 'text/html',
@@ -397,7 +405,23 @@ function looksLikeFileRequest(reqPath) {
 }
 
 http.createServer((req, res) => {
-  let reqPath = decodeURIComponent(req.url.split('?')[0]);
+  // Un URL cu procente invalide (`/%E0%A4%A`) face `decodeURIComponent` să
+  // arunce, iar un octet nul (`/%00`) face `fs.readFile` să arunce SINCRON.
+  // Amândouă ieșeau din handler ca excepții neprinse și opreau procesul -
+  // un singur request anonim scotea site-ul jos până la repornirea din .bat.
+  let reqPath;
+  try {
+    reqPath = decodeURIComponent(req.url.split('?')[0]);
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad Request');
+    return;
+  }
+  if (reqPath.includes('\0')) {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad Request');
+    return;
+  }
 
   if (reqPath === '/robots.txt') {
     res.writeHead(200, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=3600' });
@@ -481,7 +505,9 @@ http.createServer((req, res) => {
   if (reqPath === '/') reqPath = '/index.html';
   let filePath = path.join(root, reqPath);
 
-  if (!filePath.startsWith(root)) {
+  // `root + sep`, nu doar `root`: altfel `/../web-alt/x` (un director frate
+  // al cărui nume începe la fel) ar trece verificarea.
+  if (filePath !== root && !filePath.startsWith(root + path.sep)) {
     res.writeHead(403);
     res.end('Forbidden');
     return;

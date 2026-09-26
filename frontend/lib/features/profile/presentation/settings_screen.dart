@@ -199,6 +199,17 @@ class _SettingsList extends ConsumerWidget {
                   _SettingsGroupLabel(l10n.profileGroupHelpLegal),
                   _SettingsGroup(
                     children: [
+                      // Primele două: turul vizual scurt și importul. Sunt
+                      // exact pașii din lista „Descoperă ShelfShare" de pe Home, iar
+                      // cine a închis lista trebuie să-i mai găsească undeva.
+                      _SettingsTile(
+                          icon: Icons.play_circle_outline,
+                          label: l10n.tutorialTitle,
+                          onTap: () => context.push('/tutorial')),
+                      _SettingsTile(
+                          icon: Icons.file_upload_outlined,
+                          label: l10n.importTitle,
+                          onTap: () => context.push('/import')),
                       _SettingsTile(
                           icon: Icons.map_outlined,
                           label: l10n.profileRoadmap,

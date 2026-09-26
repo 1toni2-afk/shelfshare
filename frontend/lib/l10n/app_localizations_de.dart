@@ -532,6 +532,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileFeedbackHint => 'Was möchtest du uns mitteilen?';
 
   @override
+  String get feedbackPageIntro =>
+      'Was dir gefallen hat, was dich gestört hat, was fehlt. Schreib frei - wir lesen alles. Ein Screenshot kann mit dabei sein.';
+
+  @override
   String get profileFeedbackThanks => 'Danke für dein Feedback!';
 
   @override
@@ -3464,8 +3468,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String homeNearbyTitle(int km) {
-    return 'În apropierea ta ($km km)';
+    return 'In deiner Nähe ($km km)';
   }
+
+  @override
+  String get homeNearestTitle => 'Am nächsten bei dir';
 
   @override
   String get shareTagsSuggestions => 'Sugestii:';
@@ -3697,6 +3704,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chatFilterArchived => 'Arhivate';
 
   @override
+  String get chatFiltersLabel => 'Filtre conversații';
+
+  @override
+  String get usernameChooseOnceHint =>
+      'Alege cu grijă: username-ul e unic și nu mai poate fi schimbat după ce salvezi.';
+
+  @override
+  String get usernameLockedHint =>
+      'Username-ul a fost ales și nu mai poate fi schimbat.';
+
+  @override
+  String chatSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# de selectate',
+      few: '# selectate',
+      one: '# selectată',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get chatFilterModerator => 'Moderator';
 
   @override
@@ -3746,6 +3776,150 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatSafetyHint =>
       'Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.';
+
+  @override
+  String get chatQuizTitle => 'Kurzer Sicherheitscheck';
+
+  @override
+  String get chatQuizIntro =>
+      'Fünf Situationen, die im Chat wirklich vorkommen. Wähle, was du tun würdest - nach jeder Antwort siehst du die Begründung.';
+
+  @override
+  String get chatQuizStart => 'Test starten';
+
+  @override
+  String chatQuizProgress(int current, int total) {
+    return 'Frage $current von $total';
+  }
+
+  @override
+  String get chatQuizCorrect => 'Richtig';
+
+  @override
+  String get chatQuizWrong => 'Nicht ganz';
+
+  @override
+  String get chatQuizNext => 'Weiter';
+
+  @override
+  String get chatQuizSeeResult => 'Ergebnis ansehen';
+
+  @override
+  String chatQuizScore(int score, int total) {
+    return '$score von $total richtig';
+  }
+
+  @override
+  String get chatQuizResultPerfect =>
+      'Tadellos. Genau so sieht ein sicherer Tausch aus.';
+
+  @override
+  String get chatQuizResultGood =>
+      'Gut gemacht. Lies die Erklärungen zu den verpassten Fragen noch einmal.';
+
+  @override
+  String get chatQuizResultPoor =>
+      'Ein Blick ins Sicherheitscenter lohnt sich vor dem nächsten Tausch.';
+
+  @override
+  String get chatQuizRestart => 'Noch einmal';
+
+  @override
+  String get chatQuizQ1 =>
+      'Jemand will dein Buch und verspricht, das Geld zu schicken, „sobald es ankommt”. Was tust du?';
+
+  @override
+  String get chatQuizQ1A =>
+      'Ich schicke das Buch zuerst - ohne Vertrauen kommt kein Tausch zustande.';
+
+  @override
+  String get chatQuizQ1B =>
+      'Zahlung vor dem Versand, Nachnahme oder persönliche Übergabe.';
+
+  @override
+  String get chatQuizQ1C =>
+      'Ich gebe meine Kartendaten weiter, damit das Geld direkt kommen kann.';
+
+  @override
+  String get chatQuizQ1Explain =>
+      '„Ich zahle, sobald ich es habe” ist der häufigste Betrug auf jeder Tauschplattform. Zahlung vorab, Nachnahme oder persönliche Übergabe sind die Wege, bei denen du nicht ohne Buch und ohne Geld dastehst. Um Geld zu ERHALTEN, braucht niemand deine Kartendaten.';
+
+  @override
+  String get chatQuizQ2 =>
+      'Du bekommst im Chat einen Link zu einer Seite, die wie ShelfShare aussieht und erneut nach E-Mail und Passwort fragt, um „die Lieferung zu bestätigen”.';
+
+  @override
+  String get chatQuizQ2A =>
+      'Ich melde mich schnell an, damit die Lieferung nicht verloren geht.';
+
+  @override
+  String get chatQuizQ2B =>
+      'Ich melde mich an und ändere danach sofort mein Passwort.';
+
+  @override
+  String get chatQuizQ2C =>
+      'Ich öffne den Link nicht, gebe nichts ein und melde die Unterhaltung.';
+
+  @override
+  String get chatQuizQ2Explain =>
+      'ShelfShare fragt dich nie über einen Chat-Link nach deinem Passwort. Eine Seite, die das tut, ist eine Kopie, die dein Konto stehlen soll - ein dort eingegebenes Passwort ist bereits weg, ob du es danach änderst oder nicht.';
+
+  @override
+  String get chatQuizQ3 =>
+      'Ein Nutzer verlangt den Bestätigungscode, den du per E-Mail oder SMS bekommen hast, „um zu bestätigen, dass du eine echte Person bist”.';
+
+  @override
+  String get chatQuizQ3A =>
+      'Ich schicke ihn nie - dieser Code öffnet mein Konto, er bestätigt nichts über mich.';
+
+  @override
+  String get chatQuizQ3B =>
+      'Ich schicke ihn, wenn das Profil gute Bewertungen hat.';
+
+  @override
+  String get chatQuizQ3C => 'Ich schicke ihn, verlange aber auch seinen Code.';
+
+  @override
+  String get chatQuizQ3Explain =>
+      'Bestätigungscodes sind nur für dich. Wer deinen verlangt, will in dein Konto oder eine Aktion in deinem Namen bestätigen, die du nie ausgelöst hast.';
+
+  @override
+  String get chatQuizQ4 =>
+      'Der Tausch ist vereinbart, jetzt müsst ihr euch treffen. Was schlägst du vor?';
+
+  @override
+  String get chatQuizQ4A => 'Bei mir zu Hause - am einfachsten.';
+
+  @override
+  String get chatQuizQ4B =>
+      'An einem öffentlichen, belebten Ort, tagsüber, und ich sage einer nahestehenden Person, wohin ich gehe.';
+
+  @override
+  String get chatQuizQ4C =>
+      'Auf dem Parkplatz hinter dem Haus, abends, damit es ruhig ist.';
+
+  @override
+  String get chatQuizQ4Explain =>
+      'Ein Café, eine Buchhandlung oder eine belebte Haltestelle bei Tageslicht kostet nichts extra und ändert alles, falls etwas nicht stimmt. Deine Wohnadresse bleibt deine.';
+
+  @override
+  String get chatQuizQ5 =>
+      'Bevor überhaupt etwas vereinbart ist, besteht jemand darauf, in eine andere App zu wechseln, und fragt nach deiner vollständigen Adresse.';
+
+  @override
+  String get chatQuizQ5A =>
+      'Ich gebe beides - sonst wirkt es, als würde ich misstrauen.';
+
+  @override
+  String get chatQuizQ5B => 'Ich gebe nur die Adresse, nicht die Nummer.';
+
+  @override
+  String get chatQuizQ5C =>
+      'Ich bleibe im Chat der App, bis wir uns einig sind; die Adresse nur bei Lieferung nach Hause.';
+
+  @override
+  String get chatQuizQ5Explain =>
+      'Eine Unterhaltung in der App kann gemeldet und vom Team geprüft werden, eine verlagerte nicht. Der Druck, die App vor jeder Absprache zu verlassen, ist selbst ein Warnsignal.';
 
   @override
   String get greetReaderFallback => 'Cititorule';
@@ -4861,5 +5035,235 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String storeStockLeft(int count) {
     return '$count Exemplare auf Lager';
+  }
+
+  @override
+  String get importTitle => 'Deine Bücher importieren';
+
+  @override
+  String get importIntro =>
+      'Hol dir deine Bibliothek von Goodreads oder StoryGraph herüber. Kein Konto dort? Füll unsere Vorlage in Excel aus und lade sie hier hoch.';
+
+  @override
+  String get importStep1Title => 'Schritt 1 · Datei besorgen';
+
+  @override
+  String get importStep1Goodreads => 'Aus Goodreads exportieren';
+
+  @override
+  String get importStep1StoryGraph => 'Aus StoryGraph exportieren';
+
+  @override
+  String get importStep1Hint =>
+      'Der Button öffnet deren Seite in einem neuen Tab. Bei Goodreads klickst du auf „Export Library“ und wartest ein paar Minuten auf den Download-Link.';
+
+  @override
+  String get importStep1Template => 'Vorlage herunterladen';
+
+  @override
+  String get importStep1TemplateHint =>
+      'Öffnet sich in Excel oder Google Sheets. Ausfüllen, als CSV speichern und unten hochladen.';
+
+  @override
+  String get importStep2Title => 'Schritt 2 · Datei hochladen';
+
+  @override
+  String get importStep2Choose => 'Datei wählen';
+
+  @override
+  String get importStep2Change => 'Andere Datei';
+
+  @override
+  String get importStep2NoFile => 'Keine Datei gewählt';
+
+  @override
+  String get importStep3Title => 'Schritt 3 · Import starten';
+
+  @override
+  String get importStep3Button => 'Bücher importieren';
+
+  @override
+  String get importRunning =>
+      'Wir arbeiten an deiner Datei. Bitte die Seite nicht schließen.';
+
+  @override
+  String get importResultTitle => 'Fertig';
+
+  @override
+  String get importResultEmpty => 'In dieser Datei war nichts zu importieren.';
+
+  @override
+  String importResultListed(int count) {
+    return '$count im Marktplatz';
+  }
+
+  @override
+  String importResultUpdated(int count) {
+    return '$count aktualisiert';
+  }
+
+  @override
+  String importResultShelved(int count) {
+    return '$count im Regal';
+  }
+
+  @override
+  String importResultFavorited(int count) {
+    return '$count bei den Favoriten';
+  }
+
+  @override
+  String importResultSkipped(int count) {
+    return '$count übersprungen';
+  }
+
+  @override
+  String importResultFailed(int count) {
+    return '$count fehlgeschlagen';
+  }
+
+  @override
+  String get importSkippedTitle => 'Übersprungene Zeilen';
+
+  @override
+  String importSkippedShelf(String shelf) {
+    return 'Regal „$shelf“ - wir wissen nicht, wohin damit';
+  }
+
+  @override
+  String get importGoToShelf => 'Regal öffnen';
+
+  @override
+  String get importGoToLibrary => 'Meine Bücher öffnen';
+
+  @override
+  String get importGuidelinesTitle => 'Was mit jeder Zeile passiert';
+
+  @override
+  String get importGuidelineShelfRead =>
+      '„read“ und „currently-reading“ landen in deinem Leseregal, nicht im Marktplatz.';
+
+  @override
+  String get importGuidelineShelfToRead =>
+      '„to-read“ und Regale namens „favorites“ landen bei deinen Favoriten - so können wir dich benachrichtigen, sobald jemand das Buch einstellt.';
+
+  @override
+  String get importGuidelineListing =>
+      'Zeilen ohne Regal oder mit „swap“ werden zu Anzeigen im Marktplatz.';
+
+  @override
+  String get importGuidelineSkipped =>
+      'Ein Regal, das wir nicht kennen („did-not-finish“, eigene Regalnamen), wird übersprungen - so landet kein Buch versehentlich im Tausch, das du gar nicht hergeben willst.';
+
+  @override
+  String get importGuidelineNoDuplicates =>
+      'Du kannst den Import jederzeit wiederholen: Bücher, die schon im Regal oder bei den Favoriten sind, werden nicht doppelt angelegt.';
+
+  @override
+  String importGuidelineColumns(String columns) {
+    return 'Gelesene Spalten: $columns. Die Namen bleiben englisch - so schreiben sie auch Goodreads und StoryGraph.';
+  }
+
+  @override
+  String importGuidelineConditions(String conditions) {
+    return 'Werte für „condition“: $conditions. Alles andere wird zu BUNA.';
+  }
+
+  @override
+  String get importGuidelineLimit =>
+      'Höchstens 500 Zeilen pro Datei und nur CSV - eine .xlsx-Datei zuerst als CSV speichern.';
+
+  @override
+  String get todoTitle => 'ShelfShare entdecken';
+
+  @override
+  String get todoSubtitle => 'Sieh dir kurz an, wie die App funktioniert';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '$done von $total';
+  }
+
+  @override
+  String get todoDismiss => 'Liste ausblenden';
+
+  @override
+  String get todoTutorial => 'In zwei Minuten sehen, wie die App funktioniert';
+
+  @override
+  String get todoBookMatch => 'Finde ein Buch mit Book Match';
+
+  @override
+  String get todoImport => 'Bücher aus Goodreads oder StoryGraph importieren';
+
+  @override
+  String get todoShortcuts =>
+      'Leg dir die Verknüpfungen ins Menü, die du nutzt';
+
+  @override
+  String get tutorialTitle => 'Kurze Tour';
+
+  @override
+  String get tutorialSkip => 'Schließen';
+
+  @override
+  String get tutorialNext => 'Weiter';
+
+  @override
+  String get tutorialDone => 'Alles klar';
+
+  @override
+  String get tutorialShelfTitle => 'Dein Regal';
+
+  @override
+  String get tutorialShelfBody =>
+      'Trag die Bücher ein, die du besitzt. Was du hergeben magst, erscheint im Marktplatz; der Rest bleibt in deinem Regal, als Notiz über das Gelesene.';
+
+  @override
+  String get tutorialMatchTitle => 'Book Match';
+
+  @override
+  String get tutorialMatchBody =>
+      'Wisch dich durch Bücher: nach rechts, wenn es dich reizt, nach links, wenn nicht. Alles, was dir gefällt, landet bei den Favoriten und schärft deine Empfehlungen.';
+
+  @override
+  String get tutorialSwapTitle => 'Tauschen oder kaufen';
+
+  @override
+  String get tutorialSwapBody =>
+      'Frag einen Tausch an oder mach ein Angebot. Ihr klärt alles im Chat, trefft euch, und das Buch wechselt offiziell den Besitzer.';
+
+  @override
+  String get tutorialWishlistTitle => 'Favoriten und Benachrichtigungen';
+
+  @override
+  String get tutorialWishlistBody =>
+      'Setz ein Buch, das du nicht findest, auf die Favoriten. Wir sagen dir Bescheid, sobald jemand in deiner Stadt es einstellt.';
+
+  @override
+  String get tutorialShortcutsTitle => 'Mach\'s dir passend';
+
+  @override
+  String get tutorialShortcutsBody =>
+      'Im Menü wählst du die Verknüpfungen, die du griffbereit haben willst. Sprache, Benachrichtigungen und der Rest stehen in den Einstellungen.';
+
+  @override
+  String get commonBack => 'Zurück';
+
+  @override
+  String get bookDetailNegotiableChip => 'verhandelbar';
+
+  @override
+  String get filtersAny => 'Alle';
+
+  @override
+  String browseResultsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Bücher',
+      one: 'ein Buch',
+    );
+    return '$_temp0';
   }
 }
