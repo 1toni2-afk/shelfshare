@@ -237,6 +237,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               (context, state) => tier3.AboutAppScreen()),
           _deferredRoute('/roadmap', tier3.loadLibrary,
               (context, state) => tier3.RoadmapScreen()),
+          // Formularul de feedback are rută proprie ca să poată fi ținta unui
+          // link din afara aplicației (emailul de bun venit de la 3 zile).
+          // Dialogul din Setări rămâne neschimbat.
+          _deferredRoute('/feedback', tier3.loadLibrary,
+              (context, state) => tier3.FeedbackScreen()),
           // Parametrii vin din query, nu din `extra`: linkul „Listeaz-o" de pe
           // o carte terminată din raft trebuie să supraviețuiască unui refresh
           // pe web, unde `extra` se pierde.
@@ -340,6 +345,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               (context, state) => tier3.GlobalStatsScreen()),
           _deferredRoute('/bookshelf', tier3.loadLibrary,
               (context, state) => tier3.MyBookshelfScreen()),
+          // Pagina ghidată de import (Goodreads/StoryGraph/șablon) - stă în
+          // nivelul 2, lângă „Cărțile mele", de unde se ajunge la ea.
+          _deferredRoute('/import', tier2.loadLibrary,
+              (context, state) => tier2.ImportBooksScreen()),
+          _deferredRoute('/tutorial', tier3.loadLibrary,
+              (context, state) => tier3.TutorialScreen()),
           _deferredRoute('/activity-feed', tier3.loadLibrary,
               (context, state) => tier3.ActivityFeedScreen()),
           _deferredRoute('/smart-matches', tier3.loadLibrary,

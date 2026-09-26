@@ -15,6 +15,7 @@ import { FeatureFlagValueDto } from './dto/set-feature-flags.dto';
 import { ListingScoreService } from '../books/listing-score.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { PresenceService } from '../chat/presence.service';
+import { UserSessionsService } from '../common/security/user-sessions.service';
 
 /// Tabelele din care se scoate seria pe zile a statisticilor de folosire.
 /// Numele sunt cele DIN BAZA (`@@map` din schema.prisma), nu ale modelelor
@@ -44,6 +45,7 @@ export class AdminService {
     private reports: ReportsService,
     private activityLog: ActivityLogService,
     private presence: PresenceService,
+    private userSessions: UserSessionsService,
   ) {}
 
   /**
@@ -308,11 +310,16 @@ export class AdminService {
       throw new NotFoundException('Utilizator negăsit');
     }
 
-    return this.prisma.user.update({
+    const banned = await this.prisma.user.update({
       where: { id: userId },
       data: { isBanned: true, refreshTokenHash: null },
       select: { id: true, email: true, isBanned: true },
     });
+    // Nu ajunge să blocăm login-ul (AuthService.login verifică isBanned):
+    // sesiunile deschise, token-urile de acces deja emise și socket-ul de chat
+    // mergeau mai departe, deci un user banat continua să scrie mesaje.
+    await this.userSessions.revokeAll(userId);
+    return banned;
   }
 
   async unbanUser(userId: string) {

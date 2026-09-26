@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { HeaderTabs, ScreenHeader } from '@/components/layout/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { FolderTabs } from '@/components/ui/FolderTabs';
 import { booksKeys, booksRepository } from '@/features/books/booksRepository';
 import { socialKeys, statsRepository } from './socialRepository';
 import { BookCover } from '@/components/ui/BookCover';
@@ -33,27 +34,22 @@ export function GlobalStatsScreen() {
   const pending = tab === 'popularAuthors' ? authors.isPending : books.isPending;
   const failed = tab === 'popularAuthors' ? authors.isError : books.isError;
 
-  const header = (
-    <ScreenHeader
-      title={t('globalStatsTitle')}
-      back
-      bottom={
-        <HeaderTabs
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { value: 'mostShared' as const, label: t('globalStatsTabMostShared') },
-            { value: 'trending' as const, label: t('globalStatsTabTrending') },
-            { value: 'popularAuthors' as const, label: t('globalStatsTabPopularAuthors') },
-          ]}
-        />
-      }
-    />
-  );
+  const header = <ScreenHeader title={t('globalStatsTitle')} back />;
 
   return (
     <div className="mx-auto w-full max-w-[680px] px-5 pb-16 pt-2 min-[900px]:px-8">
       {header}
+      <FolderTabs
+        label={t('globalStatsTitle')}
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: 'mostShared' as const, label: t('globalStatsTabMostShared') },
+          { value: 'trending' as const, label: t('globalStatsTabTrending') },
+          { value: 'popularAuthors' as const, label: t('globalStatsTabPopularAuthors') },
+        ]}
+        className="mt-2"
+      >
       {pending ? (
         <div className="flex h-40 items-center justify-center text-accent">
           <Spinner size={26} />
@@ -115,6 +111,7 @@ export function GlobalStatsScreen() {
           ))}
         </ol>
       )}
+      </FolderTabs>
     </div>
   );
 }

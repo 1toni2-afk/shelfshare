@@ -1,10 +1,9 @@
 import { createContext, use, useLayoutEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { useEdgeFade } from '@/lib/hooks/useEdgeFade';
 
 /**
  * Unde își desenează ecranul curent bara de sus. Nodul e ținut de `AppShell`.
@@ -37,6 +36,28 @@ export interface MobileBarUsage {
 
 const MobileBarContext = createContext<MobileBar | null>(null);
 
+/**
+ * Ce rută stă la fiecare poziție din istoric (`history.state.idx` e pus de
+ * React Router). O săgeată cu rută fixă se uită aici: dacă pasul din spate e
+ * chiar ruta cerută, face `navigate(-1)` în loc să împingă o intrare nouă -
+ * altfel „Pregătire schimb" → „Schimburile mele" → back ducea iar la pregătire,
+ * la nesfârșit.
+ */
+const pathAtIndex = new Map<number, string>();
+
+function historyIndex(): number | null {
+  const idx = (window.history.state as { idx?: unknown } | null)?.idx;
+  return typeof idx === 'number' ? idx : null;
+}
+
+function useTrackHistoryPaths() {
+  const location = useLocation();
+  useLayoutEffect(() => {
+    const idx = historyIndex();
+    if (idx !== null) pathAtIndex.set(idx, location.pathname);
+  }, [location]);
+}
+
 export function ScreenHeaderSlot({
   slot,
   mobileBar,
@@ -46,6 +67,7 @@ export function ScreenHeaderSlot({
   mobileBar: MobileBar;
   children: ReactNode;
 }) {
+  useTrackHistoryPaths();
   return (
     <SlotContext value={slot}>
       <MobileBarContext value={mobileBar}>{children}</MobileBarContext>
@@ -62,7 +84,15 @@ export function BackButton({ to }: { to: true | string }) {
   const navigate = useNavigate();
   return (
     <button
-      onClick={() => (typeof to === 'string' ? void navigate(to) : void navigate(-1))}
+      onClick={() => {
+        if (to === true) return void navigate(-1);
+        const idx = historyIndex();
+        // Pasul din spate e chiar ruta fixă: înapoi în istoric, nu înainte.
+        if (idx !== null && idx > 0 && pathAtIndex.get(idx - 1) === to) return void navigate(-1);
+        // Altfel înlocuiește intrarea curentă, ca back-ul de pe ruta fixă să nu
+        // ne mai aducă aici.
+        void navigate(to, { replace: true });
+      }}
       aria-label={t('commonBack')}
       title={t('commonBack')}
       className="shrink-0 rounded-full border-[1.5px] border-accent bg-background p-2 text-accent transition hover:bg-accent/10"
@@ -131,7 +161,7 @@ export function ScreenHeader({
           {usesTitle &&
             mobileBar.title &&
             createPortal(
-              <h1 className="truncate font-display text-base font-bold">{title}</h1>,
+              <h1 className="truncate font-display text-xl font-bold">{title}</h1>,
               mobileBar.title,
             )}
         </>
@@ -158,15 +188,17 @@ export function ScreenHeader({
       */}
       <div
         className={cn(
-          'h-16 grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4',
-          keepBrandOnMobile ? 'grid' : 'hidden min-[900px]:grid',
+          'grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4 min-[900px]:h-16',
+          // Pe telefon salutul stă imediat sub bara cu logo-ul: un rând fix de
+          // 64px lăsa o fâșie goală deasupra și dedesubtul lui.
+          keepBrandOnMobile ? 'grid pb-2 pt-0.5 min-[900px]:py-0' : 'hidden min-[900px]:grid',
         )}
       >
         <div className="flex min-w-0 items-center justify-start">
           {back && <BackButton to={back} />}
         </div>
 
-        <h1 className="truncate text-center font-display text-lg font-bold">{title}</h1>
+        <h1 className="truncate text-center font-display text-xl font-bold">{title}</h1>
 
         {/* Pe telefon acțiunile stau în bara de sus; aici doar de la pragul
             de sidebar în sus, unde bara aceea nu există. */}
@@ -226,53 +258,5 @@ export function HeaderAction({
     >
       {content}
     </button>
-  );
-}
-
-/**
- * Rândul de tab-uri de sub titlu (`bottom: TabBar(...)`). Tab-urile sunt
- * butoane, nu linkuri: în Flutter starea lor trăiește în `TabController`, nu în
- * rută, iar un refresh cade înapoi pe primul tab exact la fel.
- */
-export function HeaderTabs<T extends string>({
-  tabs,
-  value,
-  onChange,
-  scrollable = false,
-}: {
-  tabs: Array<{ value: T; label: string }>;
-  value: T;
-  onChange: (value: T) => void;
-  scrollable?: boolean;
-}) {
-  // Estomparea are sens doar când banda chiar se derulează; pe filele întinse
-  // pe toată lățimea n-are ce ascunde.
-  const { ref, maskStyle } = useEdgeFade<HTMLDivElement>([tabs.length]);
-
-  return (
-    <div
-      ref={scrollable ? ref : undefined}
-      style={scrollable ? maskStyle : undefined}
-      className={cn(
-        'flex border-b border-border px-2',
-        scrollable ? 'ss-noscrollbar overflow-x-auto' : 'justify-stretch',
-      )}
-    >
-      {tabs.map((tab) => (
-        <button
-          key={tab.value}
-          onClick={() => onChange(tab.value)}
-          className={cn(
-            'shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition',
-            scrollable ? '' : 'flex-1',
-            tab.value === value
-              ? 'border-accent text-accent'
-              : 'border-transparent text-muted-foreground hover:text-foreground',
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
   );
 }

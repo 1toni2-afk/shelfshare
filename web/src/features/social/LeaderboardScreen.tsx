@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { HeaderTabs, ScreenHeader } from '@/components/layout/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { FolderTabs } from '@/components/ui/FolderTabs';
 import { profileKeys, profileRepository } from '@/features/profile/profileRepository';
 import { Avatar } from '@/components/ui/Avatar';
 import { ErrorNotice, Spinner } from '@/components/ui';
@@ -24,52 +25,35 @@ export function LeaderboardScreen() {
           : profileRepository.leaderboardCities(signal),
   });
 
-  const header = (
-    <ScreenHeader
-      title={t('profileLeaderboard')}
-      back
-      bottom={
-        <HeaderTabs
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { value: 'city' as const, label: t('leaderboardTabCity') },
-            { value: 'national' as const, label: t('leaderboardTabNational') },
-            { value: 'topReaders' as const, label: t('leaderboardTabTopReaders') },
-          ]}
-        />
-      }
-    />
-  );
-
-  if (board.isPending) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-accent">
-        {header}
-        <Spinner size={28} />
-      </div>
-    );
-  }
-
-  if (board.isError) {
-    return (
-      <div className="mx-auto max-w-2xl p-6">
-        {header}
-        <ErrorNotice message={t('leaderboardLoadError')} onRetry={() => void board.refetch()} />
-      </div>
-    );
-  }
-
-  const rows = board.data;
+  const header = <ScreenHeader title={t('profileLeaderboard')} back />;
 
   return (
     <div className="mx-auto w-full max-w-[680px] px-5 pb-16 pt-2 min-[900px]:px-8">
       {header}
-      {rows.length === 0 ? (
+      <FolderTabs
+        label={t('profileLeaderboard')}
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: 'city' as const, label: t('leaderboardTabCity') },
+          { value: 'national' as const, label: t('leaderboardTabNational') },
+          { value: 'topReaders' as const, label: t('leaderboardTabTopReaders') },
+        ]}
+        className="mt-2"
+      >
+      {/* Filele rămân pe loc cât se încarcă sau pică un clasament - altfel
+          sar din pagină la fiecare schimbare de filă. */}
+      {board.isPending ? (
+        <div className="flex h-40 items-center justify-center text-accent">
+          <Spinner size={28} />
+        </div>
+      ) : board.isError ? (
+        <ErrorNotice message={t('leaderboardLoadError')} onRetry={() => void board.refetch()} />
+      ) : board.data.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">{t('leaderboardEmpty')}</p>
       ) : (
         <ol className="flex flex-col gap-2">
-          {rows.map((row, index) => (
+          {board.data.map((row, index) => (
             <li
               key={row.id}
               className="flex items-center gap-3 rounded-[16px] border border-border bg-card p-3"
@@ -113,6 +97,7 @@ export function LeaderboardScreen() {
           ))}
         </ol>
       )}
+      </FolderTabs>
     </div>
   );
 }

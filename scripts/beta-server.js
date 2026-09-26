@@ -14,8 +14,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { STATIC_HTML_PAGES } = require('./static-pages');
+const { APP_ADS_TXT } = require('./app-ads');
 const {
   ROBOTS_TXT,
+  SITE_URL,
   buildSitemap,
   isPrivatePath,
   metaFor,
@@ -67,7 +69,95 @@ function looksLikeFileRequest(reqPath) {
 
 const COMMON_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
+  // Nimeni n-are motiv să încadreze aplicația într-un iframe; fără astea, o
+  // pagină străină o putea pune sub un buton transparent (clickjacking) -
+  // „Șterge contul" sau „Acceptă schimbul" apăsate fără să știi.
+  'X-Frame-Options': 'DENY',
+  'Content-Security-Policy': "frame-ancestors 'none'",
+  // Adresa completă (cu id-uri de conversație, schimburi) nu pleacă spre
+  // site-urile externe deschise din aplicație; doar originea.
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  // Site-ul e servit exclusiv prin Cloudflare, pe HTTPS. Fără includeSubDomains:
+  // nu hotărâm aici pentru alte subdomenii.
+  'Strict-Transport-Security': 'max-age=31536000',
 };
+
+/**
+ * Fișiere din web/dist care NU sunt pentru public.
+ *
+ * - `.map`: hărțile de surse conțin tot codul, cu comentarii despre
+ *   infrastructură; Vite le generează (`sourcemap: 'hidden'`) doar pentru
+ *   depanare locală.
+ * - `.md`: note de lucru copiate din public/ - `demo/README.md` a publicat așa
+ *   parola conturilor demo.
+ * - orice segment care începe cu punct (`.env`, `.git`), cu excepția
+ *   `/.well-known/`, care e public prin definiție (assetlinks pentru Android).
+ */
+function isHiddenFile(reqPath) {
+  const ext = path.extname(reqPath).toLowerCase();
+  if (ext === '.map' || ext === '.md') return true;
+  return reqPath
+    .split('/')
+    .some((segment) => segment.startsWith('.') && segment !== '.well-known');
+}
+
+/**
+ * Service worker-ul lăsat în urmă de Flutter.
+ *
+ * Aplicația Flutter a rulat pe shelfshare.ro cu un service worker cu scope
+ * `/`. Browserele care l-au instalat într-o versiune veche, înainte de
+ * dezînregistrarea din index.html, încă îl au: el interceptează navigarea și
+ * servește index.html-ul Flutter din cache. După mutare, verificarea lui de
+ * update ar primi 404 - iar la 404 browserul PĂSTREAZĂ worker-ul vechi, deci
+ * omul ar vedea la nesfârșit aplicația veche, fără nicio cale de ieșire.
+ *
+ * Servim în locul lui un worker care se dezînregistrează singur, golește
+ * cache-urile și reîncarcă filele deschise - prima navigare după update
+ * ajunge la aplicația nouă.
+ */
+const FLUTTER_SW_KILL_SWITCH = `'use strict';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    } catch (e) {}
+    try { await self.registration.unregister(); } catch (e) {}
+    const clients = await self.clients.matchAll({ type: 'window' });
+    for (const client of clients) {
+      try { client.navigate(client.url); } catch (e) {}
+    }
+  })());
+});
+`;
+
+/** Adresa din Play Store - vezi PLAY_STORE_URL din web/src/components/layout/AppShell.tsx. */
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=ro.shelfshare.shelfshare';
+
+/**
+ * Adrese vechi ale aplicației Flutter care nu mai au ecran în React.
+ * `/get-the-app` a fost tipărit pe materiale și e legat din bannerul Flutter.
+ */
+const LEGACY_REDIRECTS = {
+  '/get-the-app': PLAY_STORE_URL,
+};
+
+/**
+ * Gazdele care trebuie trimise pe adresa canonică, cu 301.
+ *
+ * Gol implicit - pe beta nu se schimbă nimic. La mutarea pe shelfshare.ro:
+ * `REDIRECT_HOSTS=beta.shelfshare.ro,www.shelfshare.ro` împreună cu
+ * `BETA_SITE_URL=https://shelfshare.ro`, altfel beta rămâne o copie
+ * indexabilă a site-ului principal (conținut duplicat în Google).
+ */
+const REDIRECT_HOSTS = new Set(
+  (process.env.REDIRECT_HOSTS || '')
+    .split(',')
+    .map((host) => host.trim().toLowerCase())
+    .filter(Boolean),
+);
+const CANONICAL_ORIGIN = SITE_URL;
 
 /**
  * `X-Robots-Tag: noindex` - acum PE RUTĂ, nu pe tot site-ul.
@@ -120,6 +210,14 @@ http
       return res.end('Bad Request');
     }
 
+    // Octet nul (`/%00`): `fs.readFile` aruncă SINCRON pe o cale cu octet nul, iar
+    // excepția ieșea din handler și oprea tot procesul - un singur request
+    // anonim scotea beta jos până la repornirea din bucla .bat.
+    if (reqPath.includes('\0')) {
+      res.writeHead(400, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+      return res.end('Bad Request');
+    }
+
     // Sonda de sanatate, INAINTE de orice atingere de disc.
     //
     // Healthcheck-ul trebuie sa distinga „event loop blocat" de „discul e
@@ -142,6 +240,50 @@ http
       de SPA și ar fi primit index.html cu 200 - adică „găsit, dar invalid",
       ceea ce un crawler raportează mult mai neclar decât un 404.
     */
+    /*
+      Gazdă secundară (beta sau www după mutare) -> adresa canonică, cu 301.
+      Vine după /__health, ca sonda locală (Host: 127.0.0.1) să nu fie atinsă.
+    */
+    const host = String(req.headers.host || '').toLowerCase().replace(/:d+$/, '');
+    if (REDIRECT_HOSTS.has(host)) {
+      res.writeHead(301, {
+        ...COMMON_HEADERS,
+        Location: CANONICAL_ORIGIN + req.url,
+        'Cache-Control': 'public, max-age=3600',
+      });
+      return res.end();
+    }
+
+    if (Object.hasOwn(LEGACY_REDIRECTS, reqPath)) {
+      res.writeHead(302, { ...COMMON_HEADERS, Location: LEGACY_REDIRECTS[reqPath] });
+      return res.end();
+    }
+
+    if (reqPath === '/app-ads.txt') {
+      res.writeHead(200, {
+        ...COMMON_HEADERS,
+        'Content-Type': mime['.txt'],
+        'Cache-Control': 'public, max-age=3600',
+      });
+      return res.end(APP_ADS_TXT);
+    }
+
+    if (reqPath === '/flutter_service_worker.js') {
+      res.writeHead(200, {
+        ...COMMON_HEADERS,
+        'Content-Type': mime['.js'],
+        // no-store: verificarea de update a browserului trebuie să vadă mereu
+        // varianta asta, nu o copie dintr-un cache intermediar.
+        'Cache-Control': 'no-store',
+      });
+      return res.end(FLUTTER_SW_KILL_SWITCH);
+    }
+
+    if (isHiddenFile(reqPath)) {
+      res.writeHead(404, { ...COMMON_HEADERS, 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+      return res.end('Not Found');
+    }
+
     if (reqPath === '/robots.txt') {
       res.writeHead(200, {
         ...COMMON_HEADERS,
@@ -232,8 +374,10 @@ http
     if (reqPath === '/') reqPath = '/index.html';
 
     // Normalizarea taie orice „..": fără ea, `/../../.env` ar ieși din root.
+    // `root + sep`, nu doar `root`: altfel `/../dist-vechi/x` (un director
+    // frate al cărui nume începe la fel) ar fi trecut verificarea.
     const safePath = path.normalize(path.join(root, reqPath));
-    if (!safePath.startsWith(root)) {
+    if (safePath !== root && !safePath.startsWith(root + path.sep)) {
       res.writeHead(403, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
       return res.end('Forbidden');
     }

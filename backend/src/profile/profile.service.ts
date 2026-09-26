@@ -285,7 +285,16 @@ export class ProfileService {
     // din producție; `availableBooks` e lista completă, citită de beta.
     const [listedBooks, availableBooks, listingsCount] = await Promise.all([
       this.prisma.userBook.findMany({
-        where: { userId, availableForSwap: true },
+        // Aceeași formă ca înainte (doar schimb, 20), dar fără anunțurile
+        // ascunse de moderare (`hiddenAt`) - altfel un anunț raportat și
+        // ascuns din căutare rămânea vizibil pe profilul public din Flutter.
+        where: {
+          userId,
+          availableForSwap: true,
+          deletedAt: null,
+          hiddenAt: null,
+          permanentlyTransferred: false,
+        },
         include: { book: true },
         orderBy: { createdAt: 'desc' },
         take: 20,

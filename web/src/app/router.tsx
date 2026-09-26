@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { FullScreenLoader } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { RouteErrorScreen, ScreenErrorBoundary } from './ErrorScreen';
 import { NotPortedYet } from './NotPortedYet';
 
 /**
@@ -355,11 +356,16 @@ function HomeOrLanding() {
 }
 
 function Screen({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<FullScreenLoader />}>{children}</Suspense>;
+  return (
+    <ScreenErrorBoundary>
+      <Suspense fallback={<FullScreenLoader />}>{children}</Suspense>
+    </ScreenErrorBoundary>
+  );
 }
 
 export const router = createBrowserRouter([
   {
+    errorElement: <RouteErrorScreen />,
     path: '/login',
     element: (
       <Screen>
@@ -368,6 +374,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    errorElement: <RouteErrorScreen />,
     path: '/register',
     element: (
       <Screen>
@@ -376,6 +383,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    errorElement: <RouteErrorScreen />,
     path: '/forgot-password',
     element: (
       <Screen>
@@ -384,6 +392,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    errorElement: <RouteErrorScreen />,
     /*
       Confirmarea contului are rută proprie, PUBLICĂ: se ajunge aici și după
       înregistrare, și din ecranul de autentificare când contul există dar nu e
@@ -398,6 +407,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    errorElement: <RouteErrorScreen />,
     path: '/auth/google/callback',
     element: (
       <Screen>
@@ -406,6 +416,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    errorElement: <RouteErrorScreen />,
     path: '/pre-register',
     element: (
       <Screen>
@@ -415,6 +426,7 @@ export const router = createBrowserRouter([
   },
 
   {
+    errorElement: <RouteErrorScreen />,
     element: (
       <RequireAuth>
         <AppShell />
@@ -541,6 +553,7 @@ export const router = createBrowserRouter([
     le pre-randează conținutul pentru crawlere și le pune în sitemap.
   */
   {
+    errorElement: <RouteErrorScreen />,
     element: <PublicOrAppShell />,
     children: [
       { index: true, element: <Screen><HomeOrLanding /></Screen> },
@@ -553,5 +566,5 @@ export const router = createBrowserRouter([
     ],
   },
 
-  { path: '*', element: <NotPortedYet notFound /> },
+  { path: '*', element: <NotPortedYet notFound />, errorElement: <RouteErrorScreen /> },
 ]);

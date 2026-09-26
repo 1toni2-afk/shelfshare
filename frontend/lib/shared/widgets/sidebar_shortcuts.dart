@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/locale/l10n_extensions.dart';
 import '../../core/network/providers.dart';
+import '../../features/profile/application/onboarding_todo_controller.dart';
 import '../../features/profile/application/profile_controller.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -223,11 +224,20 @@ class SidebarShortcutsController extends Notifier<List<SidebarShortcut>> {
     if (state.contains(key)) return;
     state = [...state, key];
     _save();
+    _markTodoDone();
   }
 
   void remove(SidebarShortcut key) {
     state = state.where((k) => k != key).toList();
     _save();
+    _markTodoDone();
+  }
+
+  /// Pasul „pune-ți scurtăturile" din lista „Descoperă ShelfShare" (vezi
+  /// onboarding_todo_controller.dart) se bifează când lista chiar s-a
+  /// schimbat, indiferent de unde - din creionul din meniu sau din card.
+  void _markTodoDone() {
+    ref.read(onboardingTodoProvider.notifier).complete(OnboardingTodo.shortcuts);
   }
 }
 

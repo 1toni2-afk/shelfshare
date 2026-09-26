@@ -1,7 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 
 /*
   Pagina publică, randată ESTOMPAT în spatele formularului.
@@ -80,9 +81,7 @@ export function AuthLayout({
           */}
           <div className="relative mb-8 flex flex-col items-center gap-3 text-center">
             <BackButton />
-            <span className="rounded-2xl bg-accent/15 p-3 text-accent">
-              <BookOpen size={32} />
-            </span>
+            <BrandMark size={56} />
             <h1 className="font-display text-3xl font-bold">{title}</h1>
             {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
           </div>

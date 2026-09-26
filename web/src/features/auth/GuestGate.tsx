@@ -9,7 +9,8 @@ import {
 } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Lock, X } from 'lucide-react';
+import { Lock, X } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 import { useAuth } from './AuthProvider';
 import { cn } from '@/lib/utils/cn';
 
@@ -123,9 +124,7 @@ function GuestGateDialog({ onClose }: { onClose: () => void }) {
           <X size={18} />
         </button>
 
-        <span className="inline-flex rounded-[12px] bg-accent/15 p-2.5 text-accent">
-          <BookOpen size={22} />
-        </span>
+        <BrandMark size={42} />
 
         <h2 className="mt-3 font-display text-xl font-bold">
           {t('guestGateTitle', 'Creează-ți cont ca să continui')}

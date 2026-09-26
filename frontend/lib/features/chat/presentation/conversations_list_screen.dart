@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../profile/application/profile_controller.dart';
 import '../application/conversations_controller.dart';
 import 'conversation_screen.dart';
+import 'safety_quiz.dart';
 
 /// Prag desktop pentru layout-ul chat: sub 900 px cădem înapoi la o singură
 /// coloană (list → navigare la /chat/:id, cum era înainte). Peste, arătăm
@@ -441,10 +442,31 @@ class _ConversationsPane extends ConsumerWidget {
                 data: (all) {
                   final filtered = _applyFilter(all);
                   if (filtered.isEmpty) {
+                    // Pe desktop, panoul din dreapta arată deja sfaturile și
+                    // testul de siguranță. Pe mobil, lista goală ERA tot
+                    // ecranul de chat - o singură linie de text - deci punem
+                    // testul aici, dar doar pentru lista propriu-zisă: la
+                    // „fără rezultate la căutare" sau „nimic în arhivă" userul
+                    // caută altceva, nu are de ce să primească un test.
+                    final isFirstTime = filter == _ConversationsFilter.all &&
+                        searchQuery.trim().isEmpty;
                     return CenteredScrollable(
-                      child: Text(
-                        _emptyLabel(l10n),
-                        style: TextStyle(color: AppColors.mutedForeground),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _emptyLabel(l10n),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.mutedForeground),
+                          ),
+                          if (isFirstTime) ...[
+                            const SizedBox(height: 24),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 520),
+                              child: const SafetyQuiz(),
+                            ),
+                          ],
+                        ],
                       ),
                     );
                   }
@@ -889,6 +911,8 @@ class _ChatSafetyPage extends StatelessWidget {
                 title: l10n.chatSafetyReportTitle,
                 body: l10n.chatSafetyReportBody,
               ),
+              const SizedBox(height: 8),
+              const SafetyQuiz(),
               const SizedBox(height: 20),
               OutlinedButton.icon(
                 icon: const Icon(Icons.shield_outlined),

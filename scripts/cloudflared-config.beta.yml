@@ -38,4 +38,10 @@ ingress:
   - hostname: api-beta.shelfshare.ro
     service: http://localhost:3999
 
+  # Alt proiect de pe aceeasi masina (containerele runmap-*), adaugat direct in
+  # configul serviciului. Trebuie tinut si aici: apply-beta-tunnel.ps1 COPIAZA
+  # fisierul asta peste configul live, deci o gazda lipsa de aici ar disparea.
+  - hostname: runapp.shelfshare.ro
+    service: http://localhost:4000
+
   - service: http_status:404

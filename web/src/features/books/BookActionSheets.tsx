@@ -23,9 +23,13 @@ const MAX_ADDITIONAL_BOOKS = 5;
  */
 export function RequestExchangeSheet({
   book,
+  initialOfferedBookId = null,
   onClose,
 }: {
-  book: UserBook;
+  /** Doar id-ul anunțului și titlul: din Potriviri nu avem un UserBook întreg. */
+  book: Pick<UserBook, 'id'> & { book: Pick<UserBook['book'], 'title'> };
+  /** Precompletat din Potriviri, unde știm deja ce carte a ta vrea celălalt. */
+  initialOfferedBookId?: string | null;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -33,7 +37,7 @@ export function RequestExchangeSheet({
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [offeredBookId, setOfferedBookId] = useState<string | null>(null);
+  const [offeredBookId, setOfferedBookId] = useState<string | null>(initialOfferedBookId);
   const [additional, setAdditional] = useState<string[]>([]);
   const [message, setMessage] = useState('');
 

@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,8 +15,8 @@ import '../../../shared/widgets/genre_radar_card.dart';
 import '../../../shared/widgets/motto_text.dart';
 import '../../profile/application/profile_controller.dart';
 import '../application/my_library_controller.dart';
-import '../data/books_repository.dart';
 import '../data/bookshelf_repository.dart';
+import '../data/import_template.dart';
 import 'edit_listing_sheet.dart';
 import 'owned_books_section.dart';
 
@@ -316,31 +314,36 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
     _sheetOpen = false;
   }
 
-  void _exportCsv(AppLocalizations l10n, List<UserBook> books) {
+  /// Exportul folosește EXACT coloanele pe care le citește importul (vezi
+  /// `import_template.dart`), nu antete traduse: backend-ul compară numele
+  /// coloanei literal, cu „title"/„condition", deci un fișier exportat din
+  /// aplicația în română („Titlu", „Stare") nu putea fi încărcat înapoi -
+  /// nici măcar starea, fiindcă scriam eticheta tradusă („Bună") în loc de
+  /// valoarea din enum („BUNA").
+  ///
+  /// Începe cu BOM ca Excel să deschidă fișierul ca UTF-8 și să nu strice
+  /// diacriticele din titluri.
+  void _exportCsv(List<UserBook> books) {
     final rows = [
-      [
-        l10n.csvHeaderTitle,
-        l10n.filtersAuthor,
-        l10n.filtersCondition,
-        l10n.filtersLanguage,
-        l10n.csvHeaderAvailableForSwap,
-        l10n.csvHeaderForSale,
-        l10n.csvHeaderPrice,
-      ].join(','),
+      kImportCsvColumns.join(','),
       for (final b in books)
         [
           _csvEscape(b.book.title),
           _csvEscape(b.book.author ?? ''),
-          b.condition?.label(l10n) ?? '',
-          b.language ?? '',
-          b.availableForSwap ? l10n.commonYes : l10n.commonNo,
-          b.isForSale ? l10n.commonYes : l10n.commonNo,
+          b.book.isbn ?? '',
+          // Tot ce e în „Cărțile mele" e deja un anunț; la reimport rămâne
+          // anunț, nu ajunge pe raftul de lectură.
+          'swap',
+          b.condition?.toJson() ?? '',
+          _csvEscape(b.language ?? ''),
+          _csvEscape(b.city ?? ''),
           b.salePrice?.toStringAsFixed(0) ?? '',
+          _csvEscape(b.description ?? ''),
         ].join(','),
     ];
     downloadTextFile(
       filename: 'biblioteca-shelfshare.csv',
-      content: rows.join('\r\n'),
+      content: '\u{FEFF}${rows.join('\r\n')}\r\n',
       mimeType: 'text/csv',
     );
   }
@@ -350,103 +353,6 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
       return '"${value.replaceAll('"', '""')}"';
     }
     return value;
-  }
-
-  Future<void> _importListingsCsv() async {
-    final l10n = context.l10n;
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-      withData: true,
-    );
-    final file = result?.files.firstOrNull;
-    if (file?.bytes == null) return;
-    if (!mounted) return;
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-    try {
-      final summary = await ref
-          .read(booksRepositoryProvider)
-          .importListingsCsv(bytes: file!.bytes!, filename: file.name);
-      ref.invalidate(myLibraryControllerProvider);
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        // Nu doar „create": un CSV cu `sku` actualizează anunțuri existente
-        // și scoate din piață rândurile cu qty 0 - vezi importListingsCsv.
-        // Iar un export Goodreads/StoryGraph împarte rândurile după raft:
-        // ce e „to-read"/favorit NU devine anunț, deci trebuie spus explicit
-        // unde au ajuns, altfel userul le caută degeaba în piață.
-        final parts = [
-          l10n.libraryImportSummaryDetailed(
-            summary.created.length,
-            summary.updated.length,
-            summary.delisted.length,
-            summary.failed.length,
-          ),
-          if (summary.shelved.isNotEmpty || summary.favorited.isNotEmpty)
-            l10n.libraryImportSummaryShelfAware(
-              summary.shelved.length,
-              summary.favorited.length,
-            ),
-        ];
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(parts.join(' · '))),
-        );
-        // Un număr de rânduri eșuate nu spune nimic despre CE a eșuat: până
-        // acum backendul trimitea motivul pentru fiecare rând, iar UI-ul îl
-        // arunca. Cu sute de rânduri într-un export Goodreads, „7 eșuate" era
-        // imposibil de depanat fără acces la loguri.
-        if (summary.failed.isNotEmpty) {
-          await _showImportFailures(summary.failed);
-        }
-      }
-    } on DioException catch (e) {
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        final data = e.response?.data;
-        final message = data is Map && data['message'] != null
-            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-            : l10n.libraryImportError;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-      }
-    }
-  }
-
-  /// Ce anume n-a intrat și de ce - titlu + motiv, așa cum vin de la backend.
-  Future<void> _showImportFailures(List<ListingImportFailed> failed) async {
-    final l10n = context.l10n;
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.libraryImportFailedTitle(failed.length)),
-        content: SizedBox(
-          width: 420,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: failed.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final row = failed[index];
-              return ListTile(
-                dense: true,
-                title: Text(row.title),
-                subtitle: Text(row.reason),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.commonClose),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -498,9 +404,13 @@ class _MyLibraryScreenState extends ConsumerState<MyLibraryScreen> {
                       case 'select':
                         setState(() => _selectionActive = true);
                       case 'export':
-                        _exportCsv(l10n, state.value ?? const []);
+                        _exportCsv(state.value ?? const []);
                       case 'import':
-                        _importListingsCsv();
+                        // Nu mai deschidem direct file picker-ul: pagina de
+                        // import spune de unde se ia exportul din
+                        // Goodreads/StoryGraph, ce coloane citim și unde
+                        // ajunge fiecare raft (vezi import_screen.dart).
+                        context.push('/import');
                       case 'bulk-add':
                         context.push('/library/bulk-add');
                       case 'trash':

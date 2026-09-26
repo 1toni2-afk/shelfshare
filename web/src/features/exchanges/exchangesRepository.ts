@@ -33,6 +33,14 @@ export interface ExchangeRequest {
   requesterDoneAt: string | null;
   ownerDoneAt: string | null;
   cancelReason: string | null;
+  meetingProposedBy: string | null;
+  meetingAcceptedAt: string | null;
+  requesterContactPhone: string | null;
+  ownerContactPhone: string | null;
+  requesterContactSharedAt: string | null;
+  ownerContactSharedAt: string | null;
+  requesterSafetyAckAt: string | null;
+  ownerSafetyAckAt: string | null;
 }
 
 export interface PriceOffer {
@@ -56,6 +64,16 @@ export interface PriceOffer {
   createdAt: string;
   meetingTime: string | null;
   meetingLocation: string | null;
+  meetingProposedBy: string | null;
+  meetingAcceptedAt: string | null;
+  buyerContactPhone: string | null;
+  ownerContactPhone: string | null;
+  buyerContactSharedAt: string | null;
+  ownerContactSharedAt: string | null;
+  buyerSafetyAckAt: string | null;
+  ownerSafetyAckAt: string | null;
+  buyerDoneAt: string | null;
+  ownerDoneAt: string | null;
 }
 
 export interface RateExchangeInput {
@@ -105,8 +123,8 @@ export const exchangesRepository = {
     return api.post<ExchangeRequest>(`/exchanges/${id}/done/dispute`, reason ? { reason } : undefined);
   },
 
-  shareContact(id: string): Promise<ExchangeRequest> {
-    return api.post<ExchangeRequest>(`/exchanges/${id}/contact`);
+  shareContact(id: string, phone?: string): Promise<ExchangeRequest> {
+    return api.post<ExchangeRequest>(`/exchanges/${id}/contact`, phone ? { phone } : {});
   },
 
   acknowledgeSafety(id: string): Promise<ExchangeRequest> {
@@ -171,8 +189,16 @@ export const offersRepository = {
     return api.post<PriceOffer>(`/offers/${id}/done`);
   },
 
-  shareContact(id: string): Promise<PriceOffer> {
-    return api.post<PriceOffer>(`/offers/${id}/contact`);
+  shareContact(id: string, phone?: string): Promise<PriceOffer> {
+    return api.post<PriceOffer>(`/offers/${id}/contact`, phone ? { phone } : {});
+  },
+
+  acknowledgeSafety(id: string): Promise<PriceOffer> {
+    return api.post<PriceOffer>(`/offers/${id}/safety-ack`);
+  },
+
+  dispute(id: string): Promise<PriceOffer> {
+    return api.post<PriceOffer>(`/offers/${id}/done/dispute`);
   },
 
   proposeMeeting(id: string, input: { meetingTime: string; meetingLocation: string }) {

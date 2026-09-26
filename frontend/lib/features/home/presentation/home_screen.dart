@@ -13,11 +13,13 @@ import '../../../shared/widgets/book_grid_metrics.dart';
 import '../../../shared/widgets/centered_scrollable.dart';
 import '../../../shared/widgets/main_scaffold.dart' show kSidebarBreakpoint;
 import '../../../shared/widgets/motto_text.dart';
+import '../../../shared/widgets/sidebar_shortcuts.dart';
 import '../../../shared/widgets/typewriter_text.dart';
 import 'greetings.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_state.dart';
 import '../../notifications/application/notifications_controller.dart';
+import '../../profile/application/onboarding_todo_controller.dart';
 import '../../notifications/presentation/notification_routing.dart';
 import '../../exchanges/application/exchanges_controller.dart';
 import '../../offers/application/offers_controller.dart';
@@ -359,10 +361,14 @@ class _HomeFeed extends StatelessWidget {
     final l10n = context.l10n;
 
     if (data.recent.isEmpty) {
+      // Lista „Descoperă ShelfShare" apare și aici: un feed gol (piață încă goală, sau
+      // filtre care n-au întors nimic) e exact momentul în care omul nou are
+      // cea mai mare nevoie să știe ce poate face.
       return CenteredScrollable(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const _OnboardingTodoCard(),
             Text(l10n.homeEmpty, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 12),
             const MottoText(),
@@ -407,7 +413,13 @@ class _HomeFeed extends StatelessWidget {
       if (data.nearby.isNotEmpty)
         _SectionSpec(
           builder: (_) => _HomeSection(
-            title: l10n.homeNearbyTitle(kNearbyRadiusKm),
+            // Fără nimic în raza de 100 km arătăm tot cele mai apropiate
+            // anunțuri din țară, dar sub alt titlu - „la 100 km" ar fi fals,
+            // iar o secțiune care dispare complet arăta ca un bug („nu văd
+            // cărți în apropierea mea").
+            title: data.nearbyIsFallback
+                ? l10n.homeNearestTitle
+                : l10n.homeNearbyTitle(kNearbyRadiusKm),
             icon: Icons.near_me_outlined,
             accent: AppColors.primary,
             books: data.nearby,
@@ -432,6 +444,7 @@ class _HomeFeed extends StatelessWidget {
     final slivers = <Widget>[
       const SliverToBoxAdapter(child: SizedBox(height: 12)),
       const SliverToBoxAdapter(child: _PendingSwapBanner()),
+      const SliverToBoxAdapter(child: _OnboardingTodoCard()),
       // „Cartea lunii" scoasă temporar din Home - sistemul de vot trebuie
       // regândit (2026-08-26). Codul featurii (controller/repository/backend)
       // rămâne pe loc, doar punctul de intrare din feed e eliminat.
@@ -544,6 +557,191 @@ class _PendingSwapBanner extends ConsumerWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// „Descoperă ShelfShare" - lista de bifat a celui abia venit, sus în feed,
+/// deasupra cărților. Wizard-ul de onboarding întreabă cine e omul și ce-i
+/// place; lista asta îi spune ce are de FĂCUT ca aplicația să-i fie utilă:
+/// turul scurt, o rundă de Book Match, importul bibliotecii, scurtăturile.
+///
+/// Nu se bifează manual: fiecare pas se marchează din locul unde s-a
+/// întâmplat fapta (vezi [OnboardingTodoController.complete]). Dispare singură
+/// când s-au făcut toate sau când e ascunsă de la „×", iar starea se ține pe
+/// dispozitiv, ca a scurtăturilor.
+class _OnboardingTodoCard extends ConsumerWidget {
+  const _OnboardingTodoCard();
+
+  /// Ce arată fiecare pas și ce se întâmplă la tap.
+  static const _icons = {
+    OnboardingTodo.tutorial: Icons.play_circle_outline,
+    OnboardingTodo.bookMatch: Icons.style_outlined,
+    OnboardingTodo.import: Icons.file_upload_outlined,
+    OnboardingTodo.shortcuts: Icons.tune,
+  };
+
+  String _label(AppLocalizations l10n, OnboardingTodo todo) {
+    return switch (todo) {
+      OnboardingTodo.tutorial => l10n.todoTutorial,
+      OnboardingTodo.bookMatch => l10n.todoBookMatch,
+      OnboardingTodo.import => l10n.todoImport,
+      OnboardingTodo.shortcuts => l10n.todoShortcuts,
+    };
+  }
+
+  void _open(BuildContext context, WidgetRef ref, OnboardingTodo todo) {
+    switch (todo) {
+      case OnboardingTodo.tutorial:
+        context.push('/tutorial');
+      case OnboardingTodo.bookMatch:
+        context.push('/book-match');
+      case OnboardingTodo.import:
+        context.push('/import');
+      case OnboardingTodo.shortcuts:
+        // Direct foaia de „adaugă scurtătură": e aceeași acțiune ca creionul
+        // din meniu, dar merge la fel și pe telefon, unde meniul e într-un
+        // drawer pe care userul ar trebui întâi să-l deschidă.
+        showAddShortcutSheet(context, ref);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(onboardingTodoProvider);
+    if (!state.visible) return const SizedBox.shrink();
+
+    final l10n = context.l10n;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final side = screenWidth > _feedMaxWidth ? (screenWidth - _feedMaxWidth) / 2 : 0.0;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16 + side, 0, 16 + side, 12),
+      child: Material(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.explore_outlined, size: 18, color: AppColors.accent),
+                  const SizedBox(width: 10),
+                  // Titlul, contorul și subtitlul într-o coloană elastică, nu
+                  // pe un rând cu Spacer: „Descoperă ShelfShare" plus „3 din 4"
+                  // trec de lățimea unui telefon îngust, iar înainte rândul
+                  // dădea overflow în loc să treacă pe rândul următor.
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 10,
+                          children: [
+                            Text(
+                              l10n.todoTitle,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              l10n.todoProgress(
+                                state.done.length,
+                                OnboardingTodo.values.length,
+                              ),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.todoSubtitle,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.mutedForeground),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    iconSize: 18,
+                    visualDensity: VisualDensity.compact,
+                    tooltip: l10n.todoDismiss,
+                    icon: const Icon(Icons.close),
+                    onPressed: () =>
+                        ref.read(onboardingTodoProvider.notifier).dismiss(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              for (final todo in OnboardingTodo.values)
+                _TodoRow(
+                  icon: _icons[todo]!,
+                  label: _label(l10n, todo),
+                  done: state.isDone(todo),
+                  onTap: () => _open(context, ref, todo),
+                ),
+              const SizedBox(height: 4),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TodoRow extends StatelessWidget {
+  const _TodoRow({
+    required this.icon,
+    required this.label,
+    required this.done,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool done;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: done ? AppColors.mutedForeground : null,
+          decoration: done ? TextDecoration.lineThrough : null,
+          decorationColor: AppColors.mutedForeground,
+        );
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      // Un pas bifat rămâne apăsabil: „vezi tutorialul" e ceva ce omul poate
+      // vrea să revadă, iar scurtăturile se mai schimbă.
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(
+              done ? Icons.check_circle : Icons.radio_button_unchecked,
+              size: 18,
+              color: done ? AppColors.success : AppColors.mutedForeground,
+            ),
+            const SizedBox(width: 12),
+            Icon(icon, size: 18, color: AppColors.mutedForeground),
+            const SizedBox(width: 10),
+            Expanded(child: Text(label, style: style)),
+            Icon(Icons.chevron_right, size: 18, color: AppColors.mutedForeground),
+          ],
         ),
       ),
     );

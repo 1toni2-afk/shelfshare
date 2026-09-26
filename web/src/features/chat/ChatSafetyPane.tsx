@@ -69,7 +69,7 @@ export function ChatSafetyPane() {
   );
 }
 
-function SafetyItem({
+export function SafetyItem({
   icon,
   title,
   body,

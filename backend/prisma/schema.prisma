@@ -39,6 +39,11 @@ model User {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
+  // DOAR pentru token-urile de refresh emise înainte de RefreshSession (fără
+  // `sid`). Nu se mai scrie: bcrypt taie intrarea la 72 de octeți, iar un JWT
+  // are ~230, deci hash-ul se potrivea cu ORICE token vechi al aceluiași user.
+  // Se golește la logout, reset de parolă și ban; token-urile vechi expiră
+  // singure în cel mult 30 de zile.
   refreshTokenHash String?
 
   googleId String? @unique
@@ -261,6 +266,7 @@ model User {
   groupPosts               GroupPost[]
   feedLikes                FeedLike[]
   feedComments             FeedComment[]
+  refreshSessions          RefreshSession[]
   securityEvents           SecurityEvent[]
   featureFlags             UserFeatureFlag[]
   bookSwipes               BookSwipe[]
@@ -651,6 +657,26 @@ model GroupPost {
 /// `tip:idSursă`, de exemplu `reading_progress:<id ReadingProgress>`. Cheia e
 /// stabilă cât trăiește rândul sursă; la ștergerea lui, aprecierile rămân
 /// orfane și inofensive - nu mai apare nicăieri evenimentul care să le afișeze.
+/// O sesiune de autentificare = un dispozitiv logat. Token-ul de refresh poartă
+/// `sid` = id-ul rândului; e valid cât timp rândul există și n-a expirat.
+/// Logout-ul șterge rândul lui, resetul de parolă și ban-ul le șterg pe toate.
+/// Nu ținem hash-ul token-ului: semnătura JWT dovedește deja că l-am emis noi,
+/// iar revocarea se face pe sesiune, nu pe token.
+model RefreshSession {
+  id String @id
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_sessions")
+}
+
 model FeedLike {
   id String @id @default(uuid())
 

@@ -18,27 +18,73 @@
  * `/profile/leaderboard/national`). Nimic din ce cere autentificare nu ajunge
  * aici - nici email, nici telefon, nici mesaje, nici schimburi.
  */
+const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const path = require('path');
 
-const SITE_URL = process.env.BETA_SITE_URL || 'https://beta.shelfshare.ro';
+/**
+ * Adresa canonică a site-ului. Pe beta e `https://beta.shelfshare.ro`; la
+ * mutarea pe domeniul principal se pune `BETA_SITE_URL=https://shelfshare.ro`
+ * (vezi docs/mutare-react-pe-shelfshare.md), altfel canonical-ul, og:url și
+ * sitemap-ul ar trimite Google înapoi spre beta.
+ */
+const SITE_URL = (process.env.BETA_SITE_URL || 'https://beta.shelfshare.ro').replace(/\/+$/, '');
 
 /**
  * API-ul de la care luăm datele pentru pagini.
  *
- * Implicit `http://localhost:3999`, adică EXACT backendul pe care îl folosește
- * și bundle-ul livrat pe beta (vezi ingress-ul `api-beta.shelfshare.ro` din
- * cloudflared-config.beta.yml). Trebuie să fie același, altfel textul din HTML
- * ar descrie alte cărți decât cele pe care le încarcă aplicația o secundă mai
- * târziu - adică fix diferența pe care o penalizează motoarele de căutare.
+ * TREBUIE să fie același backend ca al bundle-ului, altfel textul din HTML
+ * descrie alte cărți decât cele pe care le încarcă aplicația o secundă mai
+ * târziu - fiecare link din primul cadru ar duce la „anunț inexistent", iar
+ * exact acelea ajung în Google. S-a întâmplat de două ori cu o variabilă de
+ * mediu separată (BETA_API_URL), deci acum sursa e build-ul însuși:
+ * vite.config.ts scrie `build-info.json` cu API-ul injectat în bundle.
  *
- * Lovim direct portul local, nu prin `https://api-beta.shelfshare.ro`: acolo
- * cererea ar ieși prin tunelul Cloudflare și s-ar întoarce pe aceeași mașină,
- * adăugând o traversare de rețea la fiecare pagină.
- *
- * Când beta va fi mutat pe API-ul de producție, se schimbă variabila, nu codul.
+ * Pentru API-urile noastre lovim direct portul local, nu adresa publică: prin
+ * `https://api...` cererea ar ieși prin tunelul Cloudflare și s-ar întoarce pe
+ * aceeași mașină, cu o traversare de rețea în plus la fiecare pagină.
  */
-const API_URL = process.env.BETA_API_URL || 'http://localhost:3999';
+const LOCAL_API_FOR = {
+  'https://api.shelfshare.ro': 'http://localhost:3000',
+  'https://api-beta.shelfshare.ro': 'http://localhost:3999',
+};
+const BUILD_INFO_PATH = path.join(__dirname, '..', 'web', 'dist', 'build-info.json');
+const FALLBACK_API_URL = process.env.BETA_API_URL || 'http://localhost:3999';
+
+let apiUrlCache = { mtimeMs: -1, value: FALLBACK_API_URL };
+
+/**
+ * API-ul curent. Recitit când se schimbă `build-info.json` (un deploy nou e
+ * live imediat, fără repornirea serverului - la fel ca restul lui web/dist).
+ */
+function apiUrl() {
+  let stat;
+  try {
+    stat = fs.statSync(BUILD_INFO_PATH);
+  } catch {
+    // Build vechi, dinainte de build-info.json: rămânem pe variabila de mediu.
+    return FALLBACK_API_URL;
+  }
+  if (stat.mtimeMs === apiUrlCache.mtimeMs) return apiUrlCache.value;
+
+  let value = FALLBACK_API_URL;
+  try {
+    const info = JSON.parse(fs.readFileSync(BUILD_INFO_PATH, 'utf8'));
+    const bundleApi = String(info.apiBaseUrl || '').replace(/\/+$/, '');
+    if (bundleApi) value = LOCAL_API_FOR[bundleApi] || bundleApi;
+  } catch {
+    /* fișier pe jumătate scris în timpul unui build - reîncercăm data viitoare */
+    return apiUrlCache.value;
+  }
+  if (value !== apiUrlCache.value) {
+    console.log(`[beta-seo] API pentru HTML-ul pre-randat: ${value}`);
+    // Alt backend = alte date; nimic din cache-ul vechi nu mai e valabil.
+    cache.clear();
+  }
+  apiUrlCache = { mtimeMs: stat.mtimeMs, value };
+  return value;
+}
 
 const SITE_NAME = 'ShelfShare';
 const DEFAULT_IMAGE = `${SITE_URL}/icons/Icon-512.png`;
@@ -419,6 +465,24 @@ function isPrivatePath(reqPath) {
   );
 }
 
+/**
+ * JSON sigur de pus într-un `<script>`.
+ *
+ * `JSON.stringify` NU escapează `<`, deci un titlu de carte sau un nume de
+ * user care conține `</script><script>...` închidea blocul JSON-LD și rula
+ * JavaScript pe beta.shelfshare.ro - unde token-urile de sesiune stau în
+ * localStorage, adică preluare de cont pentru oricine deschidea pagina.
+ * Secvențele `<` etc. sunt JSON valid și se citesc identic.
+ */
+function jsonForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 function escapeHtml(value) {
   return String(value ?? '').replace(
     /[<>&'"]/g,
@@ -501,7 +565,7 @@ async function bookMeta(id, locale) {
   // `/preview`, nu `/books/:id`: e endpointul făcut exact pentru asta și NU
   // incrementează contorul de vizualizări, deci trecerea unui crawler nu umflă
   // statisticile proprietarului.
-  const data = await fetchJson(`${API_URL}/books/${encodeURIComponent(id)}/preview`);
+  const data = await fetchJson(`${apiUrl()}/books/${encodeURIComponent(id)}/preview`);
   if (!data || !data.title) return null;
 
   const t = s(locale);
@@ -555,7 +619,7 @@ async function bookMeta(id, locale) {
 }
 
 async function profileMeta(id, locale) {
-  const data = await fetchJson(`${API_URL}/profile/${encodeURIComponent(id)}`);
+  const data = await fetchJson(`${apiUrl()}/profile/${encodeURIComponent(id)}`);
   if (!data || !(data.name || data.username)) return null;
 
   const t = s(locale);
@@ -611,7 +675,7 @@ async function profileMeta(id, locale) {
 }
 
 async function groupMeta(id, locale) {
-  const data = await fetchJson(`${API_URL}/groups/${encodeURIComponent(id)}`);
+  const data = await fetchJson(`${apiUrl()}/groups/${encodeURIComponent(id)}`);
   if (!data || !data.name) return null;
 
   const t = s(locale);
@@ -750,7 +814,7 @@ async function browseMeta(locale) {
 }
 
 async function leaderboardMeta(locale) {
-  const data = await fetchJson(`${API_URL}/profile/leaderboard/national`);
+  const data = await fetchJson(`${apiUrl()}/profile/leaderboard/national`);
   if (!Array.isArray(data) || data.length === 0) return null;
 
   const t = s(locale);
@@ -783,9 +847,9 @@ async function leaderboardMeta(locale) {
 
 async function globalStatsMeta(locale) {
   const [mostShared, trending, authors] = await Promise.all([
-    fetchJson(`${API_URL}/books/most-shared`),
-    fetchJson(`${API_URL}/books/trending`),
-    fetchJson(`${API_URL}/books/popular-authors`),
+    fetchJson(`${apiUrl()}/books/most-shared`),
+    fetchJson(`${apiUrl()}/books/trending`),
+    fetchJson(`${apiUrl()}/books/popular-authors`),
   ]);
   const shared = Array.isArray(mostShared) ? mostShared.slice(0, 5) : [];
   const trend = Array.isArray(trending) ? trending.slice(0, 5) : [];
@@ -839,7 +903,7 @@ async function fetchPublicListings(limit) {
   for (let offset = 0; items.length < limit; offset += BROWSE_PAGE_SIZE) {
     const size = Math.min(BROWSE_PAGE_SIZE, limit - items.length);
     const page = await fetchJson(
-      `${API_URL}/books/browse?limit=${size}&offset=${offset}&sort=recent`,
+      `${apiUrl()}/books/browse?limit=${size}&offset=${offset}&sort=recent`,
     );
     const batch = Array.isArray(page?.items) ? page.items : [];
     items.push(...batch);
@@ -918,11 +982,14 @@ function renderPage(template, meta, locale) {
     `<meta name="twitter:description" content="${description}" />`,
     `<meta name="twitter:image" content="${image}" />`,
     ...(meta.jsonLd
-      ? [`<script type="application/ld+json">${JSON.stringify(meta.jsonLd)}</script>`]
+      ? [`<script type="application/ld+json">${jsonForScript(meta.jsonLd)}</script>`]
       : []),
   ].join('\n  ');
 
-  let html = template.replace(HEAD_MARKERS, `<!--ss-head-->\n  ${head}\n  <!--/ss-head-->`);
+  // Înlocuirile primesc FUNCȚII, nu șiruri: într-un șir de înlocuire, `$&`,
+  // `$'` și `` $` `` sunt tipare speciale, iar titlurile și numele vin de la
+  // useri. O carte numită „Cost $'" ar fi lipit în pagină bucăți din șablon.
+  let html = template.replace(HEAD_MARKERS, () => `<!--ss-head-->\n  ${head}\n  <!--/ss-head-->`);
 
   /*
     `<html lang>` trebuie sa spuna adevarul despre limba in care e scrisa
@@ -945,7 +1012,8 @@ function renderPage(template, meta, locale) {
     */
     html = html.replace(
       BODY_MARKER,
-      `<div id="seo-content" style="max-width:52rem;margin:0 auto;padding:2rem 1.25rem;font-family:system-ui,sans-serif;line-height:1.6">${meta.bodyHtml}</div>`,
+      () =>
+        `<div id="seo-content" style="max-width:52rem;margin:0 auto;padding:2rem 1.25rem;font-family:system-ui,sans-serif;line-height:1.6">${meta.bodyHtml}</div>`,
     );
   }
 
@@ -978,7 +1046,7 @@ const STATIC_SITEMAP_ROUTES = [
 async function buildSitemap() {
   const [listings, groups] = await Promise.all([
     fetchPublicListings(SITEMAP_MAX_LISTINGS),
-    fetchJson(`${API_URL}/groups/public`),
+    fetchJson(`${apiUrl()}/groups/public`),
   ]);
 
   // Profilurile intră în sitemap prin proprietarii anunțurilor publice, nu
@@ -1026,7 +1094,7 @@ Sitemap: ${SITE_URL}/sitemap.xml
 `;
 
 module.exports = {
-  API_URL,
+  apiUrl,
   SITE_URL,
   ROBOTS_TXT,
   LOCALES,

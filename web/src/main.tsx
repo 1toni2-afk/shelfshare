@@ -7,6 +7,8 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 import { ToastProvider } from '@/components/ui/Toast';
 import { router } from '@/app/router';
 import { i18nReady } from '@/lib/i18n';
+import { initAnalytics, trackPageView } from '@/lib/analytics/analytics';
+import { AnalyticsConsentBanner } from '@/components/layout/AnalyticsConsentBanner';
 import '@/styles/index.css';
 
 const container = document.getElementById('root');
@@ -42,6 +44,22 @@ function RemovePrerenderedContent() {
 // render prinde i18next neinițializat și afișează cheile brute
 // („authLoginSubmit" în loc de „Conectare") pentru o fracțiune de secundă, la
 // fiecare încărcare de pagină.
+/*
+  Google Analytics (doar cu consimțământ, vezi lib/analytics). Page view la
+  fiecare schimbare de adresă, nu doar la încărcare: e un SPA, deci GA ar fi
+  văzut altfel o singură pagină pe vizită. Ascultăm routerul direct, nu un
+  hook, ca să nu depindem de ce ecran e montat.
+*/
+initAnalytics();
+trackPageView();
+let lastTrackedPath = `${router.state.location.pathname}${router.state.location.search}`;
+router.subscribe((state) => {
+  const next = `${state.location.pathname}${state.location.search}`;
+  if (next === lastTrackedPath) return;
+  lastTrackedPath = next;
+  trackPageView();
+});
+
 void i18nReady.then(() => {
   createRoot(container).render(
     <StrictMode>
@@ -56,6 +74,7 @@ void i18nReady.then(() => {
           <AuthProvider>
             <RemovePrerenderedContent />
             <RouterProvider router={router} />
+            <AnalyticsConsentBanner />
           </AuthProvider>
         </ToastProvider>
       </QueryClientProvider>

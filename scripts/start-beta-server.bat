@@ -9,19 +9,17 @@ cd /d "%~dp0.."
 
 set LOGFILE=%~dp0beta-server.log
 
-REM API-ul din care beta-seo.js ia cartile pentru HTML-ul pre-randat.
+REM API-ul din care beta-seo.js ia cartile pentru HTML-ul pre-randat NU se mai
+REM seteaza aici. beta-seo.js il citeste din web/dist/build-info.json, scris de
+REM build (vite.config.ts), deci e mereu ACELASI backend ca bundle-ul livrat.
+REM Variabila separata BETA_API_URL a divergat de doua ori de bundle (ultima
+REM data: HTML-ul lista carti din productie, aplicatia le cauta in baza de test).
+REM BETA_API_URL mai conteaza doar pentru un build vechi, fara build-info.json.
 REM
-REM TREBUIE sa fie acelasi backend spre care pointeaza bundle-ul livrat (vezi
-REM scripts/deploy-beta.ps1, care construieste contra productiei din 2026-09-22).
-REM Fara variabila asta beta-seo.js cade pe implicitul lui, localhost:3999,
-REM adica zona de TEST: HTML-ul servit listeaza carti care nu exista in
-REM productie, deci fiecare link din primul cadru duce la o pagina inexistenta
-REM imediat ce porneste aplicatia - si exact alea ajung in Google.
-REM
-REM Direct pe portul local al productiei, nu prin https://api.shelfshare.ro:
-REM acolo cererea ar iesi prin tunelul Cloudflare si s-ar intoarce pe aceeasi
-REM masina, adaugand o traversare de retea la fiecare pagina.
-set BETA_API_URL=http://localhost:3000
+REM La mutarea pe shelfshare.ro (vezi docs/mutare-react-pe-shelfshare.md) se
+REM decomenteaza cele doua linii de mai jos:
+REM set BETA_SITE_URL=https://shelfshare.ro
+REM set REDIRECT_HOSTS=beta.shelfshare.ro,www.shelfshare.ro
 
 :loop
 echo [%date% %time%] Pornire beta-server.js >> "%LOGFILE%"

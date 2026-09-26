@@ -291,6 +291,10 @@ function SwipeDeck({
                 : 'none',
             }}
             onPointerDown={onPointerDown}
+            // Fără asta, cu mouse-ul browserul pornește drag-ul nativ al
+            // copertei (o fantomă a imaginii, ca un fișier tras pe ecran) și
+            // înghite mișcarea în loc să rotească și să arunce cartea.
+            onDragStart={(event) => event.preventDefault()}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}

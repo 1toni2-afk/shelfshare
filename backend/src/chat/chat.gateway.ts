@@ -61,7 +61,11 @@ export class ChatGateway
       const token = client.handshake.auth?.token as string | undefined;
       if (!token) throw new UnauthorizedException();
 
-      const payload = this.jwt.verify<{ sub: string; jti?: string }>(token, {
+      const payload = this.jwt.verify<{
+        sub: string;
+        jti?: string;
+        iat?: number;
+      }>(token, {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
       });
 
@@ -69,7 +73,10 @@ export class ChatGateway
       // logout-ul revoca token-ul doar pentru API: cu același token, un
       // socket se putea conecta în continuare (și primea mesajele private
       // ale userului) până la expirarea naturală a token-ului.
-      if (this.revokedTokens.isRevoked(payload.jti)) {
+      if (
+        this.revokedTokens.isRevoked(payload.jti) ||
+        this.revokedTokens.isRevokedForUser(payload.sub, payload.iat)
+      ) {
         throw new UnauthorizedException();
       }
 

@@ -1037,6 +1037,12 @@ abstract class AppLocalizations {
   /// **'Ce ai vrea să ne spui?'**
   String get profileFeedbackHint;
 
+  /// No description provided for @feedbackPageIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce ți-a plăcut, ce te-a încurcat sau ce lipsește. Scrie liber - citim tot. Poți atașa și o captură de ecran.'**
+  String get feedbackPageIntro;
+
   /// No description provided for @profileFeedbackThanks.
   ///
   /// In ro, this message translates to:
@@ -6178,6 +6184,12 @@ abstract class AppLocalizations {
   /// **'În apropierea ta ({km} km)'**
   String homeNearbyTitle(int km);
 
+  /// No description provided for @homeNearestTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cele mai apropiate de tine'**
+  String get homeNearestTitle;
+
   /// No description provided for @shareTagsSuggestions.
   ///
   /// In ro, this message translates to:
@@ -6604,6 +6616,30 @@ abstract class AppLocalizations {
   /// **'Arhivate'**
   String get chatFilterArchived;
 
+  /// No description provided for @chatFiltersLabel.
+  ///
+  /// In ro, this message translates to:
+  /// **'Filtre conversații'**
+  String get chatFiltersLabel;
+
+  /// No description provided for @usernameChooseOnceHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege cu grijă: username-ul e unic și nu mai poate fi schimbat după ce salvezi.'**
+  String get usernameChooseOnceHint;
+
+  /// No description provided for @usernameLockedHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Username-ul a fost ales și nu mai poate fi schimbat.'**
+  String get usernameLockedHint;
+
+  /// No description provided for @chatSelectedCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count, plural, one{# selectată} few{# selectate} other{# de selectate}}'**
+  String chatSelectedCount(int count);
+
   /// No description provided for @chatFilterModerator.
   ///
   /// In ro, this message translates to:
@@ -6693,6 +6729,234 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.'**
   String get chatSafetyHint;
+
+  /// No description provided for @chatQuizTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Test rapid de siguranță'**
+  String get chatQuizTitle;
+
+  /// No description provided for @chatQuizIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cinci situații reale din chat. Alege ce ai face - după fiecare răspuns vezi de ce.'**
+  String get chatQuizIntro;
+
+  /// No description provided for @chatQuizStart.
+  ///
+  /// In ro, this message translates to:
+  /// **'Începe testul'**
+  String get chatQuizStart;
+
+  /// No description provided for @chatQuizProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'Întrebarea {current} din {total}'**
+  String chatQuizProgress(int current, int total);
+
+  /// No description provided for @chatQuizCorrect.
+  ///
+  /// In ro, this message translates to:
+  /// **'Corect'**
+  String get chatQuizCorrect;
+
+  /// No description provided for @chatQuizWrong.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu chiar'**
+  String get chatQuizWrong;
+
+  /// No description provided for @chatQuizNext.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai departe'**
+  String get chatQuizNext;
+
+  /// No description provided for @chatQuizSeeResult.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi rezultatul'**
+  String get chatQuizSeeResult;
+
+  /// No description provided for @chatQuizScore.
+  ///
+  /// In ro, this message translates to:
+  /// **'{score} din {total} corecte'**
+  String chatQuizScore(int score, int total);
+
+  /// No description provided for @chatQuizResultPerfect.
+  ///
+  /// In ro, this message translates to:
+  /// **'Impecabil. Exact așa arată un schimb în siguranță.'**
+  String get chatQuizResultPerfect;
+
+  /// No description provided for @chatQuizResultGood.
+  ///
+  /// In ro, this message translates to:
+  /// **'Bună treabă. Recitește explicațiile de la întrebările ratate.'**
+  String get chatQuizResultGood;
+
+  /// No description provided for @chatQuizResultPoor.
+  ///
+  /// In ro, this message translates to:
+  /// **'Merită să treci prin Centrul de siguranță înainte de următorul schimb.'**
+  String get chatQuizResultPoor;
+
+  /// No description provided for @chatQuizRestart.
+  ///
+  /// In ro, this message translates to:
+  /// **'Reia testul'**
+  String get chatQuizRestart;
+
+  /// No description provided for @chatQuizQ1.
+  ///
+  /// In ro, this message translates to:
+  /// **'Cineva îți vrea cartea și promite că trimite banii „imediat ce o primește”. Ce faci?'**
+  String get chatQuizQ1;
+
+  /// No description provided for @chatQuizQ1A.
+  ///
+  /// In ro, this message translates to:
+  /// **'Trimit cartea prima - fără încredere nu se face niciun schimb.'**
+  String get chatQuizQ1A;
+
+  /// No description provided for @chatQuizQ1B.
+  ///
+  /// In ro, this message translates to:
+  /// **'Stabilim plata înainte de expediere, livrare cu ramburs, sau ne vedem în persoană.'**
+  String get chatQuizQ1B;
+
+  /// No description provided for @chatQuizQ1C.
+  ///
+  /// In ro, this message translates to:
+  /// **'Îi dau datele cardului meu, ca să poată trimite banii direct.'**
+  String get chatQuizQ1C;
+
+  /// No description provided for @chatQuizQ1Explain.
+  ///
+  /// In ro, this message translates to:
+  /// **'„Plătesc după ce primesc” e cea mai frecventă țeapă de pe orice platformă de schimb. Plata înainte, rambursul sau o întâlnire în persoană sunt variantele în care nu rămâi și fără carte, și fără bani. Datele cardului nu-ți trebuie niciodată ca să PRIMEȘTI bani.'**
+  String get chatQuizQ1Explain;
+
+  /// No description provided for @chatQuizQ2.
+  ///
+  /// In ro, this message translates to:
+  /// **'Primești pe chat un link către o pagină care arată ca ShelfShare și îți cere din nou emailul și parola, ca să „confirmi livrarea”.'**
+  String get chatQuizQ2;
+
+  /// No description provided for @chatQuizQ2A.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mă autentific repede, ca să nu pierd livrarea.'**
+  String get chatQuizQ2A;
+
+  /// No description provided for @chatQuizQ2B.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mă autentific, dar îmi schimb parola imediat după.'**
+  String get chatQuizQ2B;
+
+  /// No description provided for @chatQuizQ2C.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu deschid linkul, nu introduc nimic și raportez conversația.'**
+  String get chatQuizQ2C;
+
+  /// No description provided for @chatQuizQ2Explain.
+  ///
+  /// In ro, this message translates to:
+  /// **'ShelfShare nu îți cere niciodată parola printr-un link primit pe chat. O pagină care o cere e o copie făcută ca să-ți fure contul, iar parola introdusă acolo e deja pierdută - schimbată după sau nu.'**
+  String get chatQuizQ2Explain;
+
+  /// No description provided for @chatQuizQ3.
+  ///
+  /// In ro, this message translates to:
+  /// **'Un utilizator îți cere codul de verificare primit pe email sau SMS, „ca să confirme că ești o persoană reală”.'**
+  String get chatQuizQ3;
+
+  /// No description provided for @chatQuizQ3A.
+  ///
+  /// In ro, this message translates to:
+  /// **'Nu îl trimit niciodată - codul acela îmi deschide contul, nu confirmă nimic despre mine.'**
+  String get chatQuizQ3A;
+
+  /// No description provided for @chatQuizQ3B.
+  ///
+  /// In ro, this message translates to:
+  /// **'Îl trimit, dacă are profil cu recenzii bune.'**
+  String get chatQuizQ3B;
+
+  /// No description provided for @chatQuizQ3C.
+  ///
+  /// In ro, this message translates to:
+  /// **'Îl trimit, dar îi cer și eu codul lui.'**
+  String get chatQuizQ3C;
+
+  /// No description provided for @chatQuizQ3Explain.
+  ///
+  /// In ro, this message translates to:
+  /// **'Codurile de verificare sunt doar pentru tine. Cine ți-l cere încearcă să intre în contul tău sau să confirme, în numele tău, o acțiune pe care n-ai făcut-o.'**
+  String get chatQuizQ3Explain;
+
+  /// No description provided for @chatQuizQ4.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ați bătut palma pe un schimb și urmează să vă vedeți. Unde propui întâlnirea?'**
+  String get chatQuizQ4;
+
+  /// No description provided for @chatQuizQ4A.
+  ///
+  /// In ro, this message translates to:
+  /// **'La mine acasă - e cel mai simplu.'**
+  String get chatQuizQ4A;
+
+  /// No description provided for @chatQuizQ4B.
+  ///
+  /// In ro, this message translates to:
+  /// **'Într-un loc public și circulat, în timpul zilei, și îi spun cuiva apropiat unde merg.'**
+  String get chatQuizQ4B;
+
+  /// No description provided for @chatQuizQ4C.
+  ///
+  /// In ro, this message translates to:
+  /// **'În parcarea din spatele blocului, seara, ca să fie liniște.'**
+  String get chatQuizQ4C;
+
+  /// No description provided for @chatQuizQ4Explain.
+  ///
+  /// In ro, this message translates to:
+  /// **'O cafenea, o librărie sau o stație aglomerată, ziua, nu costă nimic în plus și schimbă complet situația dacă ceva nu e în regulă. Adresa de acasă rămâne a ta.'**
+  String get chatQuizQ4Explain;
+
+  /// No description provided for @chatQuizQ5.
+  ///
+  /// In ro, this message translates to:
+  /// **'Înainte să stabiliți orice, cineva insistă să mutați discuția pe altă aplicație și îți cere adresa completă.'**
+  String get chatQuizQ5;
+
+  /// No description provided for @chatQuizQ5A.
+  ///
+  /// In ro, this message translates to:
+  /// **'I le dau pe amândouă - altfel pare că nu am încredere.'**
+  String get chatQuizQ5A;
+
+  /// No description provided for @chatQuizQ5B.
+  ///
+  /// In ro, this message translates to:
+  /// **'Îi dau doar adresa, numărul nu.'**
+  String get chatQuizQ5B;
+
+  /// No description provided for @chatQuizQ5C.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rămân în chatul din aplicație până batem palma; adresa o dau doar dacă aleg livrare la domiciliu.'**
+  String get chatQuizQ5C;
+
+  /// No description provided for @chatQuizQ5Explain.
+  ///
+  /// In ro, this message translates to:
+  /// **'Conversația din aplicație poate fi raportată și verificată de echipă; una mutată în altă parte, nu. Insistența de a ieși din aplicație înainte de orice înțelegere e, în sine, un semnal.'**
+  String get chatQuizQ5Explain;
 
   /// No description provided for @greetReaderFallback.
   ///
@@ -8690,6 +8954,378 @@ abstract class AppLocalizations {
   /// In ro, this message translates to:
   /// **'{count} exemplare în stoc'**
   String storeStockLeft(int count);
+
+  /// No description provided for @importTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă-ți cărțile'**
+  String get importTitle;
+
+  /// No description provided for @importIntro.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adu-ți biblioteca din Goodreads sau StoryGraph. Dacă n-ai cont pe niciuna, completează șablonul nostru în Excel și încarcă-l tot aici.'**
+  String get importIntro;
+
+  /// No description provided for @importStep1Title.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pasul 1 · Ia-ți fișierul'**
+  String get importStep1Title;
+
+  /// No description provided for @importStep1Goodreads.
+  ///
+  /// In ro, this message translates to:
+  /// **'Exportă din Goodreads'**
+  String get importStep1Goodreads;
+
+  /// No description provided for @importStep1StoryGraph.
+  ///
+  /// In ro, this message translates to:
+  /// **'Exportă din StoryGraph'**
+  String get importStep1StoryGraph;
+
+  /// No description provided for @importStep1Hint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Butonul deschide site-ul lor într-o filă nouă. Pe Goodreads apeși „Export Library\" și aștepți câteva minute până apare linkul de descărcare.'**
+  String get importStep1Hint;
+
+  /// No description provided for @importStep1Template.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descarcă șablonul'**
+  String get importStep1Template;
+
+  /// No description provided for @importStep1TemplateHint.
+  ///
+  /// In ro, this message translates to:
+  /// **'Se deschide în Excel sau Google Sheets. Completează-l, salvează-l ca CSV și încarcă-l mai jos.'**
+  String get importStep1TemplateHint;
+
+  /// No description provided for @importStep2Title.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pasul 2 · Încarcă fișierul'**
+  String get importStep2Title;
+
+  /// No description provided for @importStep2Choose.
+  ///
+  /// In ro, this message translates to:
+  /// **'Alege fișierul'**
+  String get importStep2Choose;
+
+  /// No description provided for @importStep2Change.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbă fișierul'**
+  String get importStep2Change;
+
+  /// No description provided for @importStep2NoFile.
+  ///
+  /// In ro, this message translates to:
+  /// **'Niciun fișier ales'**
+  String get importStep2NoFile;
+
+  /// No description provided for @importStep3Title.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pasul 3 · Pornește importul'**
+  String get importStep3Title;
+
+  /// No description provided for @importStep3Button.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă cărțile'**
+  String get importStep3Button;
+
+  /// No description provided for @importRunning.
+  ///
+  /// In ro, this message translates to:
+  /// **'Lucrăm la fișier. Nu închide pagina.'**
+  String get importRunning;
+
+  /// No description provided for @importResultTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Gata'**
+  String get importResultTitle;
+
+  /// No description provided for @importResultEmpty.
+  ///
+  /// In ro, this message translates to:
+  /// **'N-am găsit niciun rând de importat în fișier.'**
+  String get importResultEmpty;
+
+  /// No description provided for @importResultListed.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} în piață'**
+  String importResultListed(int count);
+
+  /// No description provided for @importResultUpdated.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} actualizate'**
+  String importResultUpdated(int count);
+
+  /// No description provided for @importResultShelved.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} pe raft'**
+  String importResultShelved(int count);
+
+  /// No description provided for @importResultFavorited.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} la favorite'**
+  String importResultFavorited(int count);
+
+  /// No description provided for @importResultSkipped.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} sărite'**
+  String importResultSkipped(int count);
+
+  /// No description provided for @importResultFailed.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count} eșuate'**
+  String importResultFailed(int count);
+
+  /// No description provided for @importSkippedTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rânduri sărite'**
+  String get importSkippedTitle;
+
+  /// No description provided for @importSkippedShelf.
+  ///
+  /// In ro, this message translates to:
+  /// **'raftul „{shelf}\" - nu știm unde să-l punem'**
+  String importSkippedShelf(String shelf);
+
+  /// No description provided for @importGoToShelf.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi raftul'**
+  String get importGoToShelf;
+
+  /// No description provided for @importGoToLibrary.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi cărțile mele'**
+  String get importGoToLibrary;
+
+  /// No description provided for @importGuidelinesTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ce se întâmplă cu fiecare rând'**
+  String get importGuidelinesTitle;
+
+  /// No description provided for @importGuidelineShelfRead.
+  ///
+  /// In ro, this message translates to:
+  /// **'„read\" și „currently-reading\" ajung pe raftul tău de lectură, nu în piață.'**
+  String get importGuidelineShelfRead;
+
+  /// No description provided for @importGuidelineShelfToRead.
+  ///
+  /// In ro, this message translates to:
+  /// **'„to-read\" și rafturile numite „favorites\" ajung la favorite, ca să te anunțăm când apare cartea la cineva.'**
+  String get importGuidelineShelfToRead;
+
+  /// No description provided for @importGuidelineListing.
+  ///
+  /// In ro, this message translates to:
+  /// **'Rândurile fără raft, sau cu „swap\", devin anunțuri în piață.'**
+  String get importGuidelineListing;
+
+  /// No description provided for @importGuidelineSkipped.
+  ///
+  /// In ro, this message translates to:
+  /// **'Un raft pe care nu-l recunoaștem („did-not-finish\", rafturi inventate de tine) e sărit, ca să nu ajungă din greșeală la schimb o carte pe care n-o dai.'**
+  String get importGuidelineSkipped;
+
+  /// No description provided for @importGuidelineNoDuplicates.
+  ///
+  /// In ro, this message translates to:
+  /// **'Poți relua importul oricând: o carte deja pusă pe raft sau la favorite nu se dublează.'**
+  String get importGuidelineNoDuplicates;
+
+  /// No description provided for @importGuidelineColumns.
+  ///
+  /// In ro, this message translates to:
+  /// **'Coloane citite: {columns}. Numele lor rămân în engleză - la fel le scriu și Goodreads, și StoryGraph.'**
+  String importGuidelineColumns(String columns);
+
+  /// No description provided for @importGuidelineConditions.
+  ///
+  /// In ro, this message translates to:
+  /// **'Valori pentru „condition\": {conditions}. Orice altceva devine BUNA.'**
+  String importGuidelineConditions(String conditions);
+
+  /// No description provided for @importGuidelineLimit.
+  ///
+  /// In ro, this message translates to:
+  /// **'Maximum 500 de rânduri per fișier și doar CSV - un .xlsx trebuie salvat întâi ca CSV.'**
+  String get importGuidelineLimit;
+
+  /// No description provided for @todoTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Descoperă ShelfShare'**
+  String get todoTitle;
+
+  /// No description provided for @todoSubtitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi rapid cum funcționează aplicația'**
+  String get todoSubtitle;
+
+  /// No description provided for @todoProgress.
+  ///
+  /// In ro, this message translates to:
+  /// **'{done} din {total}'**
+  String todoProgress(int done, int total);
+
+  /// No description provided for @todoDismiss.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ascunde lista'**
+  String get todoDismiss;
+
+  /// No description provided for @todoTutorial.
+  ///
+  /// In ro, this message translates to:
+  /// **'Vezi în două minute cum merge aplicația'**
+  String get todoTutorial;
+
+  /// No description provided for @todoBookMatch.
+  ///
+  /// In ro, this message translates to:
+  /// **'Găsește-ți o carte cu Book Match'**
+  String get todoBookMatch;
+
+  /// No description provided for @todoImport.
+  ///
+  /// In ro, this message translates to:
+  /// **'Importă-ți cărțile din Goodreads sau StoryGraph'**
+  String get todoImport;
+
+  /// No description provided for @todoShortcuts.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pune-ți în meniu scurtăturile pe care le folosești'**
+  String get todoShortcuts;
+
+  /// No description provided for @tutorialTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Tur rapid'**
+  String get tutorialTitle;
+
+  /// No description provided for @tutorialSkip.
+  ///
+  /// In ro, this message translates to:
+  /// **'Închide'**
+  String get tutorialSkip;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In ro, this message translates to:
+  /// **'Mai departe'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialDone.
+  ///
+  /// In ro, this message translates to:
+  /// **'Am înțeles'**
+  String get tutorialDone;
+
+  /// No description provided for @tutorialShelfTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Raftul tău'**
+  String get tutorialShelfTitle;
+
+  /// No description provided for @tutorialShelfBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Adaugă cărțile pe care le ai. Cele pe care vrei să le dai ajung în piață; restul rămân doar pe raftul tău, ca să știi ce-ai citit.'**
+  String get tutorialShelfBody;
+
+  /// No description provided for @tutorialMatchTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Book Match'**
+  String get tutorialMatchTitle;
+
+  /// No description provided for @tutorialMatchBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Treci prin cărți cu un swipe: dreapta dacă te atrage, stânga dacă nu. Ce-ți place ajunge la favorite și ne ajută să-ți recomandăm mai bine.'**
+  String get tutorialMatchBody;
+
+  /// No description provided for @tutorialSwapTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Schimbă sau cumpără'**
+  String get tutorialSwapTitle;
+
+  /// No description provided for @tutorialSwapBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Ceri un schimb sau faci o ofertă. Vorbiți în chat, stabiliți unde vă vedeți, iar la final cartea trece oficial la noul proprietar.'**
+  String get tutorialSwapBody;
+
+  /// No description provided for @tutorialWishlistTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Favorite și alerte'**
+  String get tutorialWishlistTitle;
+
+  /// No description provided for @tutorialWishlistBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Pune la favorite o carte pe care n-o găsești. Te anunțăm în clipa în care o listează cineva din orașul tău.'**
+  String get tutorialWishlistBody;
+
+  /// No description provided for @tutorialShortcutsTitle.
+  ///
+  /// In ro, this message translates to:
+  /// **'Personalizează meniul rapid'**
+  String get tutorialShortcutsTitle;
+
+  /// No description provided for @tutorialShortcutsBody.
+  ///
+  /// In ro, this message translates to:
+  /// **'Din meniu îți alegi scurtăturile pe care le vrei la îndemână. Limba, notificările și restul se schimbă din setări.'**
+  String get tutorialShortcutsBody;
+
+  /// No description provided for @commonBack.
+  ///
+  /// In ro, this message translates to:
+  /// **'Înapoi'**
+  String get commonBack;
+
+  /// No description provided for @bookDetailNegotiableChip.
+  ///
+  /// In ro, this message translates to:
+  /// **'negociabil'**
+  String get bookDetailNegotiableChip;
+
+  /// No description provided for @filtersAny.
+  ///
+  /// In ro, this message translates to:
+  /// **'Toate'**
+  String get filtersAny;
+
+  /// No description provided for @browseResultsCount.
+  ///
+  /// In ro, this message translates to:
+  /// **'{count, plural, one{o carte} few{{count} cărți} other{{count} de cărți}}'**
+  String browseResultsCount(num count);
 }
 
 class _AppLocalizationsDelegate

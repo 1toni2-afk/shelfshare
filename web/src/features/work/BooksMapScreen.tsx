@@ -1,32 +1,54 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { MapContainer, Marker, TileLayer, Tooltip } from 'react-leaflet';
+import { MapContainer, Marker, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
+import { setWorkerUrl } from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { mapRepository, workKeys } from './workRepository';
 import { ErrorNotice, Spinner } from '@/components/ui';
 import { useTheme } from '@/lib/theme/themeStore';
 import 'leaflet/dist/leaflet.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 /** Centrul geografic al României și zoom-ul care încadrează toată țara. */
 const ROMANIA_CENTER: [number, number] = [45.9432, 24.9668];
 const INITIAL_ZOOM = 6.3;
 
 /**
- * Plăcile vin de la CartoDB, NU de la tile.openstreetmap.org.
+ * Harta de bază vine de la OpenFreeMap: open source, gratuit, fără cheie API
+ * și fără limită de cereri, pe date OpenStreetMap.
  *
- * OSM descurajează explicit folosirea directă în producție (politica lor de
- * trafic/User-Agent) și poate degrada silențios plăcile. CartoDB servește
- * aceleași date OpenStreetMap, gratuit, fără cheie API și cu CORS permisiv.
+ * NU CartoDB: din 2026 întoarce o placă „API KEY REQUIRED" pentru orice
+ * cerere venită de pe un site (după Referer) - de pe server, fără Referer,
+ * pare în continuare să meargă, deci defectul nu se vede din curl.
+ * NU tile.openstreetmap.org: politica lor descurajează folosirea directă în
+ * aplicații și nu are stil întunecat.
  *
- * Stilul urmează tema: „Dark Matter" pe întuneric, altfel o hartă luminoasă pe
- * un UI închis bate brutal la ochi.
+ * OpenFreeMap servește doar plăci VECTORIALE, deci le desenează MapLibre GL,
+ * pus ca strat în Leaflet - marcajele orașelor rămân Leaflet, neschimbate.
+ *
+ * Stilul urmează tema: „dark" pe întuneric, altfel o hartă luminoasă pe un UI
+ * închis bate brutal la ochi.
  */
-const TILES = {
-  light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+const MAP_STYLES = {
+  light: 'https://tiles.openfreemap.org/styles/positron',
+  dark: 'https://tiles.openfreemap.org/styles/dark',
 };
+
+// MapLibre 6 își caută workerul relativ la propriul fișier (import.meta.url),
+// iar Vite mută fișierul acela - și la pre-bundling în dev, și la build -
+// deci harta rămânea goală cu „Worker failed to load". `?worker&url` pune
+// Vite să împacheteze singur workerul (cu tot cu modulul comun) și ne dă URL-ul.
+setWorkerUrl(maplibreWorkerUrl);
+
+const MAP_ATTRIBUTION =
+  '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> ' +
+  '&copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> ' +
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
 export function BooksMapScreen() {
   const { t } = useTranslation();
@@ -73,15 +95,14 @@ export function BooksMapScreen() {
             key={String(dark)}
             center={ROMANIA_CENTER}
             zoom={INITIAL_ZOOM}
+            // Plafonul îl dădea înainte stratul de plăci raster; stratul
+            // MapLibre nu-l comunică lui Leaflet, iar fără el zoom-ul n-ar
+            // avea limită.
+            maxZoom={18}
             scrollWheelZoom
             className="h-full w-full"
           >
-            <TileLayer
-              url={dark ? TILES.dark : TILES.light}
-              subdomains={['a', 'b', 'c', 'd']}
-              maxZoom={20}
-              attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-            />
+            <VectorBaseMap style={dark ? MAP_STYLES.dark : MAP_STYLES.light} />
 
             {cities.data.map((city) => (
               <Marker
@@ -104,6 +125,26 @@ export function BooksMapScreen() {
       )}
     </div>
   );
+}
+
+/**
+ * Stratul MapLibre ca layer Leaflet. react-leaflet nu are o componentă pentru
+ * el, deci îl adăugăm manual pe harta din context și îl scoatem la demontare.
+ */
+function VectorBaseMap({ style }: { style: string }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const layer = maplibreGL({ style, attributionControl: false });
+    layer.addTo(map);
+    map.attributionControl.addAttribution(MAP_ATTRIBUTION);
+    return () => {
+      map.attributionControl.removeAttribution(MAP_ATTRIBUTION);
+      layer.remove();
+    };
+  }, [map, style]);
+
+  return null;
 }
 
 /**

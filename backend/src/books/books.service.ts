@@ -2395,7 +2395,7 @@ export class BooksService {
         select: {
           id: true,
           bookId: true,
-          book: { select: { title: true, coverUrl: true } },
+          book: { select: { title: true, author: true, coverUrl: true } },
         },
       }),
     ]);
@@ -2453,11 +2453,13 @@ export class BooksService {
         theirBooks: entry.theirBooks.map((c) => ({
           userBookId: c.id,
           title: c.book.title,
+          author: c.book.author,
           coverUrl: c.book.coverUrl,
         })),
         myBooksTheyWant: myBooksTheyWant.map((b) => ({
           userBookId: b.id,
           title: b.book.title,
+          author: b.book.author,
           coverUrl: b.book.coverUrl,
         })),
       };

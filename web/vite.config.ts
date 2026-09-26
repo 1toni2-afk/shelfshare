@@ -41,6 +41,35 @@ function staticPagesPlugin(): Plugin {
 // release cădem pe producție, nu pe localhost. Un build fără variabila setată
 // ajungea altfel cu "localhost:3000" compilat în bundle, adică fiecare cerere
 // de pe telefon lovea telefonul însuși - vezi comentariul din api_client.dart.
+/**
+ * Scrie `build-info.json` lângă index.html, cu API-ul spre care pointează
+ * bundle-ul.
+ *
+ * Îl citește scripts/beta-seo.js ca să-și ia datele pentru HTML-ul pre-randat
+ * din ACELAȘI backend ca aplicația. Până acum sursa era o variabilă de mediu
+ * separată (BETA_API_URL), iar cele două au divergat de două ori: HTML-ul
+ * servit lista cărți din producție, aplicația le căuta în baza de test, deci
+ * fiecare link din Google ducea la „anunț inexistent". Cu API-ul scris de
+ * build, nepotrivirea nu mai poate apărea.
+ */
+function buildInfoPlugin(apiBaseUrl: string): Plugin {
+  return {
+    name: 'shelfshare-build-info',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'build-info.json',
+        source: JSON.stringify(
+          { apiBaseUrl, version: pkg.version, builtAt: new Date().toISOString() },
+          null,
+          2,
+        ),
+      });
+    },
+  };
+}
+
 const DEFAULT_API = {
   development: 'http://localhost:3000',
   production: 'https://api.shelfshare.ro',
@@ -53,7 +82,7 @@ export default defineConfig(({ mode }) => {
     (mode === 'production' ? DEFAULT_API.production : DEFAULT_API.development);
 
   return {
-    plugins: [react(), tailwindcss(), staticPagesPlugin()],
+    plugins: [react(), tailwindcss(), staticPagesPlugin(), buildInfoPlugin(apiBaseUrl)],
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') },
     },
@@ -73,7 +102,11 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true,
+      // `hidden`: hărțile se generează (utile la depanare locală), dar
+      // bundle-ul nu le mai anunță prin `sourceMappingURL`, iar beta-server.js
+      // refuză oricum `.map` - altfel tot codul sursă, cu comentarii despre
+      // infrastructură, era public pe site.
+      sourcemap: 'hidden',
       // Chunk-uri manuale pe librăriile grele, ca prima încărcare să nu aducă
       // hărți/chart-uri de care ecranul de login n-are nevoie. Echivalentul
       // „tiers"-elor de import amânat din app_router.dart.

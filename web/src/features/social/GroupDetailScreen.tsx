@@ -139,7 +139,7 @@ export function GroupDetailScreen() {
                     {new Intl.DateTimeFormat(i18n.language, {
                       dateStyle: 'medium',
                       timeStyle: 'short',
-                    }).format(new Date(event.startsAt))}
+                    }).format(new Date(event.eventAt))}
                   </p>
                   {event.location && (
                     <p className="flex items-center gap-1 text-sm text-muted-foreground">

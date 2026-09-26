@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 import { api } from '@/lib/api/client';
 import { profileRepository } from './profileRepository';
 import { Button, Field } from '@/components/ui';
@@ -42,9 +43,7 @@ export function PreRegistrationScreen() {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-[420px]">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <span className="rounded-2xl bg-accent/15 p-3 text-accent">
-            <BookOpen size={32} />
-          </span>
+          <BrandMark size={56} />
           <h1 className="font-display text-2xl font-bold">{t('preRegisterAndroidHeadline')}</h1>
           <p className="text-muted-foreground">{t('preRegisterAndroidBody')}</p>
         </div>

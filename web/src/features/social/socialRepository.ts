@@ -21,8 +21,10 @@ export interface GroupPost {
 export interface GroupEvent {
   id: string;
   title: string;
+  description: string | null;
   location: string | null;
-  startsAt: string;
+  /** `eventAt` în API (GroupEvent din schema.prisma), nu `startsAt`. */
+  eventAt: string;
 }
 
 export interface GroupDetail extends Group {
@@ -40,6 +42,8 @@ export interface SmartMatchBook {
   /** Id-ul anunțului, nu al cărții din catalog: cu el se deschide /books/:id. */
   userBookId: string;
   title: string;
+  /** Opțional: backendul de producție îl trimite abia după redeploy. */
+  author?: string | null;
   coverUrl: string | null;
 }
 
@@ -87,21 +91,35 @@ export interface BookMatchSwipeResult {
   discoveryBoostSwipesRemaining: number;
 }
 
+/**
+ * Grupul așa cum vine din API: numărul de membri e în `_count.members`
+ * (include-ul Prisma din groups.service.ts), nu într-un `memberCount` plat.
+ * Tipul promitea `memberCount`, TypeScript n-avea cum să prindă diferența, iar
+ * pe ecran apărea „undefined membri".
+ */
+type RawGroup<T extends Group = Group> = Omit<T, 'memberCount'> & {
+  _count?: { members?: number };
+};
+
+function withMemberCount<T extends Group>(group: RawGroup<T>): T {
+  return { ...group, memberCount: group._count?.members ?? 0 } as T;
+}
+
 export const groupsRepository = {
-  mine(signal?: AbortSignal): Promise<Group[]> {
-    return api.get<Group[]>('/groups/mine', { signal });
+  async mine(signal?: AbortSignal): Promise<Group[]> {
+    return (await api.get<RawGroup[]>('/groups/mine', { signal })).map(withMemberCount);
   },
 
-  discover(signal?: AbortSignal): Promise<Group[]> {
-    return api.get<Group[]>('/groups/public', { signal });
+  async discover(signal?: AbortSignal): Promise<Group[]> {
+    return (await api.get<RawGroup[]>('/groups/public', { signal })).map(withMemberCount);
   },
 
-  detail(id: string, signal?: AbortSignal): Promise<GroupDetail> {
-    return api.get<GroupDetail>(`/groups/${id}`, { signal });
+  async detail(id: string, signal?: AbortSignal): Promise<GroupDetail> {
+    return withMemberCount(await api.get<RawGroup<GroupDetail>>(`/groups/${id}`, { signal }));
   },
 
-  create(input: { name: string; description?: string; isPublic: boolean }): Promise<Group> {
-    return api.post<Group>('/groups', input);
+  async create(input: { name: string; description?: string; isPublic: boolean }): Promise<Group> {
+    return withMemberCount(await api.post<RawGroup>('/groups', input));
   },
 
   join(id: string): Promise<void> {
@@ -120,7 +138,7 @@ export const groupsRepository = {
     return api.post<GroupPost>(`/groups/${id}/posts`, { content });
   },
 
-  addEvent(id: string, input: { title: string; location?: string; startsAt: string }) {
+  addEvent(id: string, input: { title: string; location?: string; eventAt: string }) {
     return api.post<GroupEvent>(`/groups/${id}/events`, input);
   },
 

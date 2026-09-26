@@ -19,7 +19,18 @@
 # Web-ul e un build STATIC (frontend/build/web-test), nu `flutter run`: acela e
 # un proces care ține de sesiunea din care a fost pornit și moare cu ea.
 # Bundle-ul se reface cu:
-#   flutter build web -o build/web-test --dart-define=API_BASE_URL=http://localhost:3999
+#   flutter build web -o build/web-test --dart-define=API_BASE_URL=https://sv-toni.tail6e27d0.ts.net:8444
+# API_BASE_URL e adresa din tailnet, nu localhost:3999, ca acelasi bundle sa
+# mearga si de pe telefon (prin `tailscale serve`, vezi mai jos) si de pe masina
+# gazda - MagicDNS rezolva numele local, deci localhost:5961 ramane functional.
+# Un build cu localhost:3999 rupe accesul prin Tailscale: telefonul si-ar cauta
+# API-ul in propriul localhost.
+#
+# Expunerea prin Tailscale (configurata cu `tailscale serve --bg`, persista
+# peste reboot):
+#   https://sv-toni.tail6e27d0.ts.net:8443  -> web  (127.0.0.1:5961)
+#   https://sv-toni.tail6e27d0.ts.net:8444  -> API  (127.0.0.1:3999)
+#   https://sv-toni.tail6e27d0.ts.net:8445  -> MinIO (127.0.0.1:59000)
 # `-o build/web-test` e obligatoriu - `build/web` e ce servește producția pe
 # 5959, iar un build cu API-ul de test acolo ar rupe site-ul real până la
 # următorul deploy.

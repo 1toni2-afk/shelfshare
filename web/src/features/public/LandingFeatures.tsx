@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  BarChart3,
   BookOpen,
   History,
   Images,
@@ -31,7 +30,6 @@ type FeatureId =
   | 'nearby'
   | 'groups'
   | 'leaderboard'
-  | 'stats'
   | 'history'
   | 'shelf'
   | 'trade'
@@ -61,7 +59,7 @@ export function LandingFeatures() {
     {
       id: 'matches',
       icon: <Sparkles size={20} />,
-      title: t('landingFeatureMatchesTitle', 'Potriviri inteligente de schimb'),
+      title: t('landingFeatureMatchesTitle', 'Potriviri de schimb inteligente'),
       text: t(
         'landingFeatureMatchesText',
         'Aplicația caută singură oamenii care au cărți de pe lista ta de dorințe și, în același timp, vor ceva de pe raftul tău. Vezi potrivirea gata făcută și propui schimbul dintr-un click.',
@@ -88,19 +86,10 @@ export function LandingFeatures() {
     {
       id: 'leaderboard',
       icon: <Trophy size={20} />,
-      title: t('landingFeatureLeaderboardTitle', 'Clasament'),
+      title: t('landingFeatureLeaderboardTitle', 'Clasament și statistici'),
       text: t(
         'landingFeatureLeaderboardText',
-        'Cine a dat cele mai multe cărți mai departe, pe lună și de la început. Fiecare schimb încheiat îți aduce puncte și insigne.',
-      ),
-    },
-    {
-      id: 'stats',
-      icon: <BarChart3 size={20} />,
-      title: t('landingFeatureStatsTitle', 'Statistici globale'),
-      text: t(
-        'landingFeatureStatsText',
-        'Cărțile, autorii și genurile care circulă cel mai mult în comunitate, plus câte cărți și-au găsit deja un cititor nou.',
+        'Cine a dat cele mai multe cărți mai departe, pe lună și de la început, plus cărțile, autorii și genurile care circulă cel mai mult în comunitate. Fiecare schimb încheiat îți aduce puncte și insigne.',
       ),
     },
     {

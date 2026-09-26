@@ -27,6 +27,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { BrandMark } from '@/components/ui/BrandMark';
 import { chatKeys, chatRepository } from '@/features/chat/chatRepository';
 import {
   notificationsKeys,
@@ -145,6 +146,16 @@ export function AppShell() {
     setDrawerOpen(false);
   }, [location.pathname]);
 
+  // Fade-ul de sub antet apare doar după ce pagina a derulat: în capul
+  // paginii ar fi estompat degeaba primul rând de conținut.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   useEffect(() => {
     if (!drawerOpen) return;
     const onKey = (event: KeyboardEvent) => {
@@ -213,17 +224,15 @@ export function AppShell() {
               <button
                 onClick={() => setDrawerOpen(true)}
                 aria-label={t('navOpenMenu')}
-                className="rounded-full p-2.5 hover:bg-muted"
+                className="shrink-0 rounded-full border-[1.5px] border-accent bg-background p-2 text-accent transition hover:bg-accent/10"
               >
-                <Menu size={22} />
+                <Menu size={20} />
               </button>
             )}
             <div ref={setBarTitle} className="min-w-0 flex-1 empty:hidden" />
             {!barUsage?.title && (
               <Link to="/" className="flex min-w-0 flex-1 items-center gap-2">
-                <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
-                  <BookOpen size={18} />
-                </span>
+                <BrandMark size={30} />
                 <span className="truncate font-display text-base font-bold">ShelfShare</span>
               </Link>
             )}
@@ -247,6 +256,16 @@ export function AppShell() {
           {isGuest && (
             <LanguageMenu className="absolute right-4 top-3 hidden min-[900px]:block" />
           )}
+
+          {/* Conținutul care trece pe sub antet se stinge treptat, în loc să
+              fie tăiat într-o linie dreaptă. */}
+          <div
+            aria-hidden
+            className={cn(
+              'pointer-events-none absolute inset-x-0 top-full h-6 bg-gradient-to-b from-background to-transparent transition-opacity duration-200',
+              scrolled ? 'opacity-100' : 'opacity-0',
+            )}
+          />
         </div>
 
         <main className="min-w-0 flex-1">
@@ -364,9 +383,7 @@ function SidebarContent({
   return (
     <>
       <div className="flex items-center gap-2.5 px-5 pb-4 pt-5">
-        <span className="rounded-lg bg-accent/15 p-1.5 text-accent">
-          <BookOpen size={20} />
-        </span>
+        <BrandMark size={32} />
         <span className="font-display text-base font-bold">ShelfShare</span>
         <OnlineUsersBadge />
         {onClose && (

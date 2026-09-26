@@ -4,6 +4,11 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import {
+  analyticsSupported,
+  getAnalyticsConsent,
+  setAnalyticsConsent,
+} from '@/lib/analytics/analytics';
+import {
   BarChart3,
   Bell,
   BookOpen,
@@ -313,12 +318,19 @@ export function SettingsScreen() {
 }
 
 /**
- * Consimțământul pentru statistici de folosire. Implicit PORNIT, ca în Flutter;
- * preferința e locală, nu pe cont - ține de dispozitivul din fața userului.
+ * Consimțământul pentru statistici de folosire; preferința e locală, nu pe
+ * cont - ține de dispozitivul din fața userului.
+ *
+ * Pe web e EXACT consimțământul pentru Google Analytics (lib/analytics), deci
+ * implicit OPRIT până la „Accept" - ca în Flutter web. Înainte comutatorul
+ * scria o cheie pe care n-o citea nimeni. Pe Android rămâne cheia locală
+ * (implicit pornit, ca în aplicația Flutter), până la portarea Firebase.
  */
 function AnalyticsConsentCard() {
   const { t } = useTranslation();
+  const web = analyticsSupported();
   const [enabled, setEnabled] = useState(() => {
+    if (web) return getAnalyticsConsent() === 'granted';
     try {
       return window.localStorage.getItem('shelfshare.analytics') !== '0';
     } catch {
@@ -333,6 +345,10 @@ function AnalyticsConsentCard() {
         label={t('settingsAnalyticsSwitch')}
         onChange={(value) => {
           setEnabled(value);
+          if (web) {
+            setAnalyticsConsent(value);
+            return;
+          }
           try {
             window.localStorage.setItem('shelfshare.analytics', value ? '1' : '0');
           } catch {

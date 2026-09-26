@@ -2,12 +2,12 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { HeaderTabs, ScreenHeader } from '@/components/layout/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { FolderTabs } from '@/components/ui/FolderTabs';
 import { Plus, Users } from 'lucide-react';
 import { groupsRepository, socialKeys } from './socialRepository';
 import { Button, ErrorNotice, Field, Spinner } from '@/components/ui';
 import { Switch } from '@/components/ui/Switch';
-import { cn } from '@/lib/utils/cn';
 
 type Tab = 'mine' | 'discover';
 
@@ -49,27 +49,22 @@ export function GroupsScreen() {
     create.mutate();
   }
 
-  const header = (
-    <ScreenHeader
-      title={t('groupsTitle')}
-      back
-      bottom={
-        <HeaderTabs
-          value={tab}
-          onChange={setTab}
-          tabs={[
-            { value: 'discover' as const, label: t('groupsTabDiscover') },
-            { value: 'mine' as const, label: t('groupsTabMine') },
-          ]}
-        />
-      }
-    />
-  );
+  const header = <ScreenHeader title={t('groupsTitle')} back />;
 
   return (
     <div className="mx-auto w-full max-w-[680px] px-5 pb-16 pt-2 min-[900px]:px-8">
       {header}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <FolderTabs
+        label={t('groupsTitle')}
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: 'discover' as const, label: t('groupsTabDiscover') },
+          { value: 'mine' as const, label: t('groupsTabMine') },
+        ]}
+        className="mt-2"
+      >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Button onClick={() => setCreating((open) => !open)}>
           <Plus size={18} />
           {t('groupsCreateTitle')}
@@ -112,23 +107,6 @@ export function GroupsScreen() {
         </form>
       )}
 
-      <div className="mb-6 flex gap-2">
-        {(['mine', 'discover'] as const).map((value) => (
-          <button
-            key={value}
-            onClick={() => setTab(value)}
-            className={cn(
-              'rounded-full border px-4 py-2 text-sm transition',
-              tab === value
-                ? 'border-accent bg-accent/15 font-semibold text-accent'
-                : 'border-border hover:bg-muted',
-            )}
-          >
-            {t(value === 'mine' ? 'groupsTabMine' : 'groupsTabDiscover')}
-          </button>
-        ))}
-      </div>
-
       {groups.isPending ? (
         <div className="flex h-40 items-center justify-center text-accent">
           <Spinner size={26} />
@@ -160,6 +138,7 @@ export function GroupsScreen() {
           ))}
         </ul>
       )}
+      </FolderTabs>
     </div>
   );
 }
