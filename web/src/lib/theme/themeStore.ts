@@ -1,4 +1,9 @@
 import { useCallback, useSyncExternalStore } from 'react';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+const ThemeBars = registerPlugin<{ apply(options: { dark: boolean; color: string }): Promise<void> }>(
+  'ThemeBars',
+);
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -34,6 +39,11 @@ function apply(): void {
   document
     .querySelector('meta[name="theme-color"]')
     ?.setAttribute('content', isDark() ? '#0E0E0F' : '#7C3A1E');
+  // În aplicația Android theme-color nu contează: fâșiile de sub barele de
+  // sistem sunt fundalul ferestrei native (vezi ThemeBarsPlugin.java).
+  if (Capacitor.isNativePlatform()) {
+    ThemeBars.apply({ dark: isDark(), color: isDark() ? '#0E0E0F' : '#F8F4EC' }).catch(() => {});
+  }
   for (const listener of listeners) listener();
 }
 

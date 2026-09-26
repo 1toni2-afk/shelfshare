@@ -2,7 +2,12 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <!-- Fără `viewport-fit=cover`: cu el, în aplicația Android (Capacitor 8,
+       WebView >= 140) pagina se desena SUB bara de stare și sub bara de
+       navigare, iar antetul cu logo și meniu stătea sub ceas. Niciun ecran nu
+       folosește env(safe-area-inset-*), așa că lăsăm Capacitor să împingă
+       WebView-ul cu padding nativ; culoarea fâșiilor o pune ThemeBarsPlugin. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
 
   <!-- Fără cache pentru HTML: fișierele din /assets au numele hash-uit de Vite
        și pot fi cache-uite lung, dar index.html trebuie să vină mereu de la

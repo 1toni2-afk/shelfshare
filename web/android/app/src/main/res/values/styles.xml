@@ -13,6 +13,9 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Fundalul de sub barele de sistem până rulează JS-ul; apoi îl
+             suprascrie ThemeBarsPlugin după tema din aplicație. -->
+        <item name="android:windowBackground">@color/ss_window_background</item>
     </style>
 
 
