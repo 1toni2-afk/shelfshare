@@ -107,6 +107,10 @@ services:
     volumes:
       - ./frontend/build/web-test:/usr/share/nginx/html:ro
       - ./scripts/test-web-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    # nginx rezolva `backend` la pornire (pentru proxy-ul /api/) si moare daca
+    # numele nu exista inca, deci ordinea conteaza.
+    depends_on:
+      - backend
 
 volumes:
   postgres_test_data:
