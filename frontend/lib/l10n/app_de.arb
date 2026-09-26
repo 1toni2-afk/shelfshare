@@ -1000,6 +1000,8 @@
     "adminStatsUsersSubtitle": "davon {count} bestätigt",
     "adminStatsBooksLabel": "Bücher im Katalog",
     "adminStatsBooksSubtitle": "{count} gelistete Exemplare",
+    "adminStatsCatalogLabel": "Kuratierte Bücher im Katalog",
+    "adminStatsCatalogSubtitle": "{listings} gelistete Exemplare · ~{imported} aus Open Library importiert",
     "adminStatsExchangesLabel": "Tausche",
     "adminStatsExchangesSubtitle": "{completed} abgeschlossen · {pending} ausstehend",
     "auctionTitle": "Auktion",

@@ -56,12 +56,29 @@ const ADMIN_LINKS = [
 ] as const;
 
 export function AdminScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const stats = useQuery({
     queryKey: adminKeys.stats(),
     queryFn: ({ signal }) => adminRepository.stats(signal),
   });
+
+  const formatNumber = (value: number) => new Intl.NumberFormat(i18n.language).format(value);
+  const formatCompact = (value: number) =>
+    new Intl.NumberFormat(i18n.language, { notation: 'compact', maximumFractionDigits: 2 }).format(
+      value,
+    );
+
+  const linkCount = (to: string): number | undefined => {
+    if (to === '/admin/users') return stats.data?.users?.total;
+    if (to === '/admin/listings/inactive') return stats.data?.books?.listingsWithoutRequests;
+    return undefined;
+  };
+
+  const linkTitle = (key: (typeof ADMIN_LINKS)[number]['titleKey'], count: number | undefined) =>
+    count !== undefined
+      ? t(key, { count })
+      : t(key, { count: 0 }).replace(/\s*\(0\)$/, '');
 
   return (
     <RequireAdmin>
@@ -79,15 +96,30 @@ export function AdminScreen() {
                   : undefined
               }
             />
-            <StatTile
-              label={t('adminStatsBooksLabel')}
-              value={stats.data.books?.totalInCatalog}
-              hint={
-                stats.data.books?.totalListings !== undefined
-                  ? t('adminStatsBooksSubtitle', { count: stats.data.books.totalListings })
-                  : undefined
-              }
-            />
+            {/* Tabelul `books` ține ~2.100 de titluri curate și ~3,68M
+                importate din Open Library; doar totalul, lângă 11 exemplare
+                listate, arăta a eroare. Un backend vechi, fără câmpul nou,
+                primește tot dala veche. */}
+            {stats.data.books?.curatedInCatalog !== undefined ? (
+              <StatTile
+                label={t('adminStatsCatalogLabel')}
+                value={formatNumber(stats.data.books.curatedInCatalog)}
+                hint={t('adminStatsCatalogSubtitle', {
+                  listings: formatNumber(stats.data.books.totalListings ?? 0),
+                  imported: formatCompact(stats.data.books.totalInCatalog ?? 0),
+                })}
+              />
+            ) : (
+              <StatTile
+                label={t('adminStatsBooksLabel')}
+                value={stats.data.books?.totalInCatalog}
+                hint={
+                  stats.data.books?.totalListings !== undefined
+                    ? t('adminStatsBooksSubtitle', { count: stats.data.books.totalListings })
+                    : undefined
+                }
+              />
+            )}
             <StatTile
               label={t('adminStatsExchangesLabel')}
               value={stats.data.exchanges?.total}
@@ -112,10 +144,10 @@ export function AdminScreen() {
             >
               <span className="min-w-0">
                 <span className="block truncate font-medium">
-                  {/* Cheile cu `{count}` sunt și titluri de secțiune în
-                      Flutter; le dăm 0 ca ICU să nu arunce pe placeholder
-                      lipsă, iar numărul real se vede în ecranul respectiv. */}
-                  {t(link.titleKey, { count: 0 })}
+                  {/* Cheile cu `{count}` primesc numărul real din /admin/stats.
+                      Cât se încarcă (sau pe un backend fără câmp) tăiem
+                      paranteza - un „(0)" fix arăta ca o bază goală. */}
+                  {linkTitle(link.titleKey, linkCount(link.to))}
                 </span>
                 {link.descKey && (
                   <span className="block truncate text-sm text-muted-foreground">

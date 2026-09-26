@@ -1000,6 +1000,8 @@
     "adminStatsUsersSubtitle": "ebből {count} megerősített",
     "adminStatsBooksLabel": "Könyvek a katalógusban",
     "adminStatsBooksSubtitle": "{count} listázott példány",
+    "adminStatsCatalogLabel": "Kurált könyvek a katalógusban",
+    "adminStatsCatalogSubtitle": "{listings} listázott példány · ~{imported} importálva az Open Libraryből",
     "adminStatsExchangesLabel": "Cserék",
     "adminStatsExchangesSubtitle": "{completed} befejezett · {pending} folyamatban",
     "auctionTitle": "Árverés",
