@@ -100,7 +100,14 @@ function OwnedBookRow({ owned }: { owned: OwnedBook }) {
    * am crea un al doilea rând pentru aceeași carte.
    */
   function listNow() {
-    const params = new URLSearchParams({ mode: 'listing', bookId: owned.book.id, title: owned.book.title });
+    // `from=shelf`: cartea e deja în raft, deci formularul nu mai oferă
+    // „Adaugă în raft" - singura destinație cu sens e listarea.
+    const params = new URLSearchParams({
+      mode: 'listing',
+      from: 'shelf',
+      bookId: owned.book.id,
+      title: owned.book.title,
+    });
     if (owned.book.author) params.set('author', owned.book.author);
     if (owned.book.isbn) params.set('isbn', owned.book.isbn);
     if (owned.book.coverUrl) params.set('cover', owned.book.coverUrl);
@@ -141,21 +148,38 @@ function OwnedBookRow({ owned }: { owned: OwnedBook }) {
               />
             </span>
           )}
-          <span className="mt-1 block text-sm text-muted-foreground">
-            {owned.totalPages
-              ? `${t('bookshelfProgressLabel', { current: owned.currentPage, total: owned.totalPages })} · ${t('shelfProgressPercentLabel', { percent: Math.round((fraction ?? 0) * 100) })}`
-              : t('bookshelfProgressLabelNoTotal', { current: owned.currentPage })}
-          </span>
+          {/* Fără total de pagini, „Pagina 0" nu spune nimic: cartea terminată
+              scrie „Terminată", iar cea neîncepută nu scrie nimic. */}
+          {owned.totalPages ? (
+            <span className="mt-1 block text-sm text-muted-foreground">
+              {`${t('bookshelfProgressLabel', { current: owned.currentPage, total: owned.totalPages })} · ${t('shelfProgressPercentLabel', { percent: Math.round((fraction ?? 0) * 100) })}`}
+            </span>
+          ) : finished ? (
+            <span className="mt-1 block text-sm font-medium text-accent">
+              {t('activityBadgeFinished')}
+            </span>
+          ) : owned.currentPage > 0 ? (
+            <span className="mt-1 block text-sm text-muted-foreground">
+              {t('bookshelfProgressLabelNoTotal', { current: owned.currentPage })}
+            </span>
+          ) : null}
         </button>
 
         {/* Listarea e acțiunea cea mai cerută de aici, deci stă la vedere, la un
-            singur click - nu ascunsă în meniu. */}
+            singur click - nu ascunsă în meniu. Cartea terminată e momentul în
+            care propunerea e la locul ei, așa că butonul se aprinde în culoarea
+            aplicației, în loc de un rând separat sub card. */}
         {!owned.listed && (
           <button
             onClick={listNow}
-            title={t('shelfListItNow')}
+            title={t(finished ? 'shelfFinishedCta' : 'shelfListItNow')}
             aria-label={t('shelfListItNow')}
-            className="shrink-0 rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className={cn(
+              'shrink-0 rounded-full p-2 transition',
+              finished
+                ? 'bg-accent/15 text-accent hover:bg-accent/25'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
           >
             <Store size={20} />
           </button>
@@ -190,18 +214,6 @@ function OwnedBookRow({ owned }: { owned: OwnedBook }) {
         </div>
       </div>
 
-      {/* Cartea terminată e singurul moment în care propunerea de a o da mai
-          departe e la locul ei - până atunci userul încă o citește. */}
-      {finished && !owned.listed && (
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <p className="min-w-0 flex-1 text-sm text-muted-foreground">{t('shelfFinishedCta')}</p>
-          <Button variant="outline" onClick={listNow}>
-            <Store size={18} />
-            {t('shelfListItNow')}
-          </Button>
-        </div>
-      )}
-
       {editing && <ReadingProgressSheet owned={owned} onClose={() => setEditing(false)} />}
     </li>
   );
@@ -209,10 +221,7 @@ function OwnedBookRow({ owned }: { owned: OwnedBook }) {
 
 function MenuItem({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
-      onClick={onClick}
-      className="block w-full px-4 py-2.5 text-left text-sm hover:bg-muted"
-    >
+    <button onClick={onClick} className="block w-full px-4 py-2.5 text-left text-sm hover:bg-muted">
       {children}
     </button>
   );
@@ -236,15 +245,22 @@ function ReadingProgressSheet({ owned, onClose }: { owned: OwnedBook; onClose: (
   const totalPages = Number(total.trim()) || null;
 
   const save = useMutation({
-    mutationFn: async (page: number) => {
-      await shelfRepository.saveProgress(owned.book.id, {
-        currentPage: page,
-        ...(totalPages ? { totalPages } : {}),
-      });
+    /*
+      `page: null` = „am terminat-o" fără să știm câte pagini are: nu
+      inventăm un progres (înainte, userul trebuia să tasteze un total ca să
+      poată marca, și ajungea să scrie 0), doar schimbăm statusul.
+    */
+    mutationFn: async ({ page, finished }: { page: number | null; finished: boolean }) => {
+      if (page !== null) {
+        await shelfRepository.saveProgress(owned.book.id, {
+          currentPage: page,
+          ...(totalPages ? { totalPages } : {}),
+        });
+      }
       // Statusul de raft urmează progresul: cine ajunge la ultima pagină e
       // „Finished", cine e la mijloc e „Reading". Fără asta, cartea rămânea
       // „Reading" la infinit și butonul de listare nu apărea niciodată.
-      const done = !!totalPages && page >= totalPages;
+      const done = finished || (!!totalPages && page !== null && page >= totalPages);
       await shelfRepository.setStatus(owned.book.id, {
         status: done ? 'FINISHED' : 'READING',
         owned: true,
@@ -261,16 +277,14 @@ function ReadingProgressSheet({ owned, onClose }: { owned: OwnedBook; onClose: (
 
   function submit(markFinished = false) {
     if (markFinished) {
-      if (!totalPages) {
-        setError(t('shelfProgressNeedTotal'));
-        return;
-      }
-      save.mutate(totalPages);
+      // Cu total cunoscut, progresul sare la ultima pagină; fără el, doar
+      // statusul - numărul de pagini nu e obligatoriu.
+      save.mutate({ page: totalPages, finished: true });
       return;
     }
 
     const raw = Number(value.trim());
-    if (!Number.isFinite(raw)) {
+    if (!value.trim() || !Number.isFinite(raw)) {
       setError(t('bookshelfProgressError'));
       return;
     }
@@ -279,10 +293,13 @@ function ReadingProgressSheet({ owned, onClose }: { owned: OwnedBook; onClose: (
         setError(t('shelfProgressNeedTotal'));
         return;
       }
-      save.mutate(Math.round((Math.min(100, Math.max(0, raw)) / 100) * totalPages));
+      save.mutate({
+        page: Math.round((Math.min(100, Math.max(0, raw)) / 100) * totalPages),
+        finished: false,
+      });
       return;
     }
-    save.mutate(raw);
+    save.mutate({ page: raw, finished: false });
   }
 
   return (
@@ -294,9 +311,7 @@ function ReadingProgressSheet({ owned, onClose }: { owned: OwnedBook; onClose: (
       />
       <div className="relative max-h-[85dvh] w-full max-w-[420px] overflow-y-auto rounded-t-[20px] bg-card p-4 min-[560px]:rounded-[20px]">
         <p className="font-semibold">{owned.book.title}</p>
-        {owned.book.author && (
-          <p className="text-sm text-muted-foreground">{owned.book.author}</p>
-        )}
+        {owned.book.author && <p className="text-sm text-muted-foreground">{owned.book.author}</p>}
 
         <label className="mt-4 flex flex-col gap-1.5">
           <span className="text-sm font-medium text-muted-foreground">
@@ -341,7 +356,12 @@ function ReadingProgressSheet({ owned, onClose }: { owned: OwnedBook; onClose: (
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 
         <div className="mt-4 flex gap-2">
-          <Button variant="outline" fullWidth onClick={() => submit(true)} disabled={save.isPending}>
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => submit(true)}
+            disabled={save.isPending}
+          >
             {t('shelfProgressMarkFinished')}
           </Button>
           <Button fullWidth onClick={() => submit()} loading={save.isPending}>
