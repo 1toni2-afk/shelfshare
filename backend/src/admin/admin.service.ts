@@ -73,28 +73,60 @@ export class AdminService {
     return { users, connections, sample };
   }
 
+  /**
+   * Cifrele panoului de admin.
+   *
+   * `books` are două cataloage în același tabel: ~2.100 de titluri curate
+   * (`curatedAt`), pe care le caută aplicația întâi, și ~3,68M rânduri
+   * importate în vrac din Open Library. Un singur „Cărți în catalog" = 3,68M
+   * părea o eroare lângă 11 exemplare listate, deci le dăm separat.
+   *
+   * Totalul e ESTIMAREA din statisticile Postgres (`pg_class.reltuples`), nu
+   * `count(*)`: numărarea exactă a 3,68M rânduri ține 2,5 s la fiecare
+   * deschidere a panoului. `-1` (tabel neanalizat încă) cade pe numărarea
+   * exactă.
+   */
   async getStats() {
     const [
       totalUsers,
       verifiedUsers,
-      totalBooks,
+      catalogEstimate,
+      curatedBooks,
       totalUserBooks,
+      listingsWithoutRequests,
       totalExchanges,
       completedExchanges,
       pendingExchanges,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.user.count({ where: { isEmailVerified: true } }),
-      this.prisma.book.count(),
+      this.prisma.$queryRaw<{ estimate: bigint | number }[]>`
+        SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'books'
+      `,
+      this.prisma.book.count({ where: { curatedAt: { not: null } } }),
       this.prisma.userBook.count(),
+      // Același filtru ca getInactiveListingsReport, ca numărul din panou să
+      // fie cel din lista pe care o deschide.
+      this.prisma.userBook.count({
+        where: { exchangeRequestsReceived: { none: {} } },
+      }),
       this.prisma.exchangeRequest.count(),
       this.prisma.exchangeRequest.count({ where: { status: 'COMPLETED' } }),
       this.prisma.exchangeRequest.count({ where: { status: 'PENDING' } }),
     ]);
 
+    const estimate = Number(catalogEstimate[0]?.estimate ?? -1);
+    const totalBooks =
+      estimate >= 0 ? estimate : await this.prisma.book.count();
+
     return {
       users: { total: totalUsers, verified: verifiedUsers },
-      books: { totalInCatalog: totalBooks, totalListings: totalUserBooks },
+      books: {
+        totalInCatalog: totalBooks,
+        curatedInCatalog: curatedBooks,
+        totalListings: totalUserBooks,
+        listingsWithoutRequests,
+      },
       exchanges: {
         total: totalExchanges,
         completed: completedExchanges,

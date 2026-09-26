@@ -9,7 +9,15 @@ import type { PublicUser } from '@/types/models';
  */
 export interface AdminStats {
   users?: { total?: number; verified?: number };
-  books?: { totalInCatalog?: number; totalListings?: number };
+  books?: {
+    /** Tot tabelul `books` (~3,68M, majoritatea din Open Library) - estimat. */
+    totalInCatalog?: number;
+    /** Titlurile curate (`curatedAt`), cele pe care le caută aplicația întâi. */
+    curatedInCatalog?: number;
+    totalListings?: number;
+    /** Anunțuri fără nicio cerere de schimb - lista din /admin/listings/inactive. */
+    listingsWithoutRequests?: number;
+  };
   exchanges?: { total?: number; completed?: number; pending?: number };
 }
 

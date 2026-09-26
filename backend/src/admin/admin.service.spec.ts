@@ -18,6 +18,7 @@ describe('AdminService', () => {
     book: Record<string, jest.Mock>;
     userBook: Record<string, jest.Mock>;
     exchangeRequest: Record<string, jest.Mock>;
+    $queryRaw: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -37,6 +38,7 @@ describe('AdminService', () => {
         delete: jest.fn(),
       },
       exchangeRequest: { count: jest.fn() },
+      $queryRaw: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -69,8 +71,9 @@ describe('AdminService', () => {
   describe('getStats', () => {
     it('agregheaza statisticile din toate tabelele', async () => {
       prisma.user.count.mockResolvedValueOnce(10).mockResolvedValueOnce(8);
+      prisma.$queryRaw.mockResolvedValue([{ estimate: BigInt(3000) }]);
       prisma.book.count.mockResolvedValue(20);
-      prisma.userBook.count.mockResolvedValue(25);
+      prisma.userBook.count.mockResolvedValueOnce(25).mockResolvedValueOnce(7);
       prisma.exchangeRequest.count
         .mockResolvedValueOnce(15)
         .mockResolvedValueOnce(6)
@@ -80,10 +83,28 @@ describe('AdminService', () => {
 
       expect(stats).toEqual({
         users: { total: 10, verified: 8 },
-        books: { totalInCatalog: 20, totalListings: 25 },
+        books: {
+          totalInCatalog: 3000,
+          curatedInCatalog: 20,
+          totalListings: 25,
+          listingsWithoutRequests: 7,
+        },
         exchanges: { total: 15, completed: 6, pending: 4 },
       });
     });
+  });
+
+  it('numara exact catalogul cand tabelul n-are inca statistici', async () => {
+    prisma.user.count.mockResolvedValue(0);
+    prisma.$queryRaw.mockResolvedValue([{ estimate: BigInt(-1) }]);
+    prisma.book.count.mockResolvedValueOnce(20).mockResolvedValueOnce(3681889);
+    prisma.userBook.count.mockResolvedValue(0);
+    prisma.exchangeRequest.count.mockResolvedValue(0);
+
+    const stats = await service.getStats();
+
+    expect(stats.books.totalInCatalog).toBe(3681889);
+    expect(stats.books.curatedInCatalog).toBe(20);
   });
 
   describe('banUser / unbanUser', () => {

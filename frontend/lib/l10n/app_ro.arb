@@ -1554,6 +1554,18 @@
     },
     "adminStatsBooksLabel": "Cărți în catalog",
     "adminStatsBooksSubtitle": "{count} exemplare listate",
+    "adminStatsCatalogLabel": "Cărți curate în catalog",
+    "adminStatsCatalogSubtitle": "{listings} exemplare listate · ~{imported} importate din Open Library",
+    "@adminStatsCatalogSubtitle": {
+        "placeholders": {
+            "listings": {
+                "type": "String"
+            },
+            "imported": {
+                "type": "String"
+            }
+        }
+    },
     "@adminStatsBooksSubtitle": {
         "placeholders": {
             "count": {

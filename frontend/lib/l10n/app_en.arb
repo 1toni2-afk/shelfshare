@@ -969,6 +969,8 @@
     "adminStatsUsersSubtitle": "of which {count} verified",
     "adminStatsBooksLabel": "Books in catalog",
     "adminStatsBooksSubtitle": "{count} copies listed",
+    "adminStatsCatalogLabel": "Curated books in catalog",
+    "adminStatsCatalogSubtitle": "{listings} copies listed · ~{imported} imported from Open Library",
     "adminStatsExchangesLabel": "Exchanges",
     "adminStatsExchangesSubtitle": "{completed} completed · {pending} pending",
     "auctionTitle": "Auction",
