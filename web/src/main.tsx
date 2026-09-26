@@ -9,7 +9,10 @@ import { router } from '@/app/router';
 import { i18nReady } from '@/lib/i18n';
 import { initAnalytics, trackPageView } from '@/lib/analytics/analytics';
 import { AnalyticsConsentBanner } from '@/components/layout/AnalyticsConsentBanner';
+import { installChunkReloadHandler } from '@/lib/chunkReload';
 import '@/styles/index.css';
+
+installChunkReloadHandler();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('#root lipsește din index.html');

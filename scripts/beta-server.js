@@ -26,6 +26,8 @@ const {
 } = require('./beta-seo');
 
 const root = path.join(__dirname, '..', 'web', 'dist');
+// Bucățile de cod ale build-urilor anterioare (web/vite.config.ts le mută aici).
+const archiveRoot = path.join(__dirname, '..', 'web', 'dist-archive');
 const port = Number(process.env.BETA_PORT || 5960);
 
 const mime = {
@@ -464,6 +466,22 @@ http
       if (!err) {
         const type = mime[path.extname(safePath).toLowerCase()] || 'application/octet-stream';
         return serve(data, type, cacheHeaderFor(reqPath));
+      }
+
+      // Bucată de cod dintr-un build anterior, cerută de o filă deschisă
+      // înainte de deploy - vezi archivePreviousAssetsPlugin din
+      // web/vite.config.ts. Calea e deja normalizată și verificată mai sus,
+      // deci `relative` nu poate ieși din `dist/`.
+      if (reqPath.startsWith('/assets/')) {
+        const archived = path.join(archiveRoot, path.relative(root, safePath));
+        return fs.readFile(archived, (archiveErr, archivedData) => {
+          if (archiveErr) {
+            res.writeHead(404, { ...COMMON_HEADERS, 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+            return res.end('Not Found');
+          }
+          const type = mime[path.extname(archived).toLowerCase()] || 'application/octet-stream';
+          serve(archivedData, type, cacheHeaderFor(reqPath));
+        });
       }
 
       // Fișier cerut explicit și inexistent: 404, nu index.html deghizat.

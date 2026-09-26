@@ -70,6 +70,50 @@ function buildInfoPlugin(apiBaseUrl: string): Plugin {
   };
 }
 
+/**
+ * Păstrează bucățile de cod ale build-ului anterior în `dist-archive/`,
+ * lângă `dist/`.
+ *
+ * Vite golește `dist/` la fiecare build, iar numele bucăților conțin hash-ul
+ * conținutului. O filă deschisă înainte de deploy are încă în memorie vechiul
+ * `index-*.js`, care cere `HomeScreen-<hash-vechi>.js` la prima navigare. Fără
+ * arhivă, cererea dă 404 și omul vede „Failed to fetch dynamically imported
+ * module" (s-a întâmplat pe 2026-09-26, imediat după mutarea pe shelfshare.ro).
+ * scripts/beta-server.js caută în arhivă orice `/assets/...` lipsă din `dist/`.
+ *
+ * Arhiva stă ÎN AFARA lui `dist/` dinadins: `dist/` intră întreg în AAB prin
+ * Capacitor, unde bucățile vechi ar fi doar balast. Fișierele mai vechi de 30
+ * de zile se șterg - nicio filă nu stă deschisă atât fără o reîncărcare.
+ */
+function archivePreviousAssetsPlugin(): Plugin {
+  let outDir = '';
+  return {
+    name: 'shelfshare-archive-previous-assets',
+    apply: 'build',
+    configResolved(config) {
+      outDir = path.resolve(config.root, config.build.outDir);
+    },
+    buildStart() {
+      const current = path.join(outDir, 'assets');
+      const archive = path.join(outDir, '..', 'dist-archive', 'assets');
+      fs.mkdirSync(archive, { recursive: true });
+      if (fs.existsSync(current)) {
+        for (const name of fs.readdirSync(current)) {
+          const target = path.join(archive, name);
+          // Doar dacă lipsește: mtime-ul rămâne data primei arhivări, deci
+          // curățenia de mai jos numără de când a ieșit fișierul din uz.
+          if (!fs.existsSync(target)) fs.copyFileSync(path.join(current, name), target);
+        }
+      }
+      const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      for (const name of fs.readdirSync(archive)) {
+        const file = path.join(archive, name);
+        if (fs.statSync(file).mtimeMs < cutoff) fs.rmSync(file, { force: true });
+      }
+    },
+  };
+}
+
 const DEFAULT_API = {
   development: 'http://localhost:3000',
   production: 'https://api.shelfshare.ro',
@@ -82,7 +126,13 @@ export default defineConfig(({ mode }) => {
     (mode === 'production' ? DEFAULT_API.production : DEFAULT_API.development);
 
   return {
-    plugins: [react(), tailwindcss(), staticPagesPlugin(), buildInfoPlugin(apiBaseUrl)],
+    plugins: [
+      react(),
+      tailwindcss(),
+      staticPagesPlugin(),
+      buildInfoPlugin(apiBaseUrl),
+      archivePreviousAssetsPlugin(),
+    ],
     resolve: {
       alias: { '@': path.resolve(__dirname, 'src') },
     },

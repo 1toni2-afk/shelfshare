@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useRouteError } from 'react-router-dom';
 import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { isChunkLoadError } from '@/lib/chunkReload';
 
 /**
  * Ce vede omul când un ecran crapă la randare, în locul paginii albe cu
@@ -106,7 +107,12 @@ class Boundary extends Component<{ resetKey: string; children: ReactNode }, { er
 
   render() {
     if (this.state.error !== null) {
-      return <ErrorScreen error={this.state.error} onRetry={() => this.setState({ error: null })} />;
+      // Un ecran care nu s-a putut descărca (build nou pe server) nu se
+      // repară prin re-randare: același import ar cere același fișier lipsă.
+      const retry = isChunkLoadError(this.state.error)
+        ? () => window.location.reload()
+        : () => this.setState({ error: null });
+      return <ErrorScreen error={this.state.error} onRetry={retry} />;
     }
     return this.props.children;
   }
