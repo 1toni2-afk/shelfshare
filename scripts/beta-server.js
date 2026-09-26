@@ -132,6 +132,30 @@ self.addEventListener('activate', (event) => {
 });
 `;
 
+/**
+ * Scripturile aplicației Flutter: încărcătorul, bundle-ul principal și
+ * bucățile încărcate la cerere (`main.dart.js_N.part.js`).
+ *
+ * O filă shelfshare.ro deschisă ÎNAINTE de mutare ține Flutter în memorie. La
+ * prima navigare cere o bucată nouă de cod, primește 404 și rămâne pe spinner
+ * la nesfârșit; la fel un index.html Flutter rămas în cache-ul browserului,
+ * care cere flutter_bootstrap.js. Fila nu știe să iasă singură de acolo.
+ *
+ * Aplicația React nu cere niciodată adresele astea, deci le răspundem cu un
+ * script care reîncarcă pagina: reîncărcarea revalidează documentul și aduce
+ * React. Marcajul din sessionStorage oprește o buclă, dacă din vreun motiv
+ * reîncărcarea ar ateriza tot pe Flutter.
+ */
+const FLUTTER_SCRIPT_PATH = /^\/(flutter_bootstrap\.js|flutter\.js|main\.dart\.js(_\d+\.part\.js)?)$/;
+const FLUTTER_RELOAD_SCRIPT = `(function () {
+  try {
+    if (sessionStorage.getItem('ss-flutter-reload')) return;
+    sessionStorage.setItem('ss-flutter-reload', '1');
+  } catch (e) {}
+  location.reload();
+})();
+`;
+
 /** Adresa din Play Store - vezi PLAY_STORE_URL din web/src/components/layout/AppShell.tsx. */
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=ro.shelfshare.shelfshare';
 
@@ -277,6 +301,15 @@ http
         'Cache-Control': 'no-store',
       });
       return res.end(FLUTTER_SW_KILL_SWITCH);
+    }
+
+    if (FLUTTER_SCRIPT_PATH.test(reqPath)) {
+      res.writeHead(200, {
+        ...COMMON_HEADERS,
+        'Content-Type': mime['.js'],
+        'Cache-Control': 'no-store',
+      });
+      return res.end(FLUTTER_RELOAD_SCRIPT);
     }
 
     if (isHiddenFile(reqPath)) {
