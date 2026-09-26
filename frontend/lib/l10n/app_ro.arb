@@ -3098,5 +3098,17 @@
     "feedCommentReported": "Mulțumim, am primit raportul.",
     "feedCommentError": "Nu am putut trimite comentariul.",
     "feedNoComments": "Niciun comentariu încă. Scrie primul!",
-    "adminReportTargetFeedComment": "Comentariu în feed"
+    "adminReportTargetFeedComment": "Comentariu în feed",
+    "addBookCatalogLinked": "Legată de cartea din catalog",
+    "addBookCatalogUnlinked": "Ai schimbat titlul, deci anunțul nu mai e legat de cartea aleasă",
+    "listingSwapOrSaleFor": "Schimb sau vânzare cu {price}",
+    "@listingSwapOrSaleFor": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "addBookListingNeedsPhoto": "Adaugă cel puțin o poză cu exemplarul tău ca să poți lista cartea",
+    "addBookListingPhotoUploadFailed": "Poza nu s-a putut urca, așa că anunțul nu a fost publicat. Încearcă din nou."
 }

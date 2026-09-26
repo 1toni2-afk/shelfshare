@@ -2192,5 +2192,10 @@
     "feedCommentReported": "Köszönjük, megkaptuk a jelentést.",
     "feedCommentError": "Nem sikerült elküldeni a hozzászólást.",
     "feedNoComments": "Még nincs hozzászólás. Légy az első!",
-    "adminReportTargetFeedComment": "Hírfolyam-hozzászólás"
+    "adminReportTargetFeedComment": "Hírfolyam-hozzászólás",
+    "addBookCatalogLinked": "Összekapcsolva a katalógusban lévő könyvvel",
+    "addBookCatalogUnlinked": "Módosítottad a címet, így a hirdetés már nincs összekapcsolva a kiválasztott könyvvel",
+    "listingSwapOrSaleFor": "Csere vagy eladás {price} áron",
+    "addBookListingNeedsPhoto": "Adj hozzá legalább egy fotót a saját példányodról a hirdetéshez",
+    "addBookListingPhotoUploadFailed": "A fotót nem sikerült feltölteni, ezért a hirdetés nem jelent meg. Próbáld újra."
 }

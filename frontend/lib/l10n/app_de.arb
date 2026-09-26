@@ -2192,5 +2192,10 @@
     "feedCommentReported": "Danke, deine Meldung ist eingegangen.",
     "feedCommentError": "Kommentar konnte nicht gesendet werden.",
     "feedNoComments": "Noch keine Kommentare. Schreib den ersten!",
-    "adminReportTargetFeedComment": "Feed-Kommentar"
+    "adminReportTargetFeedComment": "Feed-Kommentar",
+    "addBookCatalogLinked": "Mit dem Buch aus dem Katalog verknüpft",
+    "addBookCatalogUnlinked": "Du hast den Titel geändert, die Anzeige ist nicht mehr mit dem gewählten Buch verknüpft",
+    "listingSwapOrSaleFor": "Tausch oder Verkauf für {price}",
+    "addBookListingNeedsPhoto": "Füge mindestens ein Foto deines Exemplars hinzu, um das Buch einzustellen",
+    "addBookListingPhotoUploadFailed": "Das Foto konnte nicht hochgeladen werden, daher wurde die Anzeige nicht veröffentlicht. Bitte versuche es erneut."
 }

@@ -10,6 +10,7 @@ import { ListingScoreService } from './listing-score.service';
 import { SavedSearchesService } from '../saved-searches/saved-searches.service';
 import { ReviewsService } from '../reviews/reviews.service';
 import { StoresService } from '../stores/stores.service';
+import { CatalogMatchService } from './catalog-match.service';
 
 /**
  * Importul CSV din „Cărțile mele" citește rafturile Goodreads/StoryGraph.
@@ -80,6 +81,7 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
         { provide: ListingScoreService, useValue: {} },
         { provide: SavedSearchesService, useValue: {} },
         { provide: StoresService, useValue: {} },
+        { provide: CatalogMatchService, useValue: { findByTitle: jest.fn().mockResolvedValue(null) } },
       ],
     }).compile();
 

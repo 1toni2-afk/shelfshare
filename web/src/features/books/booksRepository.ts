@@ -122,8 +122,36 @@ export const booksRepository = {
     return api.post<UserBook>('/books', payload);
   },
 
+  /**
+   * Re-listarea unui exemplar primit printr-un schimb finalizat. Același corp
+   * ca `addToLibrary`, dar backendul leagă anunțul nou de exemplarul primit.
+   */
+  relist(originalUserBookId: string, input: AddBookInput): Promise<UserBook> {
+    const payload: Record<string, unknown> = { isHardcover: input.isHardcover ?? false };
+    for (const [key, value] of Object.entries(input)) {
+      if (key === 'isHardcover') continue;
+      if (value === undefined || value === null || value === '') continue;
+      if (Array.isArray(value) && value.length === 0) continue;
+      payload[key] = value;
+    }
+    return api.post<UserBook>(`/books/${originalUserBookId}/relist`, payload);
+  },
+
   update(userBookId: string, input: Record<string, unknown>): Promise<UserBook> {
     return api.patch<UserBook>(`/books/${userBookId}`, input);
+  },
+
+  /** Șterge anunțul (ajunge în coș). Folosit ca să nu rămână publicat unul fără poză. */
+  remove(userBookId: string): Promise<void> {
+    return api.delete(`/books/${userBookId}`);
+  },
+
+  /**
+   * „Sau vinde cu X lei" pe un anunț de schimb: anunțul rămâne de schimb
+   * (`isForSale` false), dar acceptă și o ofertă în bani. `null` o scoate.
+   */
+  setSwapSalePrice(userBookId: string, price: number | null): Promise<UserBook> {
+    return api.patch<UserBook>(`/books/${userBookId}`, { swapSalePrice: price });
   },
 
   markForSale(userBookId: string, salePrice: number, isNegotiable: boolean): Promise<UserBook> {
@@ -170,7 +198,14 @@ export const booksRepository = {
 
 /** Rezultat de căutare, din catalog sau dintr-o sursă externă. */
 export interface ExternalBookResult {
-  id?: string;
+  /**
+   * Id-ul cărții din catalogul nostru - doar pe rezultatele cu
+   * `source: 'catalog'`. Backendul îl trimite ca `bookId`, nu `id`: cu `id`
+   * aici, alegerea unei cărți din catalog nu lega niciodată anunțul de ea.
+   */
+  bookId?: string;
+  source?: string;
+  isCurated?: boolean;
   isbn?: string | null;
   title: string;
   author?: string | null;

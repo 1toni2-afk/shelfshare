@@ -204,6 +204,9 @@ export function BookDetailScreen() {
   const item = book.data;
   const price = toNumber(item.salePrice);
   const previousPrice = toNumber(item.previousSalePrice);
+  // „Sau vinde cu X lei" pe un anunț de schimb. `> 0` din același motiv ca pe
+  // card: backendul ține 0 pe schimburile fără preț.
+  const swapPrice = item.isForSale ? null : toNumber(item.swapSalePrice);
 
   return (
     <div className="mx-auto w-full max-w-[1000px] px-5 pb-16 pt-4 min-[900px]:px-8">
@@ -254,6 +257,11 @@ export function BookDetailScreen() {
             {previousPrice !== null && price !== null && previousPrice > price && (
               <span className="text-muted-foreground line-through">
                 {formatPrice(previousPrice)}
+              </span>
+            )}
+            {swapPrice !== null && swapPrice > 0 && (
+              <span className="font-display text-xl font-bold text-accent">
+                {t('listingSwapOrSaleFor', { price: formatPrice(swapPrice) })}
               </span>
             )}
             {item.isNegotiable && (

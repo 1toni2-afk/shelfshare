@@ -8,6 +8,7 @@ import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookDescriptionService } from '../books/book-description.service';
 import { FollowService } from '../follow/follow.service';
+import { CatalogMatchService } from '../books/catalog-match.service';
 import { AddOwnedBookDto } from './dto/add-owned-book.dto';
 
 export type BookshelfImportSource = 'goodreads' | 'storygraph';
@@ -33,6 +34,7 @@ export class BookshelfService {
     private prisma: PrismaService,
     private bookDescriptions: BookDescriptionService,
     private follow: FollowService,
+    private catalogMatch: CatalogMatchService,
   ) {}
 
   /**
@@ -366,17 +368,22 @@ export class BookshelfService {
   }
 
   private async resolveOrCreateBookForShelf(dto: AddOwnedBookDto) {
+    // Cartea aleasă din autocomplete, când e din catalog: legătura directă,
+    // fără nicio ghicire pe titlu.
+    if (dto.bookId) {
+      const known = await this.prisma.book.findUnique({ where: { id: dto.bookId } });
+      if (known) return known;
+    }
+
+    // Fără ISBN, potrivirea pe titlu trece prin CatalogMatchService: insensibilă
+    // la diacritice, pe index, cu cărțile curate primele. Înainte era un
+    // `equals` exact pe titlu - „Stapanul Inelelor" nu găsea „Stăpânul
+    // Inelelor" și crea o carte nouă, iar egalitatea fără index citea tot
+    // catalogul.
     const isbn = this.cleanIsbn(dto.isbn);
     const existing = isbn
       ? await this.prisma.book.findUnique({ where: { isbn } })
-      : await this.prisma.book.findFirst({
-          where: {
-            title: { equals: dto.title, mode: 'insensitive' },
-            author: dto.author
-              ? { equals: dto.author, mode: 'insensitive' }
-              : undefined,
-          },
-        });
+      : await this.catalogMatch.findByTitle(dto.title, dto.author);
     if (existing) return existing;
 
     return this.prisma.book.create({

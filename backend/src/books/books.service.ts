@@ -29,6 +29,7 @@ import { ExternalBookResult } from './types/external-book-result';
 import { ReviewsService } from '../reviews/reviews.service';
 import { ResolveWorkDto } from './dto/resolve-work.dto';
 import { StoresService } from '../stores/stores.service';
+import { CatalogMatchService } from './catalog-match.service';
 import { isSuperAdmin } from '../common/utils/is-super-admin';
 import { PUBLICLY_VISIBLE_LISTING_OR } from '../common/constants/public-listings';
 
@@ -117,6 +118,7 @@ export class BooksService {
     private savedSearches: SavedSearchesService,
     private reviews: ReviewsService,
     private stores: StoresService,
+    private catalogMatch: CatalogMatchService,
   ) {}
 
   async searchExternal(query: string) {
@@ -1607,6 +1609,14 @@ export class BooksService {
     if (!dto.title) {
       throw new BadRequestException('Titlul este obligatoriu dacă nu dai ISBN');
     }
+
+    // Titlul tastat (sau ales dintr-un rezultat extern fără ISBN) se leagă
+    // întâi de o carte deja existentă în catalog - vezi CatalogMatchService.
+    // Metadatele trimise de user NU suprascriu rândul găsit, din același motiv
+    // ca mai jos: cartea e partajată de toți cei care o listează.
+    const matched = await this.catalogMatch.findByTitle(dto.title, dto.author);
+    if (matched) return matched;
+
     // Fără ISBN, „findOrCreate" nu poate deduplica exemplarele deja existente
     // pe același titlu - preferăm o carte nouă, ca metadata (genre, publisher,
     // etc.) userului nou să nu suprascrie cea a altui user (proprietar

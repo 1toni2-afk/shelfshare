@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { BookOpen, Camera, Search, Star, Store, X } from 'lucide-react';
-import {
-  booksKeys,
-  booksRepository,
-  type ExternalBookResult,
-} from './booksRepository';
+import { booksKeys, booksRepository, type ExternalBookResult } from './booksRepository';
 import { BookCover } from '@/components/ui/BookCover';
 import { Button, ErrorNotice, Field, Spinner } from '@/components/ui';
 import { shelfKeys, shelfRepository } from '@/features/shelf/shelfRepository';
@@ -43,6 +39,9 @@ const MAX_TAGS = 5;
 
 /** `_maxPhotos` din add_book_screen.dart. */
 const MAX_PHOTOS = 5;
+
+/** Marcajul erorii „anunț retras fiindcă nicio poză n-a urcat". */
+const PHOTO_UPLOAD_FAILED = 'photo-upload-failed';
 
 /** O poză aleasă, cu URL-ul ei de previzualizare (revocat la ștergere). */
 interface PickedPhoto {
@@ -80,12 +79,29 @@ export function AddBookScreen() {
 
   const [term, setTerm] = useState('');
   const [query, setQuery] = useState('');
-  const [picked, setPicked] = useState<ExternalBookResult | null>(null);
+  const [searchParams] = useSearchParams();
+  /*
+    „Listeaz-o" din raft deschide formularul cu cartea deja aleasă
+    (`?mode=listing&bookId=…&title=…`). Până acum parametrii erau ignorați:
+    formularul se deschidea gol, iar anunțul nu mai era legat de cartea din
+    catalog de pe raft.
+  */
+  const initialPick: ExternalBookResult | null = searchParams.get('title')
+    ? {
+        bookId: searchParams.get('bookId') ?? undefined,
+        title: searchParams.get('title')!,
+        author: searchParams.get('author'),
+        isbn: searchParams.get('isbn'),
+        coverUrl: searchParams.get('cover'),
+        source: searchParams.get('bookId') ? 'catalog' : undefined,
+      }
+    : null;
+  const [picked, setPicked] = useState<ExternalBookResult | null>(initialPick);
 
   // Câmpurile formularului. Precompletate din rezultatul ales, dar editabile:
   // datele externe sunt adesea incomplete sau greșite.
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
+  const [title, setTitle] = useState(initialPick?.title ?? '');
+  const [author, setAuthor] = useState(initialPick?.author ?? '');
   const [publisher, setPublisher] = useState('');
   const [publishedYear, setPublishedYear] = useState('');
   const [pageCount, setPageCount] = useState('');
@@ -97,10 +113,23 @@ export function AddBookScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagDraft, setTagDraft] = useState('');
 
-  const [destination, setDestination] = useState<Destination>('shelf');
+  const [destination, setDestination] = useState<Destination>(
+    searchParams.get('mode') === 'listing' ? 'listing' : 'shelf',
+  );
+  // Deschis din „Cărțile mele": cartea e deja în raft, deci „Adaugă în raft"
+  // ar crea un duplicat. Rămâne doar listarea.
+  const fromShelf = searchParams.get('from') === 'shelf';
+  // Exemplarul primit printr-un schimb se RE-listează, nu se creează un al
+  // doilea rând pentru aceeași carte (port al relist_book_sheet.dart).
+  const relistFrom = searchParams.get('relistFrom');
   const [mode, setMode] = useState<ListingMode>('swap');
   const [price, setPrice] = useState('');
   const [isNegotiable, setIsNegotiable] = useState(true);
+  // „Sau vinde cu X lei" pe un anunț de schimb - port al `_sellOnSwap` din
+  // add_book_screen.dart. Anunțul rămâne de schimb; prețul doar permite și o
+  // ofertă în bani (UserBook.swapSalePrice).
+  const [sellOnSwap, setSellOnSwap] = useState(false);
+  const [swapPrice, setSwapPrice] = useState('');
 
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [mainPhotoIndex, setMainPhotoIndex] = useState<number | null>(null);
@@ -118,6 +147,16 @@ export function AddBookScreen() {
   }, []);
 
   const [error, setError] = useState<string | null>(null);
+
+  /*
+    Legătura cu catalogul ține doar cât titlul e cel al cărții alese. Dacă
+    userul alege „Dune" și apoi rescrie titlul în altceva, trimiterea
+    `bookId`-ului ar lipi anunțul de „Dune", iar titlul tastat s-ar pierde
+    tăcut (backendul ignoră titlul când primește `bookId`).
+  */
+  const linkedToPick = !!picked && title.trim() === (picked.title ?? '').trim();
+  const linkedBookId = linkedToPick ? picked?.bookId : undefined;
+  const linkedIsbn = linkedToPick ? (picked?.isbn ?? undefined) : undefined;
 
   /*
     Sugestiile apar pe MĂSURĂ ce scrii, nu doar după Enter.
@@ -194,9 +233,10 @@ export function AddBookScreen() {
       // pașii de după creare. Întoarce cartea din catalog, nu un anunț.
       if (destination === 'shelf') {
         const book = await shelfRepository.addOwned({
+          bookId: linkedBookId,
           title: title.trim(),
           author: author.trim() || undefined,
-          isbn: picked?.isbn ?? undefined,
+          isbn: linkedIsbn,
           coverUrl: picked?.coverUrl ?? undefined,
           genre: genre || undefined,
           publisher: publisher.trim() || undefined,
@@ -206,9 +246,9 @@ export function AddBookScreen() {
         return { shelfBook: book, created: null, problems: [] as string[] };
       }
 
-      const created = await booksRepository.addToLibrary({
-        bookId: picked?.id,
-        isbn: picked?.isbn ?? undefined,
+      const payload = {
+        bookId: linkedBookId,
+        isbn: linkedIsbn,
         title: title.trim(),
         author: author.trim() || undefined,
         publisher: publisher.trim() || undefined,
@@ -221,7 +261,10 @@ export function AddBookScreen() {
         city: city.trim() || undefined,
         tags,
         mainPhotoUrl: picked?.coverUrl ?? undefined,
-      });
+      };
+      const created = relistFrom
+        ? await booksRepository.relist(relistFrom, payload)
+        : await booksRepository.addToLibrary(payload);
 
       // Pasul doi: prețul și poza, pe anunțul deja creat. Eșecurile de aici
       // NU pierd cartea - de-asta sunt raportate separat, ca „a mers pe
@@ -231,6 +274,14 @@ export function AddBookScreen() {
       if (mode === 'sale') {
         try {
           await booksRepository.markForSale(created.id, Number(price), isNegotiable);
+        } catch {
+          problems.push('price');
+        }
+      }
+
+      if (mode === 'swap' && sellOnSwap) {
+        try {
+          await booksRepository.setSwapSalePrice(created.id, Number(swapPrice));
         } catch {
           problems.push('price');
         }
@@ -247,6 +298,14 @@ export function AddBookScreen() {
           uploaded.push(undefined);
           problems.push('photo');
         }
+      }
+
+      // Anunțul cere cel puțin o poză reală a exemplarului. Dacă n-a urcat
+      // niciuna, nu lăsăm publicat un anunț doar cu coperta din catalog: îl
+      // retragem și spunem de ce, iar formularul rămâne completat.
+      if (!uploaded.some(Boolean)) {
+        await booksRepository.remove(created.id).catch(() => {});
+        throw new Error(PHOTO_UPLOAD_FAILED);
       }
 
       // O poză bifată ca principală bate coperta externă aleasă la căutare.
@@ -270,10 +329,20 @@ export function AddBookScreen() {
         return;
       }
       void queryClient.invalidateQueries({ queryKey: booksKeys.myLibrary() });
+      // Rândul din „Cărțile mele" trebuie să treacă pe „Listată".
+      void queryClient.invalidateQueries({ queryKey: shelfKeys.all });
       toast.show(problems.length > 0 ? t('addBookPartialError') : t('addBookSuccess'));
       void navigate(`/books/${created!.id}`);
     },
-    onError: () => toast.show(t('addBookGenericError'), 'danger'),
+    onError: (error) =>
+      toast.show(
+        t(
+          error instanceof Error && error.message === PHOTO_UPLOAD_FAILED
+            ? 'addBookListingPhotoUploadFailed'
+            : 'addBookGenericError',
+        ),
+        'danger',
+      ),
   });
 
   function onSubmit(event: FormEvent) {
@@ -286,6 +355,21 @@ export function AddBookScreen() {
     // `Number('')` dă 0, deci verificăm și șirul gol: un anunț de vânzare
     // trimis fără preț s-ar salva la 0 lei.
     if (destination === 'listing' && mode === 'sale' && (!price.trim() || !(Number(price) > 0))) {
+      setError(t('addBookInvalidPrice'));
+      return;
+    }
+    // Un anunț fără nicio poză a exemplarului nu spune nimic despre starea
+    // cărții - coperta din catalog e aceeași pentru toate exemplarele.
+    if (destination === 'listing' && photos.length === 0) {
+      setError(t('addBookListingNeedsPhoto'));
+      return;
+    }
+    if (
+      destination === 'listing' &&
+      mode === 'swap' &&
+      sellOnSwap &&
+      (!swapPrice.trim() || !(Number(swapPrice) > 0))
+    ) {
       setError(t('addBookInvalidPrice'));
       return;
     }
@@ -335,38 +419,43 @@ export function AddBookScreen() {
         Pusă la sfârșit, ar fi o surpriză după un formular completat; pusă
         aici, decide ce câmpuri are rost să vezi.
       */}
-      <fieldset className="mb-5 border-0 p-0">
-        <legend className="mb-2 px-0 text-sm font-medium text-muted-foreground">
-          {t('shelfAddModeQuestion')}
-        </legend>
-        <div className="flex flex-col gap-2">
-          {DESTINATIONS.map((option) => {
-            const Icon = option.icon;
-            const active = destination === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setDestination(option.value)}
-                className={cn(
-                  'flex w-full items-start gap-3 rounded-[16px] border p-4 text-left transition',
-                  active ? 'border-accent bg-accent/10' : 'border-border hover:bg-muted',
-                )}
-              >
-                <Icon
-                  size={22}
-                  className={cn('mt-0.5 shrink-0', active ? 'text-accent' : 'text-muted-foreground')}
-                />
-                <span className="min-w-0">
-                  <span className="block font-bold">{option.label}</span>
-                  <span className="block text-sm text-muted-foreground">{option.hint}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
+      {!fromShelf && (
+        <fieldset className="mb-5 border-0 p-0">
+          <legend className="mb-2 px-0 text-sm font-medium text-muted-foreground">
+            {t('shelfAddModeQuestion')}
+          </legend>
+          <div className="flex flex-col gap-2">
+            {DESTINATIONS.map((option) => {
+              const Icon = option.icon;
+              const active = destination === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setDestination(option.value)}
+                  className={cn(
+                    'flex w-full items-start gap-3 rounded-[16px] border p-4 text-left transition',
+                    active ? 'border-accent bg-accent/10' : 'border-border hover:bg-muted',
+                  )}
+                >
+                  <Icon
+                    size={22}
+                    className={cn(
+                      'mt-0.5 shrink-0',
+                      active ? 'text-accent' : 'text-muted-foreground',
+                    )}
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-bold">{option.label}</span>
+                    <span className="block text-sm text-muted-foreground">{option.hint}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
 
       {/*
         Poza stă SUS și e mare dinadins: e primul lucru pe care îl are omul la
@@ -381,14 +470,14 @@ export function AddBookScreen() {
           nimeni altcineva, deci nu are de ce să fie fotografiată. */}
       {destination === 'listing' && (
         <>
-      <input
-        ref={fileInput}
-        type="file"
-        accept="image/*"
-        multiple
-        hidden
-        onChange={(event) => {
-          /*
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={(event) => {
+              /*
             Copiem lista ACUM, sincron, înainte de resetare.
 
             `input.value = ''` golește chiar obiectul `FileList` întors de
@@ -398,85 +487,83 @@ export function AddBookScreen() {
             vreodată de pe buton. Mergea doar prin drag & drop, care nu
             resetează nimic - adică pe telefon nu mergea deloc.
           */
-          const files = Array.from(event.target.files ?? []);
-          // Resetarea rămâne: fără ea, aceeași poză aleasă a doua oară nu mai
-          // declanșează `change`, fiindcă valoarea câmpului nu s-a schimbat.
-          event.target.value = '';
-          pickPhotos(files);
-        }}
-      />
+              const files = Array.from(event.target.files ?? []);
+              // Resetarea rămâne: fără ea, aceeași poză aleasă a doua oară nu mai
+              // declanșează `change`, fiindcă valoarea câmpului nu s-a schimbat.
+              event.target.value = '';
+              pickPhotos(files);
+            }}
+          />
 
-      <button
-        type="button"
-        onClick={() => fileInput.current?.click()}
-        disabled={photos.length >= MAX_PHOTOS}
-        // Drag & drop pe desktop: zona e oricum mare, iar o poză trasă peste ea
-        // e gestul evident. Pe telefon nu se schimbă nimic.
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(event) => {
-          event.preventDefault();
-          setDragging(false);
-          pickPhotos(Array.from(event.dataTransfer.files));
-        }}
-        className={cn(
-          'flex h-40 w-full flex-col items-center justify-center gap-1.5 rounded-[12px] border text-center transition',
-          photos.length >= MAX_PHOTOS
-            ? 'cursor-not-allowed border-border bg-muted opacity-60'
-            : dragging
-              ? 'border-accent bg-accent/10'
-              : 'border-border bg-muted hover:bg-muted/70',
-        )}
-      >
-        <Camera size={42} className="text-muted-foreground" />
-        <span className="font-display text-lg font-bold">{t('shareAddPhotos')}</span>
-        <span className="text-xs text-muted-foreground">
-          {photos.length} / {MAX_PHOTOS}
-        </span>
-      </button>
+          <button
+            type="button"
+            onClick={() => fileInput.current?.click()}
+            disabled={photos.length >= MAX_PHOTOS}
+            // Drag & drop pe desktop: zona e oricum mare, iar o poză trasă peste ea
+            // e gestul evident. Pe telefon nu se schimbă nimic.
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragging(false);
+              pickPhotos(Array.from(event.dataTransfer.files));
+            }}
+            className={cn(
+              'flex h-40 w-full flex-col items-center justify-center gap-1.5 rounded-[12px] border text-center transition',
+              photos.length >= MAX_PHOTOS
+                ? 'cursor-not-allowed border-border bg-muted opacity-60'
+                : dragging
+                  ? 'border-accent bg-accent/10'
+                  : 'border-border bg-muted hover:bg-muted/70',
+            )}
+          >
+            <Camera size={42} className="text-muted-foreground" />
+            <span className="font-display text-lg font-bold">{t('shareAddPhotos')}</span>
+            <span className="text-xs text-muted-foreground">
+              {photos.length} / {MAX_PHOTOS}
+            </span>
+          </button>
 
-      {photos.length > 0 && (
-        <>
-          <ul className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {photos.map((item, index) => (
-              <li key={item.preview} className="relative size-20 shrink-0">
-                <img
-                  src={item.preview}
-                  alt=""
-                  className="size-20 rounded-lg object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(index)}
-                  aria-label={t('profileFeedbackRemovePhoto')}
-                  className="absolute right-0 top-0 rounded-xl bg-destructive p-0.5 text-white"
-                >
-                  <X size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMainPhotoIndex(index)}
-                  aria-label={t('shareMainPhotoHint')}
-                  title={t('shareMainPhotoHint')}
-                  className={cn(
-                    'absolute bottom-0.5 left-0.5 rounded-[10px] p-[3px] text-white',
-                    mainPhotoIndex === index ? 'bg-accent' : 'bg-black/45',
-                  )}
-                >
-                  <Star size={14} className={mainPhotoIndex === index ? 'fill-white' : undefined} />
-                </button>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-1.5 text-[11px] text-muted-foreground">{t('shareMainPhotoHint')}</p>
+          {photos.length > 0 && (
+            <>
+              <ul className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                {photos.map((item, index) => (
+                  <li key={item.preview} className="relative size-20 shrink-0">
+                    <img src={item.preview} alt="" className="size-20 rounded-lg object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(index)}
+                      aria-label={t('profileFeedbackRemovePhoto')}
+                      className="absolute right-0 top-0 rounded-xl bg-destructive p-0.5 text-white"
+                    >
+                      <X size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMainPhotoIndex(index)}
+                      aria-label={t('shareMainPhotoHint')}
+                      title={t('shareMainPhotoHint')}
+                      className={cn(
+                        'absolute bottom-0.5 left-0.5 rounded-[10px] p-[3px] text-white',
+                        mainPhotoIndex === index ? 'bg-accent' : 'bg-black/45',
+                      )}
+                    >
+                      <Star
+                        size={14}
+                        className={mainPhotoIndex === index ? 'fill-white' : undefined}
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{t('shareMainPhotoHint')}</p>
+            </>
+          )}
         </>
       )}
-        </>
-      )}
-
 
       <div className="h-4" />
 
@@ -520,7 +607,7 @@ export function AddBookScreen() {
           ) : (
             <ul className="flex flex-col gap-2">
               {results.data.slice(0, 8).map((result, index) => (
-                <li key={result.id ?? result.isbn ?? index}>
+                <li key={result.bookId ?? result.isbn ?? index}>
                   <button
                     onClick={() => choose(result)}
                     className="flex w-full items-center gap-3 rounded-[16px] border border-border bg-card p-3 text-left hover:bg-muted"
@@ -571,6 +658,19 @@ export function AddBookScreen() {
             setError(null);
           }}
         />
+        {/* Spune explicit dacă anunțul va fi legat de cartea din catalog -
+            altfel o editare a titlului rupea legătura fără niciun semn. */}
+        {linkedBookId ? (
+          <p className="-mt-2 flex items-center gap-1.5 px-1 text-sm text-success">
+            <BookOpen size={15} className="shrink-0" />
+            {t('addBookCatalogLinked')}
+          </p>
+        ) : (
+          picked?.bookId &&
+          !linkedToPick && (
+            <p className="-mt-2 px-1 text-sm text-warning">{t('addBookCatalogUnlinked')}</p>
+          )
+        )}
         <Field
           label={t('shareAuthorHint')}
           name="author"
@@ -639,143 +739,177 @@ export function AddBookScreen() {
             listare, preț. Pentru raft n-au niciun înțeles. */}
         {destination === 'listing' && (
           <>
-        <div>
-          <p className="mb-2 text-sm font-medium text-muted-foreground">{t('filtersCondition')}</p>
-          <div className="flex flex-wrap gap-2">
-            {CONDITIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setCondition(option.value)}
-                className={cn(
-                  'rounded-full border px-4 py-2 text-sm transition',
-                  condition === option.value
-                    ? 'border-accent bg-accent/15 font-semibold text-accent'
-                    : 'border-border hover:bg-muted',
-                )}
-              >
-                {t(option.labelKey)}
-              </button>
-            ))}
-          </div>
-        </div>
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {t('filtersCondition')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {CONDITIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setCondition(option.value)}
+                    className={cn(
+                      'rounded-full border px-4 py-2 text-sm transition',
+                      condition === option.value
+                        ? 'border-accent bg-accent/15 font-semibold text-accent'
+                        : 'border-border hover:bg-muted',
+                    )}
+                  >
+                    {t(option.labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <Switch
-          checked={isHardcover}
-          onChange={setIsHardcover}
-          label={t('addBookHardcoverSwitch')}
-        />
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="description" className="text-sm font-medium text-muted-foreground">
-            {t('shareDescriptionHint')}
-          </label>
-          <textarea
-            id="description"
-            rows={4}
-            maxLength={MAX_DESCRIPTION}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            className="w-full resize-y rounded-[16px] bg-muted px-4 py-4 text-foreground focus:outline-none"
-          />
-          <p className="text-right text-xs text-muted-foreground">
-            {t('shareDescriptionCharsLeft', { n: MAX_DESCRIPTION - description.length })}
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2 text-sm font-medium text-muted-foreground">{t('shareMoreInfo')}</p>
-          <div className="mb-2 flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => setTags(tags.filter((value) => value !== tag))}
-                  aria-label={t('commonDelete')}
-                  className="text-muted-foreground hover:text-danger-text"
-                >
-                  <X size={12} />
-                </button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={tagDraft}
-              onChange={(event) => setTagDraft(event.target.value)}
-              onKeyDown={(event) => {
-                // Enter adaugă eticheta, nu trimite formularul - altfel prima
-                // etichetă scrisă ar publica anunțul pe jumătate completat.
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  addTag();
-                }
-              }}
-              aria-label={t('shareMoreInfo')}
-              className="w-full rounded-[16px] bg-muted px-4 py-3.5 text-foreground focus:outline-none"
-            />
-            <Button type="button" variant="outline" onClick={addTag}>
-              {t('adminAdd')}
-            </Button>
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-2 text-sm font-medium text-muted-foreground">{t('shareListingMode')}</p>
-          <div className="flex flex-wrap gap-2">
-            {(['swap', 'sale', 'donation'] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setMode(option)}
-                className={cn(
-                  'rounded-full border px-4 py-2 text-sm transition',
-                  mode === option
-                    ? 'border-accent bg-accent/15 font-semibold text-accent'
-                    : 'border-border hover:bg-muted',
-                )}
-              >
-                {t(
-                  option === 'swap'
-                    ? 'shareListingModeSwap'
-                    : option === 'sale'
-                      ? 'shareListingModeSale'
-                      : 'shareListingModeDonation',
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {mode === 'sale' && (
-          <>
-            <Field
-              label={t('addBookPriceLabel')}
-              name="price"
-              type="number"
-              inputMode="decimal"
-              min={0}
-              value={price}
-              onChange={(event) => {
-                setPrice(event.target.value);
-                setError(null);
-              }}
-            />
             <Switch
-              checked={!isNegotiable}
-              onChange={(value) => setIsNegotiable(!value)}
-              label={t('addBookNonNegotiable')}
-              hint={t('addBookNonNegotiableHint')}
+              checked={isHardcover}
+              onChange={setIsHardcover}
+              label={t('addBookHardcoverSwitch')}
             />
-          </>
-        )}
-          </>
-        )}
 
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="description" className="text-sm font-medium text-muted-foreground">
+                {t('shareDescriptionHint')}
+              </label>
+              <textarea
+                id="description"
+                rows={4}
+                maxLength={MAX_DESCRIPTION}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                className="w-full resize-y rounded-[16px] bg-muted px-4 py-4 text-foreground focus:outline-none"
+              />
+              <p className="text-right text-xs text-muted-foreground">
+                {t('shareDescriptionCharsLeft', {
+                  n: MAX_DESCRIPTION - description.length,
+                })}
+              </p>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">{t('shareMoreInfo')}</p>
+              <div className="mb-2 flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setTags(tags.filter((value) => value !== tag))}
+                      aria-label={t('commonDelete')}
+                      className="text-muted-foreground hover:text-danger-text"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={tagDraft}
+                  onChange={(event) => setTagDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    // Enter adaugă eticheta, nu trimite formularul - altfel prima
+                    // etichetă scrisă ar publica anunțul pe jumătate completat.
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      addTag();
+                    }
+                  }}
+                  aria-label={t('shareMoreInfo')}
+                  className="w-full rounded-[16px] bg-muted px-4 py-3.5 text-foreground focus:outline-none"
+                />
+                <Button type="button" variant="outline" onClick={addTag}>
+                  {t('adminAdd')}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {t('shareListingMode')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(['swap', 'sale', 'donation'] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setMode(option)}
+                    className={cn(
+                      'rounded-full border px-4 py-2 text-sm transition',
+                      mode === option
+                        ? 'border-accent bg-accent/15 font-semibold text-accent'
+                        : 'border-border hover:bg-muted',
+                    )}
+                  >
+                    {t(
+                      option === 'swap'
+                        ? 'shareListingModeSwap'
+                        : option === 'sale'
+                          ? 'shareListingModeSale'
+                          : 'shareListingModeDonation',
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* La final, după alegerea tipului: un anunț de schimb poate primi
+            și un preț - „Sau vinde cu X lei". */}
+            {mode === 'swap' && (
+              <>
+                <Switch
+                  checked={sellOnSwap}
+                  onChange={(value) => {
+                    setSellOnSwap(value);
+                    setError(null);
+                  }}
+                  label={t('shareSwapAlsoSell')}
+                />
+                {sellOnSwap && (
+                  <Field
+                    label={t('shareSwapAlsoSellPrice')}
+                    name="swapPrice"
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    value={swapPrice}
+                    onChange={(event) => {
+                      setSwapPrice(event.target.value);
+                      setError(null);
+                    }}
+                  />
+                )}
+              </>
+            )}
+
+            {mode === 'sale' && (
+              <>
+                <Field
+                  label={t('addBookPriceLabel')}
+                  name="price"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  value={price}
+                  onChange={(event) => {
+                    setPrice(event.target.value);
+                    setError(null);
+                  }}
+                />
+                <Switch
+                  checked={!isNegotiable}
+                  onChange={(value) => setIsNegotiable(!value)}
+                  label={t('addBookNonNegotiable')}
+                  hint={t('addBookNonNegotiableHint')}
+                />
+              </>
+            )}
+          </>
+        )}
 
         {error && (
           <p role="alert" className="text-sm text-danger-text">

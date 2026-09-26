@@ -10,6 +10,7 @@ import {
   Min,
 } from 'class-validator';
 import { BookshelfStatus } from '@prisma/client';
+import { IsCatalogId } from '../../common/decorators/is-catalog-id.decorator';
 
 /**
  * „Add to shelf" - cartea intră în raftul personal ca DEȚINUTĂ, fără să
@@ -19,6 +20,12 @@ import { BookshelfStatus } from '@prisma/client';
  * autocomplete-ul din ecranul de adăugare, la fel ca la listare.
  */
 export class AddOwnedBookDto {
+  /// Cartea din catalog aleasă din autocomplete. Când lipsește, cartea se
+  /// rezolvă după ISBN sau titlu+autor (vezi resolveOrCreateBookForShelf).
+  @IsOptional()
+  @IsCatalogId()
+  bookId?: string;
+
   @IsOptional()
   @IsISBN(undefined, { message: 'ISBN invalid' })
   isbn?: string;

@@ -2199,5 +2199,10 @@
     "feedCommentReported": "Thanks, we received your report.",
     "feedCommentError": "We couldn't send your comment.",
     "feedNoComments": "No comments yet. Be the first!",
-    "adminReportTargetFeedComment": "Feed comment"
+    "adminReportTargetFeedComment": "Feed comment",
+    "addBookCatalogLinked": "Linked to the catalog book",
+    "addBookCatalogUnlinked": "You changed the title, so the listing is no longer linked to the book you picked",
+    "listingSwapOrSaleFor": "Swap or sale for {price}",
+    "addBookListingNeedsPhoto": "Add at least one photo of your copy to list the book",
+    "addBookListingPhotoUploadFailed": "The photo could not be uploaded, so the listing was not published. Please try again."
 }

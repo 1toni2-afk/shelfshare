@@ -86,6 +86,8 @@ export const shelfRepository = {
    * proprietar, deci nu are ce negocia cu el.
    */
   addOwned(input: {
+    /** Cartea din catalog aleasă din autocomplete - vezi AddOwnedBookDto. */
+    bookId?: string;
     title: string;
     author?: string;
     isbn?: string;

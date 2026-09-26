@@ -11,6 +11,7 @@ import { ListingScoreModule } from './listing-score.module';
 import { SavedSearchesModule } from '../saved-searches/saved-searches.module';
 import { ReviewsModule } from '../reviews/reviews.module';
 import { StoresModule } from '../stores/stores.module';
+import { CatalogMatchModule } from './catalog-match.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { StoresModule } from '../stores/stores.module';
     ReviewsModule,
     // Importul de stoc verifică aici că ținta e chiar un magazin activ.
     StoresModule,
+    CatalogMatchModule,
   ],
   controllers: [BooksController],
   providers: [BooksService, BookLookupService],
