@@ -280,6 +280,13 @@ export interface LeaderboardEntry {
   totalPages?: number;
 }
 
+/** Forma reală din follow.service.ts `getFollowStatus` - câmpul e `isFollowing`, nu `following`. */
+export interface FollowStatus {
+  isFollowing: boolean;
+  followersCount: number;
+  followingCount: number;
+}
+
 export const followRepository = {
   following(signal?: AbortSignal): Promise<PublicUser[]> {
     return api.get<PublicUser[]>('/users/me/following', { signal });
@@ -293,8 +300,8 @@ export const followRepository = {
     return api.delete(`/users/${userId}/follow`);
   },
 
-  isFollowing(userId: string, signal?: AbortSignal): Promise<{ following: boolean }> {
-    return api.get<{ following: boolean }>(`/users/${userId}/follow`, { signal });
+  isFollowing(userId: string, signal?: AbortSignal): Promise<FollowStatus> {
+    return api.get<FollowStatus>(`/users/${userId}/follow`, { signal });
   },
 };
 

@@ -686,7 +686,7 @@ function MessagePhoto({ url }: { url: string }) {
     return (
       <p className="mb-2 flex items-center gap-1.5 text-sm italic opacity-80">
         <ImageOff size={16} className="shrink-0" />
-        {t('chatAttachPhoto')}
+        {t('chatPhotoUnavailable')}
       </p>
     );
   }
@@ -694,7 +694,7 @@ function MessagePhoto({ url }: { url: string }) {
   return (
     <img
       src={url}
-      alt={t('chatAttachPhoto')}
+      alt={t('chatPhotoAlt')}
       loading="lazy"
       onError={() => setFailed(true)}
       className="mb-2 max-h-64 rounded-lg object-cover"

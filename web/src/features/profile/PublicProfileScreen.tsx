@@ -206,7 +206,7 @@ export function PublicProfileScreen() {
   const person = profile.data;
   const displayName = person.name ?? person.username ?? t('commonUnknownUser');
   const isMe = person.id === user?.id;
-  const isFollowing = following.data?.following ?? false;
+  const isFollowing = following.data?.isFollowing ?? false;
   const reviews = person.reviews ?? [];
   const genres = (person.readingStats?.topGenres ?? []).slice(0, 4);
   const current = person.currentlyReading ?? null;

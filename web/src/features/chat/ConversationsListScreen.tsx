@@ -320,7 +320,7 @@ function ConversationRow({
   const preview = conversation.lastMessage?.content
     ? conversation.lastMessage.content
     : conversation.lastMessage?.photo
-      ? t('chatAttachPhoto')
+      ? t('chatPhotoPreview')
       : '';
 
   function cancelLongPress() {

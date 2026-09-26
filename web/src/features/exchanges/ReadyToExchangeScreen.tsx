@@ -29,6 +29,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { BookCover } from '@/components/ui/BookCover';
 import { Button, ErrorNotice, Spinner } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { api } from '@/lib/api/client';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { SafetyItem } from '@/features/chat/ChatSafetyPane';
 import { staticPageUrl } from '@/lib/staticPages';
@@ -338,15 +339,7 @@ export function ReadyToExchangeScreen({ kind }: { kind: 'exchange' | 'offer' }) 
                   placeholder={t('chatPickDate')}
                   language={i18n.language}
                 />
-                <FieldShell icon={<MapPin size={18} />}>
-                  <input
-                    value={meetingLocation}
-                    onChange={(event) => setMeetingLocation(event.target.value)}
-                    placeholder={t('readyStepPickPlace')}
-                    aria-label={t('readyStepPickPlace')}
-                    className="min-w-0 flex-1 bg-transparent py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none"
-                  />
-                </FieldShell>
+                <MeetingPlaceField value={meetingLocation} onChange={setMeetingLocation} />
                 <Button
                   fullWidth
                   className="py-3"
@@ -587,6 +580,91 @@ function FieldShell({ icon, trailing, children }: { icon: ReactNode; trailing?: 
       {children}
       {trailing}
     </label>
+  );
+}
+
+interface PlaceResult {
+  displayName: string;
+  lat: number;
+  lng: number;
+}
+
+// Nominatim ignoră interogările sub 3 caractere - la fel ca meeting_sheet.dart.
+const MIN_PLACE_QUERY = 3;
+
+/** Locul întâlnirii: text liber, cu sugestii din `/places/search` sub câmp. */
+function MeetingPlaceField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const { t } = useTranslation();
+  const [debounced, setDebounced] = useState('');
+  // Fără el, alegerea unei sugestii ar porni imediat o nouă căutare după textul ei.
+  const [picked, setPicked] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value.trim()), 400);
+    return () => window.clearTimeout(timer);
+  }, [value]);
+
+  const active = debounced.length >= MIN_PLACE_QUERY && debounced !== picked;
+  const results = useQuery({
+    queryKey: ['places', 'search', debounced],
+    queryFn: ({ signal }) =>
+      api.get<PlaceResult[]>('/places/search', { query: { q: debounced }, signal }),
+    enabled: active,
+    staleTime: 5 * 60_000,
+  });
+
+  const typing = value.trim() !== debounced && value.trim().length >= MIN_PLACE_QUERY && value.trim() !== picked;
+  const suggestions = active && !typing ? (results.data ?? []) : [];
+
+  return (
+    <div className="relative">
+      <FieldShell
+        icon={<MapPin size={18} />}
+        trailing={
+          (typing || (active && results.isFetching)) && (
+            <span className="shrink-0 text-accent">
+              <Spinner size={16} />
+            </span>
+          )
+        }
+      >
+        <input
+          value={value}
+          onChange={(event) => {
+            setPicked(null);
+            onChange(event.target.value);
+          }}
+          placeholder={t('readyStepPickPlace')}
+          aria-label={t('readyStepPickPlace')}
+          aria-autocomplete="list"
+          autoComplete="off"
+          className="min-w-0 flex-1 bg-transparent py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none"
+        />
+      </FieldShell>
+
+      {suggestions.length > 0 && (
+        <ul
+          role="listbox"
+          className="absolute inset-x-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-[14px] border border-border bg-card py-1 shadow-lg"
+        >
+          {suggestions.map((place) => (
+            <li key={`${place.lat},${place.lng}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  setPicked(place.displayName);
+                  onChange(place.displayName);
+                }}
+                className="flex w-full items-start gap-2 px-4 py-2.5 text-left text-sm hover:bg-muted/50"
+              >
+                <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1">{place.displayName}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
