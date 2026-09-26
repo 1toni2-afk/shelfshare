@@ -157,14 +157,24 @@ function ShelfRow({
 }) {
   const { t } = useTranslation();
 
+  /*
+    Selectorul și coșul stau SUB text, nu lângă el. Pe un rând, pe lățimea unui
+    telefon, selectorul („Vreau să citesc") lua ~140px, iar coloana de text
+    rămânea cu ~80px: autorul ajungea „G...", „Pagina 354 din 417" se rupea pe
+    patru rânduri, iar titlul (un `<Link>` inline, pe care `truncate` nu are
+    efect) se scurgea peste selector.
+  */
   return (
-    <li className="flex items-center gap-3 rounded-[12px] px-2 py-2.5">
+    <li className="flex items-start gap-3 rounded-[12px] px-2 py-3">
       <div className="h-[72px] w-[52px] shrink-0 overflow-hidden rounded-lg bg-muted">
         <BookCover url={entry.book.coverUrl} title={entry.book.title} />
       </div>
 
       <div className="min-w-0 flex-1">
-        <Link to={`/work/${entry.book.id}`} className="truncate font-semibold hover:underline">
+        <Link
+          to={`/work/${entry.book.id}`}
+          className="block truncate font-semibold hover:underline"
+        >
           {entry.book.title}
         </Link>
         {entry.book.author && (
@@ -195,27 +205,29 @@ function ShelfRow({
             ) : null}
           </>
         )}
+
+        <div className="mt-2 flex items-center gap-2">
+          <select
+            value={entry.status}
+            onChange={(event) => onMove(event.target.value as ShelfStatus)}
+            aria-label={t('bookshelfTitle')}
+            className="min-w-0 max-w-[220px] flex-1 rounded-[12px] border border-border bg-transparent px-2.5 py-1.5 text-sm focus:outline-none"
+          >
+            <option value="READING">{t('bookshelfTabReading')}</option>
+            <option value="WANT_TO_READ">{t('bookshelfTabWantToRead')}</option>
+            <option value="FINISHED">{t('bookshelfTabFinished')}</option>
+          </select>
+
+          <button
+            onClick={onRemove}
+            aria-label={t('bookDetailShelfRemove')}
+            title={t('bookDetailShelfRemove')}
+            className="shrink-0 rounded-[12px] p-2 text-muted-foreground hover:bg-muted hover:text-danger-text"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
       </div>
-
-      <select
-        value={entry.status}
-        onChange={(event) => onMove(event.target.value as ShelfStatus)}
-        aria-label={t('bookshelfTitle')}
-        className="shrink-0 rounded-[12px] border border-border bg-transparent px-2 py-1.5 text-sm focus:outline-none"
-      >
-        <option value="READING">{t('bookshelfTabReading')}</option>
-        <option value="WANT_TO_READ">{t('bookshelfTabWantToRead')}</option>
-        <option value="FINISHED">{t('bookshelfTabFinished')}</option>
-      </select>
-
-      <button
-        onClick={onRemove}
-        aria-label={t('bookDetailShelfRemove')}
-        title={t('bookDetailShelfRemove')}
-        className="shrink-0 rounded-[12px] p-2.5 text-muted-foreground hover:bg-muted hover:text-danger-text"
-      >
-        <Trash2 size={18} />
-      </button>
     </li>
   );
 }

@@ -305,7 +305,13 @@ function ReadingNow({ current }: { current: CurrentlyReading | null }) {
   if (!current && !hasChallenge) return null;
 
   return (
-    <div className={cn('mt-6 grid gap-4', current && hasChallenge && 'md:grid-cols-2')}>
+    // `grid-cols-1` (= minmax(0,1fr)) e obligatoriu: fără el coloana implicită
+    // e `auto` și se lățește după conținut - un titlu lung în „Citesc acum"
+    // (pe care `truncate` ar trebui să-l taie) împingea cardurile peste
+    // marginea ecranului și pagina se putea trage lateral.
+    <div
+      className={cn('mt-6 grid grid-cols-1 gap-4', current && hasChallenge && 'md:grid-cols-2')}
+    >
       {current && <CurrentlyReadingCard current={current} />}
       {hasChallenge && challenge.data && (
         <ReadingChallengeCard

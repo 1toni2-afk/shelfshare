@@ -54,6 +54,11 @@ export interface Conversation {
   isArchived: boolean;
 }
 
+export interface BlockStatus {
+  blockedByMe: boolean;
+  blockedByThem: boolean;
+}
+
 export const chatRepository = {
   /**
    * Inboxul SAU arhiva, nu amândouă: `GET /conversations` partiționează după
@@ -103,6 +108,23 @@ export const chatRepository = {
     return api.post(`/conversations/${conversationId}/report`, { reason });
   },
 
+  /** Blocarea e pe user, nu pe conversație - vezi safety.controller.ts. */
+  blockStatus(userId: string, signal?: AbortSignal): Promise<BlockStatus> {
+    return api.get<BlockStatus>(`/users/${userId}/block`, { signal });
+  },
+
+  block(userId: string): Promise<void> {
+    return api.post(`/users/${userId}/block`);
+  },
+
+  unblock(userId: string): Promise<void> {
+    return api.delete(`/users/${userId}/block`);
+  },
+
+  reportUser(userId: string, reason: string): Promise<void> {
+    return api.post(`/users/${userId}/report`, { reason });
+  },
+
   /**
    * Pozele urcă pe HTTP, nu prin socket: socket.io ar serializa binarul în
    * memorie și l-ar trimite pe același canal cu mesajele text, blocându-le cât
@@ -131,4 +153,7 @@ export const chatKeys = {
       | readonly ['chat', 'conversations', boolean],
   unreadCount: () => ['chat', 'unread-count'] as const,
   messages: (conversationId: string) => ['chat', 'messages', conversationId] as const,
+  messageSearch: (conversationId: string, query: string) =>
+    ['chat', 'messages', conversationId, 'search', query] as const,
+  blockStatus: (userId: string) => ['chat', 'block', userId] as const,
 };

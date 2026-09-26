@@ -126,6 +126,7 @@ export function DiscoverScreen() {
         </div>
 
         <BookRail
+          stacked
           title={t('discoverRecommendedForYou')}
           items={recommended.data}
           icon={<Sparkles size={22} />}
@@ -133,6 +134,7 @@ export function DiscoverScreen() {
         />
 
         <BookRail
+          stacked
           title={t('discoverMostLookedFor')}
           items={trending.data}
           loading={trending.isPending}
@@ -141,6 +143,7 @@ export function DiscoverScreen() {
         />
 
         <BookRail
+          stacked
           title={
             user?.city ? `${t('discoverNearYou')} · ${user.city}` : t('discoverNearYou')
           }
@@ -150,12 +153,14 @@ export function DiscoverScreen() {
         />
 
         <BookRail
+          stacked
           title={t('discoverMostWishedFor')}
           items={mostWished.data}
           loading={mostWished.isPending}
         />
 
         <BookRail
+          stacked
           title={t('discoverHiddenGems')}
           items={hiddenGems.data}
           loading={hiddenGems.isPending}

@@ -29,6 +29,7 @@ export function BookRail({
   seeAllHref,
   icon,
   tone = 'accent',
+  stacked = false,
 }: {
   title: string;
   items: UserBook[] | undefined;
@@ -37,6 +38,12 @@ export function BookRail({
   icon?: React.ReactNode;
   /** Culoarea benzii și a titlului. */
   tone?: 'accent' | 'primary';
+  /**
+   * Secțiuni puse direct una sub alta (Descoperă), fără grile între ele.
+   * Marginea lungă de 48px e gândită să se stingă într-o grilă vecină; între
+   * două benzi se aduna la ~100px de gol între categorii.
+   */
+  stacked?: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -49,9 +56,11 @@ export function BookRail({
 
   return (
     <section
-      // `-mx-5` / `-mx-8`: banda iese din padding-ul paginii ca să atingă
-      // marginile feedului, exact ca în aplicația de telefon.
-      className="-mx-5 py-12 min-[900px]:-mx-8"
+      // `-mx-4`: banda iese din padding-ul paginii (`px-4` pe Home și pe
+      // Descoperă) ca să atingă marginile feedului. Trebuie să fie EXACT cât
+      // padding-ul: cu mai mult, banda depășea ecranul și pagina se putea
+      // trage lateral.
+      className={stacked ? '-mx-4 py-5' : '-mx-4 py-12'}
       style={{
         backgroundImage: `linear-gradient(to bottom,
           color-mix(in srgb, ${color} 0%, transparent) 0%,
@@ -62,7 +71,7 @@ export function BookRail({
           color-mix(in srgb, ${color} 0%, transparent) 100%)`,
       }}
     >
-      <div className="mb-2 flex items-center gap-2 px-5 min-[900px]:px-8">
+      <div className="mb-2 flex items-center gap-2 px-4">
         <span className="shrink-0" style={{ color }}>
           {icon}
         </span>
@@ -80,12 +89,12 @@ export function BookRail({
       </div>
 
       {loading ? (
-        <div className="flex items-center px-5 text-accent" style={{ height: RAIL_HEIGHT }}>
+        <div className="flex items-center px-4 text-accent" style={{ height: RAIL_HEIGHT }}>
           <Spinner size={22} />
         </div>
       ) : (
         <div
-          className="rail-scroll flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 min-[900px]:px-8"
+          className="rail-scroll flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2"
           style={{ minHeight: RAIL_HEIGHT }}
         >
           {items?.map((item, index) => (

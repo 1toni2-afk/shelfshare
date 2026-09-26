@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { ImageOff, ImagePlus, Send } from 'lucide-react';
+import { HeaderAction, ScreenHeader } from '@/components/layout/ScreenHeader';
+import { ImageOff, ImagePlus, MoreVertical, Search, Send, X } from 'lucide-react';
 import { chatKeys, chatRepository, type ChatMessage } from './chatRepository';
+import { ReportReasonDialog } from '@/components/ui/ReportReasonDialog';
 import { chatSocket } from '@/lib/socket/chatSocket';
 import { Avatar } from '@/components/ui/Avatar';
 import { ErrorNotice, Spinner } from '@/components/ui';
@@ -30,6 +31,11 @@ export function ConversationScreen() {
   const [sending, setSending] = useState(false);
   const [otherOnline, setOtherOnline] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [dialog, setDialog] = useState<'report-user' | 'report-chat' | 'delete' | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastTypingSent = useRef(0);
@@ -49,6 +55,74 @@ export function ConversationScreen() {
   const conversation = conversations.data?.find((item) => item.id === conversationId);
   const otherName =
     conversation?.otherUser.name ?? conversation?.otherUser.username ?? t('commonUnknownUser');
+  const otherUserId = conversation?.otherUser.id;
+
+  const blockStatus = useQuery({
+    queryKey: chatKeys.blockStatus(otherUserId ?? ''),
+    queryFn: ({ signal }) => chatRepository.blockStatus(otherUserId!, signal),
+    enabled: !!otherUserId,
+  });
+  const blockedByMe = blockStatus.data?.blockedByMe ?? false;
+  const isBlocked = blockedByMe || (blockStatus.data?.blockedByThem ?? false);
+
+  // Meniul se închide la click în afara lui, ca un meniu nativ. Cu atribut,
+  // nu cu ref: acțiunile din antet se randează de două ori (bara de telefon și
+  // cea de desktop), deci un ref ar prinde doar una dintre copii.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (event: PointerEvent) => {
+      if (!(event.target as Element).closest?.('[data-chat-menu]')) setMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [menuOpen]);
+
+  // Mesajul ales din căutare e încercuit scurt, ca să-l găsești în listă.
+  useEffect(() => {
+    if (!highlightedId) return;
+    const timer = window.setTimeout(() => setHighlightedId(null), 2000);
+    return () => window.clearTimeout(timer);
+  }, [highlightedId]);
+
+  async function toggleBlock() {
+    if (!otherUserId) return;
+    setMenuOpen(false);
+    try {
+      if (blockedByMe) await chatRepository.unblock(otherUserId);
+      else await chatRepository.block(otherUserId);
+      await blockStatus.refetch();
+      toast.show(t(blockedByMe ? 'chatUserUnblocked' : 'chatUserBlocked'));
+    } catch {
+      toast.show(t('chatBlockUpdateError'), 'danger');
+    }
+  }
+
+  /** Arhivarea și ștergerea scot conversația din inbox, deci ne întoarcem în listă. */
+  async function leaveWith(action: () => Promise<void>, success?: string) {
+    setMenuOpen(false);
+    setDialog(null);
+    try {
+      await action();
+      if (success) toast.show(success);
+      void queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
+      void navigate('/chat');
+    } catch {
+      toast.show(t('chatActionError'), 'danger');
+    }
+  }
+
+  function jumpTo(messageId: string) {
+    setSearchOpen(false);
+    // Căutarea merge pe server, deci poate întoarce un mesaj mai vechi decât
+    // cele încărcate. Pe acela n-avem unde derula; spunem asta, nu tăcem.
+    const node = document.getElementById(`msg-${messageId}`);
+    if (!node) {
+      toast.show(t('chatSearchNoResults'));
+      return;
+    }
+    node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedId(messageId);
+  }
 
   // Intrarea în cameră + marcarea ca citit. `join_conversation` întoarce și
   // starea online a celuilalt: fără ea, antetul ar arăta „offline" până la
@@ -237,6 +311,67 @@ export function ConversationScreen() {
           </span>
         </span>
       }
+      actions={
+        <>
+          <HeaderAction
+            onClick={() => setSearchOpen((open) => !open)}
+            label={t('chatSearchInConversation')}
+          >
+            <Search size={22} />
+          </HeaderAction>
+          <div data-chat-menu className="relative">
+            <HeaderAction onClick={() => setMenuOpen((open) => !open)} label={t('commonShowMore')}>
+              <MoreVertical size={22} />
+            </HeaderAction>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-40 mt-1 min-w-[230px] overflow-hidden rounded-[12px] border border-border bg-card py-1 shadow-xl"
+              >
+                {otherUserId && (
+                  <>
+                    <MenuItem onClick={() => void toggleBlock()}>
+                      {t(blockedByMe ? 'chatUnblock' : 'chatBlock')}
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setDialog('report-user');
+                      }}
+                    >
+                      {t('reportDialogTitle')} {otherName}
+                    </MenuItem>
+                  </>
+                )}
+                <MenuItem
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setDialog('report-chat');
+                  }}
+                >
+                  {t('chatReportConversation')}
+                </MenuItem>
+                <MenuItem
+                  onClick={() =>
+                    void leaveWith(() => chatRepository.archive(conversationId), t('chatArchived'))
+                  }
+                >
+                  {t('chatArchive')}
+                </MenuItem>
+                <MenuItem
+                  danger
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setDialog('delete');
+                  }}
+                >
+                  {t('chatDeleteTitle')}
+                </MenuItem>
+              </div>
+            )}
+          </div>
+        </>
+      }
     />
   );
 
@@ -267,8 +402,19 @@ export function ConversationScreen() {
     // iar campul de scris ramane lipit jos. Pe telefon, `dvh` (nu `vh`) tine
     // cont de bara de adrese care se retrage la scroll - cu `vh`, campul
     // ajungea sub ea.
-    <div className="flex h-[calc(100dvh-4rem)] flex-col">
+    //
+    // Bara de sus are 3.5rem pe telefon și 4rem de la 900px în sus; cu 4rem
+    // peste tot, pe telefon calculul nu se potrivea cu bara reală.
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col min-[900px]:h-[calc(100dvh-4rem)]">
       {header}
+
+      {searchOpen && (
+        <ConversationSearch
+          conversationId={conversationId}
+          onPick={jumpTo}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {messageCount === 0 ? (
@@ -283,6 +429,7 @@ export function ConversationScreen() {
                     key={message.id}
                     message={message}
                     mine={message.senderId === user?.id}
+                    highlighted={message.id === highlightedId}
                   />
                 ))}
               </div>
@@ -292,6 +439,11 @@ export function ConversationScreen() {
         <div ref={bottomRef} />
       </div>
 
+      {isBlocked ? (
+        <p className="shrink-0 border-t border-border px-4 py-4 text-center text-sm text-muted-foreground">
+          {t('chatBlockedNotice')}
+        </p>
+      ) : (
       <form
         onSubmit={onSend}
         className="flex shrink-0 items-end gap-2 border-t border-border bg-background px-4 py-3"
@@ -345,6 +497,175 @@ export function ConversationScreen() {
           {sending ? <Spinner size={20} /> : <Send size={20} />}
         </button>
       </form>
+      )}
+
+      {(dialog === 'report-user' || dialog === 'report-chat') && (
+        <ReportReasonDialog
+          target={dialog === 'report-user' ? 'user' : 'content'}
+          title={dialog === 'report-chat' ? t('chatReportConversation') : undefined}
+          onClose={() => setDialog(null)}
+          onSubmit={async (reason) => {
+            try {
+              if (dialog === 'report-user') await chatRepository.reportUser(otherUserId!, reason);
+              else await chatRepository.report(conversationId, reason);
+              setDialog(null);
+              toast.show(
+                t(dialog === 'report-chat' ? 'chatConversationReported' : 'bookDetailReportSent'),
+              );
+            } catch {
+              toast.show(t('bookDetailReportError'), 'danger');
+            }
+          }}
+        />
+      )}
+
+      {dialog === 'delete' && (
+        <ConfirmDeleteDialog
+          onCancel={() => setDialog(null)}
+          onConfirm={() => void leaveWith(() => chatRepository.remove(conversationId))}
+        />
+      )}
+    </div>
+  );
+}
+
+function MenuItem({
+  onClick,
+  danger = false,
+  children,
+}: {
+  onClick: () => void;
+  danger?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      role="menuitem"
+      onClick={onClick}
+      className={cn(
+        'block w-full px-4 py-2.5 text-left text-sm hover:bg-muted',
+        danger && 'text-danger-text',
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ConfirmDeleteDialog({
+  onCancel,
+  onConfirm,
+}: {
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div role="dialog" aria-modal className="fixed inset-0 z-50 flex items-center justify-center p-5">
+      <button aria-label={t('commonClose')} onClick={onCancel} className="absolute inset-0 bg-black/50" />
+      <div className="relative w-full max-w-[420px] rounded-[20px] bg-card p-5">
+        <h2 className="font-display text-lg font-bold">{t('chatDeleteTitle')}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t('chatDeleteConfirm')}</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-[12px] px-4 py-2.5 text-sm font-medium hover:bg-muted"
+          >
+            {t('commonCancel')}
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-[12px] bg-destructive px-4 py-2.5 text-sm font-bold text-white"
+          >
+            {t('commonDelete')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Căutarea în conversație: un rând sub antet, cu câmpul și rezultatele. Caută
+ * pe server (`/messages/search`), nu doar în mesajele încărcate - ca în Flutter.
+ */
+function ConversationSearch({
+  conversationId,
+  onPick,
+  onClose,
+}: {
+  conversationId: string;
+  onPick: (messageId: string) => void;
+  onClose: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const [query, setQuery] = useState('');
+  const [debounced, setDebounced] = useState('');
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(query.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  const results = useQuery({
+    queryKey: chatKeys.messageSearch(conversationId, debounced),
+    queryFn: ({ signal }) => chatRepository.searchMessages(conversationId, debounced, signal),
+    enabled: debounced.length >= 2,
+  });
+
+  return (
+    <div className="shrink-0 border-b border-border bg-background px-4 py-3">
+      <div className="mx-auto flex max-w-[760px] items-center gap-2">
+        <Search size={18} className="shrink-0 text-muted-foreground" />
+        <input
+          autoFocus
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') onClose();
+          }}
+          placeholder={t('chatSearchInConversation')}
+          aria-label={t('chatSearchInConversation')}
+          className="min-w-0 flex-1 bg-transparent py-1.5 focus:outline-none"
+        />
+        <button
+          onClick={onClose}
+          aria-label={t('commonClose')}
+          className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      {debounced.length >= 2 && (
+        <div className="mx-auto mt-2 max-h-[40dvh] max-w-[760px] overflow-y-auto">
+          {results.isPending ? (
+            <div className="flex justify-center py-3 text-accent">
+              <Spinner size={18} />
+            </div>
+          ) : !results.data?.length ? (
+            <p className="py-3 text-center text-sm text-muted-foreground">
+              {t('chatSearchNoResults')}
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {results.data.map((message) => (
+                <li key={message.id}>
+                  <button
+                    onClick={() => onPick(message.id)}
+                    className="flex w-full items-baseline gap-3 px-1 py-2.5 text-left hover:bg-muted/50"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-sm">{message.content}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatDay(message.createdAt, i18n.language)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -381,15 +702,24 @@ function MessagePhoto({ url }: { url: string }) {
   );
 }
 
-function MessageBubble({ message, mine }: { message: ChatMessage; mine: boolean }) {
+function MessageBubble({
+  message,
+  mine,
+  highlighted = false,
+}: {
+  message: ChatMessage;
+  mine: boolean;
+  highlighted?: boolean;
+}) {
   const { t, i18n } = useTranslation();
 
   return (
-    <div className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
+    <div id={`msg-${message.id}`} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[75%] rounded-[16px] px-4 py-2.5',
+          'max-w-[75%] rounded-[16px] px-4 py-2.5 transition-shadow duration-300',
           mine ? 'bg-primary text-primary-foreground' : 'border border-border bg-card',
+          highlighted && 'ring-2 ring-accent',
         )}
       >
         {message.photo && <MessagePhoto url={message.photo} />}
