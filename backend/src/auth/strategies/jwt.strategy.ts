@@ -10,6 +10,9 @@ export interface JwtPayload {
   email: string;
   jti?: string;
   exp?: number;
+  iat?: number;
+  // Sesiunea de refresh din care a fost emis token-ul (vezi RefreshSession).
+  sid?: string;
 }
 
 /**
@@ -55,7 +58,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   validate(payload: JwtPayload) {
-    if (this.revokedTokens.isRevoked(payload.jti)) {
+    if (
+      this.revokedTokens.isRevoked(payload.jti) ||
+      // Ban sau parolă resetată după emiterea token-ului.
+      this.revokedTokens.isRevokedForUser(payload.sub, payload.iat)
+    ) {
       throw new UnauthorizedException('Sesiune invalidată');
     }
     // Ce se întoarce aici ajunge în request.user în controllere
@@ -64,6 +71,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: payload.email,
       jti: payload.jti,
       exp: payload.exp,
+      sid: payload.sid,
     };
   }
 }

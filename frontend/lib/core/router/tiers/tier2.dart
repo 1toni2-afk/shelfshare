@@ -7,6 +7,7 @@ library;
 export '../../../features/books/presentation/my_library_screen.dart';
 export '../../../features/books/presentation/browse_screen.dart';
 export '../../../features/books/presentation/add_book_screen.dart';
+export '../../../features/books/presentation/import_screen.dart';
 export '../../../features/book_match/presentation/book_match_screen.dart';
 export '../../../features/chat/presentation/conversations_list_screen.dart';
 export '../../../features/chat/presentation/conversation_screen.dart';

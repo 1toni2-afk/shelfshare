@@ -67,6 +67,16 @@ export class SearchLibraryDto {
   @Max(2000)
   maxDistanceKm?: number;
 
+  /**
+   * Ascunde anunțurile acestui user din rezultate. Folosit de secțiunea
+   * „aproape de tine" din Home, care nu are ce arăta cu propriile anunțuri.
+   * Nu e un filtru de securitate (oricine poate trimite orice id) - doar
+   * ascunde anunțuri deja publice, deci nu cere autentificare.
+   */
+  @IsOptional()
+  @IsString()
+  excludeUserId?: string;
+
   @IsOptional()
   @Type(() => Number)
   @IsInt()

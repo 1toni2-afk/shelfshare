@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,45 +27,6 @@ final _sharedBooksProvider = FutureProvider((ref) async {
 class MyBookshelfScreen extends ConsumerWidget {
   const MyBookshelfScreen({super.key});
 
-  Future<void> _pickAndImport(BuildContext context, WidgetRef ref, String source) async {
-    final l10n = context.l10n;
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-      withData: true,
-    );
-    final file = result?.files.firstOrNull;
-    if (file?.bytes == null) return;
-    if (!context.mounted) return;
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-    try {
-      final summary = await ref
-          .read(bookshelfRepositoryProvider)
-          .importCsv(source, bytes: file!.bytes!, filename: file.name);
-      ref.invalidate(_myShelfProvider);
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.bookshelfImportSummary(summary.imported, summary.skipped))),
-        );
-      }
-    } on DioException catch (e) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        final data = e.response?.data;
-        final message = data is Map && data['message'] != null
-            ? (data['message'] is List ? (data['message'] as List).join(', ') : data['message'].toString())
-            : l10n.bookshelfImportError;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -77,14 +36,14 @@ class MyBookshelfScreen extends ConsumerWidget {
         appBar: AppBar(
           title: Text(l10n.bookshelfTitle),
           actions: [
-            PopupMenuButton<String>(
+            // Un singur buton, spre pagina ghidată de import: alegerea
+            // „Goodreads sau StoryGraph" nu mai trebuie făcută aici, fiindcă
+            // importul citește rafturile din fișier oricare ar fi sursa, iar
+            // pagina explică de unde se ia exportul (vezi import_screen.dart).
+            IconButton(
               icon: const Icon(Icons.file_upload_outlined),
               tooltip: l10n.bookshelfImportTooltip,
-              onSelected: (source) => _pickAndImport(context, ref, source),
-              itemBuilder: (context) => [
-                PopupMenuItem(value: 'goodreads', child: Text(l10n.bookshelfImportGoodreads)),
-                PopupMenuItem(value: 'storygraph', child: Text(l10n.bookshelfImportStoryGraph)),
-              ],
+              onPressed: () => context.push('/import'),
             ),
           ],
           bottom: TabBar(

@@ -173,6 +173,10 @@ export class ReportsService {
         const result = await this.prisma.groupPost.updateMany({ where, data });
         return result.count > 0;
       }
+      case 'FEED_COMMENT': {
+        const result = await this.prisma.feedComment.updateMany({ where, data });
+        return result.count > 0;
+      }
       default:
         return false;
     }
@@ -196,6 +200,9 @@ export class ReportsService {
         break;
       case 'GROUP_POST':
         await this.prisma.groupPost.updateMany({ where, data });
+        break;
+      case 'FEED_COMMENT':
+        await this.prisma.feedComment.updateMany({ where, data });
         break;
       default:
         break;

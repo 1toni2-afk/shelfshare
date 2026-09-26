@@ -135,6 +135,12 @@ class BookshelfRepository {
   /// Import dintr-un export CSV Goodreads/StoryGraph - fișierul poate avea
   /// câteva mii de rânduri, deci mărim timeout-ul peste cel implicit de 10s
   /// al clientului Dio (vezi api_client.dart).
+  ///
+  /// Nu mai e chemată din UI: pagina de import (import_screen.dart) trimite
+  /// totul prin `/books/import-listings`, singura cale care citește rafturile
+  /// din fișier și duce fiecare rând unde-i e locul. Metoda rămâne fiindcă
+  /// endpointul rămâne - build-urile de Android deja publicate încă îl
+  /// folosesc.
   Future<BookshelfImportResult> importCsv(
     String source, {
     required List<int> bytes,

@@ -39,6 +39,11 @@ model User {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
+  // DOAR pentru token-urile de refresh emise înainte de RefreshSession (fără
+  // `sid`). Nu se mai scrie: bcrypt taie intrarea la 72 de octeți, iar un JWT
+  // are ~230, deci hash-ul se potrivea cu ORICE token vechi al aceluiași user.
+  // Se golește la logout, reset de parolă și ban; token-urile vechi expiră
+  // singure în cel mult 30 de zile.
   refreshTokenHash String?
 
   googleId String? @unique
@@ -179,6 +184,19 @@ model User {
   /// cu scor. Fără efect pentru userii ne-admin - ei nu văd niciodată scorul.
   showAllListingScores Boolean @default(false)
 
+  /// Lista „Primii pași" de pe Home (vezi onboarding_todo_controller.dart).
+  /// Ține de cont, nu de dispozitiv: altfel cineva care și-a importat
+  /// biblioteca de pe laptop vedea din nou lista goală pe telefon.
+  ///
+  /// Pașii sunt ținuți ca text liber, nu ca enum: setul lor e o decizie de
+  /// UI (azi tutorial/bookMatch/import/shortcuts), se schimbă odată cu
+  /// ecranele, iar o valoare rămasă de la un pas scos nu trebuie să ceară o
+  /// migrare - backendul o validează la scriere și o ignoră la citire.
+  /// Valorile sunt numele din `enum OnboardingTodo` din frontend.
+  onboardingTodoDone      String[] @default([])
+  /// „×" pe card: lista nu mai apare, dar bifele rămân.
+  onboardingTodoDismissed Boolean  @default(false)
+
   // Book Match (swipe) - starea profilului de swipe. Vezi BookMatchService.
   // Cât timp onboardingSwipesCount < 50 suntem în „cold start": coada vine
   // dintr-un pool curatoriat pe genuri, iar fiecare swipe contează mai mult
@@ -201,6 +219,11 @@ model User {
   // șterge efectiv contul după expirare. NULL = neprogramat. Anularea = set
   // pe NULL. Vezi AccountDeletionService.
   deletionScheduledAt DateTime?
+
+  /// Emailul de bun venit trimis la 3 zile după înregistrare (sfaturi + link
+  /// de feedback). Timestamp, nu boolean, ca să se vadă CÂND a plecat, și
+  /// nullable ca marcaj de „încă nu" - vezi WelcomeEmailService.
+  welcomeEmailSentAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -241,6 +264,9 @@ model User {
   createdGroups            Group[]                   @relation("GroupCreator")
   groupMemberships         GroupMember[]
   groupPosts               GroupPost[]
+  feedLikes                FeedLike[]
+  feedComments             FeedComment[]
+  refreshSessions          RefreshSession[]
   securityEvents           SecurityEvent[]
   featureFlags             UserFeatureFlag[]
   bookSwipes               BookSwipe[]
@@ -345,6 +371,7 @@ enum ReportTargetType {
   CONVERSATION
   GROUP_POST
   EXCHANGE
+  FEED_COMMENT
 }
 
 /// Coadă de moderare pentru Report (Batch "Report status & assignee") - fără
@@ -388,6 +415,9 @@ model Report {
 
   reviewId String?
   review   Review? @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+
+  feedCommentId String?
+  feedComment   FeedComment? @relation(fields: [feedCommentId], references: [id], onDelete: SetNull)
 
   /// Tinta, in forma pe care se poate numara si filtra. Derivata din cheile
   /// straine de mai sus la creare (vezi ReportsService.create) - nu se scrie
@@ -619,6 +649,69 @@ model GroupPost {
   reports Report[]
 
   @@map("group_posts")
+}
+
+/// Aprecierea unui eveniment din feed. Feedul nu are o tabelă proprie de
+/// evenimente (se recompune la citire din anunțuri, raft, schimburi, vânzări și
+/// progres - vezi ProfileService.getActivityFeed), deci ținta e o CHEIE:
+/// `tip:idSursă`, de exemplu `reading_progress:<id ReadingProgress>`. Cheia e
+/// stabilă cât trăiește rândul sursă; la ștergerea lui, aprecierile rămân
+/// orfane și inofensive - nu mai apare nicăieri evenimentul care să le afișeze.
+/// O sesiune de autentificare = un dispozitiv logat. Token-ul de refresh poartă
+/// `sid` = id-ul rândului; e valid cât timp rândul există și n-a expirat.
+/// Logout-ul șterge rândul lui, resetul de parolă și ban-ul le șterg pe toate.
+/// Nu ținem hash-ul token-ului: semnătura JWT dovedește deja că l-am emis noi,
+/// iar revocarea se face pe sesiune, nu pe token.
+model RefreshSession {
+  id String @id
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_sessions")
+}
+
+model FeedLike {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventKey String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventKey])
+  @@index([eventKey])
+  @@map("feed_likes")
+}
+
+/// Comentariu la un eveniment din feed - aceeași cheie ca FeedLike.
+/// Se poate raporta și ascunde automat ca orice conținut public (vezi
+/// ReportsService); `hiddenAt` îl scoate din afișare fără să-l șteargă.
+model FeedComment {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventKey String
+  text     String
+
+  hiddenAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  reports Report[]
+
+  @@index([eventKey, createdAt])
+  @@map("feed_comments")
 }
 
 /// Întâlniri/evenimente opționale ale grupului ("Community Events" din

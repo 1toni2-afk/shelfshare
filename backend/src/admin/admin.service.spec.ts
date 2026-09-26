@@ -8,9 +8,11 @@ import { ListingScoreService } from '../books/listing-score.service';
 import { ReportsService } from '../reports/reports.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { PresenceService } from '../chat/presence.service';
+import { UserSessionsService } from '../common/security/user-sessions.service';
 
 describe('AdminService', () => {
   let service: AdminService;
+  const userSessions = { revokeAll: jest.fn() };
   let prisma: {
     user: Record<string, jest.Mock>;
     book: Record<string, jest.Mock>;
@@ -49,6 +51,7 @@ describe('AdminService', () => {
           provide: ActivityLogService,
           useValue: { record: jest.fn(), readUsage: jest.fn() },
         },
+        { provide: UserSessionsService, useValue: userSessions },
         {
           provide: PresenceService,
           useValue: {
@@ -110,6 +113,9 @@ describe('AdminService', () => {
         data: { isBanned: true, refreshTokenHash: null },
         select: { id: true, email: true, isBanned: true },
       });
+      // Sesiunile, token-urile de acces și socket-urile deschise - nu doar
+      // hash-ul de refresh.
+      expect(userSessions.revokeAll).toHaveBeenCalledWith('u-1');
     });
 
     it('deblocheaza userul', async () => {

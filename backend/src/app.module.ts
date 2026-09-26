@@ -40,6 +40,7 @@ import { ReadingProgressModule } from './reading-progress/reading-progress.modul
 import { ReviewsModule } from './reviews/reviews.module';
 import { ReportsModule } from './reports/reports.module';
 import { BookRequestsModule } from './book-requests/book-requests.module';
+import { WelcomeEmailModule } from './welcome-email/welcome-email.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { BookRequestsModule } from './book-requests/book-requests.module';
     ReadingProgressModule,
     ReviewsModule,
     BookRequestsModule,
+    WelcomeEmailModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: HttpThrottlerGuard }],

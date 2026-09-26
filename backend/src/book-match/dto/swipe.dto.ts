@@ -6,10 +6,13 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
+import { IsCatalogId } from '../../common/decorators/is-catalog-id.decorator';
 import type { BookMatchAction } from '../book-match.scoring';
 
 export class SwipeDto {
-  @IsUUID()
+  /// Vezi IsCatalogId: teancul de swipe vine din catalogul importat, unde
+  /// id-urile poartă cheia sursei, nu un UUID.
+  @IsCatalogId()
   bookId: string;
 
   @IsIn(['YES', 'NO', 'SKIP'])

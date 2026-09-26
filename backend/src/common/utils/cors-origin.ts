@@ -16,12 +16,7 @@ export function corsOrigin(
 
   // PUBLIC_HOSTNAME e verificat indiferent de mediu - altfel un domeniu
   // public setat pentru producție era ignorat de ramura de mai jos.
-  const publicHostname = process.env.PUBLIC_HOSTNAME;
-  const isPublicHostname = publicHostname
-    ? new RegExp(
-        `^https?://(www\\.)?${publicHostname.replace(/\./g, '\\.')}(:\\d+)?$`,
-      ).test(origin)
-    : false;
+  const isPublicHostname = matchesPublicHostname(origin);
 
   if (process.env.NODE_ENV === 'production') {
     const allowed = process.env.FRONTEND_URL ?? 'http://localhost:8080';
@@ -31,4 +26,29 @@ export function corsOrigin(
 
   const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
   callback(null, isLocalhost || isPublicHostname);
+}
+
+/**
+ * `PUBLIC_HOSTNAME` acceptă MAI MULTE gazde, separate prin virgulă.
+ *
+ * Era o singură valoare, ceea ce forța o alegere între ele: mediul de test e
+ * accesat și prin Tailscale (de pe telefon), și prin `beta.shelfshare.ro`
+ * (frontendul nou), iar cu un singur nume unul dintre cele două rămânea
+ * blocat de CORS - inclusiv socketul de chat, care folosește aceeași funcție.
+ *
+ * O singură valoare, fără virgulă, se comportă exact ca înainte.
+ */
+function matchesPublicHostname(origin: string): boolean {
+  const configured = process.env.PUBLIC_HOSTNAME;
+  if (!configured) return false;
+
+  return configured
+    .split(',')
+    .map((hostname) => hostname.trim())
+    .filter((hostname) => hostname.length > 0)
+    .some((hostname) =>
+      new RegExp(
+        `^https?://(www\\.)?${hostname.replace(/\./g, '\\.')}(:\\d+)?$`,
+      ).test(origin),
+    );
 }

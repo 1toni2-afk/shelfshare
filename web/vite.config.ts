@@ -1,0 +1,174 @@
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import type { Plugin } from 'vite';
+import pkg from './package.json' with { type: 'json' };
+
+/**
+ * Servește în DEV paginile publice plain-HTML (centrul de siguranță, întrebări
+ * frecvente, despre dezvoltator, confidențialitate, termeni).
+ *
+ * În producție le servește beta-server.js din aceeași hartă. Fără pluginul
+ * ăsta, în dev orice rută necunoscută primește index.html, deci
+ * StaticPageScreen ar primi shell-ul aplicației în loc de pagină și ar desena
+ * un ecran gol - un bug care apare DOAR pe mașina de dezvoltare, exact genul
+ * care se descoperă târziu.
+ */
+function staticPagesPlugin(): Plugin {
+  const require = createRequire(import.meta.url);
+  const { STATIC_HTML_PAGES } = require('../scripts/static-pages.js') as {
+    STATIC_HTML_PAGES: Record<string, string>;
+  };
+
+  return {
+    name: 'shelfshare-static-pages',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = (req.url ?? '').split('?')[0];
+        const file = STATIC_HTML_PAGES[url];
+        if (!file || !fs.existsSync(file)) return next();
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.end(fs.readFileSync(file));
+      });
+    },
+  };
+}
+
+// Oglindește ApiConfig din frontend/lib/core/network/api_client.dart: în
+// release cădem pe producție, nu pe localhost. Un build fără variabila setată
+// ajungea altfel cu "localhost:3000" compilat în bundle, adică fiecare cerere
+// de pe telefon lovea telefonul însuși - vezi comentariul din api_client.dart.
+/**
+ * Scrie `build-info.json` lângă index.html, cu API-ul spre care pointează
+ * bundle-ul.
+ *
+ * Îl citește scripts/beta-seo.js ca să-și ia datele pentru HTML-ul pre-randat
+ * din ACELAȘI backend ca aplicația. Până acum sursa era o variabilă de mediu
+ * separată (BETA_API_URL), iar cele două au divergat de două ori: HTML-ul
+ * servit lista cărți din producție, aplicația le căuta în baza de test, deci
+ * fiecare link din Google ducea la „anunț inexistent". Cu API-ul scris de
+ * build, nepotrivirea nu mai poate apărea.
+ */
+function buildInfoPlugin(apiBaseUrl: string): Plugin {
+  return {
+    name: 'shelfshare-build-info',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'build-info.json',
+        source: JSON.stringify(
+          { apiBaseUrl, version: pkg.version, builtAt: new Date().toISOString() },
+          null,
+          2,
+        ),
+      });
+    },
+  };
+}
+
+/**
+ * Păstrează bucățile de cod ale build-ului anterior în `dist-archive/`,
+ * lângă `dist/`.
+ *
+ * Vite golește `dist/` la fiecare build, iar numele bucăților conțin hash-ul
+ * conținutului. O filă deschisă înainte de deploy are încă în memorie vechiul
+ * `index-*.js`, care cere `HomeScreen-<hash-vechi>.js` la prima navigare. Fără
+ * arhivă, cererea dă 404 și omul vede „Failed to fetch dynamically imported
+ * module" (s-a întâmplat pe 2026-09-26, imediat după mutarea pe shelfshare.ro).
+ * scripts/beta-server.js caută în arhivă orice `/assets/...` lipsă din `dist/`.
+ *
+ * Arhiva stă ÎN AFARA lui `dist/` dinadins: `dist/` intră întreg în AAB prin
+ * Capacitor, unde bucățile vechi ar fi doar balast. Fișierele mai vechi de 30
+ * de zile se șterg - nicio filă nu stă deschisă atât fără o reîncărcare.
+ */
+function archivePreviousAssetsPlugin(): Plugin {
+  let outDir = '';
+  return {
+    name: 'shelfshare-archive-previous-assets',
+    apply: 'build',
+    configResolved(config) {
+      outDir = path.resolve(config.root, config.build.outDir);
+    },
+    buildStart() {
+      const current = path.join(outDir, 'assets');
+      const archive = path.join(outDir, '..', 'dist-archive', 'assets');
+      fs.mkdirSync(archive, { recursive: true });
+      if (fs.existsSync(current)) {
+        for (const name of fs.readdirSync(current)) {
+          const target = path.join(archive, name);
+          // Doar dacă lipsește: mtime-ul rămâne data primei arhivări, deci
+          // curățenia de mai jos numără de când a ieșit fișierul din uz.
+          if (!fs.existsSync(target)) fs.copyFileSync(path.join(current, name), target);
+        }
+      }
+      const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      for (const name of fs.readdirSync(archive)) {
+        const file = path.join(archive, name);
+        if (fs.statSync(file).mtimeMs < cutoff) fs.rmSync(file, { force: true });
+      }
+    },
+  };
+}
+
+const DEFAULT_API = {
+  development: 'http://localhost:3000',
+  production: 'https://api.shelfshare.ro',
+} as const;
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const apiBaseUrl =
+    env.VITE_API_BASE_URL ||
+    (mode === 'production' ? DEFAULT_API.production : DEFAULT_API.development);
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      staticPagesPlugin(),
+      buildInfoPlugin(apiBaseUrl),
+      archivePreviousAssetsPlugin(),
+    ],
+    resolve: {
+      alias: { '@': path.resolve(__dirname, 'src') },
+    },
+    define: {
+      // Injectat la build, nu citit din process.env la runtime: bundle-ul
+      // ajunge și în APK-ul Capacitor, unde nu există niciun server care să
+      // livreze variabile de mediu.
+      __API_BASE_URL__: JSON.stringify(apiBaseUrl),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
+    server: {
+      port: 5173,
+      // Nu proxiem /api: aplicația vorbește cu backendul pe origine completă,
+      // exact ca pe producție, deci CORS-ul e exersat și în dev.
+      strictPort: true,
+    },
+    build: {
+      outDir: 'dist',
+      // `hidden`: hărțile se generează (utile la depanare locală), dar
+      // bundle-ul nu le mai anunță prin `sourceMappingURL`, iar beta-server.js
+      // refuză oricum `.map` - altfel tot codul sursă, cu comentarii despre
+      // infrastructură, era public pe site.
+      sourcemap: 'hidden',
+      // Chunk-uri manuale pe librăriile grele, ca prima încărcare să nu aducă
+      // hărți/chart-uri de care ecranul de login n-are nevoie. Echivalentul
+      // „tiers"-elor de import amânat din app_router.dart.
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'query-vendor': ['@tanstack/react-query'],
+            'i18n-vendor': ['i18next', 'react-i18next', 'i18next-icu', 'intl-messageformat'],
+          },
+        },
+      },
+    },
+  };
+});

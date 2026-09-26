@@ -40,6 +40,15 @@ export class RealtimeService {
   }
 
   /**
+   * Închide toate socket-urile unui user (ban, parolă resetată). Token-ul e
+   * verificat doar la conectare, deci fără asta un socket deja deschis primea
+   * în continuare mesajele private, oricât ar fi durat sesiunea.
+   */
+  disconnectUser(userId: string) {
+    this.server?.in(`user:${userId}`).disconnectSockets(true);
+  }
+
+  /**
    * Emite direct în camera unei conversații (`conversation:<id>`), aceeași
    * cameră în care ChatGateway bagă participanții la join_conversation.
    * Folosit de servicii care postează mesaje/actualizări în chat pe alt drum

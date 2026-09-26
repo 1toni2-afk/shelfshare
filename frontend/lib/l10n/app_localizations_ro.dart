@@ -526,6 +526,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get profileFeedbackHint => 'Ce ai vrea să ne spui?';
 
   @override
+  String get feedbackPageIntro =>
+      'Ce ți-a plăcut, ce te-a încurcat sau ce lipsește. Scrie liber - citim tot. Poți atașa și o captură de ecran.';
+
+  @override
   String get profileFeedbackThanks => 'Mulțumim pentru feedback!';
 
   @override
@@ -3428,6 +3432,9 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get homeNearestTitle => 'Cele mai apropiate de tine';
+
+  @override
   String get shareTagsSuggestions => 'Sugestii:';
 
   @override
@@ -3656,6 +3663,29 @@ class AppLocalizationsRo extends AppLocalizations {
   String get chatFilterArchived => 'Arhivate';
 
   @override
+  String get chatFiltersLabel => 'Filtre conversații';
+
+  @override
+  String get usernameChooseOnceHint =>
+      'Alege cu grijă: username-ul e unic și nu mai poate fi schimbat după ce salvezi.';
+
+  @override
+  String get usernameLockedHint =>
+      'Username-ul a fost ales și nu mai poate fi schimbat.';
+
+  @override
+  String chatSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# de selectate',
+      few: '# selectate',
+      one: '# selectată',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get chatFilterModerator => 'Moderator';
 
   @override
@@ -3705,6 +3735,148 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get chatSafetyHint =>
       'Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.';
+
+  @override
+  String get chatQuizTitle => 'Test rapid de siguranță';
+
+  @override
+  String get chatQuizIntro =>
+      'Cinci situații reale din chat. Alege ce ai face - după fiecare răspuns vezi de ce.';
+
+  @override
+  String get chatQuizStart => 'Începe testul';
+
+  @override
+  String chatQuizProgress(int current, int total) {
+    return 'Întrebarea $current din $total';
+  }
+
+  @override
+  String get chatQuizCorrect => 'Corect';
+
+  @override
+  String get chatQuizWrong => 'Nu chiar';
+
+  @override
+  String get chatQuizNext => 'Mai departe';
+
+  @override
+  String get chatQuizSeeResult => 'Vezi rezultatul';
+
+  @override
+  String chatQuizScore(int score, int total) {
+    return '$score din $total corecte';
+  }
+
+  @override
+  String get chatQuizResultPerfect =>
+      'Impecabil. Exact așa arată un schimb în siguranță.';
+
+  @override
+  String get chatQuizResultGood =>
+      'Bună treabă. Recitește explicațiile de la întrebările ratate.';
+
+  @override
+  String get chatQuizResultPoor =>
+      'Merită să treci prin Centrul de siguranță înainte de următorul schimb.';
+
+  @override
+  String get chatQuizRestart => 'Reia testul';
+
+  @override
+  String get chatQuizQ1 =>
+      'Cineva îți vrea cartea și promite că trimite banii „imediat ce o primește”. Ce faci?';
+
+  @override
+  String get chatQuizQ1A =>
+      'Trimit cartea prima - fără încredere nu se face niciun schimb.';
+
+  @override
+  String get chatQuizQ1B =>
+      'Stabilim plata înainte de expediere, livrare cu ramburs, sau ne vedem în persoană.';
+
+  @override
+  String get chatQuizQ1C =>
+      'Îi dau datele cardului meu, ca să poată trimite banii direct.';
+
+  @override
+  String get chatQuizQ1Explain =>
+      '„Plătesc după ce primesc” e cea mai frecventă țeapă de pe orice platformă de schimb. Plata înainte, rambursul sau o întâlnire în persoană sunt variantele în care nu rămâi și fără carte, și fără bani. Datele cardului nu-ți trebuie niciodată ca să PRIMEȘTI bani.';
+
+  @override
+  String get chatQuizQ2 =>
+      'Primești pe chat un link către o pagină care arată ca ShelfShare și îți cere din nou emailul și parola, ca să „confirmi livrarea”.';
+
+  @override
+  String get chatQuizQ2A => 'Mă autentific repede, ca să nu pierd livrarea.';
+
+  @override
+  String get chatQuizQ2B =>
+      'Mă autentific, dar îmi schimb parola imediat după.';
+
+  @override
+  String get chatQuizQ2C =>
+      'Nu deschid linkul, nu introduc nimic și raportez conversația.';
+
+  @override
+  String get chatQuizQ2Explain =>
+      'ShelfShare nu îți cere niciodată parola printr-un link primit pe chat. O pagină care o cere e o copie făcută ca să-ți fure contul, iar parola introdusă acolo e deja pierdută - schimbată după sau nu.';
+
+  @override
+  String get chatQuizQ3 =>
+      'Un utilizator îți cere codul de verificare primit pe email sau SMS, „ca să confirme că ești o persoană reală”.';
+
+  @override
+  String get chatQuizQ3A =>
+      'Nu îl trimit niciodată - codul acela îmi deschide contul, nu confirmă nimic despre mine.';
+
+  @override
+  String get chatQuizQ3B => 'Îl trimit, dacă are profil cu recenzii bune.';
+
+  @override
+  String get chatQuizQ3C => 'Îl trimit, dar îi cer și eu codul lui.';
+
+  @override
+  String get chatQuizQ3Explain =>
+      'Codurile de verificare sunt doar pentru tine. Cine ți-l cere încearcă să intre în contul tău sau să confirme, în numele tău, o acțiune pe care n-ai făcut-o.';
+
+  @override
+  String get chatQuizQ4 =>
+      'Ați bătut palma pe un schimb și urmează să vă vedeți. Unde propui întâlnirea?';
+
+  @override
+  String get chatQuizQ4A => 'La mine acasă - e cel mai simplu.';
+
+  @override
+  String get chatQuizQ4B =>
+      'Într-un loc public și circulat, în timpul zilei, și îi spun cuiva apropiat unde merg.';
+
+  @override
+  String get chatQuizQ4C =>
+      'În parcarea din spatele blocului, seara, ca să fie liniște.';
+
+  @override
+  String get chatQuizQ4Explain =>
+      'O cafenea, o librărie sau o stație aglomerată, ziua, nu costă nimic în plus și schimbă complet situația dacă ceva nu e în regulă. Adresa de acasă rămâne a ta.';
+
+  @override
+  String get chatQuizQ5 =>
+      'Înainte să stabiliți orice, cineva insistă să mutați discuția pe altă aplicație și îți cere adresa completă.';
+
+  @override
+  String get chatQuizQ5A =>
+      'I le dau pe amândouă - altfel pare că nu am încredere.';
+
+  @override
+  String get chatQuizQ5B => 'Îi dau doar adresa, numărul nu.';
+
+  @override
+  String get chatQuizQ5C =>
+      'Rămân în chatul din aplicație până batem palma; adresa o dau doar dacă aleg livrare la domiciliu.';
+
+  @override
+  String get chatQuizQ5Explain =>
+      'Conversația din aplicație poate fi raportată și verificată de echipă; una mutată în altă parte, nu. Insistența de a ieși din aplicație înainte de orice înțelegere e, în sine, un semnal.';
 
   @override
   String get greetReaderFallback => 'Cititorule';
@@ -4811,5 +4983,236 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String storeStockLeft(int count) {
     return '$count exemplare în stoc';
+  }
+
+  @override
+  String get importTitle => 'Importă-ți cărțile';
+
+  @override
+  String get importIntro =>
+      'Adu-ți biblioteca din Goodreads sau StoryGraph. Dacă n-ai cont pe niciuna, completează șablonul nostru în Excel și încarcă-l tot aici.';
+
+  @override
+  String get importStep1Title => 'Pasul 1 · Ia-ți fișierul';
+
+  @override
+  String get importStep1Goodreads => 'Exportă din Goodreads';
+
+  @override
+  String get importStep1StoryGraph => 'Exportă din StoryGraph';
+
+  @override
+  String get importStep1Hint =>
+      'Butonul deschide site-ul lor într-o filă nouă. Pe Goodreads apeși „Export Library\" și aștepți câteva minute până apare linkul de descărcare.';
+
+  @override
+  String get importStep1Template => 'Descarcă șablonul';
+
+  @override
+  String get importStep1TemplateHint =>
+      'Se deschide în Excel sau Google Sheets. Completează-l, salvează-l ca CSV și încarcă-l mai jos.';
+
+  @override
+  String get importStep2Title => 'Pasul 2 · Încarcă fișierul';
+
+  @override
+  String get importStep2Choose => 'Alege fișierul';
+
+  @override
+  String get importStep2Change => 'Schimbă fișierul';
+
+  @override
+  String get importStep2NoFile => 'Niciun fișier ales';
+
+  @override
+  String get importStep3Title => 'Pasul 3 · Pornește importul';
+
+  @override
+  String get importStep3Button => 'Importă cărțile';
+
+  @override
+  String get importRunning => 'Lucrăm la fișier. Nu închide pagina.';
+
+  @override
+  String get importResultTitle => 'Gata';
+
+  @override
+  String get importResultEmpty =>
+      'N-am găsit niciun rând de importat în fișier.';
+
+  @override
+  String importResultListed(int count) {
+    return '$count în piață';
+  }
+
+  @override
+  String importResultUpdated(int count) {
+    return '$count actualizate';
+  }
+
+  @override
+  String importResultShelved(int count) {
+    return '$count pe raft';
+  }
+
+  @override
+  String importResultFavorited(int count) {
+    return '$count la favorite';
+  }
+
+  @override
+  String importResultSkipped(int count) {
+    return '$count sărite';
+  }
+
+  @override
+  String importResultFailed(int count) {
+    return '$count eșuate';
+  }
+
+  @override
+  String get importSkippedTitle => 'Rânduri sărite';
+
+  @override
+  String importSkippedShelf(String shelf) {
+    return 'raftul „$shelf\" - nu știm unde să-l punem';
+  }
+
+  @override
+  String get importGoToShelf => 'Vezi raftul';
+
+  @override
+  String get importGoToLibrary => 'Vezi cărțile mele';
+
+  @override
+  String get importGuidelinesTitle => 'Ce se întâmplă cu fiecare rând';
+
+  @override
+  String get importGuidelineShelfRead =>
+      '„read\" și „currently-reading\" ajung pe raftul tău de lectură, nu în piață.';
+
+  @override
+  String get importGuidelineShelfToRead =>
+      '„to-read\" și rafturile numite „favorites\" ajung la favorite, ca să te anunțăm când apare cartea la cineva.';
+
+  @override
+  String get importGuidelineListing =>
+      'Rândurile fără raft, sau cu „swap\", devin anunțuri în piață.';
+
+  @override
+  String get importGuidelineSkipped =>
+      'Un raft pe care nu-l recunoaștem („did-not-finish\", rafturi inventate de tine) e sărit, ca să nu ajungă din greșeală la schimb o carte pe care n-o dai.';
+
+  @override
+  String get importGuidelineNoDuplicates =>
+      'Poți relua importul oricând: o carte deja pusă pe raft sau la favorite nu se dublează.';
+
+  @override
+  String importGuidelineColumns(String columns) {
+    return 'Coloane citite: $columns. Numele lor rămân în engleză - la fel le scriu și Goodreads, și StoryGraph.';
+  }
+
+  @override
+  String importGuidelineConditions(String conditions) {
+    return 'Valori pentru „condition\": $conditions. Orice altceva devine BUNA.';
+  }
+
+  @override
+  String get importGuidelineLimit =>
+      'Maximum 500 de rânduri per fișier și doar CSV - un .xlsx trebuie salvat întâi ca CSV.';
+
+  @override
+  String get todoTitle => 'Descoperă ShelfShare';
+
+  @override
+  String get todoSubtitle => 'Vezi rapid cum funcționează aplicația';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '$done din $total';
+  }
+
+  @override
+  String get todoDismiss => 'Ascunde lista';
+
+  @override
+  String get todoTutorial => 'Vezi în două minute cum merge aplicația';
+
+  @override
+  String get todoBookMatch => 'Găsește-ți o carte cu Book Match';
+
+  @override
+  String get todoImport => 'Importă-ți cărțile din Goodreads sau StoryGraph';
+
+  @override
+  String get todoShortcuts =>
+      'Pune-ți în meniu scurtăturile pe care le folosești';
+
+  @override
+  String get tutorialTitle => 'Tur rapid';
+
+  @override
+  String get tutorialSkip => 'Închide';
+
+  @override
+  String get tutorialNext => 'Mai departe';
+
+  @override
+  String get tutorialDone => 'Am înțeles';
+
+  @override
+  String get tutorialShelfTitle => 'Raftul tău';
+
+  @override
+  String get tutorialShelfBody =>
+      'Adaugă cărțile pe care le ai. Cele pe care vrei să le dai ajung în piață; restul rămân doar pe raftul tău, ca să știi ce-ai citit.';
+
+  @override
+  String get tutorialMatchTitle => 'Book Match';
+
+  @override
+  String get tutorialMatchBody =>
+      'Treci prin cărți cu un swipe: dreapta dacă te atrage, stânga dacă nu. Ce-ți place ajunge la favorite și ne ajută să-ți recomandăm mai bine.';
+
+  @override
+  String get tutorialSwapTitle => 'Schimbă sau cumpără';
+
+  @override
+  String get tutorialSwapBody =>
+      'Ceri un schimb sau faci o ofertă. Vorbiți în chat, stabiliți unde vă vedeți, iar la final cartea trece oficial la noul proprietar.';
+
+  @override
+  String get tutorialWishlistTitle => 'Favorite și alerte';
+
+  @override
+  String get tutorialWishlistBody =>
+      'Pune la favorite o carte pe care n-o găsești. Te anunțăm în clipa în care o listează cineva din orașul tău.';
+
+  @override
+  String get tutorialShortcutsTitle => 'Personalizează meniul rapid';
+
+  @override
+  String get tutorialShortcutsBody =>
+      'Din meniu îți alegi scurtăturile pe care le vrei la îndemână. Limba, notificările și restul se schimbă din setări.';
+
+  @override
+  String get commonBack => 'Înapoi';
+
+  @override
+  String get bookDetailNegotiableChip => 'negociabil';
+
+  @override
+  String get filtersAny => 'Toate';
+
+  @override
+  String browseResultsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count de cărți',
+      few: '$count cărți',
+      one: 'o carte',
+    );
+    return '$_temp0';
   }
 }

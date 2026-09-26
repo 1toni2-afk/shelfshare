@@ -11,6 +11,7 @@ import { SupportModule } from '../support/support.module';
 import { SecurityEventsModule } from '../security-events/security-events.module';
 import { ListingScoreModule } from '../books/listing-score.module';
 import { PresenceModule } from '../chat/presence.module';
+import { RevokedTokenModule } from '../common/security/revoked-token.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PresenceModule } from '../chat/presence.module';
     SecurityEventsModule,
     ListingScoreModule,
     PresenceModule,
+    RevokedTokenModule,
   ],
   controllers: [AdminController, AdminManagementController],
   providers: [

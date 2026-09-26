@@ -13,4 +13,7 @@ export interface AuthenticatedUser {
   // RevokedTokenService.
   jti?: string;
   exp?: number;
+  // Sesiunea (dispozitivul) căreia îi aparține token-ul - vezi RefreshSession.
+  // Lipsește doar pe token-urile emise înainte de sesiuni.
+  sid?: string;
 }

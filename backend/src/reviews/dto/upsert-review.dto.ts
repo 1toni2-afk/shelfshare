@@ -1,8 +1,9 @@
-import { IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsCatalogId } from '../../common/decorators/is-catalog-id.decorator';
 
 export class UpsertReviewDto {
-  @IsString()
-  @IsUUID()
+  /// Vezi IsCatalogId.
+  @IsCatalogId()
   bookId: string;
 
   @IsInt()

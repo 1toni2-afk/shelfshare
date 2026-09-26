@@ -528,6 +528,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get profileFeedbackHint => 'Mit szeretnél elmondani nekünk?';
 
   @override
+  String get feedbackPageIntro =>
+      'Mi tetszett, mi akadályozott, mi hiányzik. Írj szabadon - mindent elolvasunk. Képernyőképet is csatolhatsz.';
+
+  @override
   String get profileFeedbackThanks => 'Köszönjük a visszajelzést!';
 
   @override
@@ -3418,8 +3422,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String homeNearbyTitle(int km) {
-    return 'În apropierea ta ($km km)';
+    return 'A közeledben ($km km)';
   }
+
+  @override
+  String get homeNearestTitle => 'A hozzád legközelebbiek';
 
   @override
   String get shareTagsSuggestions => 'Sugestii:';
@@ -3650,6 +3657,29 @@ class AppLocalizationsHu extends AppLocalizations {
   String get chatFilterArchived => 'Arhivate';
 
   @override
+  String get chatFiltersLabel => 'Filtre conversații';
+
+  @override
+  String get usernameChooseOnceHint =>
+      'Alege cu grijă: username-ul e unic și nu mai poate fi schimbat după ce salvezi.';
+
+  @override
+  String get usernameLockedHint =>
+      'Username-ul a fost ales și nu mai poate fi schimbat.';
+
+  @override
+  String chatSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# de selectate',
+      few: '# selectate',
+      one: '# selectată',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get chatFilterModerator => 'Moderator';
 
   @override
@@ -3699,6 +3729,148 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get chatSafetyHint =>
       'Poți reveni oricând aici — pagina se deschide când nu ai nicio conversație selectată.';
+
+  @override
+  String get chatQuizTitle => 'Gyors biztonsági teszt';
+
+  @override
+  String get chatQuizIntro =>
+      'Öt helyzet, ami tényleg előfordul a csevegésben. Válaszd ki, mit tennél - minden válasz után megkapod az indoklást.';
+
+  @override
+  String get chatQuizStart => 'Teszt indítása';
+
+  @override
+  String chatQuizProgress(int current, int total) {
+    return 'Kérdés: $current/$total';
+  }
+
+  @override
+  String get chatQuizCorrect => 'Helyes';
+
+  @override
+  String get chatQuizWrong => 'Nem egészen';
+
+  @override
+  String get chatQuizNext => 'Tovább';
+
+  @override
+  String get chatQuizSeeResult => 'Eredmény megtekintése';
+
+  @override
+  String chatQuizScore(int score, int total) {
+    return '$score/$total helyes válasz';
+  }
+
+  @override
+  String get chatQuizResultPerfect =>
+      'Hibátlan. Pontosan így néz ki egy biztonságos csere.';
+
+  @override
+  String get chatQuizResultGood =>
+      'Szép munka. Olvasd át újra a kihagyott kérdések magyarázatát.';
+
+  @override
+  String get chatQuizResultPoor =>
+      'Érdemes átnézni a Biztonsági központot a következő csere előtt.';
+
+  @override
+  String get chatQuizRestart => 'Újrakezdés';
+
+  @override
+  String get chatQuizQ1 =>
+      'Valaki kéri a könyvedet, és megígéri, hogy elküldi a pénzt, „amint megkapja”. Mit teszel?';
+
+  @override
+  String get chatQuizQ1A =>
+      'Először elküldöm a könyvet - bizalom nélkül nincs csere.';
+
+  @override
+  String get chatQuizQ1B =>
+      'Feladás előtt megbeszéljük a fizetést, utánvétet kérek, vagy személyesen találkozunk.';
+
+  @override
+  String get chatQuizQ1C =>
+      'Megadom a kártyaadataimat, hogy közvetlenül tudja küldeni a pénzt.';
+
+  @override
+  String get chatQuizQ1Explain =>
+      'A „majd fizetek, ha megkaptam” a leggyakoribb átverés minden cserés felületen. Az előre fizetés, az utánvét vagy a személyes átadás azok a megoldások, amelyeknél nem maradsz könyv és pénz nélkül. Pénz FOGADÁSÁHOZ soha nincs szükség a kártyaadataidra.';
+
+  @override
+  String get chatQuizQ2 =>
+      'Kapsz a csevegésben egy linket egy oldalra, ami ShelfShare-nek néz ki, és újra kéri az e-mail-címedet és a jelszavadat, hogy „megerősítsd a szállítást”.';
+
+  @override
+  String get chatQuizQ2A =>
+      'Gyorsan bejelentkezem, nehogy elvesszen a szállítás.';
+
+  @override
+  String get chatQuizQ2B => 'Bejelentkezem, de utána azonnal jelszót cserélek.';
+
+  @override
+  String get chatQuizQ2C =>
+      'Nem nyitom meg a linket, semmit nem írok be, és jelentem a beszélgetést.';
+
+  @override
+  String get chatQuizQ2Explain =>
+      'A ShelfShare soha nem kéri a jelszavadat csevegésben küldött linken keresztül. Az ilyen oldal másolat, amit a fiókod ellopására készítettek - az ott beírt jelszó már odaveszett, akkor is, ha utána lecseréled.';
+
+  @override
+  String get chatQuizQ3 =>
+      'Egy felhasználó elkéri az e-mailben vagy SMS-ben kapott ellenőrző kódodat, „hogy igazolja, valódi személy vagy”.';
+
+  @override
+  String get chatQuizQ3A =>
+      'Soha nem küldöm el - az a kód a fiókomat nyitja, rólam semmit nem igazol.';
+
+  @override
+  String get chatQuizQ3B => 'Elküldöm, ha jó értékelései vannak.';
+
+  @override
+  String get chatQuizQ3C => 'Elküldöm, de én is elkérem az övét.';
+
+  @override
+  String get chatQuizQ3Explain =>
+      'Az ellenőrző kódok csak neked szólnak. Aki elkéri, a fiókodba akar bejutni, vagy a nevedben akar megerősíteni egy műveletet, amit nem te indítottál.';
+
+  @override
+  String get chatQuizQ4 =>
+      'Megegyeztetek a cserében, most találkoznotok kell. Hol javaslod?';
+
+  @override
+  String get chatQuizQ4A => 'Nálam otthon - az a legegyszerűbb.';
+
+  @override
+  String get chatQuizQ4B =>
+      'Nyilvános, forgalmas helyen, nappal, és szólok valakinek, hogy hová megyek.';
+
+  @override
+  String get chatQuizQ4C =>
+      'A ház mögötti parkolóban, este, hogy nyugodt legyen.';
+
+  @override
+  String get chatQuizQ4Explain =>
+      'Egy kávézó, egy könyvesbolt vagy egy forgalmas megálló nappal semmivel nem kerül többe, és mindent megváltoztat, ha valami nem stimmel. A lakcímed a tiéd marad.';
+
+  @override
+  String get chatQuizQ5 =>
+      'Mielőtt bármiben megállapodnátok, valaki erősködik, hogy másik alkalmazásba menjetek át, és elkéri a teljes címedet.';
+
+  @override
+  String get chatQuizQ5A =>
+      'Megadom mindkettőt - különben úgy tűnik, nem bízom benne.';
+
+  @override
+  String get chatQuizQ5B => 'Csak a címet adom meg, a telefonszámot nem.';
+
+  @override
+  String get chatQuizQ5C =>
+      'Maradok az alkalmazás csevegésében, amíg meg nem egyezünk; a címet csak házhozszállítás esetén adom meg.';
+
+  @override
+  String get chatQuizQ5Explain =>
+      'Az alkalmazáson belüli beszélgetés jelenthető és a csapat által ellenőrizhető, a máshová átvitt nem. Már önmagában jelzés, ha valaki bármilyen megállapodás előtt ki akar lépni az alkalmazásból.';
 
   @override
   String get greetReaderFallback => 'Cititorule';
@@ -4811,5 +4983,236 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String storeStockLeft(int count) {
     return '$count példány raktáron';
+  }
+
+  @override
+  String get importTitle => 'Könyveid importálása';
+
+  @override
+  String get importIntro =>
+      'Hozd át a könyvtáradat a Goodreadsről vagy a StoryGraphról. Nincs fiókod egyiken sem? Töltsd ki a sablonunkat Excelben, és töltsd fel itt.';
+
+  @override
+  String get importStep1Title => '1. lépés · Szerezd meg a fájlt';
+
+  @override
+  String get importStep1Goodreads => 'Exportálás a Goodreadsről';
+
+  @override
+  String get importStep1StoryGraph => 'Exportálás a StoryGraphról';
+
+  @override
+  String get importStep1Hint =>
+      'A gomb új lapon nyitja meg az oldalukat. A Goodreadsen kattints az „Export Library” gombra, és várj pár percet a letöltési linkre.';
+
+  @override
+  String get importStep1Template => 'Sablon letöltése';
+
+  @override
+  String get importStep1TemplateHint =>
+      'Excelben vagy Google Sheetsben nyílik meg. Töltsd ki, mentsd CSV-ként, majd töltsd fel alább.';
+
+  @override
+  String get importStep2Title => '2. lépés · Töltsd fel a fájlt';
+
+  @override
+  String get importStep2Choose => 'Fájl kiválasztása';
+
+  @override
+  String get importStep2Change => 'Másik fájl';
+
+  @override
+  String get importStep2NoFile => 'Nincs kiválasztott fájl';
+
+  @override
+  String get importStep3Title => '3. lépés · Indítsd el az importot';
+
+  @override
+  String get importStep3Button => 'Könyvek importálása';
+
+  @override
+  String get importRunning => 'Dolgozunk a fájlon. Ne zárd be az oldalt.';
+
+  @override
+  String get importResultTitle => 'Kész';
+
+  @override
+  String get importResultEmpty => 'Nem találtunk importálható sort a fájlban.';
+
+  @override
+  String importResultListed(int count) {
+    return '$count a piactéren';
+  }
+
+  @override
+  String importResultUpdated(int count) {
+    return '$count frissítve';
+  }
+
+  @override
+  String importResultShelved(int count) {
+    return '$count a polcodon';
+  }
+
+  @override
+  String importResultFavorited(int count) {
+    return '$count a kedvencek közt';
+  }
+
+  @override
+  String importResultSkipped(int count) {
+    return '$count kihagyva';
+  }
+
+  @override
+  String importResultFailed(int count) {
+    return '$count sikertelen';
+  }
+
+  @override
+  String get importSkippedTitle => 'Kihagyott sorok';
+
+  @override
+  String importSkippedShelf(String shelf) {
+    return '„$shelf” polc - nem tudjuk, hova tartozik';
+  }
+
+  @override
+  String get importGoToShelf => 'Polcom megnyitása';
+
+  @override
+  String get importGoToLibrary => 'Könyveim megnyitása';
+
+  @override
+  String get importGuidelinesTitle => 'Mi történik az egyes sorokkal';
+
+  @override
+  String get importGuidelineShelfRead =>
+      'A „read” és a „currently-reading” az olvasási polcodra kerül, nem a piactérre.';
+
+  @override
+  String get importGuidelineShelfToRead =>
+      'A „to-read” és a „favorites” nevű polcok a kedvenceid közé kerülnek, hogy szólhassunk, ha valaki meghirdeti őket.';
+
+  @override
+  String get importGuidelineListing =>
+      'A polc nélküli vagy „swap” jelölésű sorokból hirdetés lesz a piactéren.';
+
+  @override
+  String get importGuidelineSkipped =>
+      'Az általunk nem ismert polcokat („did-not-finish”, saját polcnevek) kihagyjuk, hogy véletlenül se kerüljön cserére olyan könyv, amit nem adnál oda.';
+
+  @override
+  String get importGuidelineNoDuplicates =>
+      'Az importot bármikor megismételheted: a polcodon vagy a kedvenceid közt már meglévő könyv nem duplázódik.';
+
+  @override
+  String importGuidelineColumns(String columns) {
+    return 'Beolvasott oszlopok: $columns. A nevek maradjanak angolul - a Goodreads és a StoryGraph is így írja őket.';
+  }
+
+  @override
+  String importGuidelineConditions(String conditions) {
+    return 'A „condition” lehetséges értékei: $conditions. Bármi más BUNA lesz.';
+  }
+
+  @override
+  String get importGuidelineLimit =>
+      'Fájlonként legfeljebb 500 sor, és csak CSV - az .xlsx fájlt előbb mentsd CSV-ként.';
+
+  @override
+  String get todoTitle => 'Fedezd fel a ShelfShare-t';
+
+  @override
+  String get todoSubtitle => 'Nézd meg gyorsan, hogyan működik az alkalmazás';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '$done / $total';
+  }
+
+  @override
+  String get todoDismiss => 'Lista elrejtése';
+
+  @override
+  String get todoTutorial =>
+      'Nézd meg két perc alatt, hogyan működik az alkalmazás';
+
+  @override
+  String get todoBookMatch => 'Találj könyvet a Book Match-csel';
+
+  @override
+  String get todoImport =>
+      'Importáld a könyveidet a Goodreadsről vagy a StoryGraphról';
+
+  @override
+  String get todoShortcuts =>
+      'Tedd a menübe a gyorsindítókat, amiket használsz';
+
+  @override
+  String get tutorialTitle => 'Gyors körút';
+
+  @override
+  String get tutorialSkip => 'Bezárás';
+
+  @override
+  String get tutorialNext => 'Tovább';
+
+  @override
+  String get tutorialDone => 'Értem';
+
+  @override
+  String get tutorialShelfTitle => 'A polcod';
+
+  @override
+  String get tutorialShelfBody =>
+      'Vedd fel a könyveket, amiket birtokolsz. Amiktől megválnál, megjelennek a piactéren; a többi a polcodon marad, hogy lásd, mit olvastál.';
+
+  @override
+  String get tutorialMatchTitle => 'Book Match';
+
+  @override
+  String get tutorialMatchBody =>
+      'Lapozz a könyvek között: jobbra, ha tetszik, balra, ha nem. Amit megjelölsz, a kedvenceid közé kerül, és pontosítja az ajánlásokat.';
+
+  @override
+  String get tutorialSwapTitle => 'Cserélj vagy vásárolj';
+
+  @override
+  String get tutorialSwapBody =>
+      'Kérj cserét vagy tegyél ajánlatot. A részleteket chaten beszélitek meg, találkoztok, a könyv pedig hivatalosan gazdát cserél.';
+
+  @override
+  String get tutorialWishlistTitle => 'Kedvencek és értesítések';
+
+  @override
+  String get tutorialWishlistBody =>
+      'Jelöld kedvencnek a könyvet, amit nem találsz. Szólunk abban a percben, amikor valaki a városodban meghirdeti.';
+
+  @override
+  String get tutorialShortcutsTitle => 'Alakítsd magadra';
+
+  @override
+  String get tutorialShortcutsBody =>
+      'A menüben kiválaszthatod, mely gyorsindítók legyenek kéznél. A nyelv, az értesítések és a többi a beállításokban van.';
+
+  @override
+  String get commonBack => 'Vissza';
+
+  @override
+  String get bookDetailNegotiableChip => 'alkuképes';
+
+  @override
+  String get filtersAny => 'Mind';
+
+  @override
+  String browseResultsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count könyv',
+      one: 'egy könyv',
+    );
+    return '$_temp0';
   }
 }

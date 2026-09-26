@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-archive
+.env
+.env.local
+*.local
+
+# Generat de scripts/arb-to-json.mjs la fiecare dev/build. Sursa de adevar
+# sunt fisierele frontend/lib/l10n/app_*.arb, deci copiile nu se comit -
+# altfel ar aparea in fiecare diff si ar invita la editari care se pierd.
+src/lib/i18n/locales/

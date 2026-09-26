@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -12,9 +13,31 @@ import { StorageService } from '../storage/storage.service';
 import { StoresService } from '../stores/stores.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ReadingSurveyDto } from './dto/reading-survey.dto';
+import { OnboardingTodoDto } from './dto/onboarding-todo.dto';
+import { isOnboardingTodoStep } from '../common/constants/onboarding-todo';
 import { publicName } from '../common/utils/user-visibility';
 import { XP_PER_LEVEL, XP_REWARDS } from '../common/utils/xp';
 import { ADVANCED_STATISTICS_FLAG } from '../common/constants/feature-flags';
+import { PUBLICLY_VISIBLE_LISTING_OR } from '../common/constants/public-listings';
+
+/**
+ * Anunțurile unui user pe care le vede oricine: aceleași reguli ca în căutare
+ * (vezi PUBLICLY_VISIBLE_LISTING_OR), deci și cele DOAR de vânzare sau
+ * donație - profilul public le arăta numai pe cele de schimb, iar filtrul
+ * „De vânzare" n-ar fi avut ce afișa.
+ */
+function publicListingsWhere(userId: string): Prisma.UserBookWhereInput {
+  return {
+    userId,
+    deletedAt: null,
+    hiddenAt: null,
+    permanentlyTransferred: false,
+    OR: PUBLICLY_VISIBLE_LISTING_OR,
+  };
+}
+
+export type FeedScope = 'following' | 'nearby' | 'all';
+export type FeedKind = 'reading' | 'exchanges';
 
 @Injectable()
 export class ProfileService {
@@ -177,6 +200,8 @@ export class ProfileService {
       // cardul „Top genuri" din coloana laterală (același pe care profilul
       // public îl afișa de mult).
       readingStats: await this.getReadingStats(userId),
+      // Zona „Citesc acum" de pe profilul din beta.
+      currentlyReading: await this.getCurrentlyReading(userId),
       gamification: this.getGamificationStats(user),
       // Frontend-ul ascunde intrarea catre „Advanced Analytics" cand e
       // false - altfel ar arata un rand care duce garantat intr-un 403.
@@ -185,6 +210,34 @@ export class ProfileService {
   }
 
   async updateMyProfile(userId: string, dto: UpdateProfileDto) {
+    /*
+      Username-ul se alege O SINGURĂ DATĂ.
+
+      E identificatorul public al omului: apare pe profil, în conversații și în
+      linkul care se dă mai departe (`/users/:id` are numele afișat pe el).
+      Dacă s-ar putea schimba, un link trimis ieri ar duce mâine la altcineva,
+      iar cineva care tocmai a eliberat un nume l-ar putea vedea luat de un
+      impostor peste cinci minute. Unicitatea o ține baza de date
+      (`username String? @unique`), permanența o ține regula asta.
+
+      Setarea inițială rămâne permisă: conturile create înainte de onboarding -
+      și cele venite prin Google - pornesc cu `username` null.
+    */
+    if (dto.username !== undefined) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { username: true },
+      });
+      if (
+        current?.username &&
+        current.username !== dto.username
+      ) {
+        throw new BadRequestException(
+          'Username-ul nu poate fi schimbat după ce a fost ales.',
+        );
+      }
+    }
+
     let user: User;
     try {
       user = await this.users.update(userId, dto);
@@ -228,12 +281,29 @@ export class ProfileService {
       throw new NotFoundException('Utilizator negăsit');
     }
 
-    const [listedBooks, listingsCount] = await Promise.all([
+    // `listedBooks` rămâne forma veche (doar schimb) pentru aplicația Flutter
+    // din producție; `availableBooks` e lista completă, citită de beta.
+    const [listedBooks, availableBooks, listingsCount] = await Promise.all([
       this.prisma.userBook.findMany({
-        where: { userId, availableForSwap: true },
+        // Aceeași formă ca înainte (doar schimb, 20), dar fără anunțurile
+        // ascunse de moderare (`hiddenAt`) - altfel un anunț raportat și
+        // ascuns din căutare rămânea vizibil pe profilul public din Flutter.
+        where: {
+          userId,
+          availableForSwap: true,
+          deletedAt: null,
+          hiddenAt: null,
+          permanentlyTransferred: false,
+        },
         include: { book: true },
         orderBy: { createdAt: 'desc' },
         take: 20,
+      }),
+      this.prisma.userBook.findMany({
+        where: publicListingsWhere(userId),
+        include: { book: true },
+        orderBy: { createdAt: 'desc' },
+        take: 60,
       }),
       this.prisma.userBook.count({ where: { userId } }),
     ]);
@@ -242,13 +312,15 @@ export class ProfileService {
       ? await this.getAcquisitionHistory(userId)
       : null;
 
-    const [reviews, readingStats, achievements, impactStats, bookshelf] = await Promise.all([
-      this.getReviews(userId),
-      this.getReadingStats(userId),
-      this.getAchievements(user),
-      this.getImpactStats(userId),
-      this.bookshelf.getPublicShelf(userId),
-    ]);
+    const [reviews, readingStats, achievements, impactStats, bookshelf, currentlyReading] =
+      await Promise.all([
+        this.getReviews(userId),
+        this.getReadingStats(userId),
+        this.getAchievements(user),
+        this.getImpactStats(userId),
+        this.bookshelf.getPublicShelf(userId),
+        this.getCurrentlyReading(userId),
+      ]);
 
     return {
       id: user.id,
@@ -271,6 +343,7 @@ export class ProfileService {
       booksReceivedCount: user.booksReceivedCount,
       memberSince: user.createdAt,
       listedBooks,
+      availableBooks,
       listingsCount,
       acquisitionHistory,
       trustScore: await this.computeTrustScore(user),
@@ -279,8 +352,84 @@ export class ProfileService {
       achievements,
       impactStats,
       bookshelf,
+      currentlyReading,
       gamification: this.getGamificationStats(user),
     };
+  }
+
+  /**
+   * Cartea la care userul lucrează acum: cea mai recent atinsă intrare READING
+   * de pe raft, cu progresul ei dacă a introdus vreodată o pagină. Același
+   * raft e deja public (vezi getPublicShelf), deci nu expune nimic în plus.
+   * `startedAt` e momentul primei pagini introduse - raftul nu ține o dată de
+   * început, iar `updatedAt` s-ar muta la fiecare pagină nouă.
+   */
+  async getCurrentlyReading(userId: string) {
+    const entry = await this.prisma.bookshelfEntry.findFirst({
+      where: { userId, status: 'READING' },
+      include: { book: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+    if (!entry) return null;
+
+    const progress = await this.prisma.readingProgress.findUnique({
+      where: { userId_bookId: { userId, bookId: entry.bookId } },
+    });
+    return {
+      book: entry.book,
+      currentPage: progress?.currentPage ?? 0,
+      totalPages: progress?.totalPages ?? entry.book.pageCount ?? null,
+      startedAt: progress?.createdAt ?? entry.createdAt,
+    };
+  }
+
+  /**
+   * „Tu & X" de pe profilul altcuiva: ce cărți de-ale lui îți sunt pe
+   * wishlist și ce cărți de-ale tale sunt pe al lui. Potrivirea e pe OPERĂ
+   * (bookId), nu pe exemplar - inima pusă pe anunțul altcuiva tot înseamnă că
+   * vrei titlul. Doar anunțurile publice intră la socoteală: unul ascuns din
+   * setări nu trebuie să se vadă nici pe calea asta.
+   */
+  async getCompatibility(viewerId: string, otherUserId: string) {
+    if (viewerId === otherUserId) {
+      return { theirBooksYouWant: [], yourBooksTheyWant: [] };
+    }
+
+    const [myWishlist, theirWishlist] = await Promise.all([
+      this.prisma.wishlistItem.findMany({
+        where: { userId: viewerId },
+        select: { bookId: true },
+      }),
+      this.prisma.wishlistItem.findMany({
+        where: { userId: otherUserId },
+        select: { bookId: true },
+      }),
+    ]);
+
+    const [theirBooksYouWant, yourBooksTheyWant] = await Promise.all([
+      myWishlist.length === 0
+        ? []
+        : this.prisma.userBook.findMany({
+            where: {
+              ...publicListingsWhere(otherUserId),
+              bookId: { in: myWishlist.map((w) => w.bookId) },
+            },
+            include: { book: true },
+            orderBy: { createdAt: 'desc' },
+          }),
+      theirWishlist.length === 0
+        ? []
+        : this.prisma.userBook.findMany({
+            where: {
+              ...publicListingsWhere(viewerId),
+              bookId: { in: theirWishlist.map((w) => w.bookId) },
+            },
+            include: { book: true },
+            orderBy: { createdAt: 'desc' },
+          }),
+    ]);
+
+    return { theirBooksYouWant, yourBooksTheyWant };
   }
 
   /**
@@ -1040,6 +1189,45 @@ export class ProfileService {
   }
 
   /**
+   * Ale cui evenimente intră în feed. `following` e forma veche (doar cei
+   * urmăriți - ce primește aplicația Flutter, care nu trimite `scope`);
+   * `nearby` sunt cititorii din același oraș, urmăriți sau nu; `all` le
+   * reunește. Userii suspendați nu apar în „aproape de tine": acolo nu i-a
+   * ales nimeni explicit.
+   */
+  private async feedActorIds(userId: string, scope: FeedScope): Promise<string[]> {
+    const ids = new Set<string>();
+    if (scope !== 'nearby') {
+      const follows = await this.prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      });
+      follows.forEach((f) => ids.add(f.followingId));
+    }
+    if (scope !== 'following') {
+      const me = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { city: true },
+      });
+      if (me?.city) {
+        const neighbours = await this.prisma.user.findMany({
+          where: {
+            id: { not: userId },
+            city: { equals: me.city, mode: 'insensitive' },
+            isBanned: false,
+            deletionScheduledAt: null,
+          },
+          select: { id: true },
+          orderBy: { createdAt: 'desc' },
+          take: 300,
+        });
+        neighbours.forEach((n) => ids.add(n.id));
+      }
+    }
+    return [...ids];
+  }
+
+  /**
    * Reading Activity Feed - evenimente recente din activitatea userilor
    * URMĂRIȚI (vezi Follow), nu globale - altfel ar fi zgomot pe o platformă
    * cu mulți useri necunoscuți între ei. Fără o tabelă de evenimente
@@ -1047,7 +1235,12 @@ export class ProfileService {
    * cărți terminate, schimburi finalizate), la fel ca restul statisticilor
    * "derivate" din aplicație.
    */
-  async getActivityFeed(userId: string, limit = 30, offset = 0) {
+  async getActivityFeed(
+    userId: string,
+    limit = 30,
+    offset = 0,
+    options: { scope?: FeedScope; kind?: FeedKind } = {},
+  ) {
     const boundedLimit = Math.min(Math.max(limit, 1), 50);
     const boundedOffset = Math.max(offset, 0);
     // Fără cursor real pe un feed compus din 4 surse eterogene - cerem
@@ -1056,20 +1249,31 @@ export class ProfileService {
     // cât timp per-source take rămâne rezonabil (capped mai jos).
     const perSourceTake = Math.min(boundedOffset + boundedLimit, 100);
 
-    const follows = await this.prisma.follow.findMany({
-      where: { followerId: userId },
-      select: { followingId: true },
-    });
-    const followingIds = follows.map((f) => f.followingId);
+    const followingIds = await this.feedActorIds(userId, options.scope ?? 'following');
     if (followingIds.length === 0) return [];
+    // `kind` restrânge sursele pe server, nu după paginare: filtrat la client,
+    // „Citesc acum" ar fi arătat doar câte evenimente de citit încăpeau între
+    // primele 30 din toate tipurile.
+    const kind = options.kind;
+    const want = (source: 'listing' | 'finished' | 'exchange' | 'sale' | 'progress') =>
+      !kind ||
+      (kind === 'reading' && (source === 'progress' || source === 'finished')) ||
+      (kind === 'exchanges' && source === 'exchange');
+    const skip = Promise.resolve([] as never[]);
 
     const userSelect = { name: true, nameVisible: true, profileImage: true };
     const bookSelect = { title: true, author: true, coverUrl: true, genre: true, pageCount: true };
 
     const [newListings, finishedBooks, completedExchanges, completedSales, readingProgress] = await Promise.all([
-      this.prisma.userBook.findMany({
-        where: { userId: { in: followingIds } },
+      !want('listing') ? skip : this.prisma.userBook.findMany({
+        // Doar cărți puse pe raft de mână. Exemplarul primit la un schimb
+        // (previousListingId) apare deja ca „a făcut un schimb cu…" - altfel
+        // fiecare schimb ar dubla în feed ca „a adăugat o carte nouă".
+        // Anunțurile șterse sau ascunse de moderare nu au ce căuta aici.
+        where: { userId: { in: followingIds }, previousListingId: null, deletedAt: null, hiddenAt: null },
         select: {
+          id: true,
+          bookId: true,
           userId: true,
           createdAt: true,
           description: true,
@@ -1079,9 +1283,11 @@ export class ProfileService {
         orderBy: { createdAt: 'desc' },
         take: perSourceTake,
       }),
-      this.prisma.bookshelfEntry.findMany({
+      !want('finished') ? skip : this.prisma.bookshelfEntry.findMany({
         where: { userId: { in: followingIds }, status: 'FINISHED' },
         select: {
+          id: true,
+          bookId: true,
           userId: true,
           updatedAt: true,
           book: { select: bookSelect },
@@ -1090,14 +1296,15 @@ export class ProfileService {
         orderBy: { updatedAt: 'desc' },
         take: perSourceTake,
       }),
-      this.prisma.exchangeRequest.findMany({
+      !want('exchange') ? skip : this.prisma.exchangeRequest.findMany({
         where: { status: 'COMPLETED', OR: [{ requesterId: { in: followingIds } }, { ownerId: { in: followingIds } }] },
         select: {
+          id: true,
           requesterId: true,
           ownerId: true,
           updatedAt: true,
-          requestedBook: { select: { book: { select: bookSelect } } },
-          offeredBook: { select: { book: { select: bookSelect } } },
+          requestedBook: { select: { bookId: true, book: { select: bookSelect } } },
+          offeredBook: { select: { bookId: true, book: { select: bookSelect } } },
           requester: { select: userSelect },
           owner: { select: userSelect },
         },
@@ -1107,13 +1314,14 @@ export class ProfileService {
       // Doar vânzătorul contează aici (vezi comentariul de mai jos la
       // maparea `sale`), deci filtrăm direct pe ownerId - nu are rost să
       // aducem oferte unde doar cumpărătorul e urmărit.
-      this.prisma.priceOffer.findMany({
+      !want('sale') ? skip : this.prisma.priceOffer.findMany({
         where: { status: 'COMPLETED', ownerId: { in: followingIds } },
         select: {
+          id: true,
           ownerId: true,
           amount: true,
           updatedAt: true,
-          userBook: { select: { book: { select: bookSelect } } },
+          userBook: { select: { bookId: true, book: { select: bookSelect } } },
           owner: { select: userSelect },
         },
         orderBy: { updatedAt: 'desc' },
@@ -1123,11 +1331,14 @@ export class ProfileService {
       // (ReadingProgress). Excludem paginile mici (< 5) ca zgomot - un user
       // care abia a pus cartea pe raft și a bifat "pagina 1" din greșeală
       // n-ar trebui să apară ca "update de progres" în feed-ul altora.
-      this.prisma.readingProgress.findMany({
+      !want('progress') ? skip : this.prisma.readingProgress.findMany({
         where: { userId: { in: followingIds }, currentPage: { gte: 5 } },
         select: {
+          id: true,
+          bookId: true,
           userId: true,
           currentPage: true,
+          totalPages: true,
           updatedAt: true,
           book: { select: bookSelect },
           user: { select: userSelect },
@@ -1137,9 +1348,13 @@ export class ProfileService {
       }),
     ]);
 
+    const actorSet = new Set(followingIds);
     const events = [
       ...newListings.map((l) => ({
         type: 'new_listing' as const,
+        id: `new_listing:${l.id}`,
+        bookId: l.bookId,
+        userBookId: l.id,
         userId: l.userId,
         userName: publicName(l.user),
         userAvatar: l.user.profileImage,
@@ -1154,6 +1369,8 @@ export class ProfileService {
       })),
       ...finishedBooks.map((f) => ({
         type: 'finished_book' as const,
+        id: `finished_book:${f.id}`,
+        bookId: f.bookId,
         userId: f.userId,
         userName: publicName(f.user),
         userAvatar: f.user.profileImage,
@@ -1167,13 +1384,29 @@ export class ProfileService {
         // Evenimentul apare o singură dată, atribuit userului urmărit
         // implicat (dacă amândoi sunt urmăriți, apare pentru requester -
         // simplificare acceptabilă, nu dublăm evenimentul).
-        const isRequesterFollowed = followingIds.includes(exchange.requesterId);
+        const isRequesterFollowed = actorSet.has(exchange.requesterId);
         const actor = isRequesterFollowed ? exchange.requester : exchange.owner;
         const actorId = isRequesterFollowed ? exchange.requesterId : exchange.ownerId;
         const counterparty = isRequesterFollowed ? exchange.owner : exchange.requester;
+        const counterpartyId = isRequesterFollowed ? exchange.ownerId : exchange.requesterId;
+        // Cărțile din perspectiva celui urmărit. Requesterul primește cartea
+        // cerută și dă cartea oferită; ownerul invers. Fără orientarea asta,
+        // „X a schimbat A cu B" ar fi ieșit pe dos ori de câte ori cel urmărit
+        // era ownerul.
+        const requested = exchange.requestedBook.book;
+        const offered = exchange.offeredBook?.book ?? null;
+        const received = isRequesterFollowed ? requested : offered;
+        const given = isRequesterFollowed ? offered : requested;
         return [
           {
             type: 'completed_exchange' as const,
+            id: `completed_exchange:${exchange.id}`,
+            // Cartea din prim-plan e cea PRIMITĂ de cel urmărit - la ea duce
+            // „Vezi cartea"; fără carte primită (a dat-o pe bani), cea dată.
+            bookId:
+              (isRequesterFollowed
+                ? exchange.requestedBook.bookId
+                : exchange.offeredBook?.bookId) ?? exchange.requestedBook.bookId,
             userId: actorId,
             userName: publicName(actor),
             userAvatar: actor.profileImage,
@@ -1185,7 +1418,13 @@ export class ProfileService {
             // (offeredBookId poate lipsi la o vânzare cu bani reconvertită).
             offeredBookTitle: exchange.offeredBook?.book.title ?? null,
             offeredBookCoverUrl: exchange.offeredBook?.book.coverUrl ?? null,
+            receivedBookTitle: received?.title ?? null,
+            receivedBookCoverUrl: received?.coverUrl ?? null,
+            givenBookTitle: given?.title ?? null,
+            givenBookCoverUrl: given?.coverUrl ?? null,
+            counterpartyId,
             counterpartyName: publicName(counterparty),
+            counterpartyAvatar: counterparty.profileImage,
             date: exchange.updatedAt,
           },
         ];
@@ -1196,6 +1435,8 @@ export class ProfileService {
       // urmărit, nu achizițiile lui (acelea rămân private).
       ...completedSales.map((sale) => ({
         type: 'sale' as const,
+        id: `sale:${sale.id}`,
+        bookId: sale.userBook.bookId,
         userId: sale.ownerId,
         userName: publicName(sale.owner),
         userAvatar: sale.owner.profileImage,
@@ -1208,6 +1449,8 @@ export class ProfileService {
       })),
       ...readingProgress.map((p) => ({
         type: 'reading_progress' as const,
+        id: `reading_progress:${p.id}`,
+        bookId: p.bookId,
         userId: p.userId,
         userName: publicName(p.user),
         userAvatar: p.user.profileImage,
@@ -1216,7 +1459,9 @@ export class ProfileService {
         bookCoverUrl: p.book.coverUrl,
         genre: p.book.genre,
         currentPage: p.currentPage,
-        totalPages: p.book.pageCount,
+        // Ediția userului are prioritate față de cea din catalog - altfel
+        // „pagina 300 din 250" pe o ediție mai groasă.
+        totalPages: p.totalPages ?? p.book.pageCount,
         date: p.updatedAt,
       })),
     ];
@@ -1224,5 +1469,62 @@ export class ProfileService {
     return events
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(boundedOffset, boundedOffset + boundedLimit);
+  }
+
+  /**
+   * Lista „Primii pași" de pe Home. Stă pe cont, nu pe dispozitiv: pașii
+   * descriu ce a făcut OMUL în aplicație (a văzut turul, a importat
+   * biblioteca), iar asta nu se uită fiindcă s-a mutat pe alt telefon.
+   */
+  async getOnboardingTodo(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { onboardingTodoDone: true, onboardingTodoDismissed: true },
+    });
+    if (!user) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+    return {
+      // Filtrăm la citire: un pas scos din UI rămâne în coloană (nu merită o
+      // migrare pentru asta), dar n-are ce căuta în răspuns.
+      done: user.onboardingTodoDone.filter(isOnboardingTodoStep),
+      dismissed: user.onboardingTodoDismissed,
+    };
+  }
+
+  /**
+   * Bifează pași și/sau ascunde lista. `done` se reunește cu ce e deja pe
+   * cont - vezi OnboardingTodoDto.
+   *
+   * Reuniunea o face Postgres, nu noi: două bife trimise în paralel (turul
+   * terminat și o scurtătură pusă în aceeași clipă) s-ar fi suprascris una pe
+   * alta dacă citeam lista în Node și o scriam înapoi întreagă.
+   */
+  async saveOnboardingTodo(userId: string, dto: OnboardingTodoDto) {
+    const done = (dto.done ?? []).filter(isOnboardingTodoStep);
+    const dismissed = dto.dismissed ?? null;
+
+    const rows = await this.prisma.$queryRaw<
+      { onboardingTodoDone: string[]; onboardingTodoDismissed: boolean }[]
+    >`
+      UPDATE "users"
+      SET "onboardingTodoDone" = ARRAY(
+            SELECT DISTINCT unnest("onboardingTodoDone" || ${done}::text[])
+          ),
+          "onboardingTodoDismissed" = COALESCE(
+            ${dismissed}::boolean,
+            "onboardingTodoDismissed"
+          )
+      WHERE "id" = ${userId}
+      RETURNING "onboardingTodoDone", "onboardingTodoDismissed"
+    `;
+    const row = rows[0];
+    if (!row) {
+      throw new NotFoundException('Utilizator negăsit');
+    }
+    return {
+      done: row.onboardingTodoDone.filter(isOnboardingTodoStep),
+      dismissed: row.onboardingTodoDismissed,
+    };
   }
 }

@@ -46,16 +46,25 @@ if (-not $flutter) {
     }
 }
 
+# Versiunea vine din web/package.json, aceeasi sursa ca AAB-ul Capacitor
+# (build.gradle) si ca ecranul de Setari. Aplicatiile impart slotul de pe Play,
+# deci un versionCode luat din pubspec.yaml ramas in urma ar fi refuzat.
+$webPackage = Get-Content -Raw (Join-Path $repoRoot "web\package.json") | ConvertFrom-Json
+$buildName = $webPackage.version
+$buildNumber = $webPackage.versionCode
+if (-not $buildName -or -not $buildNumber) { throw "web/package.json nu are version/versionCode." }
+Write-Host "==> Versiune: $buildName+$buildNumber (din web/package.json)" -ForegroundColor Cyan
+
 Push-Location $frontend
 try {
     if ($Apk) {
         Write-Host "==> Build APK (API_BASE_URL=$ApiBaseUrl)..." -ForegroundColor Cyan
-        & $flutter build apk --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl
+        & $flutter build apk --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl --build-name=$buildName --build-number=$buildNumber
         if ($LASTEXITCODE -ne 0) { throw "flutter build apk a esuat." }
     }
     if ($Bundle) {
         Write-Host "==> Build AAB (API_BASE_URL=$ApiBaseUrl)..." -ForegroundColor Cyan
-        & $flutter build appbundle --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl
+        & $flutter build appbundle --release --no-tree-shake-icons --dart-define=API_BASE_URL=$ApiBaseUrl --build-name=$buildName --build-number=$buildNumber
         if ($LASTEXITCODE -ne 0) { throw "flutter build appbundle a esuat." }
     }
 } finally {

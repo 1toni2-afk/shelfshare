@@ -70,6 +70,75 @@ export class MailService {
     }
   }
 
+  /**
+   * Emailul de bun venit, trimis la 3 zile după înregistrare (vezi
+   * WelcomeEmailService). NU e un email tranzacțional: userul nu așteaptă
+   * nimic de la el, deci trebuie să merite deschis - de-aia conține ce poate
+   * face concret în aplicație, nu un „mulțumim" singur.
+   *
+   * `name` vine din profil și poate lipsi (cont creat fără nume) - în cazul
+   * ăsta salutăm neutru, nu cu un „Salut, null". Chiar dacă e numele propriu
+   * al userului, trece prin escapeHtml: ajunge într-un document HTML.
+   */
+  async sendWelcomeTipsEmail(data: {
+    to: string;
+    name?: string | null;
+    appUrl: string;
+  }) {
+    const greeting = data.name?.trim()
+      ? `Salut, ${escapeHtml(data.name.trim())}!`
+      : 'Salut!';
+    // `appUrl` vine din configurație (FRONTEND_URL), nu dintr-un input de
+    // user, dar tot îl escapăm: ajunge într-un atribut href.
+    const app = escapeHtml(data.appUrl.replace(/\/+$/, ''));
+
+    const { error } = await this.resend.emails.send({
+      from: this.fromEmail,
+      to: data.to,
+      subject: 'Trei zile pe ShelfShare - ce poți face mai departe',
+      html: `
+        <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; font-size: 15px; line-height: 1.6; color: #1c1917;">
+          <p>${greeting}</p>
+          <p>Îți mulțumim că ți-ai făcut cont pe ShelfShare. Au trecut trei zile,
+             așa că îți lăsăm pe scurt ce poți face aici:</p>
+          <ul>
+            <li><b>Adaugă-ți cărțile</b> - scanezi ISBN-ul sau cauți titlul, iar
+                cartea intră pe raftul tău. <a href="${app}/import">Import din Goodreads sau StoryGraph</a>
+                dacă îți ții deja lista acolo.</li>
+            <li><b>Caută cărți în apropierea ta</b> - pe
+                <a href="${app}/browse">Descoperă</a> sau pe
+                <a href="${app}/map">hartă</a>, filtrate pe oraș și distanță.</li>
+            <li><b>Schimbă, cumpără sau dăruiește</b> - trimiți o cerere de schimb,
+                vă înțelegeți în <a href="${app}/chat">chat</a>, apoi confirmați
+                amândoi. Cartea trece efectiv pe raftul noului proprietar.</li>
+            <li><b>Book Match</b> - <a href="${app}/book-match">dai swipe</a> pe
+                coperte și îți construiești gusturile; recomandările se aliniază
+                după ele.</li>
+            <li><b>Wishlist</b> - <a href="${app}/wishlist">pui titlurile căutate</a>
+                și primești o notificare când apar la cineva.</li>
+          </ul>
+          <p><b>Un minut pentru noi?</b> Spune-ne ce ți-a plăcut, ce te-a încurcat
+             sau ce lipsește - citim tot, iar formularul e scurt:</p>
+          <p>
+            <a href="${app}/feedback"
+               style="display: inline-block; padding: 10px 18px; border-radius: 8px; background: #b45309; color: #ffffff; text-decoration: none; font-weight: 600;">
+              Trimite-ne părerea ta
+            </a>
+          </p>
+          <p style="color: #78716c; font-size: 13px;">
+            Emailul ăsta se trimite o singură dată, la trei zile după înregistrare.
+            Notificările pe email le poți regla oricând din Setări.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      this.logger.error(`Eroare trimitere email bun venit către ${data.to}`, error);
+      throw new Error('Nu am putut trimite email-ul de bun venit');
+    }
+  }
+
   async sendSupportRequestNotification(data: {
     code: string;
     name: string;

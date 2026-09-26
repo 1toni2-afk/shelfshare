@@ -131,6 +131,11 @@ class ListingImportResult {
   /// Rândurile trimise doar la favorite („to-read" sau raftul „favorites").
   final List<ListingImportShelved> favorited;
 
+  /// Rândurile care spun pe ce raft stau, dar pe un raft pe care backend-ul
+  /// nu-l știe traduce („did-not-finish", un raft exclusiv inventat de user).
+  /// Nu sunt erori - pur și simplu nu s-a întâmplat nimic cu ele.
+  final List<ListingImportSkipped> skipped;
+
   final List<ListingImportFailed> failed;
 
   const ListingImportResult({
@@ -139,6 +144,7 @@ class ListingImportResult {
     this.delisted = const [],
     this.shelved = const [],
     this.favorited = const [],
+    this.skipped = const [],
     required this.failed,
   });
 
@@ -149,6 +155,11 @@ class ListingImportResult {
   static List<ListingImportShelved> _shelfEntries(dynamic raw) {
     if (raw is! List) return const [];
     return raw.map((e) => ListingImportShelved.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  static List<ListingImportSkipped> _skippedEntries(dynamic raw) {
+    if (raw is! List) return const [];
+    return raw.map((e) => ListingImportSkipped.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   static List<ListingImportCreated> _entries(dynamic raw) {
@@ -163,6 +174,7 @@ class ListingImportResult {
       delisted: _entries(json['delisted']),
       shelved: _shelfEntries(json['shelved']),
       favorited: _shelfEntries(json['favorited']),
+      skipped: _skippedEntries(json['skipped']),
       failed: (json['failed'] as List).map((e) => ListingImportFailed.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
@@ -176,6 +188,22 @@ class ListingImportShelved {
 
   factory ListingImportShelved.fromJson(Map<String, dynamic> json) {
     return ListingImportShelved(title: json['title'] as String? ?? '');
+  }
+}
+
+/// Un rând sărit: știm titlul și raftul scris în fișier, ca userul să înțeleagă
+/// de ce cartea n-a apărut nicăieri.
+class ListingImportSkipped {
+  final String title;
+  final String shelf;
+
+  const ListingImportSkipped({required this.title, required this.shelf});
+
+  factory ListingImportSkipped.fromJson(Map<String, dynamic> json) {
+    return ListingImportSkipped(
+      title: json['title'] as String? ?? '',
+      shelf: json['shelf'] as String? ?? '',
+    );
   }
 }
 
@@ -204,6 +232,7 @@ class BooksRepository {
     String? sort,
     String? fromCity,
     int? maxDistanceKm,
+    String? excludeUserId,
     String? listingType,
     int limit = 20,
     int offset = 0,
@@ -218,6 +247,8 @@ class BooksRepository {
       if (condition != null && condition.isNotEmpty) 'condition': condition,
       if (sort != null && sort.isNotEmpty) 'sort': sort,
       if (fromCity != null && fromCity.isNotEmpty) 'fromCity': fromCity,
+      if (excludeUserId != null && excludeUserId.isNotEmpty)
+        'excludeUserId': excludeUserId,
       if (listingType != null && listingType.isNotEmpty) 'listingType': listingType,
       'maxDistanceKm': ?maxDistanceKm,
       'limit': limit,

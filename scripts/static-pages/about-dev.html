@@ -48,8 +48,32 @@
     line-height: 1.5;
   }
   header {
-    padding: 20px 24px;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  .lang {
+    display: flex;
+    gap: 4px;
+    flex: none;
+  }
+  .lang a {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .lang a[aria-current='page'] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: transparent;
   }
   header a {
     color: var(--accent);
@@ -129,16 +153,26 @@
 </style>
 </head>
 <body>
-  <header><a href="/">← ShelfShare</a></header>
+  <header>
+    <a class="back" href="/">← ShelfShare</a>
+    <nav class="lang" aria-label="Limbă">
+      <a href="/about-dev" hreflang="ro" lang="ro" aria-current="page">RO</a>
+      <a href="/en/about-dev" hreflang="en" lang="en">EN</a>
+      <a href="/de/about-dev" hreflang="de" lang="de">DE</a>
+      <a href="/hu/about-dev" hreflang="hu" lang="hu">HU</a>
+    </nav>
+  </header>
   <main>
     <div class="byline">
       <div class="avatar">💻</div>
       <h1>Omul din spatele ShelfShare</h1>
     </div>
 
-    <p>Sunt un mic dezvoltator care lucrează la o companie de IT din Transilvania.</p>
-    <p>Am făcut aplicația asta pentru că foloseam una exact ca ea, dar a dispărut din… motive? Așa că mi-am făcut una singur.</p>
-    <p>Te rog să nu te superi pe eventualele sughițuri ale aplicației - totul e găzduit de mine, pe micul meu server de acasă ☹️</p>
+    <p>Salut! Eu sunt Toni. Lucrez în IT, iar ShelfShare este un proiect personal pe care îl dezvolt în timpul liber.</p>
+    <p>Ideea a pornit de la o aplicație asemănătoare pe care o foloseam și care, la un moment dat, a dispărut. Pentru că îmi lipsea, m-am gândit: de ce să nu încerc să fac eu una?</p>
+    <p>Și așa a apărut ShelfShare.</p>
+    <p>Aplicația este dezvoltată și găzduită în întregime de mine, pe serverul meu de acasă. Așa că, dacă mai dai peste câte o problemă sau ceva nu merge chiar perfect, ai puțină răbdare cu mine. :)</p>
+    <p>Lucrez constant la ShelfShare și încerc să o fac puțin mai bună cu fiecare actualizare.</p>
 
     <div class="support-card">
       <h2>☕ Keep the app alive</h2>
@@ -146,7 +180,7 @@
       <a class="coffee-btn" href="https://paypal.me/tonims" target="_blank" rel="noopener">Buy me a coffee</a>
     </div>
 
-    <p class="contact"><a href="mailto:contact@shelfshare.ro">contact@shelfshare.ro</a></p>
+    <!--email_off--><p class="contact"><a href="mailto:contact@shelfshare.ro">contact@shelfshare.ro</a></p><!--email_on-->
   </main>
 </body>
 </html>

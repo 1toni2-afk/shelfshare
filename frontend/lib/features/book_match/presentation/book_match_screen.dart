@@ -10,6 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/cover_proxy.dart';
 import '../../../shared/utils/genre_localization.dart';
 import '../../../shared/widgets/book_cover.dart';
+import '../../profile/application/onboarding_todo_controller.dart';
 import '../../wishlist/application/wishlist_controller.dart';
 import '../data/book_match_repository.dart';
 
@@ -213,6 +214,9 @@ class _BookMatchScreenState extends ConsumerState<BookMatchScreen>
   /// Trimitem swipe-ul „optimist": UI-ul trece deja la cardul următor, iar un
   /// eșec de rețea nu întrerupe fluxul (o singură reîncercare, apoi renunțăm).
   void _recordSwipe(BookMatchCard card, _SwipeAction action) {
+    // „Încearcă Book Match" din lista „Descoperă ShelfShare" e făcut din clipa în care
+    // omul chiar a dat un swipe - nu doar a deschis ecranul și a ieșit.
+    ref.read(onboardingTodoProvider.notifier).complete(OnboardingTodo.bookMatch);
     final repository = ref.read(bookMatchRepositoryProvider);
     Future<BookMatchSwipeResult> send() => repository.swipe(
           bookId: card.bookId,

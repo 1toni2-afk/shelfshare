@@ -14,6 +14,7 @@ class HomeFeedState {
     this.recent = const [],
     this.mostViewed = const [],
     this.nearby = const [],
+    this.nearbyIsFallback = false,
     this.recommended = const [],
     this.isLoadingMore = false,
     this.hasMore = true,
@@ -22,9 +23,15 @@ class HomeFeedState {
   final List<UserBook> recent;
   final List<UserBook> mostViewed;
 
-  /// Cărți disponibile la maxim [kNearbyRadiusKm] de orașul userului. Gol dacă
-  /// userul nu are oraș setat în profil sau dacă nu e nimic în raza asta.
+  /// Cărți sortate după distanța față de orașul userului, fără propriile
+  /// anunțuri. Gol doar dacă userul nu are oraș setat în profil sau dacă nu
+  /// există niciun anunț al altcuiva într-un oraș cunoscut.
   final List<UserBook> nearby;
+
+  /// `true` când [nearby] conține cele mai apropiate anunțuri din ȚARĂ pentru
+  /// că în raza de [kNearbyRadiusKm] nu era nimic. Secțiunea își schimbă
+  /// atunci titlul, ca „la 100 km" să nu fie o minciună.
+  final bool nearbyIsFallback;
 
   /// Cărți recomandate content-based (genuri/autori derivați din profil și
   /// din bibliotecă). Gol dacă nu avem semnal - vezi endpointul.
@@ -37,6 +44,7 @@ class HomeFeedState {
     List<UserBook>? recent,
     List<UserBook>? mostViewed,
     List<UserBook>? nearby,
+    bool? nearbyIsFallback,
     List<UserBook>? recommended,
     bool? isLoadingMore,
     bool? hasMore,
@@ -45,6 +53,7 @@ class HomeFeedState {
       recent: recent ?? this.recent,
       mostViewed: mostViewed ?? this.mostViewed,
       nearby: nearby ?? this.nearby,
+      nearbyIsFallback: nearbyIsFallback ?? this.nearbyIsFallback,
       recommended: recommended ?? this.recommended,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
@@ -126,28 +135,41 @@ class HomeController extends AsyncNotifier<HomeFeedState> {
     final trendingFuture = repository.browse(sort: 'mostViewed', limit: _pageSize, offset: 0)
         .then((r) => r.items)
         .catchError((_) => <UserBook>[]);
+    // Cerem sortarea după distanță FĂRĂ `maxDistanceKm` și tăiem raza aici.
+    // Motivul: la densitatea reală de anunțuri, un oraș poate să nu aibă nimic
+    // în 100 km, iar cu filtrul pe server secțiunea se întorcea goală și
+    // dispărea complet din Home - exact ca și cum n-ar exista cărți nicăieri.
+    // Așa avem și lista scurtă („chiar aproape"), și o rezervă cu cele mai
+    // apropiate din țară, dintr-o singură cerere.
+    //
+    // Propriile anunțuri se exclud pe server (`excludeUserId`): sunt la 0 km
+    // de userul însuși, deci ar ocupa începutul listei fără să-i spună nimic
+    // nou, iar filtrate în client ar consuma din `limit`.
     final nearbyFuture = hasCity
         ? repository
             .browse(
               sort: 'distance',
               fromCity: myCity,
-              maxDistanceKm: kNearbyRadiusKm,
+              excludeUserId: me.id,
               limit: _pageSize,
               offset: 0,
             )
-            // Fără propriile anunțuri: sunt la 0 km de userul însuși, deci ar
-            // ocupa începutul secțiunii fără să-i spună nimic nou.
-            .then((r) => r.items.where((b) => b.userId != me.id).toList())
+            .then((r) => r.items)
             .catchError((_) => <UserBook>[])
         : Future.value(const <UserBook>[]);
     final recommendedFuture =
         repository.getRecommendedForYou().catchError((_) => <UserBook>[]);
 
     final recentResult = await recentFuture;
+    final byDistance = await nearbyFuture;
+    final withinRadius = byDistance
+        .where((b) => (b.distanceKm ?? double.infinity) <= kNearbyRadiusKm)
+        .toList();
     return HomeFeedState(
       recent: recentResult.items,
       mostViewed: await trendingFuture,
-      nearby: await nearbyFuture,
+      nearby: withinRadius.isNotEmpty ? withinRadius : byDistance,
+      nearbyIsFallback: withinRadius.isEmpty && byDistance.isNotEmpty,
       recommended: await recommendedFuture,
       hasMore: recentResult.items.length < recentResult.total,
     );

@@ -523,6 +523,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileFeedbackHint => 'What would you like to tell us?';
 
   @override
+  String get feedbackPageIntro =>
+      'What worked, what got in your way, what is missing. Write freely - we read everything. You can attach a screenshot too.';
+
+  @override
   String get profileFeedbackThanks => 'Thanks for your feedback!';
 
   @override
@@ -3411,6 +3415,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get homeNearestTitle => 'Closest to you';
+
+  @override
   String get shareTagsSuggestions => 'Suggestions:';
 
   @override
@@ -3639,6 +3646,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatFilterArchived => 'Archived';
 
   @override
+  String get chatFiltersLabel => 'Conversation filters';
+
+  @override
+  String get usernameChooseOnceHint =>
+      'Choose carefully: your username is unique and cannot be changed once you save.';
+
+  @override
+  String get usernameLockedHint =>
+      'Your username has been set and cannot be changed.';
+
+  @override
+  String chatSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# selected',
+      one: '# selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get chatFilterModerator => 'Moderator';
 
   @override
@@ -3688,6 +3717,147 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatSafetyHint =>
       'You can come back here anytime — the page opens when no conversation is selected.';
+
+  @override
+  String get chatQuizTitle => 'Quick safety check';
+
+  @override
+  String get chatQuizIntro =>
+      'Five situations that really happen in chat. Pick what you would do - you get the reasoning after each answer.';
+
+  @override
+  String get chatQuizStart => 'Start the quiz';
+
+  @override
+  String chatQuizProgress(int current, int total) {
+    return 'Question $current of $total';
+  }
+
+  @override
+  String get chatQuizCorrect => 'Correct';
+
+  @override
+  String get chatQuizWrong => 'Not quite';
+
+  @override
+  String get chatQuizNext => 'Next';
+
+  @override
+  String get chatQuizSeeResult => 'See result';
+
+  @override
+  String chatQuizScore(int score, int total) {
+    return '$score out of $total correct';
+  }
+
+  @override
+  String get chatQuizResultPerfect =>
+      'Flawless. That is exactly what a safe swap looks like.';
+
+  @override
+  String get chatQuizResultGood =>
+      'Nicely done. Reread the explanations for the ones you missed.';
+
+  @override
+  String get chatQuizResultPoor =>
+      'Worth a pass through the Safety Center before your next swap.';
+
+  @override
+  String get chatQuizRestart => 'Take it again';
+
+  @override
+  String get chatQuizQ1 =>
+      'Someone wants your book and promises to send the money “as soon as it arrives”. What do you do?';
+
+  @override
+  String get chatQuizQ1A =>
+      'Ship the book first - no swap happens without trust.';
+
+  @override
+  String get chatQuizQ1B =>
+      'Settle payment before shipping, use cash on delivery, or meet in person.';
+
+  @override
+  String get chatQuizQ1C =>
+      'Give them my card details so they can send the money directly.';
+
+  @override
+  String get chatQuizQ1Explain =>
+      '“I\'ll pay once I get it” is the most common scam on any swap platform. Payment upfront, cash on delivery or an in-person handover are the options where you don\'t end up without the book and without the money. You never need card details to RECEIVE money.';
+
+  @override
+  String get chatQuizQ2 =>
+      'You get a chat link to a page that looks like ShelfShare and asks for your email and password again, to “confirm the delivery”.';
+
+  @override
+  String get chatQuizQ2A => 'Sign in quickly so the delivery isn\'t lost.';
+
+  @override
+  String get chatQuizQ2B => 'Sign in, then change my password right after.';
+
+  @override
+  String get chatQuizQ2C =>
+      'Don\'t open the link, don\'t type anything, and report the conversation.';
+
+  @override
+  String get chatQuizQ2Explain =>
+      'ShelfShare never asks for your password through a link sent in chat. A page that does is a copy built to steal your account, and a password typed there is already gone - changed afterwards or not.';
+
+  @override
+  String get chatQuizQ3 =>
+      'A user asks for the verification code you received by email or SMS, “to confirm you\'re a real person”.';
+
+  @override
+  String get chatQuizQ3A =>
+      'Never send it - that code opens my account, it confirms nothing about me.';
+
+  @override
+  String get chatQuizQ3B => 'Send it if their profile has good reviews.';
+
+  @override
+  String get chatQuizQ3C => 'Send it, but ask for their code too.';
+
+  @override
+  String get chatQuizQ3Explain =>
+      'Verification codes are for you alone. Anyone asking for yours is trying to get into your account, or to confirm an action in your name that you never took.';
+
+  @override
+  String get chatQuizQ4 =>
+      'You\'ve agreed on a swap and now you have to meet. Where do you suggest?';
+
+  @override
+  String get chatQuizQ4A => 'At my place - simplest option.';
+
+  @override
+  String get chatQuizQ4B =>
+      'Somewhere public and busy, during the day, and I tell someone close to me where I\'m going.';
+
+  @override
+  String get chatQuizQ4C =>
+      'The parking lot behind the building, in the evening, so it\'s quiet.';
+
+  @override
+  String get chatQuizQ4Explain =>
+      'A café, a bookshop or a busy station, in daylight, costs you nothing extra and changes everything if something is off. Your home address stays yours.';
+
+  @override
+  String get chatQuizQ5 =>
+      'Before anything is agreed, someone insists on moving the conversation to another app and asks for your full address.';
+
+  @override
+  String get chatQuizQ5A =>
+      'Give both - otherwise it looks like I don\'t trust them.';
+
+  @override
+  String get chatQuizQ5B => 'Give the address only, not the number.';
+
+  @override
+  String get chatQuizQ5C =>
+      'Stay in the app\'s chat until we agree; the address only if I choose home delivery.';
+
+  @override
+  String get chatQuizQ5Explain =>
+      'A conversation inside the app can be reported and reviewed by the team; one moved elsewhere cannot. Pushing to leave the app before anything is agreed is itself a signal.';
 
   @override
   String get greetReaderFallback => 'Reader';
@@ -4786,5 +4956,233 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String storeStockLeft(int count) {
     return '$count copies in stock';
+  }
+
+  @override
+  String get importTitle => 'Import your books';
+
+  @override
+  String get importIntro =>
+      'Bring your library over from Goodreads or StoryGraph. No account on either? Fill in our template in Excel and upload it here.';
+
+  @override
+  String get importStep1Title => 'Step 1 · Get your file';
+
+  @override
+  String get importStep1Goodreads => 'Export from Goodreads';
+
+  @override
+  String get importStep1StoryGraph => 'Export from StoryGraph';
+
+  @override
+  String get importStep1Hint =>
+      'The button opens their site in a new tab. On Goodreads, click \"Export Library\" and wait a few minutes for the download link.';
+
+  @override
+  String get importStep1Template => 'Download the template';
+
+  @override
+  String get importStep1TemplateHint =>
+      'It opens in Excel or Google Sheets. Fill it in, save it as CSV and upload it below.';
+
+  @override
+  String get importStep2Title => 'Step 2 · Upload the file';
+
+  @override
+  String get importStep2Choose => 'Choose file';
+
+  @override
+  String get importStep2Change => 'Change file';
+
+  @override
+  String get importStep2NoFile => 'No file chosen';
+
+  @override
+  String get importStep3Title => 'Step 3 · Start the import';
+
+  @override
+  String get importStep3Button => 'Import the books';
+
+  @override
+  String get importRunning => 'Working on your file. Don\'t close this page.';
+
+  @override
+  String get importResultTitle => 'Done';
+
+  @override
+  String get importResultEmpty => 'We found nothing to import in this file.';
+
+  @override
+  String importResultListed(int count) {
+    return '$count listed';
+  }
+
+  @override
+  String importResultUpdated(int count) {
+    return '$count updated';
+  }
+
+  @override
+  String importResultShelved(int count) {
+    return '$count on your shelf';
+  }
+
+  @override
+  String importResultFavorited(int count) {
+    return '$count in favourites';
+  }
+
+  @override
+  String importResultSkipped(int count) {
+    return '$count skipped';
+  }
+
+  @override
+  String importResultFailed(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String get importSkippedTitle => 'Skipped rows';
+
+  @override
+  String importSkippedShelf(String shelf) {
+    return 'shelf \"$shelf\" - we don\'t know where it belongs';
+  }
+
+  @override
+  String get importGoToShelf => 'Open my shelf';
+
+  @override
+  String get importGoToLibrary => 'Open my books';
+
+  @override
+  String get importGuidelinesTitle => 'What happens to each row';
+
+  @override
+  String get importGuidelineShelfRead =>
+      '\"read\" and \"currently-reading\" go on your reading shelf, not to the marketplace.';
+
+  @override
+  String get importGuidelineShelfToRead =>
+      '\"to-read\" and shelves named \"favorites\" go to your favourites, so we can alert you when someone lists them.';
+
+  @override
+  String get importGuidelineListing =>
+      'Rows with no shelf, or with \"swap\", become listings in the marketplace.';
+
+  @override
+  String get importGuidelineSkipped =>
+      'A shelf we don\'t recognise (\"did-not-finish\", your own custom shelves) is skipped, so a book you are not giving away never ends up for swap.';
+
+  @override
+  String get importGuidelineNoDuplicates =>
+      'You can run the import again: a book already on your shelf or in favourites won\'t be duplicated.';
+
+  @override
+  String importGuidelineColumns(String columns) {
+    return 'Columns we read: $columns. Keep the names in English - that\'s how Goodreads and StoryGraph write them too.';
+  }
+
+  @override
+  String importGuidelineConditions(String conditions) {
+    return 'Values for \"condition\": $conditions. Anything else becomes BUNA.';
+  }
+
+  @override
+  String get importGuidelineLimit =>
+      'Up to 500 rows per file, CSV only - save an .xlsx as CSV first.';
+
+  @override
+  String get todoTitle => 'Discover ShelfShare';
+
+  @override
+  String get todoSubtitle => 'A quick look at how the app works';
+
+  @override
+  String todoProgress(int done, int total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get todoDismiss => 'Hide the list';
+
+  @override
+  String get todoTutorial => 'See how the app works, in two minutes';
+
+  @override
+  String get todoBookMatch => 'Find a book with Book Match';
+
+  @override
+  String get todoImport => 'Import your books from Goodreads or StoryGraph';
+
+  @override
+  String get todoShortcuts => 'Put the shortcuts you use in the menu';
+
+  @override
+  String get tutorialTitle => 'Quick tour';
+
+  @override
+  String get tutorialSkip => 'Close';
+
+  @override
+  String get tutorialNext => 'Next';
+
+  @override
+  String get tutorialDone => 'Got it';
+
+  @override
+  String get tutorialShelfTitle => 'Your shelf';
+
+  @override
+  String get tutorialShelfBody =>
+      'Add the books you own. The ones you\'re happy to part with show up in the marketplace; the rest stay on your shelf, as a record of what you\'ve read.';
+
+  @override
+  String get tutorialMatchTitle => 'Book Match';
+
+  @override
+  String get tutorialMatchBody =>
+      'Swipe through books: right if it appeals to you, left if it doesn\'t. Everything you like goes to your favourites and sharpens your recommendations.';
+
+  @override
+  String get tutorialSwapTitle => 'Swap or buy';
+
+  @override
+  String get tutorialSwapBody =>
+      'Ask for a swap or make an offer. You agree the details in chat, meet up, and the book officially changes owner.';
+
+  @override
+  String get tutorialWishlistTitle => 'Favourites and alerts';
+
+  @override
+  String get tutorialWishlistBody =>
+      'Favourite a book you can\'t find. We\'ll tell you the moment someone in your city lists it.';
+
+  @override
+  String get tutorialShortcutsTitle => 'Customise the quick menu';
+
+  @override
+  String get tutorialShortcutsBody =>
+      'Pick the shortcuts you want within reach from the menu. Language, notifications and the rest live in settings.';
+
+  @override
+  String get commonBack => 'Back';
+
+  @override
+  String get bookDetailNegotiableChip => 'negotiable';
+
+  @override
+  String get filtersAny => 'All';
+
+  @override
+  String browseResultsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count books',
+      one: 'one book',
+    );
+    return '$_temp0';
   }
 }

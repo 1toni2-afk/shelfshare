@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -185,7 +186,17 @@ class _ShelfShareAppState extends ConsumerState<ShelfShareApp> with WidgetsBindi
       // deci un toggle de temă nu propagă singur prin InheritedWidget. Cheia
       // forțează un remount complet al ecranului curent la schimbarea modului,
       // fără să fie nevoie de un refactor al celor ~27 de fișiere care le folosesc.
-      builder: (context, child) => KeyedSubtree(key: ValueKey(isDark), child: child!),
+      builder: (context, child) {
+        // Textul se poate selecta cu mouse-ul/degetul ca într-o pagină HTML:
+        // pe web oamenii se așteaptă să poată copia un titlu, un ISBN sau un
+        // mesaj din chat, iar fără asta Flutter redă tot textul ca pe o
+        // imagine, imposibil de selectat. Doar pe web: în aplicația nativă
+        // selecția globală ar intra în conflict cu long-press-ul (meniul de
+        // mesaj din chat, selecția multiplă din raft), unde nici nu e o
+        // așteptare a platformei.
+        final content = KeyedSubtree(key: ValueKey(isDark), child: child!);
+        return kIsWeb ? SelectionArea(child: content) : content;
+      },
       routerConfig: router,
     );
   }

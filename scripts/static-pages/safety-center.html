@@ -48,8 +48,32 @@
     line-height: 1.5;
   }
   header {
-    padding: 20px 24px;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+  .lang {
+    display: flex;
+    gap: 4px;
+    flex: none;
+  }
+  .lang a {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .lang a[aria-current='page'] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: transparent;
   }
   header a {
     color: var(--accent);
@@ -108,7 +132,15 @@
 </style>
 </head>
 <body>
-  <header><a href="/">← ShelfShare</a></header>
+  <header>
+    <a class="back" href="/">← ShelfShare</a>
+    <nav class="lang" aria-label="Limbă">
+      <a href="/safety-center" hreflang="ro" lang="ro" aria-current="page">RO</a>
+      <a href="/en/safety-center" hreflang="en" lang="en">EN</a>
+      <a href="/de/safety-center" hreflang="de" lang="de">DE</a>
+      <a href="/hu/safety-center" hreflang="hu" lang="hu">HU</a>
+    </nav>
+  </header>
   <main>
     <h1>Centru de siguranță</h1>
     <p class="intro">Câteva reguli simple ca schimburile prin ShelfShare să fie plăcute și sigure.</p>
