@@ -17,9 +17,9 @@ REM data: HTML-ul lista carti din productie, aplicatia le cauta in baza de test)
 REM BETA_API_URL mai conteaza doar pentru un build vechi, fara build-info.json.
 REM
 REM La mutarea pe shelfshare.ro (vezi docs/mutare-react-pe-shelfshare.md) se
-REM decomenteaza cele doua linii de mai jos:
-REM set BETA_SITE_URL=https://shelfshare.ro
-REM set REDIRECT_HOSTS=beta.shelfshare.ro,www.shelfshare.ro
+REM au fost decomentate cele doua linii de mai jos (2026-09-26):
+set BETA_SITE_URL=https://shelfshare.ro
+set REDIRECT_HOSTS=beta.shelfshare.ro,www.shelfshare.ro
 
 :loop
 echo [%date% %time%] Pornire beta-server.js >> "%LOGFILE%"

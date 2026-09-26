@@ -29,7 +29,7 @@ android {
         // Ține pasul cu pubspec.yaml al aplicației Flutter: Play cere un
         // versionCode STRICT mai mare decât orice a fost urcat vreodată, iar
         // cele două aplicații împart același slot pe Play.
-        versionCode 28
+        versionCode 29
         versionName "2.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

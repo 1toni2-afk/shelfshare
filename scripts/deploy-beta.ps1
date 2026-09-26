@@ -5,20 +5,18 @@
 # deci NU e nevoie sa-l repornesti - cum se termina build-ul, e live.
 #
 # Backendul nu se atinge in niciun fel: acelasi cod, aceleasi endpointuri.
-# Implicit se construieste contra api-beta.shelfshare.ro, adica backendul de
-# TEST (docker-compose.test.yml, portul 3999, baza lui separata) - acelasi pe
-# care il foloseste si scripts/beta-seo.js pentru varianta pre-randata. Asa,
-# ce vede robotul si ce vede omul vin din aceeasi baza, iar conturile de demo
-# (backend/prisma/seed-demo-accounts.js) si orice test de pe beta nu ajung in
-# productie. Pentru beta contra datelor reale: -ApiBaseUrl https://api.shelfshare.ro
+# Din 2026-09-26 build-ul acesta e servit si pe shelfshare.ro (vezi
+# docs/mutare-react-pe-shelfshare.md), deci implicitul e PRODUCTIA. Un build
+# contra api-beta (backendul de TEST, portul 3999) ar trimite userii reali ai
+# domeniului principal in baza de test. Pentru teste locale contra bazei de
+# test, foloseste zona de test (localhost:5961), nu acest script.
 #
 # Usage:
 #   ./scripts/deploy-beta.ps1
 #   ./scripts/deploy-beta.ps1 -Pull
-#   ./scripts/deploy-beta.ps1 -ApiBaseUrl https://api.shelfshare.ro
 
 param(
-    [string]$ApiBaseUrl = "https://api-beta.shelfshare.ro",
+    [string]$ApiBaseUrl = "https://api.shelfshare.ro",
     [switch]$Pull
 )
 
