@@ -2,6 +2,7 @@
   "name": "shelfshare-web",
   "private": true,
   "version": "2.0.0",
+  "versionCode": 29,
   "type": "module",
   "scripts": {
     "i18n": "node scripts/arb-to-json.mjs",
@@ -9,7 +10,8 @@
     "build": "npm run i18n && tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "bump": "node scripts/bump-version.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

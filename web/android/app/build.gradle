@@ -19,6 +19,12 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// Versiunea vine din web/package.json - vezi defaultConfig mai jos.
+def webPackage = new groovy.json.JsonSlurper().parse(file('../../package.json'))
+if (!(webPackage.version instanceof String) || !(webPackage.versionCode instanceof Integer)) {
+    throw new GradleException("web/package.json trebuie sa aiba `version` (text) si `versionCode` (numar intreg).")
+}
+
 android {
     namespace = "ro.shelfshare.shelfshare"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -26,11 +32,13 @@ android {
         applicationId "ro.shelfshare.shelfshare"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        // Ține pasul cu pubspec.yaml al aplicației Flutter: Play cere un
-        // versionCode STRICT mai mare decât orice a fost urcat vreodată, iar
-        // cele două aplicații împart același slot pe Play.
-        versionCode 29
-        versionName "2.0.0"
+        // Din web/package.json (`version` + `versionCode`), singura sursă a
+        // versiunii: aceeași valoare apare în Setări (__APP_VERSION__ din
+        // vite.config.ts) și ajunge în pubspec.yaml prin `npm run bump`.
+        // Play cere un versionCode STRICT mai mare decât orice a fost urcat
+        // vreodată, iar aplicația Flutter împarte același slot pe Play.
+        versionCode webPackage.versionCode as int
+        versionName webPackage.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
