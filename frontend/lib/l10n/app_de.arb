@@ -715,6 +715,8 @@
     "chatReplyToYou": "Du",
     "chatReplyToThem": "Zitierte Nachricht",
     "chatAttachPhoto": "Foto senden",
+    "chatPhotoUnavailable": "Das Foto konnte nicht geladen werden",
+    "chatPhotoAlt": "Foto aus dem Chat",
     "chatPhotoSendError": "Das Foto konnte nicht gesendet werden.",
     "chatSearchInConversation": "In der Unterhaltung suchen",
     "chatSearchNoResults": "Keine Nachrichten gefunden.",

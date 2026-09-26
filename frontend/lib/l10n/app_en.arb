@@ -724,6 +724,8 @@
     "chatReplyToYou": "You",
     "chatReplyToThem": "Quoted message",
     "chatAttachPhoto": "Send a photo",
+    "chatPhotoUnavailable": "The photo could not be loaded",
+    "chatPhotoAlt": "Chat photo",
     "chatPhotoSendError": "We could not send the photo.",
     "chatSearchInConversation": "Search in conversation",
     "chatSearchNoResults": "No messages found.",

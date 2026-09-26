@@ -715,6 +715,8 @@
     "chatReplyToYou": "Te",
     "chatReplyToThem": "Idézett üzenet",
     "chatAttachPhoto": "Fénykép küldése",
+    "chatPhotoUnavailable": "A fényképet nem sikerült betölteni",
+    "chatPhotoAlt": "Fénykép a beszélgetésből",
     "chatPhotoSendError": "Nem sikerült elküldeni a fényképet.",
     "chatSearchInConversation": "Keresés a beszélgetésben",
     "chatSearchNoResults": "Nincs találat.",

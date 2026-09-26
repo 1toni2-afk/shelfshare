@@ -1191,6 +1191,8 @@
     "chatReplyToYou": "Tu",
     "chatReplyToThem": "Mesaj citat",
     "chatAttachPhoto": "Trimite o poză",
+    "chatPhotoUnavailable": "Poza nu s-a putut încărca",
+    "chatPhotoAlt": "Poză din conversație",
     "chatPhotoSendError": "Nu am putut trimite poza.",
     "chatSearchInConversation": "Caută în conversație",
     "chatSearchNoResults": "Niciun mesaj găsit.",
