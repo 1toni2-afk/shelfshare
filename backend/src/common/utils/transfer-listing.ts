@@ -24,6 +24,12 @@ export async function transferListingOwnership(
   const original = await tx.userBook.findUnique({ where: { id: userBookId } });
   if (!original) return null;
 
+  // Cartea rămâne la fostul proprietar doar dacă el e chiar cel care o
+  // primește. Verificat ÎNAINTE de a închide anunțul: după, cartea ieșea din
+  // biblioteca vânzătorului fără să ajungă la nimeni (s-a întâmplat la o
+  // contraofertă acceptată, unde `buyerId` era chiar vânzătorul).
+  if (original.userId === newOwnerId) return original;
+
   // Anunțul unui magazin cu mai multe exemplare nu se închide la prima
   // vânzare: scade stocul cu unul și rămâne pe piață. Fără asta, un anticariat
   // cu 5 exemplare dispărea din căutare după primul client, până la
@@ -57,10 +63,6 @@ export async function transferListingOwnership(
         ? soldOut
         : { ...soldOut, permanentlyTransferred: true },
   });
-
-  // Cartea rămâne la fostul proprietar doar dacă el e chiar cel care o
-  // primește (nu se poate în practică, dar nu vrem un rând duplicat).
-  if (original.userId === newOwnerId) return original;
 
   const existing = await tx.userBook.findFirst({
     where: { previousListingId: userBookId, userId: newOwnerId },

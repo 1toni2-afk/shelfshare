@@ -325,7 +325,7 @@ export function AddBookScreen() {
         // Raftul, nu biblioteca de anunțuri: alte liste, altă destinație.
         void queryClient.invalidateQueries({ queryKey: shelfKeys.all });
         toast.show(t('shelfAddedToShelf'));
-        void navigate('/bookshelf');
+        void navigate('/library?tab=owned');
         return;
       }
       void queryClient.invalidateQueries({ queryKey: booksKeys.myLibrary() });

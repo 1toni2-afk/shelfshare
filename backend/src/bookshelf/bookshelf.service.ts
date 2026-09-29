@@ -102,16 +102,12 @@ export class BookshelfService {
     parsed: ParsedImportRow,
     source: BookshelfImportSource,
   ) {
+    // Fără ISBN: potrivirea indexată din CatalogMatchService. Un `equals`
+    // insensibil la majuscule nu are index și citea tot catalogul (~18s per
+    // rând pe producție).
     const existing = parsed.isbn
       ? await this.prisma.book.findUnique({ where: { isbn: parsed.isbn } })
-      : await this.prisma.book.findFirst({
-          where: {
-            title: { equals: parsed.title, mode: 'insensitive' },
-            author: parsed.author
-              ? { equals: parsed.author, mode: 'insensitive' }
-              : undefined,
-          },
-        });
+      : await this.catalogMatch.findByTitle(parsed.title, parsed.author);
     if (existing) return existing;
 
     return this.prisma.book.create({
@@ -356,14 +352,7 @@ export class BookshelfService {
     const isbn = this.cleanIsbn(dto.isbn);
     const existing = isbn
       ? await this.prisma.book.findUnique({ where: { isbn } })
-      : await this.prisma.book.findFirst({
-          where: {
-            title: { equals: dto.title, mode: 'insensitive' },
-            author: dto.author
-              ? { equals: dto.author, mode: 'insensitive' }
-              : undefined,
-          },
-        });
+      : await this.catalogMatch.findByTitle(dto.title, dto.author);
     return existing?.pageCount ?? null;
   }
 
@@ -467,12 +456,13 @@ export class BookshelfService {
       .filter((e) => e.status === 'READING' || !listedBookIds.has(e.bookId))
       .map((e) => {
         const p = progressByBook.get(e.bookId);
+        const totalPages = p?.totalPages ?? e.book.pageCount ?? null;
         return {
           bookId: e.bookId,
           status: e.status,
           book: e.book,
-          currentPage: p?.currentPage ?? 0,
-          totalPages: p?.totalPages ?? e.book.pageCount ?? null,
+          currentPage: this.displayedPage(e.status, p?.currentPage, totalPages),
+          totalPages,
           // Are deja anunț: cardul ascunde îndemnul „listeaz-o" și pune în
           // loc o etichetă, ca să nu pară că mai e ceva de făcut cu ea.
           listed: listedBookIds.has(e.bookId),
@@ -480,6 +470,152 @@ export class BookshelfService {
           updatedAt: e.updatedAt,
         };
       });
+  }
+
+  /**
+   * Pagina afișată pe bara de progres. O carte terminată e citită până la
+   * capăt, chiar dacă n-a avut niciodată un progres salvat: cele importate
+   * din Goodreads ca „read" apăreau „Pagina 0 din 230 · 0%" lângă eticheta
+   * „Citită".
+   */
+  private displayedPage(
+    status: BookshelfStatus | null,
+    currentPage: number | undefined,
+    totalPages: number | null,
+  ): number {
+    if (status === 'FINISHED' && totalPages) return totalPages;
+    return currentPage ?? 0;
+  }
+
+  /**
+   * My Shelf într-o singură listă: fiecare carte cu TOATE categoriile ei -
+   * status de lectură, deținută, listată. Ecranul o împarte în file
+   * (Citesc acum / Deținute / Citite / De citit) local, fără câte o cerere
+   * per filă, iar o carte apare în toate filele care i se potrivesc.
+   *
+   * „Deținută" = marcată explicit (`owned`) SAU cu un exemplar al userului în
+   * aplicație: un anunț activ ori o carte primită printr-un schimb. Un anunț
+   * e prin definiție o carte pe care omul o are în mână.
+   */
+  async getLibrary(userId: string) {
+    const [entries, copies, progress] = await Promise.all([
+      this.prisma.bookshelfEntry.findMany({
+        where: { userId },
+        include: { book: true },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.userBook.findMany({
+        where: { userId, deletedAt: null, permanentlyTransferred: false },
+        select: {
+          id: true,
+          bookId: true,
+          previousListingId: true,
+          availableForSwap: true,
+          isForSale: true,
+          isAuction: true,
+          updatedAt: true,
+          book: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.readingProgress.findMany({ where: { userId } }),
+    ]);
+
+    // Exemplarul primit și nescos în piață e o carte deținută, nu un anunț -
+    // aceeași regulă ca în getOwnedShelf.
+    const isMarketListing = (c: (typeof copies)[number]) =>
+      c.previousListingId == null ||
+      c.availableForSwap ||
+      c.isForSale ||
+      c.isAuction;
+
+    const listingByBook = new Map<string, string>();
+    const relistSourceByBook = new Map<string, string>();
+    for (const copy of copies) {
+      if (isMarketListing(copy)) {
+        if (!listingByBook.has(copy.bookId)) listingByBook.set(copy.bookId, copy.id);
+      } else if (!relistSourceByBook.has(copy.bookId)) {
+        relistSourceByBook.set(copy.bookId, copy.previousListingId as string);
+      }
+    }
+    const progressByBook = new Map(progress.map((p) => [p.bookId, p]));
+
+    const item = (
+      book: Book,
+      status: BookshelfStatus | null,
+      markedOwned: boolean,
+      updatedAt: Date,
+    ) => {
+      const p = progressByBook.get(book.id);
+      const totalPages = p?.totalPages ?? book.pageCount ?? null;
+      const listingId = listingByBook.get(book.id) ?? null;
+      const relistSourceId = relistSourceByBook.get(book.id) ?? null;
+      return {
+        bookId: book.id,
+        book,
+        status,
+        owned: markedOwned || listingId != null || relistSourceId != null,
+        listed: listingId != null,
+        listingId,
+        relistSourceId,
+        currentPage: this.displayedPage(status, p?.currentPage, totalPages),
+        totalPages,
+        updatedAt,
+      };
+    };
+
+    const result = entries.map((e) => item(e.book, e.status, e.owned, e.updatedAt));
+    // Cărțile cu exemplar în aplicație, dar fără rând pe raft (listate direct
+    // din „Adaugă carte"): și ele sunt deținute.
+    const onShelf = new Set(entries.map((e) => e.bookId));
+    for (const copy of copies) {
+      if (onShelf.has(copy.bookId)) continue;
+      onShelf.add(copy.bookId);
+      result.push(item(copy.book, null, false, copy.updatedAt));
+    }
+    return result;
+  }
+
+  /**
+   * Modificare parțială: statusul de lectură și „deținută" se schimbă
+   * independent. Un rând rămas fără niciuna (fără status, nedeținut) se
+   * șterge - n-ar mai apărea în nicio filă.
+   */
+  async updateEntry(
+    userId: string,
+    bookId: string,
+    changes: { status?: BookshelfStatus | null; owned?: boolean },
+  ) {
+    const book = await this.prisma.book.findUnique({ where: { id: bookId } });
+    if (!book) {
+      throw new NotFoundException('Cartea nu a fost găsită');
+    }
+
+    const before = await this.prisma.bookshelfEntry.findUnique({
+      where: { userId_bookId: { userId, bookId } },
+    });
+    const status =
+      changes.status === undefined ? (before?.status ?? null) : changes.status;
+    const owned = changes.owned ?? before?.owned ?? false;
+
+    if (status == null && !owned) {
+      await this.prisma.bookshelfEntry.deleteMany({ where: { userId, bookId } });
+      return { bookId, status: null, owned: false };
+    }
+
+    const entry = await this.prisma.bookshelfEntry.upsert({
+      where: { userId_bookId: { userId, bookId } },
+      create: { userId, bookId, status, owned },
+      update: { status, owned },
+    });
+
+    if (status === 'FINISHED' && before?.status !== 'FINISHED') {
+      void this.follow.notifyFollowersOfFinishedBook(userId, book.title, bookId);
+    }
+    if (!book.description) {
+      this.bookDescriptions.scheduleBackfill(bookId);
+    }
+    return entry;
   }
 
   async getMyShelf(userId: string) {
@@ -543,7 +679,9 @@ export class BookshelfService {
       .map(([genre, count]) => ({ genre, count }));
   }
 
-  private groupByStatus(entries: { status: BookshelfStatus; book: Book }[]) {
+  private groupByStatus(
+    entries: { status: BookshelfStatus | null; book: Book }[],
+  ) {
     return {
       reading: entries.filter((e) => e.status === 'READING').map((e) => e.book),
       wantToRead: entries

@@ -1284,7 +1284,7 @@
     "chatPickDate": "Alege data",
     "chatPickTime": "Alege ora",
     "wishlistTitle": "Lista de dorințe",
-    "wishlistCount": "{count} cărți",
+    "wishlistCount": "{count, plural, one{{count} carte} other{{count} cărți}}",
     "@wishlistCount": {
         "placeholders": {
             "count": {
@@ -1703,7 +1703,7 @@
     "collectionsCreateTitle": "Colecție nouă",
     "collectionsNameLabel": "Nume",
     "collectionsPublicSwitch": "Publică",
-    "collectionsBookCount": "{count} cărți",
+    "collectionsBookCount": "{count, plural, one{{count} carte} other{{count} cărți}}",
     "@collectionsBookCount": {
         "placeholders": {
             "count": {
@@ -2789,9 +2789,9 @@
     "@importGoToLibrary": {},
     "importGuidelinesTitle": "Ce se întâmplă cu fiecare rând",
     "@importGuidelinesTitle": {},
-    "importGuidelineShelfRead": "„read\" și „currently-reading\" ajung pe raftul tău de lectură, nu în piață.",
+    "importGuidelineShelfRead": "„read” și „currently-reading” ajung la Citite și Citesc acum în My Shelf - nu la Deținute și niciodată la schimb.",
     "@importGuidelineShelfRead": {},
-    "importGuidelineShelfToRead": "„to-read\" și rafturile numite „favorites\" ajung la favorite, ca să te anunțăm când apare cartea la cineva.",
+    "importGuidelineShelfToRead": "„to-read” ajunge la De citit în My Shelf. Rafturile numite „favorites” ajung la favorite.",
     "@importGuidelineShelfToRead": {},
     "importGuidelineListing": "Rândurile fără raft, sau cu „swap\", devin anunțuri în piață.",
     "@importGuidelineListing": {},
@@ -2815,7 +2815,7 @@
             }
         }
     },
-    "importGuidelineLimit": "Maximum 500 de rânduri per fișier și doar CSV - un .xlsx trebuie salvat întâi ca CSV.",
+    "importGuidelineLimit": "Până la 5.000 de rânduri per fișier, doar CSV - salvează întâi un .xlsx ca CSV.",
     "@importGuidelineLimit": {},
     "todoTitle": "Descoperă ShelfShare",
     "@todoTitle": {},
@@ -3152,5 +3152,29 @@
         }
     },
     "addBookListingNeedsPhoto": "Adaugă cel puțin o poză cu exemplarul tău ca să poți lista cartea",
-    "addBookListingPhotoUploadFailed": "Poza nu s-a putut urca, așa că anunțul nu a fost publicat. Încearcă din nou."
+    "addBookListingPhotoUploadFailed": "Poza nu s-a putut urca, așa că anunțul nu a fost publicat. Încearcă din nou.",
+    "importProgressCount": "{processed} / {total} cărți · {percent}%",
+    "importProgressStarting": "Citim fișierul…",
+    "shelfCurrentlyReadingTitle": "Citesc acum",
+    "shelfContinueReading": "Continuă",
+    "shelfTabOwned": "Deținute",
+    "shelfTabRead": "Citite",
+    "shelfTabToRead": "De citit",
+    "shelfTabListed": "Listate",
+    "shelfOwnedTabEmpty": "Aici apar cărțile pe care le ai fizic. Adaugă una sau marchează ca deținută o carte din Citite ori De citit. Nimic de aici nu ajunge la schimb dacă nu o listezi tu.",
+    "shelfReadTabEmpty": "Aici apar cărțile pe care le-ai terminat, inclusiv cele importate din Goodreads.",
+    "shelfToReadTabEmpty": "Lista de citit e goală. Cărțile de pe raftul „Want to Read” din Goodreads ajung aici când le imporți.",
+    "shelfOwnedBadge": "Deținută",
+    "shelfListBook": "Listează",
+    "shelfMarkReading": "Marchează „Citesc acum”",
+    "shelfMarkRead": "Marchează ca citită",
+    "shelfMarkToRead": "Adaugă la De citit",
+    "shelfMarkOwned": "Am cartea asta",
+    "shelfMarkNotOwned": "Nu mai am cartea",
+    "shelfRemoveFromRead": "Scoate din Citite",
+    "shelfRemoveFromToRead": "Scoate din De citit",
+    "shelfStatusRead": "Citită",
+    "shelfReadWithPages": "Citită · {total} din {total} pagini · 100%",
+    "shelfStatusReading": "Citesc acum",
+    "shelfStatusToRead": "Pe lista De citit"
 }

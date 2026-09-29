@@ -488,6 +488,7 @@ export class AuthService implements OnModuleInit {
       });
     }
 
+    this.attemptGuard.reset('login', ip, dto.email);
     await this.securityEvents.log('LOGIN_SUCCESS', user.id, ip);
     return this.issueTokens(user);
   }

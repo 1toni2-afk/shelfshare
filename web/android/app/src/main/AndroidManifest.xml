@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Întoarcerea din login-ul cu Google: backendul încheie fluxul
+                 pornit din aplicație cu shelfshare:///auth/google/callback
+                 (vezi startGoogleLogin din src/lib/native/nativeBridge.ts). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="shelfshare" />
+            </intent-filter>
+
         </activity>
 
         <provider

@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Req,
@@ -20,6 +21,7 @@ import { BookshelfService } from './bookshelf.service';
 import { SetBookshelfStatusDto } from './dto/set-bookshelf-status.dto';
 import { AddOwnedBookDto } from './dto/add-owned-book.dto';
 import { BatchRemoveShelfDto } from './dto/batch-remove-shelf.dto';
+import { UpdateShelfEntryDto } from './dto/update-shelf-entry.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user';
 
@@ -42,6 +44,13 @@ export class BookshelfController {
   getOwnedShelf(@Req() req: Request) {
     const { userId } = req.user as AuthenticatedUser;
     return this.bookshelfService.getOwnedShelf(userId!);
+  }
+
+  // Tot raftul, cu toate categoriile fiecărei cărți - ecranul My Shelf.
+  @Get('me/library')
+  getLibrary(@Req() req: Request) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.bookshelfService.getLibrary(userId!);
   }
 
   @Post('own')
@@ -109,6 +118,19 @@ export class BookshelfController {
       dto.status,
       dto.owned,
     );
+  }
+
+  @Patch(':bookId')
+  updateEntry(
+    @Req() req: Request,
+    @Param('bookId') bookId: string,
+    @Body() dto: UpdateShelfEntryDto,
+  ) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.bookshelfService.updateEntry(userId!, bookId, {
+      status: dto.status,
+      owned: dto.owned,
+    });
   }
 
   @Delete(':bookId')

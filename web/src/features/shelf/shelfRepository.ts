@@ -65,6 +65,37 @@ export function ownedIsFinished(owned: OwnedBook): boolean {
   return !!owned.totalPages && owned.totalPages > 0 && owned.currentPage >= owned.totalPages;
 }
 
+/**
+ * O carte din My Shelf cu TOATE categoriile ei, cum o întoarce
+ * `/bookshelf/me/library`. Categoriile nu se exclud: aceeași carte poate fi
+ * simultan deținută, citită și listată, deci apare în fiecare filă potrivită.
+ *
+ * - `status` - raftul de lectură: Citesc acum / Citită / De citit, sau `null`
+ *   când cartea e doar deținută.
+ * - `owned` - marcată explicit ca deținută SAU cu un exemplar în aplicație
+ *   (anunț, carte primită la schimb).
+ * - `listed` / `listingId` - anunțul activ, dacă există.
+ */
+export interface ShelfItem {
+  bookId: string;
+  book: Book;
+  status: ShelfStatus | null;
+  owned: boolean;
+  listed: boolean;
+  listingId: string | null;
+  relistSourceId: string | null;
+  currentPage: number;
+  totalPages: number | null;
+  updatedAt: string;
+}
+
+/** Fracție 0..1 pentru bara de progres; `null` fără număr total de pagini. */
+export function shelfItemProgress(item: ShelfItem): number | null {
+  if (!item.totalPages || item.totalPages <= 0) return null;
+  if (item.status === 'FINISHED') return 1;
+  return Math.min(1, Math.max(0, item.currentPage / item.totalPages));
+}
+
 export type BookRequestStatus = 'PENDING' | 'FULFILLED' | 'NOT_FOUND' | 'CANCELLED';
 
 export interface BookRequest {
@@ -110,6 +141,20 @@ export const shelfRepository = {
     input: { status: ShelfStatus; currentPage?: number; owned?: boolean },
   ) {
     return api.put(`/bookshelf/${bookId}`, input);
+  },
+
+  /** Tot raftul, cu toate categoriile fiecărei cărți - ecranul My Shelf. */
+  library(signal?: AbortSignal): Promise<ShelfItem[]> {
+    return api.get<ShelfItem[]>('/bookshelf/me/library', { signal });
+  },
+
+  /**
+   * Schimbare parțială: statusul de lectură și „deținută" se schimbă
+   * independent. `status: null` scoate cartea de pe raftul de lectură, dar o
+   * lasă în „Deținute" dacă e deținută.
+   */
+  update(bookId: string, input: { status?: ShelfStatus | null; owned?: boolean }) {
+    return api.patch(`/bookshelf/${bookId}`, input);
   },
 
   remove(bookId: string): Promise<void> {
@@ -163,5 +208,6 @@ export const shelfKeys = {
   all: ['bookshelf'] as const,
   bookshelf: () => ['bookshelf', 'me'] as const,
   owned: () => ['bookshelf', 'me', 'owned'] as const,
+  library: () => ['bookshelf', 'me', 'library'] as const,
   bookRequests: () => ['book-requests', 'mine'] as const,
 };

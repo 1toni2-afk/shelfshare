@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Eye, LayoutGrid, List, MoreVertical, Plus } from 'lucide-react';
 import { booksKeys, booksRepository } from './booksRepository';
@@ -9,38 +9,85 @@ import { HeaderAction, ScreenHeader } from '@/components/layout/ScreenHeader';
 import { FolderTabs } from '@/components/ui/FolderTabs';
 import { downloadTextFile } from '@/lib/utils/download';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { OwnedBooksSection } from '@/features/shelf/OwnedBooksSection';
+import { CurrentlyReadingStrip, ShelfBookList } from '@/features/shelf/ShelfSections';
+import { shelfKeys, shelfRepository } from '@/features/shelf/shelfRepository';
 import { BookCard } from './BookCard';
 import { BookGrid } from './BookGrid';
 import { BookCover } from '@/components/ui/BookCover';
 import { ErrorNotice, Spinner } from '@/components/ui';
 import { toNumber, type UserBook } from '@/types/models';
+import { cn } from '@/lib/utils/cn';
 
 type Filter = 'all' | 'available' | 'unavailable';
 type ViewMode = 'grid' | 'list';
 
+/**
+ * Filele din My Shelf. Nu se exclud: aceeași carte poate fi deținută, citită
+ * și listată deodată, și apare în fiecare filă potrivită.
+ */
+type Tab = 'owned' | 'read' | 'toRead' | 'listed';
+const TABS: readonly Tab[] = ['owned', 'read', 'toRead', 'listed'];
+
 const VIEW_STORAGE_KEY = 'shelfshare.library.view';
 
 /**
- * Raftul meu - anunțurile proprii. Port al părții de listare din
- * my_library_screen.dart; editarea, selecția multiplă, importul/exportul CSV și
- * coșul de gunoi vin în loturile lor (fiecare are ecranul sau dialogul propriu).
+ * My Shelf - biblioteca personală, nu doar anunțurile.
  *
- * Endpointul întoarce TOATE cărțile deodată, fără paginare - la fel ca în
- * Flutter. Filtrarea și numărătoarea se fac deci local, dintr-un singur răspuns,
- * nu prin câte o cerere per filtru.
+ * Sus, „Citesc acum" (doar dacă există). Dedesubt, patru file:
+ * - Deținute - cărțile pe care omul le are fizic, citite sau nu. Doar de aici
+ *   se listează: nimic nu ajunge în piață fără gestul lui.
+ * - Citite - tot ce a terminat, inclusiv importul din Goodreads; nu presupune
+ *   că le deține.
+ * - De citit - lista de lectură (Goodreads „Want to Read" ajunge aici).
+ * - Listate - strict exemplarele puse la schimb sau vânzare.
+ *
+ * Nu mai există „gata de listat": o carte citită nu e automat una de dat mai
+ * departe. Fila activă stă în URL (`?tab=read`), ca linkurile din alte ecrane
+ * să poată deschide direct o filă.
+ *
+ * Anunțurile vin tot dintr-un singur răspuns, fără paginare - filtrarea și
+ * numărătoarea se fac local.
  */
 export function MyLibraryScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const requested = params.get('tab') as Tab | null;
+  const tab: Tab = requested && TABS.includes(requested) ? requested : 'owned';
   const [filter, setFilter] = useState<Filter>('all');
   const [view, setView] = useState<ViewMode>(readStoredView);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  function changeTab(next: Tab) {
+    setParams(
+      (current) => {
+        const updated = new URLSearchParams(current);
+        updated.set('tab', next);
+        return updated;
+      },
+      { replace: true },
+    );
+  }
 
   const library = useQuery({
     queryKey: booksKeys.myLibrary(),
     queryFn: ({ signal }) => booksRepository.getMyLibrary(signal),
   });
+
+  const shelf = useQuery({
+    queryKey: shelfKeys.library(),
+    queryFn: ({ signal }) => shelfRepository.library(signal),
+  });
+
+  const groups = useMemo(() => {
+    const items = shelf.data ?? [];
+    return {
+      reading: items.filter((item) => item.status === 'READING'),
+      owned: items.filter((item) => item.owned),
+      read: items.filter((item) => item.status === 'FINISHED'),
+      toRead: items.filter((item) => item.status === 'WANT_TO_READ'),
+    };
+  }, [shelf.data]);
 
   const books = useMemo(() => library.data ?? [], [library.data]);
 
@@ -75,12 +122,14 @@ export function MyLibraryScreen() {
       title={t('libraryTitle')}
       actions={
         <>
-          <HeaderAction
-            label={view === 'grid' ? t('libraryViewAsList') : t('libraryViewAsGrid')}
-            onClick={() => changeView(view === 'grid' ? 'list' : 'grid')}
-          >
-            {view === 'grid' ? <List size={22} /> : <LayoutGrid size={22} />}
-          </HeaderAction>
+          {tab === 'listed' && (
+            <HeaderAction
+              label={view === 'grid' ? t('libraryViewAsList') : t('libraryViewAsGrid')}
+              onClick={() => changeView(view === 'grid' ? 'list' : 'grid')}
+            >
+              {view === 'grid' ? <List size={22} /> : <LayoutGrid size={22} />}
+            </HeaderAction>
+          )}
 
           <OverflowMenu
             open={menuOpen}
@@ -102,7 +151,7 @@ export function MyLibraryScreen() {
     />
   );
 
-  if (library.isPending) {
+  if (library.isPending || shelf.isPending) {
     return (
       <>
         {header}
@@ -113,12 +162,18 @@ export function MyLibraryScreen() {
     );
   }
 
-  if (library.isError) {
+  if (library.isError || shelf.isError) {
     return (
       <>
         {header}
         <div className="mx-auto max-w-2xl p-6">
-          <ErrorNotice message={t('libraryLoadError')} onRetry={() => void library.refetch()} />
+          <ErrorNotice
+            message={t('libraryLoadError')}
+            onRetry={() => {
+              void library.refetch();
+              void shelf.refetch();
+            }}
+          />
         </div>
       </>
     );
@@ -128,45 +183,86 @@ export function MyLibraryScreen() {
     <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-4 min-[900px]:px-8">
       {header}
 
-      {/* Cărțile DEȚINUTE dar nelistate stau deasupra anunțurilor: sunt
-          majoritatea unui raft real - cineva are acasă zeci de cărți și dă mai
-          departe câteva. */}
-      <OwnedBooksSection />
+      <CurrentlyReadingStrip items={groups.reading} />
 
-      {/* Aceleași file de dosar ca la Chat, Notificări și Raftul de lectură -
-          categoriile arată la fel peste tot în aplicație. Contorul rămâne în
-          etichetă, fiindcă traducerile îl au deja înăuntru („Toate {count}"). */}
+      {/* Aceleași file de dosar ca la Chat, Notificări și restul aplicației -
+          categoriile arată la fel peste tot. */}
       <FolderTabs
         className="mb-6"
         label={t('libraryTitle')}
-        value={filter}
-        onChange={setFilter}
+        value={tab}
+        onChange={changeTab}
         tabs={[
-          { value: 'all' as const, label: t('libraryFilterAll', { count: counts.all }) },
-          {
-            value: 'available' as const,
-            label: t('libraryFilterAvailable', { count: counts.available }),
-          },
-          {
-            value: 'unavailable' as const,
-            label: t('libraryFilterUnavailable', { count: counts.unavailable }),
-          },
+          // Numărul stă în etichetă, nu în pastila de „necitite": e o
+          // mărime, nu ceva care cere atenție - și pastila taie la „99+".
+          { value: 'owned' as const, label: `${t('shelfTabOwned')} ${groups.owned.length}` },
+          { value: 'read' as const, label: `${t('shelfTabRead')} ${groups.read.length}` },
+          { value: 'toRead' as const, label: `${t('shelfTabToRead')} ${groups.toRead.length}` },
+          { value: 'listed' as const, label: `${t('shelfTabListed')} ${counts.all}` },
         ]}
       >
-        {visible.length === 0 ? (
-          <p className="py-16 text-center text-muted-foreground">{t('libraryEmpty')}</p>
-        ) : view === 'grid' ? (
-          <BookGrid>
-            {visible.map((item, index) => (
-              <BookCard key={item.id} item={item} eager={index < 5} />
-            ))}
-          </BookGrid>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {visible.map((item) => (
-              <LibraryRow key={item.id} item={item} />
-            ))}
-          </ul>
+        {tab === 'owned' && (
+          <ShelfBookList items={groups.owned} tab="owned" empty={t('shelfOwnedTabEmpty')} />
+        )}
+        {tab === 'read' && (
+          <ShelfBookList items={groups.read} tab="read" empty={t('shelfReadTabEmpty')} />
+        )}
+        {tab === 'toRead' && (
+          <ShelfBookList
+            items={groups.toRead}
+            tab="toRead"
+            empty={
+              <>
+                <p>{t('shelfToReadTabEmpty')}</p>
+                <Link to="/import" className="mt-2 inline-block font-semibold text-accent hover:underline">
+                  {t('libraryImportCsv')}
+                </Link>
+              </>
+            }
+          />
+        )}
+        {tab === 'listed' && (
+          <>
+            {/* Anunțurile oprite rămân aici, sub „Indisponibile": tot ale lui
+                sunt, și tot de aici se repornesc. */}
+            <div className="mb-4 flex flex-wrap gap-2">
+              {(
+                [
+                  ['all', t('libraryFilterAll', { count: counts.all })],
+                  ['available', t('libraryFilterAvailable', { count: counts.available })],
+                  ['unavailable', t('libraryFilterUnavailable', { count: counts.unavailable })],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setFilter(value)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-sm transition',
+                    filter === value
+                      ? 'border-accent bg-accent/15 font-semibold text-accent'
+                      : 'border-border hover:bg-muted',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {visible.length === 0 ? (
+              <p className="py-16 text-center text-muted-foreground">{t('libraryEmpty')}</p>
+            ) : view === 'grid' ? (
+              <BookGrid>
+                {visible.map((item, index) => (
+                  <BookCard key={item.id} item={item} eager={index < 5} />
+                ))}
+              </BookGrid>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {visible.map((item) => (
+                  <LibraryRow key={item.id} item={item} />
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </FolderTabs>
 

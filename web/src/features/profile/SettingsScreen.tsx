@@ -43,6 +43,7 @@ import {
   LifeBuoy,
   AlertTriangle,
 } from 'lucide-react';
+import type { AppUser } from '@/types/models';
 import { profileKeys, profileRepository } from './profileRepository';
 import { Switch } from '@/components/ui/Switch';
 import { Spinner } from '@/components/ui';
@@ -104,7 +105,9 @@ export function SettingsScreen() {
   const listingPrivacy = useMutation({
     mutationFn: (input: Parameters<typeof profileRepository.update>[0]) =>
       profileRepository.update(input),
-    onSuccess: (updated) => queryClient.setQueryData(profileKeys.me(), updated),
+    // Unire: PATCH-ul întoarce doar o parte din câmpurile lui /profile/me.
+    onSuccess: (updated) =>
+      queryClient.setQueryData<AppUser>(profileKeys.me(), (prev) => prev && { ...prev, ...updated }),
     onError: () => toast.show(t('profileSaveError'), 'danger'),
   });
 
@@ -138,7 +141,7 @@ export function SettingsScreen() {
       </Group>
 
       <Group title={t('profileGroupLibrary')}>
-        <Row icon={BookOpen} to="/bookshelf" label={t('bookshelfTitle')} />
+        <Row icon={BookOpen} to="/library?tab=read" label={t('bookshelfTitle')} />
         <Row icon={Images} to="/collections" label={t('collectionsTitle')} />
         <Row icon={Users} to="/groups" label={t('groupsTitle')} />
         <Row icon={Repeat} to="/exchanges" label={t('profileMyExchanges')} />

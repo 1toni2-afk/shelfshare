@@ -39,4 +39,14 @@ export class AttemptGuardService {
     entry.count += 1;
     return entry.count > CAPTCHA_THRESHOLD;
   }
+
+  /**
+   * Șterge contorul după o reușită. Fără asta, și login-urile CORECTE se
+   * adunau: cine intra de pe telefon, laptop și tabletă și apoi se delogea
+   * primea captcha la al patrulea login, deși nu greșise nimic.
+   */
+  reset(scope: string, ip: string, identifier?: string): void {
+    const key = identifier ? `${scope}:${ip}:${identifier.toLowerCase()}` : `${scope}:${ip}`;
+    this.attempts.delete(key);
+  }
 }

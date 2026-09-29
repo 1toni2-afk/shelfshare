@@ -12,6 +12,8 @@ export const API_BASE_URL: string = __API_BASE_URL__;
 /** Timeout identic cu cel din Dio (connect/receive 10s). */
 const TIMEOUT_MS = 10_000;
 
+type RefreshResult = 'ok' | 'rejected' | 'unavailable';
+
 /**
  * Eroare de rețea/API. Ține statusul și corpul răspunsului, ca apelanții să
  * poată distinge cazuri (ex. 401 cu `requiresCaptcha` la login) fără să
@@ -70,21 +72,23 @@ export class ApiClient {
    * să o evităm. Se vede doar pe ecranele care lansează mai multe cereri
    * odată (Home), nu la login.
    */
-  private refreshInFlight: Promise<boolean> | null = null;
+  private refreshInFlight: Promise<RefreshResult> | null = null;
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const response = await this.send(path, options);
 
     if (response.status === 401 && !options.anonymous) {
       const refreshed = await this.refreshOnce();
-      if (refreshed) {
+      if (refreshed === 'ok') {
         const retry = await this.send(path, options);
         return this.parse<T>(retry);
       }
       // Refresh token invalid/expirat/revocat (ex. contul a fost șters).
       // Fără semnalul ăsta, userul rămâne "logat" vizual, cu fiecare cerere
       // eșuând tăcut la 401, până la un refresh manual de pagină.
-      this.onSessionExpired?.();
+      // NU și când serverul doar n-a răspuns (vezi doRefresh): acolo cererea
+      // pică, dar sesiunea rămâne, iar următoarea încercare reîmprospătează.
+      if (refreshed === 'rejected') this.onSessionExpired?.();
     }
 
     return this.parse<T>(response);
@@ -174,33 +178,45 @@ export class ApiClient {
     return data as T;
   }
 
-  private refreshOnce(): Promise<boolean> {
+  private refreshOnce(): Promise<RefreshResult> {
     this.refreshInFlight ??= this.doRefresh().finally(() => {
       this.refreshInFlight = null;
     });
     return this.refreshInFlight;
   }
 
-  private async doRefresh(): Promise<boolean> {
+  /**
+   * `rejected` doar când serverul CHIAR a refuzat token-ul (401/403). Un
+   * 502 de la Cloudflare, un 429 sau o rețea căzută înseamnă doar că nu s-a
+   * putut întreba acum - `unavailable`, cu token-urile păstrate. Înainte,
+   * orice eșec ștergea sesiunea: fiecare restart de backend (~40s la un
+   * deploy) deloga definitiv pe oricine avea token-ul de acces expirat.
+   */
+  private async doRefresh(): Promise<RefreshResult> {
     const refreshToken = await this.tokens.getRefreshToken();
-    if (!refreshToken) return false;
+    if (!refreshToken) return 'rejected';
 
+    let response: Response;
     try {
-      const response = await this.send('/auth/refresh', {
+      response = await this.send('/auth/refresh', {
         method: 'POST',
         body: { refreshToken },
         anonymous: true,
       });
-      if (!response.ok) {
-        await this.tokens.clear();
-        return false;
-      }
+    } catch {
+      return 'unavailable';
+    }
+    if (response.status === 401 || response.status === 403) {
+      await this.tokens.clear();
+      return 'rejected';
+    }
+    if (!response.ok) return 'unavailable';
+    try {
       const data = (await response.json()) as { accessToken: string; refreshToken: string };
       await this.tokens.saveTokens(data);
-      return true;
+      return 'ok';
     } catch {
-      await this.tokens.clear();
-      return false;
+      return 'unavailable';
     }
   }
 

@@ -75,6 +75,18 @@ interface ImportResult {
   failed?: ImportFailed[];
 }
 
+/** Starea unui import rulat în fundal - vezi ImportJobsService pe backend. */
+interface ImportJob {
+  status: 'running' | 'done' | 'failed';
+  processed: number;
+  total: number;
+  result: ImportResult | null;
+  error: string | null;
+}
+
+/** Cât de des întrebăm cât s-a importat. */
+const POLL_INTERVAL_MS = 1000;
+
 const GUIDELINES = ['ShelfRead', 'ShelfToRead', 'Listing', 'Skipped', 'NoDuplicates'] as const;
 
 /**
@@ -97,18 +109,43 @@ export function ImportScreen() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ processed: number; total: number } | null>(null);
 
   const upload = useMutation({
-    mutationFn: (csv: File) => {
+    /*
+      Importul rulează în fundal pe server: POST-ul întoarce doar un id, iar
+      progresul se citește la fiecare secundă. Înainte, cererea ținea cât tot
+      fișierul, iar un export Goodreads de câteva sute de rânduri depășea
+      timeout-ul - pagina arăta „nu e un CSV valid" deși importul mergea.
+    */
+    mutationFn: async (csv: File) => {
       const form = new FormData();
       form.append('file', csv);
-      return api.request<ImportResult>('/books/import-listings', {
-        method: 'POST',
-        formData: form,
-        // Un fișier poate avea sute de rânduri, fiecare cu o căutare în
-        // catalog: cele 10s implicite l-ar tăia la mijloc.
-        timeoutMs: 60_000,
-      });
+      setProgress(null);
+      const started = await api.request<{ jobId?: string } & ImportResult>(
+        '/books/import-listings',
+        { method: 'POST', formData: form, query: { async: 1 }, timeoutMs: 60_000 },
+      );
+      // Un backend mai vechi ignoră `async` și întoarce direct rezultatul.
+      if (!started.jobId) return started as ImportResult;
+
+      for (;;) {
+        await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
+        let job: ImportJob;
+        try {
+          job = await api.get<ImportJob>(`/books/import-jobs/${started.jobId}`);
+        } catch (cause) {
+          // O sughițare de rețea nu oprește importul de pe server: mai
+          // întrebăm. Un 404 înseamnă că serverul a repornit și l-a pierdut.
+          if ((cause as { status?: number | null }).status === 404) throw cause;
+          continue;
+        }
+        setProgress({ processed: job.processed, total: job.total });
+        if (job.status === 'done') return job.result ?? {};
+        if (job.status === 'failed') {
+          throw { data: { message: job.error ?? t('libraryImportError') } };
+        }
+      }
     },
     onSuccess: (data) => {
       setResult(data);
@@ -207,7 +244,12 @@ export function ImportScreen() {
           <LibraryBig size={18} />
           {t('importStep3Button')}
         </Button>
-        {upload.isPending && <Hint>{t('importRunning')}</Hint>}
+        {upload.isPending && (
+          <div className="mt-3">
+            <ImportProgressBar progress={progress} />
+            <Hint>{t('importRunning')}</Hint>
+          </div>
+        )}
       </Step>
 
       {error && (
@@ -220,6 +262,44 @@ export function ImportScreen() {
       {result && <ImportResultCard result={result} />}
 
       <GuidelinesCard />
+    </div>
+  );
+}
+
+/**
+ * Bara „120 / 296 cărți". Până când serverul a citit fișierul și știe câte
+ * rânduri are, bara e nedeterminată (pulsează), nu blocată la 0%.
+ */
+function ImportProgressBar({
+  progress,
+}: {
+  progress: { processed: number; total: number } | null;
+}) {
+  const { t } = useTranslation();
+  const known = !!progress && progress.total > 0;
+  const percent = known ? Math.round((progress.processed / progress.total) * 100) : 0;
+  return (
+    <div className="mb-2">
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={known ? progress.total : undefined}
+        aria-valuenow={known ? progress.processed : undefined}
+        className="h-2.5 overflow-hidden rounded-full bg-muted"
+      >
+        <div
+          className={cn(
+            'h-full rounded-full bg-accent transition-[width] duration-500',
+            !known && 'w-1/3 animate-pulse',
+          )}
+          style={known ? { width: `${percent}%` } : undefined}
+        />
+      </div>
+      <p className="mt-1.5 text-sm font-medium tabular-nums">
+        {known
+          ? t('importProgressCount', { processed: progress.processed, total: progress.total, percent })
+          : t('importProgressStarting')}
+      </p>
     </div>
   );
 }
@@ -321,7 +401,7 @@ function ImportResultCard({ result }: { result: ImportResult }) {
         <div className="mt-4 flex flex-wrap gap-2">
           {(shelved.length > 0 || favorited.length > 0) && (
             <Link
-              to="/bookshelf"
+              to="/library?tab=read"
               className="rounded-[12px] border border-border px-4 py-2.5 text-sm hover:bg-muted"
             >
               {t('importGoToShelf')}

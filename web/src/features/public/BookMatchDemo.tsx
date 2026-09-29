@@ -14,7 +14,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-import { booksKeys, booksRepository } from '@/features/books/booksRepository';
+import { api } from '@/lib/api/client';
 import { BookCover } from '@/components/ui/BookCover';
 import { CloseButton, Spinner } from '@/components/ui';
 import type { Book } from '@/types/models';
@@ -22,8 +22,6 @@ import type { Book } from '@/types/models';
 /** Câte cărți are teancul de probă. */
 const DEMO_SIZE = 20;
 
-/** Cerem mai multe: anunțurile repetă aceeași carte, iar unele n-au copertă. */
-const DEMO_FETCH_LIMIT = 60;
 
 /** Același prag ca în aplicație (`_swipeThreshold` din book_match_screen.dart). */
 const SWIPE_THRESHOLD = 110;
@@ -53,30 +51,29 @@ export function BookMatchDemo() {
   const { t } = useTranslation();
   const [decisions, setDecisions] = useState<Decision[]>([]);
 
-  const params = { limit: DEMO_FETCH_LIMIT, sort: 'recent' };
-  const listings = useQuery({
-    queryKey: booksKeys.browse(params),
-    queryFn: ({ signal }) => booksRepository.browse(params, signal),
+  /*
+    Teancul vine din catalog (lista de titluri cunoscute a Book Match-ului
+    real), nu din anunțurile publice: acolo erau câteva zeci de exemplare,
+    mereu aceleași. Fiecare vizită primește alt amestec.
+  */
+  const deck = useQuery({
+    queryKey: ['book-match', 'demo'],
+    queryFn: ({ signal }) =>
+      api.get<Book[]>('/book-match/demo', { query: { size: DEMO_SIZE }, signal, anonymous: true }),
+    staleTime: Infinity,
   });
 
-  const books = useMemo(() => {
-    const seen = new Set<string>();
-    const result: Book[] = [];
-    for (const item of listings.data?.items ?? []) {
-      if (!item.book.coverUrl || seen.has(item.book.id)) continue;
-      seen.add(item.book.id);
-      result.push(item.book);
-      if (result.length === DEMO_SIZE) break;
-    }
-    return result;
-  }, [listings.data]);
+  const books = useMemo(
+    () => (deck.data ?? []).filter((book) => !!book.coverUrl),
+    [deck.data],
+  );
 
   // Fără cărți (API căzut sau catalog gol) secțiunea dispare - o demonstrație
   // goală ar spune exact opusul a ce vrea să spună.
-  if (listings.isError || (!listings.isPending && books.length === 0)) return null;
+  if (deck.isError || (!deck.isPending && books.length === 0)) return null;
 
   const index = decisions.length;
-  const done = !listings.isPending && index >= books.length;
+  const done = !deck.isPending && index >= books.length;
 
   const benefits: { icon: ReactNode; title: string; text: string }[] = [
     {
@@ -161,7 +158,7 @@ export function BookMatchDemo() {
         </div>
 
         <div className="mx-auto w-full max-w-[420px]">
-          {listings.isPending ? (
+          {deck.isPending ? (
             <div className="flex h-[560px] items-center justify-center text-accent">
               <Spinner size={28} />
             </div>

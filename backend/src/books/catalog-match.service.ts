@@ -58,7 +58,14 @@ export class CatalogMatchService {
     const wantedTitle = CatalogMatchService.normalize(title);
     if (!wantedTitle) return null;
 
-    const tsquery = wantedTitle.split(' ').join(' & ');
+    // Numele de familie al autorului intră și el în prefiltru: orice carte pe
+    // care authorMatches o acceptă îl conține oricum, iar la un titlu comun
+    // („The Odyssey") lotul scade de la ~1.500 de rânduri la câteva - ~1s mai
+    // puțin per rând, ceea ce la un import Goodreads de sute de cărți contează.
+    const authorLast = CatalogMatchService.normalize(author).split(' ').at(-1) ?? '';
+    const terms = wantedTitle.split(' ');
+    if (authorLast.length > 2 && !terms.includes(authorLast)) terms.push(authorLast);
+    const tsquery = terms.join(' & ');
     let candidates: Book[];
     try {
       // Lot mărginit întâi (ca în searchCatalog): un titlu scurt și comun

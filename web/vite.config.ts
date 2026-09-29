@@ -94,7 +94,10 @@ function archivePreviousAssetsPlugin(): Plugin {
       outDir = path.resolve(config.root, config.build.outDir);
     },
     buildStart() {
-      const current = path.join(outDir, 'assets');
+      // Bucățile de arhivat sunt cele SERVITE acum, din `dist/`, chiar dacă
+      // build-ul scrie în altă parte: scripts/deploy-beta.ps1 construiește în
+      // `dist-next/` și abia apoi îl pune în locul lui `dist/`.
+      const current = path.join(outDir, '..', 'dist', 'assets');
       const archive = path.join(outDir, '..', 'dist-archive', 'assets');
       fs.mkdirSync(archive, { recursive: true });
       if (fs.existsSync(current)) {

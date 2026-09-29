@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 
+import type { AppUser } from '@/types/models';
 import { profileKeys, profileRepository } from './profileRepository';
 import { Button, Field } from '@/components/ui';
 import { Switch } from '@/components/ui/Switch';
@@ -49,7 +50,8 @@ export function EditProfileScreen() {
       }),
     onSuccess: (updated) => {
       setUser(updated);
-      queryClient.setQueryData(profileKeys.me(), updated);
+      queryClient.setQueryData<AppUser>(profileKeys.me(), (prev) => prev && { ...prev, ...updated });
+      void queryClient.invalidateQueries({ queryKey: profileKeys.me() });
       void navigate('/profile');
     },
     onError: () => toast.show(t('profileSaveError'), 'danger'),

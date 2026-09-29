@@ -6,6 +6,7 @@ import { AuthLayout } from './AuthLayout';
 import { useAuth } from './AuthProvider';
 import { EuropeanFlag, RomanianFlag } from '@/components/ui/Flag';
 import { API_BASE_URL } from '@/lib/api/client';
+import { isNativeApp, startGoogleLogin } from '@/lib/native/nativeBridge';
 
 /**
  * Port al login_screen.dart. Aceleași chei de traducere, aceeași ordine a
@@ -144,6 +145,13 @@ export function LoginScreen() {
         */}
         <a
           href={`${API_BASE_URL}/auth/google`}
+          onClick={(event) => {
+            // În aplicația de Android fluxul trece printr-o filă Chrome și se
+            // întoarce prin deep link - vezi startGoogleLogin.
+            if (!isNativeApp) return;
+            event.preventDefault();
+            startGoogleLogin();
+          }}
           className="flex w-full items-center justify-center gap-2 rounded-[12px] border border-border px-6 py-4 text-[15px] font-bold transition hover:bg-muted"
         >
           <GoogleMark />

@@ -90,7 +90,10 @@ describe('AuthService', () => {
         },
         {
           provide: AttemptGuardService,
-          useValue: { shouldChallenge: jest.fn().mockReturnValue(false) },
+          useValue: {
+            shouldChallenge: jest.fn().mockReturnValue(false),
+            reset: jest.fn(),
+          },
         },
         {
           provide: SecurityEventsService,

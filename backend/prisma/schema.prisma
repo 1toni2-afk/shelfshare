@@ -1217,7 +1217,11 @@ model BookshelfEntry {
   bookId String
   book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
-  status BookshelfStatus
+  /// Null = cartea e doar DEȚINUTĂ (`owned`), fără un status de lectură:
+  /// „o am în raft, n-am apucat s-o citesc și nici n-o am pe lista de citit".
+  /// Categoriile din My Shelf (Deținute / Citite / De citit / Listate) nu se
+  /// exclud una pe alta, deci statusul nu mai poate fi obligatoriu.
+  status BookshelfStatus?
 
   /// Cartea e DEȚINUTĂ fizic de user, dar nu (neapărat) scoasă la schimb/vânzare.
   /// Distinct de UserBook, care înseamnă „am făcut un anunț cu ea": raftul

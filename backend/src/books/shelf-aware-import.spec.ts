@@ -31,10 +31,12 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
   };
 
   let lookup: Record<string, jest.Mock>;
+  let catalogMatch: { findByTitle: jest.Mock };
 
   const csv = (body: string) => Buffer.from(body, 'utf-8');
 
   beforeEach(async () => {
+    catalogMatch = { findByTitle: jest.fn().mockResolvedValue(null) };
     lookup = {
       lookupByIsbn: jest.fn().mockResolvedValue(null),
       lookupPrice: jest.fn().mockResolvedValue(null),
@@ -81,28 +83,32 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
         { provide: ListingScoreService, useValue: {} },
         { provide: SavedSearchesService, useValue: {} },
         { provide: StoresService, useValue: {} },
-        { provide: CatalogMatchService, useValue: { findByTitle: jest.fn().mockResolvedValue(null) } },
+        { provide: CatalogMatchService, useValue: catalogMatch },
       ],
     }).compile();
 
     service = module.get(BooksService);
   });
 
-  it('„to-read" ajunge doar la favorite, fara anunt', async () => {
+  it('„to-read" ajunge la „De citit" pe raft, nu la favorite si nu in piata', async () => {
     const result = await service.importListingsCsv(
       'user-1',
       csv('Title,Author,Exclusive Shelf\nDune,Herbert,to-read\n'),
     );
 
-    expect(result.favorited).toEqual([{ title: 'Dune' }]);
+    expect(result.shelved).toEqual([{ title: 'Dune', status: 'WANT_TO_READ' }]);
+    expect(result.favorited).toHaveLength(0);
     expect(result.created).toHaveLength(0);
     expect(prisma.userBook.create).not.toHaveBeenCalled();
-    expect(prisma.wishlistItem.create).toHaveBeenCalledWith({
-      data: { userId: 'user-1', bookId: 'book-1' },
-    });
+    expect(prisma.wishlistItem.create).not.toHaveBeenCalled();
+    expect(prisma.bookshelfEntry.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ status: 'WANT_TO_READ', owned: false }),
+      }),
+    );
   });
 
-  it('„read" si „currently-reading" ajung pe raft, ca deținute, fara anunt', async () => {
+  it('„read" si „currently-reading" ajung pe raft, NEdeținute si fara anunt', async () => {
     const result = await service.importListingsCsv(
       'user-1',
       csv('Title,Exclusive Shelf\nDune,read\nDune,currently-reading\n'),
@@ -120,7 +126,9 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
           userId: 'user-1',
           bookId: 'book-1',
           status: 'FINISHED',
-          owned: true,
+          // „Am citit-o" nu inseamna „o am": la Detinute ajunge doar prin
+          // gestul explicit al userului.
+          owned: false,
         },
       }),
     );
@@ -193,15 +201,10 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
     expect(prisma.book.findUnique).toHaveBeenCalledWith({
       where: { isbn: '0143039954' },
     });
-    // Al doilea: `=""` nu e un ISBN, deci cautam pe titlu si NU scriem un
-    // ISBN fals pe care s-ar dedubla toate cartile fara ISBN.
-    expect(prisma.book.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          title: { equals: 'White Nights', mode: 'insensitive' },
-        }),
-      }),
-    );
+    // Al doilea: `=""` nu e un ISBN, deci cautam pe titlu (prin potrivirea
+    // indexata din catalog) si NU scriem un ISBN fals pe care s-ar dedubla
+    // toate cartile fara ISBN.
+    expect(catalogMatch.findByTitle).toHaveBeenCalledWith('White Nights', null);
     const created = prisma.book.create.mock.calls.map(
       (c) => c[0].data as Record<string, unknown>,
     );

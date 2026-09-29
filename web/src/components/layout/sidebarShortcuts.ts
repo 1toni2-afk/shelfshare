@@ -14,7 +14,7 @@ export interface ShortcutSpec {
 }
 
 export const SHORTCUT_SPECS: ShortcutSpec[] = [
-  { key: 'myBooks', route: '/bookshelf', labelKey: 'bookshelfTitle' },
+  { key: 'myBooks', route: '/library?tab=read', labelKey: 'bookshelfTitle' },
   { key: 'exchanges', route: '/exchanges', labelKey: 'navMyExchanges' },
   { key: 'wishlist', route: '/wishlist', labelKey: 'navWishlist' },
   { key: 'collections', route: '/collections', labelKey: 'collectionsTitle' },

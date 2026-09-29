@@ -13,6 +13,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
 import { StoresModule } from '../stores/stores.module';
 import { CatalogMatchModule } from './catalog-match.module';
 
+import { ImportJobsService } from './import-jobs.service';
 @Module({
   imports: [
     HttpModule.register({ timeout: 8000 }),
@@ -29,7 +30,7 @@ import { CatalogMatchModule } from './catalog-match.module';
     CatalogMatchModule,
   ],
   controllers: [BooksController],
-  providers: [BooksService, BookLookupService],
+  providers: [BooksService, BookLookupService, ImportJobsService],
   // Cererile de carte („nu găsesc cartea") caută prin exact aceleași surse ca
   // autocomplete-ul care n-a găsit-o - vezi BookRequestsService.
   exports: [BooksService, BookLookupService],

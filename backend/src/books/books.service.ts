@@ -927,6 +927,9 @@ export class BooksService {
     actorUserId: string,
     buffer: Buffer,
     storeUserId?: string,
+    /// Chemat după fiecare rând - bara de progres din pagina de import (vezi
+    /// ImportJobsService). Opțional: calea sincronă veche nu-l folosește.
+    onProgress?: (processed: number, total: number) => void,
   ) {
     // Importul „în numele magazinului X" nu poate fi apărat de un guard pe
     // rută: aceeași rută e folosită de orice user ca să-și importe propriul
@@ -991,7 +994,13 @@ export class BooksService {
     // a scris primul, fără ca nimeni să afle care a câștigat. Îl raportăm.
     const seenSkus = new Set<string>();
 
+    let processed = 0;
+    onProgress?.(0, rows.length);
     for (const row of rows) {
+      // Contorizat la începutul iterației: ramurile de mai jos ies cu
+      // `continue` din mai multe locuri, iar rândul curent e oricum „tratat".
+      if (processed > 0) onProgress?.(processed, rows.length);
+      processed++;
       const sku = this.csvValue(row, 'sku');
       const title = this.csvValue(row, 'title');
       const label = title ?? sku ?? '(fără titlu)';
@@ -1147,6 +1156,7 @@ export class BooksService {
       }
     }
 
+    onProgress?.(rows.length, rows.length);
     return { created, updated, delisted, shelved, favorited, skipped, failed };
   }
 
@@ -1190,12 +1200,17 @@ export class BooksService {
     if (shelf === 'currently-reading' || shelf === 'reading') {
       return { kind: 'shelf', status: 'READING' };
     }
+    // „Want to Read" e lista de lectură, nu o dorință de a primi cartea:
+    // ajunge la „De citit" din My Shelf. Până acum mergea la favorite, deci
+    // sute de titluri Goodreads porneau alerte „a apărut cartea dorită".
     if (
       shelf === 'to-read' ||
       shelf === 'want-to-read' ||
-      shelf === 'favorite' ||
-      shelf === 'favorites'
+      shelf === 'de-citit'
     ) {
+      return { kind: 'shelf', status: 'WANT_TO_READ' };
+    }
+    if (shelf === 'favorite' || shelf === 'favorites') {
       return { kind: 'favorite' };
     }
     // Randul e explicit destinat pietei (coloana `shelf`/`status` scrisa de
@@ -1253,18 +1268,16 @@ export class BooksService {
     // motivul pentru care importul din My Book Shelf nu cauta extern (vezi
     // comentariul de pe BookshelfService.importCsv); calea asta trebuie sa se
     // poarte la fel.
-    const existing = isbn
+    //
+    // Fara ISBN, titlul trece prin CatalogMatchService (index FTS). Inainte era
+    // un `equals ... mode: insensitive`, adica ILIKE fara index: pe productie
+    // (2,8M carti) 18 SECUNDE per rand, deci un export de 300 de randuri nu se
+    // termina niciodata, iar pagina arata „fisierul nu e un CSV valid".
+    const byIsbn = isbn
       ? await this.prisma.book.findUnique({ where: { isbn } })
-      : title
-        ? await this.prisma.book.findFirst({
-            where: {
-              title: { equals: title, mode: 'insensitive' },
-              author: author
-                ? { equals: author, mode: 'insensitive' }
-                : undefined,
-            },
-          })
-        : null;
+      : null;
+    const existing =
+      byIsbn ?? (title ? await this.catalogMatch.findByTitle(title, author) : null);
 
     if (!existing && !title) {
       throw new BadRequestException('Rand fara titlu');
@@ -1308,14 +1321,16 @@ export class BooksService {
 
     await this.prisma.bookshelfEntry.upsert({
       where: { userId_bookId: { userId, bookId: book.id } },
-      // `owned: true` doar la creare: fisierul descrie biblioteca fizica a
-      // userului, deci cartea apare in prim-planul din My Shelf - dar fara
-      // anunt, deci fara sa fie disponibila la schimb.
+      // NICIODATA `owned: true` din import: „am citit-o" pe Goodreads nu
+      // inseamna „o am in raft", cu atat mai putin „vreau s-o dau". Cartea
+      // intra la „Citite"/„De citit"/„Citesc acum"; la „Detinute" ajunge doar
+      // prin gestul explicit al userului. Un rand existent isi pastreaza
+      // flagul (`update` nu-l atinge).
       create: {
         userId,
         bookId: book.id,
         status: destination.status,
-        owned: true,
+        owned: false,
       },
       update: { status: destination.status },
     });

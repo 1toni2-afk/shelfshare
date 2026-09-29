@@ -149,8 +149,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.clear();
   }, [queryClient]);
 
+  // Unire, nu înlocuire: PATCH /profile/me și încărcarea pozei întorc doar o
+  // parte din câmpuri (fără isAdmin, isPremium, isStore...). Înlocuit întreg,
+  // userul își pierdea meniul de admin imediat după ce își salva profilul.
   const setUser = useCallback((user: AppUser) => {
-    setStatus((current) => (current.kind === 'authenticated' ? { kind: 'authenticated', user } : current));
+    setStatus((current) =>
+      current.kind === 'authenticated'
+        ? { kind: 'authenticated', user: { ...current.user, ...user } }
+        : current,
+    );
   }, []);
 
   const clearError = useCallback(() => {

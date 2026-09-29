@@ -126,8 +126,25 @@ export class ExchangesService {
       requesterConditionPhotos?: string[];
       ownerConditionPhotos?: string[];
     };
+    const books = rest as {
+      requestedBook?: { photos: string[] } | null;
+      offeredBook?: { photos: string[] } | null;
+      additionalOfferedBooks?: { userBook: { photos: string[] } }[];
+    };
     return {
       ...(rest as T),
+      ...(books.requestedBook !== undefined && {
+        requestedBook: this.storage.withPublicPhotos(books.requestedBook),
+      }),
+      ...(books.offeredBook !== undefined && {
+        offeredBook: this.storage.withPublicPhotos(books.offeredBook),
+      }),
+      ...(books.additionalOfferedBooks && {
+        additionalOfferedBooks: books.additionalOfferedBooks.map((a) => ({
+          ...a,
+          userBook: this.storage.withPublicPhotos(a.userBook),
+        })),
+      }),
       requester: { ...request.requester, name: publicName(request.requester) },
       owner: { ...request.owner, name: publicName(request.owner) },
     };
@@ -1160,6 +1177,7 @@ export class ExchangesService {
         ],
       },
       select: {
+        ownerId: true,
         requesterRatingForOwner: true,
         ownerRatingForRequester: true,
         requesterCommunicationForOwner: true,
@@ -1171,24 +1189,38 @@ export class ExchangesService {
       },
     });
 
-    const values = ratedExchanges
-      .map((r) => r.requesterRatingForOwner ?? r.ownerRatingForRequester)
-      .filter((v): v is number => v !== null);
+    // Nota PRIMITĂ de user depinde de rolul lui în schimb. Un `??` între cele
+    // două coloane lua prima notă nenulă - pentru cel care a cerut schimbul,
+    // odată ce își notase partenerul, media lui devenea nota pe care o DĂDUSE.
+    const received = (
+      r: (typeof ratedExchanges)[number],
+      fromRequester: number | null,
+      fromOwner: number | null,
+    ) => (r.ownerId === userId ? fromRequester : fromOwner);
+    const collect = (
+      pick: (r: (typeof ratedExchanges)[number]) => number | null,
+    ) => ratedExchanges.map(pick).filter((v): v is number => v !== null);
 
-    const communicationValues = ratedExchanges
-      .map(
-        (r) =>
-          r.requesterCommunicationForOwner ?? r.ownerCommunicationForRequester,
-      )
-      .filter((v): v is number => v !== null);
-    const punctualityValues = ratedExchanges
-      .map(
-        (r) => r.requesterPunctualityForOwner ?? r.ownerPunctualityForRequester,
-      )
-      .filter((v): v is number => v !== null);
-    const conditionValues = ratedExchanges
-      .map((r) => r.requesterConditionForOwner ?? r.ownerConditionForRequester)
-      .filter((v): v is number => v !== null);
+    const values = collect((r) =>
+      received(r, r.requesterRatingForOwner, r.ownerRatingForRequester),
+    );
+    const communicationValues = collect((r) =>
+      received(
+        r,
+        r.requesterCommunicationForOwner,
+        r.ownerCommunicationForRequester,
+      ),
+    );
+    const punctualityValues = collect((r) =>
+      received(
+        r,
+        r.requesterPunctualityForOwner,
+        r.ownerPunctualityForRequester,
+      ),
+    );
+    const conditionValues = collect((r) =>
+      received(r, r.requesterConditionForOwner, r.ownerConditionForRequester),
+    );
 
     const average = (nums: number[]) =>
       nums.length === 0

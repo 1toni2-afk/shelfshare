@@ -73,7 +73,8 @@ export function MyProfileScreen() {
     mutationFn: (file: File) => profileRepository.uploadPhoto(file),
     onSuccess: (updated) => {
       setUser(updated);
-      queryClient.setQueryData(profileKeys.me(), updated);
+      queryClient.setQueryData<AppUser>(profileKeys.me(), (prev) => prev && { ...prev, ...updated });
+      void queryClient.invalidateQueries({ queryKey: profileKeys.me() });
     },
     onError: () => toast.show(t('profilePhotoError'), 'danger'),
   });
@@ -330,7 +331,7 @@ function CurrentlyReadingCard({ current }: { current: CurrentlyReading }) {
 
   return (
     <Link
-      to="/bookshelf"
+      to="/library?tab=owned"
       className="flex gap-4 rounded-[16px] border border-border bg-card p-4 transition-colors hover:bg-muted/40"
     >
       <div className="aspect-[2/3] w-[72px] shrink-0 overflow-hidden rounded-[6px] bg-muted shadow-md">

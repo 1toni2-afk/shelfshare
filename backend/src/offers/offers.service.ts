@@ -20,6 +20,7 @@ import { ShareContactDto } from '../exchanges/dto/share-contact.dto';
 import { publicName } from '../common/utils/user-visibility';
 import { transferListingOwnership } from '../common/utils/transfer-listing';
 import { XP_SALE_COMPLETED } from '../common/utils/xp';
+import { StorageService } from '../storage/storage.service';
 
 // Offer Expiration (Milestone 3) - vezi comentariul din exchanges.service.ts.
 const OFFER_EXPIRY_DAYS = 7;
@@ -72,6 +73,7 @@ export class OffersService {
     private conversations: ConversationsService,
     private listingScore: ListingScoreService,
     private activityLog: ActivityLogService,
+    private storage: StorageService,
   ) {}
 
   private async notifySafe(
@@ -95,8 +97,12 @@ export class OffersService {
       owner: { name: string | null; nameVisible: boolean };
     },
   >(offer: T): T {
+    const { userBook } = offer as { userBook?: { photos: string[] } | null };
     return {
       ...offer,
+      ...(userBook !== undefined && {
+        userBook: this.storage.withPublicPhotos(userBook),
+      }),
       buyer: { ...offer.buyer, name: publicName(offer.buyer) },
       owner: { ...offer.owner, name: publicName(offer.owner) },
     };
@@ -524,21 +530,29 @@ export class OffersService {
     });
 
     if (updated.buyerDoneAt && updated.ownerDoneAt) {
+      // Rolurile REALE, nu cele ale rândului: la o contraofertă `buyerId` e
+      // cel care propune, deci când contrează vânzătorul, `buyerId` e chiar
+      // vânzătorul. Luate de pe rând, cartea se „transfera" vânzătorului
+      // însuși - dispărea de la el și nu ajungea niciodată la cumpărător.
+      // Vânzătorul e mereu proprietarul anunțului.
+      const sellerId = updated.userBook.userId;
+      const realBuyerId =
+        updated.buyerId === sellerId ? updated.ownerId : updated.buyerId;
       updated = await this.prisma.$transaction(async (tx) => {
         await tx.user.update({
-          where: { id: updated.ownerId },
+          where: { id: sellerId },
           data: {
             booksSharedCount: { increment: 1 },
             xp: { increment: XP_SALE_COMPLETED },
           },
         });
         await tx.user.update({
-          where: { id: updated.buyerId },
+          where: { id: realBuyerId },
           data: { booksReceivedCount: { increment: 1 } },
         });
         // Cartea trece efectiv în biblioteca cumpărătorului, la fel ca la
         // schimb - vezi transferListingOwnership.
-        await transferListingOwnership(tx, updated.userBookId, updated.buyerId);
+        await transferListingOwnership(tx, updated.userBookId, realBuyerId);
 
         return tx.priceOffer.update({
           where: { id },

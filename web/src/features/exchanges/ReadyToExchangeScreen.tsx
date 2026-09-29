@@ -438,15 +438,20 @@ function dealView(data: ExchangeRequest | PriceOffer, myId: string | undefined) 
       otherDone: !!data[`${other}DoneAt`],
     };
   }
+  // `buyer`/`owner` sunt rolurile RÂNDULUI (cine a propus, cine decide) și
+  // numesc câmpurile de confirmare. La o contraofertă a vânzătorului ele sunt
+  // inversate față de realitate, deci cine primește cartea se află după
+  // proprietarul anunțului, nu după `buyerId`.
   const iAmBuyer = data.buyerId === myId;
   const mine = iAmBuyer ? 'buyer' : 'owner';
   const other = iAmBuyer ? 'owner' : 'buyer';
+  const iGetTheBook = data.userBook.userId !== myId;
   return {
     counterparty: data[other],
-    receive: iAmBuyer ? data.userBook : null,
-    give: iAmBuyer ? null : data.userBook,
-    receiveAmount: iAmBuyer ? null : data.amount,
-    giveAmount: iAmBuyer ? data.amount : null,
+    receive: iGetTheBook ? data.userBook : null,
+    give: iGetTheBook ? null : data.userBook,
+    receiveAmount: iGetTheBook ? null : data.amount,
+    giveAmount: iGetTheBook ? data.amount : null,
     mySafetyAck: !!data[`${mine}SafetyAckAt`],
     myContactShared: !!data[`${mine}ContactSharedAt`],
     otherContactShared: !!data[`${other}ContactSharedAt`],

@@ -1,4 +1,4 @@
-import { api, tokenStorage } from '@/lib/api/client';
+import { api, ApiError, tokenStorage } from '@/lib/api/client';
 import type { AppUser, AuthTokens, CaptchaChallenge } from '@/types/models';
 
 /**
@@ -85,8 +85,12 @@ export const authRepository = {
     if (!token) return null;
     try {
       return await api.get<AppUser>('/profile/me');
-    } catch {
-      await tokenStorage.clear();
+    } catch (error) {
+      // Ștergem sesiunea doar dacă serverul a refuzat-o. Cu API-ul căzut
+      // (deploy, rețea mobilă slabă) token-urile rămân, iar la următoarea
+      // deschidere userul e tot logat - înainte era delogat definitiv.
+      const status = error instanceof ApiError ? error.status : null;
+      if (status === 401 || status === 403) await tokenStorage.clear();
       return null;
     }
   },

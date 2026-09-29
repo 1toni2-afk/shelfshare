@@ -163,9 +163,6 @@ const SmartMatchesScreen = lazyScreen(() =>
 const BookMatchScreen = lazyScreen(() =>
   import('@/features/social/BookMatchScreen').then((m) => ({ default: m.BookMatchScreen })),
 );
-const BookshelfScreen = lazyScreen(() =>
-  import('@/features/shelf/BookshelfScreen').then((m) => ({ default: m.BookshelfScreen })),
-);
 const BookRequestsScreen = lazyScreen(() =>
   import('@/features/shelf/BookRequestsScreen').then((m) => ({ default: m.BookRequestsScreen })),
 );
@@ -495,7 +492,9 @@ export const router = createBrowserRouter([
       { path: 'groups', element: <Screen><GroupsScreen /></Screen> },
       { path: 'smart-matches', element: <Screen><SmartMatchesScreen /></Screen> },
       { path: 'book-match', element: <Screen><BookMatchScreen /></Screen> },
-      { path: 'bookshelf', element: <Screen><BookshelfScreen /></Screen> },
+      // Raftul de lectură separat a intrat în My Shelf (filele Citite / De
+      // citit); adresa veche rămâne pentru linkurile și scurtăturile salvate.
+      { path: 'bookshelf', element: <Navigate to="/library?tab=read" replace /> },
       { path: 'book-requests', element: <Screen><BookRequestsScreen /></Screen> },
       { path: 'feedback', element: <Screen><FeedbackScreen /></Screen> },
       { path: 'work/:bookId', element: <Screen><BookWorkScreen /></Screen> },

@@ -95,6 +95,7 @@ describe('ExchangesService', () => {
           provide: StorageService,
           useValue: {
             getPublicUrl: jest.fn((path: string) => path),
+            withPublicPhotos: jest.fn((b: unknown) => b),
             uploadImage: jest.fn().mockResolvedValue('uploaded-path'),
           },
         },
@@ -383,6 +384,7 @@ describe('ExchangesService', () => {
       prisma.exchangeRequest.update.mockResolvedValue(completedRequest);
       prisma.exchangeRequest.findMany.mockResolvedValue([
         {
+          ownerId: 'owner-1',
           requesterRatingForOwner: 5,
           ownerRatingForRequester: null,
           requesterCommunicationForOwner: null,
@@ -418,6 +420,41 @@ describe('ExchangesService', () => {
       });
       // o singura interogare (OR), nu doua findMany separate
       expect(prisma.exchangeRequest.findMany).toHaveBeenCalledTimes(1);
+    });
+
+    it('media solicitantului e nota PRIMITĂ, nu cea pe care a dat-o el', async () => {
+      // requester-1 l-a notat deja pe owner-1 cu 5; acum owner-1 îi dă 4.
+      const ratedByRequester = { ...completedRequest, requesterRatingForOwner: 5 };
+      prisma.exchangeRequest.findUnique
+        .mockResolvedValueOnce(ratedByRequester)
+        .mockResolvedValueOnce(ratedByRequester);
+      prisma.exchangeRequest.update.mockResolvedValue(ratedByRequester);
+      prisma.exchangeRequest.findMany.mockResolvedValue([
+        {
+          ownerId: 'owner-1',
+          requesterRatingForOwner: 5,
+          ownerRatingForRequester: 4,
+          requesterCommunicationForOwner: 5,
+          requesterPunctualityForOwner: 5,
+          requesterConditionForOwner: 5,
+          ownerCommunicationForRequester: 3,
+          ownerPunctualityForRequester: 2,
+          ownerConditionForRequester: null,
+        },
+      ]);
+      prisma.user.update.mockResolvedValue({});
+
+      await service.rate('ex-1', 'owner-1', { value: 4 });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'requester-1' },
+        data: {
+          rating: 4,
+          avgCommunicationRating: 3,
+          avgPunctualityRating: 2,
+          avgConditionRating: 0,
+        },
+      });
     });
   });
 });

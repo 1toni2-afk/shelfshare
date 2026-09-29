@@ -10,9 +10,11 @@ import { i18nReady } from '@/lib/i18n';
 import { initAnalytics, trackPageView } from '@/lib/analytics/analytics';
 import { AnalyticsConsentBanner } from '@/components/layout/AnalyticsConsentBanner';
 import { installChunkReloadHandler } from '@/lib/chunkReload';
+import { installNativeBridge } from '@/lib/native/nativeBridge';
 import '@/styles/index.css';
 
 installChunkReloadHandler();
+installNativeBridge(router);
 
 const container = document.getElementById('root');
 if (!container) throw new Error('#root lipsește din index.html');

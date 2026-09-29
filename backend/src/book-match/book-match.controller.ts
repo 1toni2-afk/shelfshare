@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
+  ParseIntPipe,
   Post,
   Query,
   Req,
@@ -41,5 +43,20 @@ export class BookMatchController {
   status(@Req() req: Request) {
     const { userId } = req.user as AuthenticatedUser;
     return this.bookMatch.getStatus(userId!);
+  }
+}
+
+/**
+ * Book Match pentru vizitatorul fără cont - teancul de probă de pe pagina
+ * publică. Controller separat fiindcă cel de mai sus e păzit în întregime de
+ * JwtAuthGuard.
+ */
+@Controller('book-match')
+export class BookMatchPublicController {
+  constructor(private bookMatch: BookMatchService) {}
+
+  @Get('demo')
+  demo(@Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number) {
+    return this.bookMatch.getDemoDeck(Math.min(Math.max(size, 1), 40));
   }
 }

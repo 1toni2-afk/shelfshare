@@ -6,6 +6,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { ConversationsService } from '../chat/conversations.service';
 import { ListingScoreService } from '../books/listing-score.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import { StorageService } from '../storage/storage.service';
 
 /**
  * Anunțul de tip Schimb cu „sau vinde cu X lei" (UserBook.swapSalePrice)
@@ -82,6 +83,10 @@ describe('OffersService - anunț de Schimb cu preț de vânzare', () => {
         },
         { provide: ListingScoreService, useValue: { recordOffer: jest.fn() } },
         { provide: ActivityLogService, useValue: { record: jest.fn() } },
+        {
+          provide: StorageService,
+          useValue: { withPublicPhotos: jest.fn((b: unknown) => b) },
+        },
       ],
     }).compile();
 

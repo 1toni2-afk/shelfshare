@@ -342,8 +342,10 @@ export class ProfileService {
       booksSharedCount: user.booksSharedCount,
       booksReceivedCount: user.booksReceivedCount,
       memberSince: user.createdAt,
-      listedBooks,
-      availableBooks,
+      listedBooks: listedBooks.map((b) => this.storage.withPublicPhotos(b)),
+      availableBooks: availableBooks.map((b) =>
+        this.storage.withPublicPhotos(b),
+      ),
       listingsCount,
       acquisitionHistory,
       trustScore: await this.computeTrustScore(user),
@@ -429,7 +431,14 @@ export class ProfileService {
           }),
     ]);
 
-    return { theirBooksYouWant, yourBooksTheyWant };
+    return {
+      theirBooksYouWant: theirBooksYouWant.map((b) =>
+        this.storage.withPublicPhotos(b),
+      ),
+      yourBooksTheyWant: yourBooksTheyWant.map((b) =>
+        this.storage.withPublicPhotos(b),
+      ),
+    };
   }
 
   /**

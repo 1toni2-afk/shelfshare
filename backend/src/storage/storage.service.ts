@@ -205,4 +205,20 @@ export class StorageService implements OnModuleInit {
     }
     return `${this.publicBaseUrl}/${path}`;
   }
+
+  /**
+   * `photos` al unui anunț ține căi brute din bucket - orice răspuns care
+   * include un UserBook trebuie să le treacă prin asta. Uitat, clientul
+   * primește „user-books/x.webp", îl rezolvă relativ la pagina curentă
+   * (shelfshare.ro/users/user-books/x.webp) și imaginea dă 404.
+   */
+  withPublicPhotos<T extends { photos: string[] }>(userBook: T): T;
+  withPublicPhotos<T extends { photos: string[] }>(userBook: T | null): T | null;
+  withPublicPhotos<T extends { photos: string[] }>(userBook: T | null): T | null {
+    if (!userBook) return userBook;
+    return {
+      ...userBook,
+      photos: userBook.photos.map((p) => this.getPublicUrl(p)),
+    };
+  }
 }

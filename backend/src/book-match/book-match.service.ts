@@ -196,6 +196,9 @@ const CARD_SELECT = {
 
 type CandidateBook = Prisma.BookGetPayload<{ select: typeof CARD_SELECT }>;
 
+/** Cât timp se refolosește bazinul demo-ului public înainte de o recitire. */
+const DEMO_POOL_TTL_MS = 10 * 60 * 1000;
+
 export interface BookMatchCard {
   bookId: string;
   title: string;
@@ -219,6 +222,9 @@ export interface BookMatchCard {
  */
 @Injectable()
 export class BookMatchService {
+  /** Bazinul demo-ului public, recitit la DEMO_POOL_TTL_MS - vezi getDemoDeck. */
+  private demoPool: { loadedAt: number; books: CandidateBook[] } | null = null;
+
   constructor(private prisma: PrismaService) {}
 
   // -------------------------------------------------------------------------
@@ -480,6 +486,59 @@ export class BookMatchService {
    * bonus. Genul lipsă nu strică nimic: `coldStartBatch` îl tratează ca
    * wildcard.
    */
+  /**
+   * Teancul de probă de pe pagina publică („Încearcă Book Match", fără cont).
+   * Vine din aceeași sursă ca onboarding-ul real - lista curatoriată de titluri
+   * cunoscute, apoi catalogul curat - nu din anunțurile publice: acolo sunt
+   * câteva zeci de exemplare, mereu aceleași, cu coperți pozate de useri.
+   *
+   * Bazinul se citește o dată la câteva minute; fiecare vizitator primește un
+   * amestec nou din el, deci pagina publică nu lovește baza la fiecare vizită.
+   */
+  async getDemoDeck(size = 20) {
+    const now = Date.now();
+    if (!this.demoPool || now - this.demoPool.loadedAt > DEMO_POOL_TTL_MS) {
+      const withDescription = {
+        coverUrl: { not: null },
+        description: { not: null },
+      } satisfies Prisma.BookWhereInput;
+      let books = await this.prisma.book.findMany({
+        where: { onboardingRank: { not: null }, ...withDescription },
+        orderBy: { onboardingRank: 'asc' },
+        select: CARD_SELECT,
+      });
+      if (books.length < size * 2) {
+        const curated = await this.prisma.book.findMany({
+          where: {
+            curatedAt: { not: null },
+            ...withDescription,
+            genre: { not: null },
+          },
+          orderBy: { curatedAt: 'asc' },
+          select: CARD_SELECT,
+          take: 400,
+        });
+        books = [...books, ...curated];
+      }
+      this.demoPool = { loadedAt: now, books: this.dedupeWorks(books, new Set()) };
+    }
+
+    const pool = [...this.demoPool.books];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, size).map((book) => ({
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      coverUrl: book.coverUrl,
+      description: book.description,
+      genre: book.genre,
+      publishedYear: book.publishedYear,
+    }));
+  }
+
   private onboardingCandidates(
     excludedIds: string[],
   ): Promise<CandidateBook[]> {

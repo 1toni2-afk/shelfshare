@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-archive
+dist-next
 .env
 .env.local
 *.local

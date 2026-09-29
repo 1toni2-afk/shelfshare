@@ -838,7 +838,7 @@
     "chatPickDate": "Datum wählen",
     "chatPickTime": "Uhrzeit wählen",
     "wishlistTitle": "Wunschliste",
-    "wishlistCount": "{count} Bücher",
+    "wishlistCount": "{count, plural, one{{count} Buch} other{{count} Bücher}}",
     "@wishlistCount": {
         "placeholders": {
             "count": {
@@ -1049,7 +1049,7 @@
     "collectionsCreateTitle": "Neue Sammlung",
     "collectionsNameLabel": "Name",
     "collectionsPublicSwitch": "Öffentlich",
-    "collectionsBookCount": "{count} Bücher",
+    "collectionsBookCount": "{count, plural, one{{count} Buch} other{{count} Bücher}}",
     "collectionsEmptyItems": "Noch keine Bücher in dieser Sammlung.",
     "collectionsDeleteConfirmTitle": "Diese Sammlung löschen?",
     "collectionsAddToTitle": "Zur Sammlung hinzufügen",
@@ -1761,8 +1761,8 @@
     "importGoToShelf": "Regal öffnen",
     "importGoToLibrary": "Meine Bücher öffnen",
     "importGuidelinesTitle": "Was mit jeder Zeile passiert",
-    "importGuidelineShelfRead": "„read“ und „currently-reading“ landen in deinem Leseregal, nicht im Marktplatz.",
-    "importGuidelineShelfToRead": "„to-read“ und Regale namens „favorites“ landen bei deinen Favoriten - so können wir dich benachrichtigen, sobald jemand das Buch einstellt.",
+    "importGuidelineShelfRead": "„read“ und „currently-reading“ landen unter „Gelesen“ und „Lese ich gerade“ - nicht unter „Besitze ich“ und nie im Marktplatz.",
+    "importGuidelineShelfToRead": "„to-read“ landet unter „Will ich lesen“. Regale mit dem Namen „favorites“ landen bei deinen Favoriten.",
     "importGuidelineListing": "Zeilen ohne Regal oder mit „swap“ werden zu Anzeigen im Marktplatz.",
     "importGuidelineSkipped": "Ein Regal, das wir nicht kennen („did-not-finish“, eigene Regalnamen), wird übersprungen - so landet kein Buch versehentlich im Tausch, das du gar nicht hergeben willst.",
     "importGuidelineNoDuplicates": "Du kannst den Import jederzeit wiederholen: Bücher, die schon im Regal oder bei den Favoriten sind, werden nicht doppelt angelegt.",
@@ -1782,7 +1782,7 @@
             }
         }
     },
-    "importGuidelineLimit": "Höchstens 500 Zeilen pro Datei und nur CSV - eine .xlsx-Datei zuerst als CSV speichern.",
+    "importGuidelineLimit": "Bis zu 5.000 Zeilen pro Datei, nur CSV - speichere eine .xlsx zuerst als CSV.",
     "todoTitle": "ShelfShare entdecken",
     "todoSubtitle": "Sieh dir kurz an, wie die App funktioniert",
     "todoProgress": "{done} von {total}",
@@ -2229,5 +2229,29 @@
     "addBookCatalogUnlinked": "Du hast den Titel geändert, die Anzeige ist nicht mehr mit dem gewählten Buch verknüpft",
     "listingSwapOrSaleFor": "Tausch oder Verkauf für {price}",
     "addBookListingNeedsPhoto": "Füge mindestens ein Foto deines Exemplars hinzu, um das Buch einzustellen",
-    "addBookListingPhotoUploadFailed": "Das Foto konnte nicht hochgeladen werden, daher wurde die Anzeige nicht veröffentlicht. Bitte versuche es erneut."
+    "addBookListingPhotoUploadFailed": "Das Foto konnte nicht hochgeladen werden, daher wurde die Anzeige nicht veröffentlicht. Bitte versuche es erneut.",
+    "importProgressCount": "{processed} / {total} Bücher · {percent} %",
+    "importProgressStarting": "Datei wird gelesen…",
+    "shelfCurrentlyReadingTitle": "Lese ich gerade",
+    "shelfContinueReading": "Weiterlesen",
+    "shelfTabOwned": "Besitze ich",
+    "shelfTabRead": "Gelesen",
+    "shelfTabToRead": "Will ich lesen",
+    "shelfTabListed": "Angeboten",
+    "shelfOwnedTabEmpty": "Hier stehen die Bücher, die du wirklich besitzt. Füge eines hinzu oder markiere ein Buch aus „Gelesen“ oder „Will ich lesen“ als deins. Nichts davon wird angeboten, solange du es nicht selbst anbietest.",
+    "shelfReadTabEmpty": "Hier stehen die Bücher, die du beendet hast, auch die aus Goodreads importierten.",
+    "shelfToReadTabEmpty": "Deine Leseliste ist leer. Bücher aus deinem Goodreads-Regal „Want to Read“ landen beim Import hier.",
+    "shelfOwnedBadge": "Besitze ich",
+    "shelfListBook": "Anbieten",
+    "shelfMarkReading": "Als „Lese ich gerade“ markieren",
+    "shelfMarkRead": "Als gelesen markieren",
+    "shelfMarkToRead": "Zu „Will ich lesen“ hinzufügen",
+    "shelfMarkOwned": "Ich besitze dieses Buch",
+    "shelfMarkNotOwned": "Besitze ich nicht mehr",
+    "shelfRemoveFromRead": "Aus „Gelesen“ entfernen",
+    "shelfRemoveFromToRead": "Aus „Will ich lesen“ entfernen",
+    "shelfStatusRead": "Gelesen",
+    "shelfReadWithPages": "Gelesen · {total} von {total} Seiten · 100 %",
+    "shelfStatusReading": "Lese ich gerade",
+    "shelfStatusToRead": "Auf „Will ich lesen“"
 }

@@ -21,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { BooksService } from './books.service';
+import { ImportJobsService } from './import-jobs.service';
 import { AddBookDto } from './dto/add-book.dto';
 import { ResolveWorkDto } from './dto/resolve-work.dto';
 import { BulkAddBooksDto } from './dto/bulk-add-books.dto';
@@ -40,7 +41,10 @@ const MAX_IMPORT_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB - suficient pentru 
 
 @Controller('books')
 export class BooksController {
-  constructor(private booksService: BooksService) {}
+  constructor(
+    private booksService: BooksService,
+    private importJobs: ImportJobsService,
+  ) {}
 
   @Get('search')
   searchExternal(@Query() query: SearchBookDto) {
@@ -287,6 +291,10 @@ export class BooksController {
     // magazin, permis doar super-adminilor (verificat în serviciu, fiindcă
     // ruta rămâne deschisă tuturor pentru importul propriu).
     @Body('storeUserId') storeUserId?: string,
+    // `?async=1`: întoarce imediat `{ jobId }`, iar progresul se citește din
+    // GET import-jobs/:jobId. Fără el, răspunsul vine la final, ca înainte -
+    // build-urile de Android deja publicate trimit cererea sincronă.
+    @Query('async') runAsync?: string,
   ) {
     if (!file) {
       throw new BadRequestException('Niciun fișier primit');
@@ -295,11 +303,25 @@ export class BooksController {
       throw new BadRequestException('Fișierul este prea mare (maxim 10MB)');
     }
     const { userId } = req.user as AuthenticatedUser;
-    return this.booksService.importListingsCsv(
-      userId!,
-      file.buffer,
-      storeUserId?.trim() || undefined,
-    );
+    const store = storeUserId?.trim() || undefined;
+    if (runAsync === '1' || runAsync === 'true') {
+      return this.importJobs.start(userId!, (onProgress) =>
+        this.booksService.importListingsCsv(
+          userId!,
+          file.buffer,
+          store,
+          onProgress,
+        ),
+      );
+    }
+    return this.booksService.importListingsCsv(userId!, file.buffer, store);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('import-jobs/:jobId')
+  getImportJob(@Req() req: Request, @Param('jobId') jobId: string) {
+    const { userId } = req.user as AuthenticatedUser;
+    return this.importJobs.get(userId!, jobId);
   }
 
   // POST, nu DELETE: lista de id-uri sta in body, iar un body pe DELETE e
