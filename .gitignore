@@ -77,3 +77,6 @@ frontend/test/demo/
 .env.backup-*
 .env*.bak-*
 .env.bak-*
+
+# Atașamentele trimise lui Codex de la distanță - nu sunt cod
+.codex-remote-attachments/
