@@ -3,7 +3,8 @@
 ## Versiunea de referință: tag-ul `GOLD`
 
 - Tag-ul git **`GOLD`** marchează ultima versiune verificată și pusă live
-  (web + backend + AAB Android). Istoric: `gold-2026-09-29` = 2.0.1 (versionCode 30).
+  (web + backend + AAB Android). Istoric: `gold-2026-09-29` = 2.0.1 (versionCode 30),
+  `gold-2026-09-30` = 2.0.2 (versionCode 31).
 - Lucrează ÎNTOTDEAUNA pornind de la `main` actualizat (care conține `GOLD`), niciodată
   de la un commit, branch sau folder mai vechi. Nu face `git checkout`/`reset` pe
   commituri anterioare lui `GOLD` și nu copia fișiere din backup-uri peste cod.
