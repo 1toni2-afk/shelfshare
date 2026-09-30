@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Client } from 'minio';
 import sharp from 'sharp';
 import { randomUUID } from 'crypto';
+import { isAllowedImageUrl } from '../common/utils/image-url';
 
 const MAX_DIMENSION = 1200;
 const WEBP_QUALITY = 80;
@@ -199,6 +200,11 @@ export class StorageService implements OnModuleInit {
    * Doar pentru prefixele din PUBLIC_PREFIXES - orice altceva are nevoie de
    * `getSignedUrl`, altfel linkul rezultat dă 403.
    */
+  /** Vezi isAllowedImageUrl - o poză urcată la noi sau o copertă dintr-o sursă cunoscută. */
+  isAllowedImageUrl(url: string): boolean {
+    return isAllowedImageUrl(url, this.publicBaseUrl);
+  }
+
   getPublicUrl(path: string): string {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;

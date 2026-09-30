@@ -71,6 +71,8 @@ export class ResolveWorkDto {
   @MaxLength(5000)
   description?: string;
 
+  /// Acceptat ca să nu pice clienții care îl trimit, dar IGNORAT: sursa unei
+  /// cărți din catalog o stabilește serverul (vezi BooksService.resolveWork).
   @IsOptional()
   @IsString()
   @MaxLength(50)

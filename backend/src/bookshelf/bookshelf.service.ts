@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BookDescriptionService } from '../books/book-description.service';
 import { FollowService } from '../follow/follow.service';
 import { CatalogMatchService } from '../books/catalog-match.service';
+import { StorageService } from '../storage/storage.service';
 import { AddOwnedBookDto } from './dto/add-owned-book.dto';
 import {
   cleanImportIsbn,
@@ -40,6 +41,7 @@ export class BookshelfService {
     private bookDescriptions: BookDescriptionService,
     private follow: FollowService,
     private catalogMatch: CatalogMatchService,
+    private storage: StorageService,
   ) {}
 
   /**
@@ -380,7 +382,12 @@ export class BookshelfService {
         isbn,
         title: dto.title,
         author: dto.author,
-        coverUrl: dto.coverUrl,
+        // Cartea e în catalogul comun, deci coperta o vede oricine o deschide:
+        // doar din surse cunoscute (vezi isAllowedImageUrl), altfel fără.
+        coverUrl:
+          dto.coverUrl && this.storage.isAllowedImageUrl(dto.coverUrl)
+            ? dto.coverUrl
+            : undefined,
         genre: dto.genre,
         publisher: dto.publisher,
         publishedYear: dto.publishedYear,

@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BookDescriptionService } from '../books/book-description.service';
 import { FollowService } from '../follow/follow.service';
 import { CatalogMatchService } from '../books/catalog-match.service';
+import { StorageService } from '../storage/storage.service';
 
 /**
  * My Shelf pe categorii care se suprapun (Deținute / Citite / De citit /
@@ -48,6 +49,7 @@ describe('BookshelfService - My Shelf', () => {
         { provide: BookDescriptionService, useValue: { scheduleBackfill: jest.fn() } },
         { provide: FollowService, useValue: follow },
         { provide: CatalogMatchService, useValue: { findByTitle: jest.fn() } },
+        { provide: StorageService, useValue: { isAllowedImageUrl: jest.fn().mockReturnValue(true) } },
       ],
     }).compile();
 

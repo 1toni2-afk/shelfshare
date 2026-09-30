@@ -4,9 +4,10 @@ import { BookshelfService } from './bookshelf.service';
 import { BookDescriptionModule } from '../books/book-description.module';
 import { FollowModule } from '../follow/follow.module';
 import { CatalogMatchModule } from '../books/catalog-match.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [BookDescriptionModule, FollowModule, CatalogMatchModule],
+  imports: [BookDescriptionModule, FollowModule, CatalogMatchModule, StorageModule],
   controllers: [BookshelfController],
   providers: [BookshelfService],
   exports: [BookshelfService],

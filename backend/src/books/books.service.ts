@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { BookCondition, BookshelfStatus, Prisma } from '@prisma/client';
+import { Book, BookCondition, BookshelfStatus, Prisma } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -85,6 +85,19 @@ const MAX_LISTING_IMPORT_ROWS = 5000;
 /// Cheia de idempotență a feed-urilor de stoc. Nu se taie: două sku-uri lungi
 /// trunchiate la fel ar actualiza același anunț.
 const MAX_IMPORT_SKU_LENGTH = 100;
+
+/// Cărți create din ce a scris un user, fără nicio verificare externă: rafturi
+/// importate (CSV), „am cartea" din My Shelf. Vezi verifyUserProvidedBook.
+const UNCHECKED_BOOK_SOURCES: ReadonlySet<string> = new Set([
+  'shelf-import',
+  'shelf-manual',
+  'goodreads-import',
+  'storygraph-import',
+]);
+/// Căutată extern și negăsită: titlul rămâne al userului. Se reîncearcă rar,
+/// fiindcă „negăsit" poate fi și cota Google Books epuizată pe ziua aceea.
+const CHECKED_MANUAL_SOURCE = 'manual';
+const MANUAL_RECHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const MAX_PHOTOS_PER_LISTING = 10;
 // Storage-abuse guard: rough cap on total listing photos across a user's
 // whole library, well above what any real user would ever legitimately need
@@ -409,12 +422,17 @@ export class BooksService {
    * gruparea edițiilor, deci un titlu deja în catalog nu se dublează.
    */
   async resolveWork(dto: ResolveWorkDto): Promise<{ bookId: string }> {
-    const cleanIsbn = dto.isbn?.replace(/[-\s]/g, '').trim() || null;
+    // Doar un ISBN cu cifra de control corectă poate ocupa un rând. DTO-ul e
+    // permisiv dinadins (sursele externe întorc și ISBN-uri stricate): pentru
+    // ele deduplicăm pe titlu, ca până acum, doar că nu le mai scriem în catalog.
+    const cleanIsbn = cleanImportIsbn(dto.isbn) ?? null;
     if (cleanIsbn) {
       const byIsbn = await this.prisma.book.findUnique({
         where: { isbn: cleanIsbn },
       });
-      if (byIsbn) return { bookId: byIsbn.id };
+      if (byIsbn) {
+        return { bookId: (await this.verifyUserProvidedBook(byIsbn)).id };
+      }
     }
 
     const terms = this.toSearchTerms(`${dto.title} ${dto.author ?? ''}`);
@@ -434,20 +452,48 @@ export class BooksService {
       if (existing.length > 0) return { bookId: existing[0].id };
     }
 
+    // Corpul cererii SPUNE că descrie un rezultat Google Books / Open Library,
+    // dar ruta e deschisă oricărui user logat: până acum oricine putea crea o
+    // carte cu ISBN, titlu, copertă și chiar `source: 'google_books'` alese de
+    // el. Cu ISBN, datele le luăm noi de la sursa externă; fără potrivire,
+    // rămân ale clientului, marcate ca atare (`manual` / `search`), niciodată
+    // cu sursa declarată de el.
+    const external = cleanIsbn
+      ? await this.lookup.lookupByIsbn(cleanIsbn).catch(() => null)
+      : null;
+    const clientCover =
+      dto.coverUrl && this.storage.isAllowedImageUrl(dto.coverUrl)
+        ? dto.coverUrl
+        : undefined;
+
     const created = await this.prisma.book.create({
-      data: {
-        isbn: cleanIsbn,
-        title: dto.title,
-        author: dto.author,
-        coverUrl: dto.coverUrl,
-        publisher: dto.publisher,
-        publishedYear: dto.publishedYear,
-        pageCount: dto.pageCount,
-        language: dto.language,
-        genre: dto.genre,
-        description: dto.description,
-        source: dto.source ?? 'search',
-      },
+      data: external
+        ? {
+            isbn: cleanIsbn,
+            title: external.title,
+            author: external.author,
+            description: external.description,
+            coverUrl: external.coverUrl ?? clientCover,
+            publisher: external.publisher,
+            publishedYear: external.publishedYear,
+            pageCount: external.pageCount,
+            language: external.language,
+            genre: external.genre,
+            source: external.source,
+          }
+        : {
+            isbn: cleanIsbn,
+            title: dto.title,
+            author: dto.author,
+            coverUrl: clientCover,
+            publisher: dto.publisher,
+            publishedYear: dto.publishedYear,
+            pageCount: dto.pageCount,
+            language: dto.language,
+            genre: dto.genre,
+            description: dto.description,
+            source: cleanIsbn ? CHECKED_MANUAL_SOURCE : 'search',
+          },
     });
     return { bookId: created.id };
   }
@@ -817,7 +863,13 @@ export class BooksService {
         description: dto.description,
         tags: dto.tags ?? [],
         city: dto.city,
-        mainPhotoUrl: dto.mainPhotoUrl,
+        // Aruncată în tăcere, nu refuzată: vine din rezultatul de căutare ales
+        // în formular, iar o copertă de pe o gazdă necunoscută n-ar trebui să
+        // blocheze tot anunțul. Rămâne coperta cărții - vezi isAllowedImageUrl.
+        mainPhotoUrl:
+          dto.mainPhotoUrl && this.storage.isAllowedImageUrl(dto.mainPhotoUrl)
+            ? dto.mainPhotoUrl
+            : undefined,
       },
       include: { book: true },
     });
@@ -1602,6 +1654,56 @@ export class BooksService {
     );
   }
 
+  /**
+   * Primul care aduce un ISBN necunoscut îi dă titlul pentru toată lumea: rândul
+   * din catalog e unic pe ISBN, iar oricine listează sau deschide ulterior
+   * același ISBN primește acel rând. Importurile de raft și „am cartea" îl
+   * creează din ce scrie userul, fără să întrebe vreo sursă externă, deci un
+   * ISBN real putea fi ocupat cu un titlu, un autor și o copertă inventate.
+   *
+   * La primul drum prin ISBN (listare, pagina cărții), rândurile de felul ăsta
+   * sunt verificate la Google Books / Open Library: dacă sursa externă știe
+   * ISBN-ul, datele ei le înlocuiesc pe cele ale userului, pentru toți cei care
+   * au deja cartea pe raft. Altfel rândul devine „manual" (căutat și negăsit) și
+   * se reverifică cel mult o dată pe zi.
+   */
+  private async verifyUserProvidedBook(book: Book): Promise<Book> {
+    if (!book.isbn || book.curatedAt || !book.source) return book;
+    const unchecked = UNCHECKED_BOOK_SOURCES.has(book.source);
+    const staleManual =
+      book.source === CHECKED_MANUAL_SOURCE &&
+      Date.now() - book.updatedAt.getTime() > MANUAL_RECHECK_INTERVAL_MS;
+    if (!unchecked && !staleManual) return book;
+
+    const external = await this.lookup
+      .lookupByIsbn(book.isbn)
+      .catch(() => null);
+    if (!external) {
+      // Și pentru un rând deja „manual": `updatedAt` se mută, deci intervalul
+      // de reverificare pornește din nou.
+      return this.prisma.book.update({
+        where: { id: book.id },
+        data: { source: CHECKED_MANUAL_SOURCE },
+      });
+    }
+
+    return this.prisma.book.update({
+      where: { id: book.id },
+      data: {
+        title: external.title,
+        author: external.author,
+        description: external.description ?? book.description,
+        coverUrl: external.coverUrl ?? book.coverUrl,
+        publisher: external.publisher ?? book.publisher,
+        publishedYear: external.publishedYear ?? book.publishedYear,
+        pageCount: external.pageCount ?? book.pageCount,
+        language: external.language ?? book.language,
+        genre: external.genre ?? book.genre,
+        source: external.source,
+      },
+    });
+  }
+
   private async findOrCreateBook(dto: AddBookDto) {
     if (dto.bookId) {
       const known = await this.prisma.book.findUnique({
@@ -1610,7 +1712,9 @@ export class BooksService {
       if (!known) {
         throw new BadRequestException('Cartea nu a fost găsită în catalog');
       }
-      return known;
+      // „Listeaz-o" de pe raft: cartea devine anunț public, deci e momentul
+      // să verificăm un titlu venit dintr-un import.
+      return this.verifyUserProvidedBook(known);
     }
 
     if (dto.isbn) {
@@ -1618,7 +1722,7 @@ export class BooksService {
       const existing = await this.prisma.book.findUnique({
         where: { isbn: cleanIsbn },
       });
-      if (existing) return existing;
+      if (existing) return this.verifyUserProvidedBook(existing);
 
       const [external, referencePrice] = await Promise.all([
         this.lookup.lookupByIsbn(cleanIsbn),
@@ -2914,6 +3018,13 @@ export class BooksService {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
 
+    // Poza principală apare în feed pentru toată lumea - vezi isAllowedImageUrl.
+    if (dto.mainPhotoUrl && !this.storage.isAllowedImageUrl(dto.mainPhotoUrl)) {
+      throw new BadRequestException(
+        'Poza principală trebuie să fie o poză a anunțului sau o copertă din catalog',
+      );
+    }
+
     if (dto.isForSale === true && userBook.photos.length === 0) {
       throw new BadRequestException(
         'Trebuie să adaugi cel puțin o poză înainte de a pune cartea la vânzare',
@@ -3162,6 +3273,14 @@ export class BooksService {
   async addPhotoUrl(userId: string, userBookId: string, url: string) {
     const userBook = await this.getUserBook(userBookId);
     this.assertOwnership(userBook.userId, userId);
+
+    // Până acum orice URL http(s): galeria anunțului devenea un pixel de
+    // urmărire pentru fiecare vizitator. Vezi isAllowedImageUrl.
+    if (!this.storage.isAllowedImageUrl(url)) {
+      throw new BadRequestException(
+        'Poza trebuie să fie o copertă din catalog sau o poză urcată pe ShelfShare',
+      );
+    }
 
     // `photos` sunt căi brute în storage; le trecem prin `getPublicUrl` ca
     // să le comparăm cu URL-ul primit. Coperta aleasă în ecranul de listare
