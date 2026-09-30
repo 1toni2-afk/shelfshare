@@ -15,6 +15,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { STATIC_HTML_PAGES } = require('./static-pages');
 const { APP_ADS_TXT } = require('./app-ads');
+const { createCspProvider } = require('./beta-csp');
 const {
   ROBOTS_TXT,
   SITE_URL,
@@ -75,7 +76,6 @@ const COMMON_HEADERS = {
   // pagină străină o putea pune sub un buton transparent (clickjacking) -
   // „Șterge contul" sau „Acceptă schimbul" apăsate fără să știi.
   'X-Frame-Options': 'DENY',
-  'Content-Security-Policy': "frame-ancestors 'none'",
   // Adresa completă (cu id-uri de conversație, schimburi) nu pleacă spre
   // site-urile externe deschise din aplicație; doar originea.
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -83,6 +83,14 @@ const COMMON_HEADERS = {
   // nu hotărâm aici pentru alte subdomenii.
   'Strict-Transport-Security': 'max-age=31536000',
 };
+
+// CSP-ul complet (și `frame-ancestors`, care stătea singur aici) - vezi
+// beta-csp.js. Calculat din index.html-ul servit, deci o funcție, nu o constantă.
+const contentSecurityPolicy = createCspProvider(root);
+
+function commonHeaders() {
+  return { ...COMMON_HEADERS, 'Content-Security-Policy': contentSecurityPolicy() };
+}
 
 /**
  * Fișiere din web/dist care NU sunt pentru public.
@@ -232,7 +240,7 @@ http
       reqPath = decodeURIComponent(req.url.split('?')[0]);
     } catch {
       // URL cu procentaje invalide (%ZZ) - decodeURIComponent aruncă.
-      res.writeHead(400, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+      res.writeHead(400, { ...commonHeaders(), 'Content-Type': 'text/plain' });
       return res.end('Bad Request');
     }
 
@@ -240,7 +248,7 @@ http
     // excepția ieșea din handler și oprea tot procesul - un singur request
     // anonim scotea beta jos până la repornirea din bucla .bat.
     if (reqPath.includes('\0')) {
-      res.writeHead(400, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+      res.writeHead(400, { ...commonHeaders(), 'Content-Type': 'text/plain' });
       return res.end('Bad Request');
     }
 
@@ -252,7 +260,7 @@ http
     // decat vrem. Raspunsul de aici e un string din memorie.
     if (reqPath === '/__health') {
       res.writeHead(200, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-store',
       });
@@ -273,7 +281,7 @@ http
     const host = String(req.headers.host || '').toLowerCase().replace(/:d+$/, '');
     if (REDIRECT_HOSTS.has(host)) {
       res.writeHead(301, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         Location: CANONICAL_ORIGIN + req.url,
         'Cache-Control': 'public, max-age=3600',
       });
@@ -281,13 +289,13 @@ http
     }
 
     if (Object.hasOwn(LEGACY_REDIRECTS, reqPath)) {
-      res.writeHead(302, { ...COMMON_HEADERS, Location: LEGACY_REDIRECTS[reqPath] });
+      res.writeHead(302, { ...commonHeaders(), Location: LEGACY_REDIRECTS[reqPath] });
       return res.end();
     }
 
     if (reqPath === '/app-ads.txt') {
       res.writeHead(200, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         'Content-Type': mime['.txt'],
         'Cache-Control': 'public, max-age=3600',
       });
@@ -296,7 +304,7 @@ http
 
     if (reqPath === '/flutter_service_worker.js') {
       res.writeHead(200, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         'Content-Type': mime['.js'],
         // no-store: verificarea de update a browserului trebuie să vadă mereu
         // varianta asta, nu o copie dintr-un cache intermediar.
@@ -307,7 +315,7 @@ http
 
     if (FLUTTER_SCRIPT_PATH.test(reqPath)) {
       res.writeHead(200, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         'Content-Type': mime['.js'],
         'Cache-Control': 'no-store',
       });
@@ -315,13 +323,13 @@ http
     }
 
     if (isHiddenFile(reqPath)) {
-      res.writeHead(404, { ...COMMON_HEADERS, 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+      res.writeHead(404, { ...commonHeaders(), 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
       return res.end('Not Found');
     }
 
     if (reqPath === '/robots.txt') {
       res.writeHead(200, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         'Content-Type': mime['.txt'],
         'Cache-Control': 'public, max-age=3600',
       });
@@ -332,7 +340,7 @@ http
       return buildSitemap()
         .then((xml) => {
           res.writeHead(200, {
-            ...COMMON_HEADERS,
+            ...commonHeaders(),
             'Content-Type': mime['.xml'],
             'Cache-Control': 'no-cache, must-revalidate',
           });
@@ -342,7 +350,7 @@ http
           // Sitemap-ul depinde de API; dacă acela tace, un 503 e răspunsul
           // corect. Un sitemap gol servit cu 200 i-ar spune lui Google că
           // site-ul chiar n-are pagini, iar el ar scoate din index ce are.
-          res.writeHead(503, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+          res.writeHead(503, { ...commonHeaders(), 'Content-Type': 'text/plain' });
           res.end('Sitemap indisponibil');
         });
     }
@@ -375,7 +383,7 @@ http
       */
       return fs.readFile(path.join(root, 'index.html'), 'utf8', (indexErr, template) => {
         if (indexErr) {
-          res.writeHead(500, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+          res.writeHead(500, { ...commonHeaders(), 'Content-Type': 'text/plain' });
           return res.end('web/dist/index.html lipseste - ruleaza scripts/deploy-beta.ps1');
         }
 
@@ -387,7 +395,7 @@ http
           .catch(() => template)
           .then((html) => {
             res.writeHead(200, {
-              ...COMMON_HEADERS,
+              ...commonHeaders(),
               'Content-Type': mime['.html'],
               'Content-Language': locale,
               /*
@@ -413,7 +421,7 @@ http
     // frate al cărui nume începe la fel) ar fi trecut verificarea.
     const safePath = path.normalize(path.join(root, reqPath));
     if (safePath !== root && !safePath.startsWith(root + path.sep)) {
-      res.writeHead(403, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+      res.writeHead(403, { ...commonHeaders(), 'Content-Type': 'text/plain' });
       return res.end('Forbidden');
     }
 
@@ -424,11 +432,11 @@ http
     const serve = (data, contentType, cacheControl) => {
       const etag = `"${crypto.createHash('sha1').update(data).digest('hex')}"`;
       if (req.headers['if-none-match'] === etag) {
-        res.writeHead(304, { ...COMMON_HEADERS, ...robots, ETag: etag, 'Cache-Control': cacheControl });
+        res.writeHead(304, { ...commonHeaders(), ...robots, ETag: etag, 'Cache-Control': cacheControl });
         return res.end();
       }
       res.writeHead(200, {
-        ...COMMON_HEADERS,
+        ...commonHeaders(),
         ...robots,
         'Content-Type': contentType,
         'Cache-Control': cacheControl,
@@ -452,7 +460,7 @@ http
       return fs.readFile(staticPage, (pageErr, pageData) => {
         if (pageErr) {
           res.writeHead(404, {
-            ...COMMON_HEADERS,
+            ...commonHeaders(),
             'Content-Type': 'text/plain; charset=utf-8',
             'Cache-Control': 'no-cache',
           });
@@ -476,7 +484,7 @@ http
         const archived = path.join(archiveRoot, path.relative(root, safePath));
         return fs.readFile(archived, (archiveErr, archivedData) => {
           if (archiveErr) {
-            res.writeHead(404, { ...COMMON_HEADERS, 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+            res.writeHead(404, { ...commonHeaders(), 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
             return res.end('Not Found');
           }
           const type = mime[path.extname(archived).toLowerCase()] || 'application/octet-stream';
@@ -486,14 +494,14 @@ http
 
       // Fișier cerut explicit și inexistent: 404, nu index.html deghizat.
       if (looksLikeFileRequest(reqPath)) {
-        res.writeHead(404, { ...COMMON_HEADERS, 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+        res.writeHead(404, { ...commonHeaders(), 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
         return res.end('Not Found');
       }
 
       // Rută de aplicație: index.html, ca routerul s-o rezolve în browser.
       fs.readFile(path.join(root, 'index.html'), (indexErr, indexData) => {
         if (indexErr) {
-          res.writeHead(500, { ...COMMON_HEADERS, 'Content-Type': 'text/plain' });
+          res.writeHead(500, { ...commonHeaders(), 'Content-Type': 'text/plain' });
           return res.end('web/dist/index.html lipseste - ruleaza scripts/deploy-beta.ps1');
         }
         serve(indexData, mime['.html'], 'no-cache, must-revalidate');

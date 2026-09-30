@@ -29,6 +29,15 @@
         "--strictPort"
       ],
       "port": 5184
+    },
+    {
+      "name": "beta-server-local",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "process.env.BETA_PORT='5971'; process.env.BETA_API_URL='https://api.shelfshare.ro'; require('./scripts/beta-server.js')"
+      ],
+      "port": 5971
     }
   ]
 }
