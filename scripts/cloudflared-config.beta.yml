@@ -17,15 +17,15 @@ credentials-file: C:\Windows\System32\config\systemprofile\.cloudflared\e76d8e20
 # regula fara `hostname` de la final TREBUIE sa ramana ultima: ea prinde orice
 # gazda necunoscuta si raspunde 404 in loc sa lase tunelul fara ruta.
 ingress:
-  # --- productie (neatinse) ---
+  # --- productie: din 2026-09-26 shelfshare.ro = React (beta-server, 5960); Flutter (5959) doar rollback ---
   - hostname: api.shelfshare.ro
     service: http://localhost:3000
   - hostname: storage.shelfshare.ro
     service: http://localhost:9000
   - hostname: shelfshare.ro
-    service: http://localhost:5959
+    service: http://localhost:5960
   - hostname: www.shelfshare.ro
-    service: http://localhost:5959
+    service: http://localhost:5960
 
   # --- beta: frontendul nou (React), servit de scripts/beta-server.js ---
   - hostname: beta.shelfshare.ro
