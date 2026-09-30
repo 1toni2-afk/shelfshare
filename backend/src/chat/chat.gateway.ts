@@ -294,12 +294,25 @@ export class ChatGateway
   }
 
   @SubscribeMessage('typing')
-  handleTyping(
+  async handleTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() conversationId: string,
   ) {
+    // Doar participanții: până acum oricine știa id-ul unei conversații putea
+    // trimite „scrie..." în ea. Camera e dovada ieftină (join_conversation a
+    // verificat deja); după o reconectare socket-ul nu mai e în ea, deci
+    // verificăm în bază și îl readăugăm, ca indicatorul să nu dispară.
+    if (typeof conversationId !== 'string') return;
+    const room = `conversation:${conversationId}`;
+    if (!client.rooms.has(room)) {
+      const participants = await this.conversations
+        .getParticipants(conversationId)
+        .catch(() => [] as string[]);
+      if (!participants.includes(client.data.userId)) return;
+      await client.join(room);
+    }
     client
-      .to(`conversation:${conversationId}`)
+      .to(room)
       .emit('user_typing', { userId: client.data.userId, conversationId });
   }
 
