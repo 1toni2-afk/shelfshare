@@ -363,7 +363,7 @@ function exportCsv(books: UserBook[]): void {
       [
         csvEscape(item.book.title),
         csvEscape(item.book.author ?? ''),
-        item.book.isbn ?? '',
+        csvEscape(item.book.isbn ?? ''),
         // Tot ce e in „Cartile mele" e deja un anunt; la reimport ramane anunt,
         // nu ajunge pe raftul de lectura.
         'swap',
@@ -382,11 +382,21 @@ function exportCsv(books: UserBook[]): void {
   });
 }
 
+/**
+ * Titlul și autorul vin din catalogul comun, deci îi pot fi scrise de alt user.
+ * Două lucruri de care trebuie apărat cine deschide fișierul:
+ * - o valoare care începe cu `=`, `+`, `-` sau `@` e rulată de Excel ca
+ *   formulă (`=HYPERLINK(...)` trimite date din foaie pe alt site), deci
+ *   primește un apostrof în față - importul îl scoate la loc;
+ * - un rând nou în valoare, necitat, rupea rândul în două, iar la reimport
+ *   rândul „injectat" devenea un anunț cu câmpurile alese de altcineva.
+ */
 function csvEscape(value: string): string {
-  if (value.includes(',') || value.includes('"')) {
-    return `"${value.replaceAll('"', '""')}"`;
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  if (/[",\r\n]/.test(safe)) {
+    return `"${safe.replaceAll('"', '""')}"`;
   }
-  return value;
+  return safe;
 }
 
 function LibraryRow({ item }: { item: UserBook }) {

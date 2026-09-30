@@ -1133,7 +1133,9 @@ export class ExchangesService {
         .replace(/\\/g, '\\\\')
         .replace(/,/g, '\\,')
         .replace(/;/g, '\\;')
-        .replace(/\n/g, '\\n');
+        // Și `\r` singur: multe calendare îl citesc ca sfârșit de linie, deci
+        // un titlu de carte cu CR putea adăuga proprietăți noi evenimentului.
+        .replace(/\r\n|\r|\n/g, '\\n');
 
     const formatDate = (date: Date) =>
       date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';

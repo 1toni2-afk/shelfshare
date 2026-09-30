@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   HttpException,
   Injectable,
   Logger,
@@ -40,12 +41,30 @@ interface ImportJob {
 export class ImportJobsService {
   private readonly logger = new Logger(ImportJobsService.name);
   private readonly jobs = new Map<string, ImportJob>();
+  /// Userii cu un import în curs, pe oricare dintre căi (async sau sincronă).
+  private readonly busyUsers = new Set<string>();
+
+  /**
+   * Un singur import odată per user. Fără plafonul ăsta, zece cereri trimise
+   * în paralel țineau zece fișiere de 10MB în memorie și rulau zece bucle de
+   * câte 5000 de rânduri simultan, cu căutări externe - pe un server care stă
+   * deja aproape de 100% CPU.
+   */
+  async runExclusive<T>(userId: string, run: () => Promise<T>): Promise<T> {
+    this.claim(userId);
+    try {
+      return await run();
+    } finally {
+      this.busyUsers.delete(userId);
+    }
+  }
 
   start(
     userId: string,
     run: (onProgress: (processed: number, total: number) => void) => Promise<unknown>,
   ): { jobId: string } {
     this.sweep();
+    this.claim(userId);
     const job: ImportJob = {
       id: randomUUID(),
       userId,
@@ -76,6 +95,7 @@ export class ImportJobsService {
       })
       .finally(() => {
         job.finishedAt = Date.now();
+        this.busyUsers.delete(userId);
       });
 
     return { jobId: job.id };
@@ -95,6 +115,15 @@ export class ImportJobsService {
       result: job.status === 'done' ? job.result : null,
       error: job.error,
     };
+  }
+
+  private claim(userId: string) {
+    if (this.busyUsers.has(userId)) {
+      throw new ConflictException(
+        'Ai deja un import în curs. Așteaptă să se termine, apoi încearcă din nou.',
+      );
+    }
+    this.busyUsers.add(userId);
   }
 
   private sweep() {

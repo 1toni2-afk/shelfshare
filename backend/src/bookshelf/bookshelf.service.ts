@@ -10,6 +10,11 @@ import { BookDescriptionService } from '../books/book-description.service';
 import { FollowService } from '../follow/follow.service';
 import { CatalogMatchService } from '../books/catalog-match.service';
 import { AddOwnedBookDto } from './dto/add-owned-book.dto';
+import {
+  cleanImportIsbn,
+  cleanImportText,
+  IMPORT_TEXT_LIMITS,
+} from '../common/utils/csv-import';
 
 export type BookshelfImportSource = 'goodreads' | 'storygraph';
 
@@ -126,13 +131,16 @@ export class BookshelfService {
   private parseGoodreadsRow(
     row: Record<string, string>,
   ): ParsedImportRow | null {
-    const title = row['Title']?.trim();
+    const title = cleanImportText(row['Title'], IMPORT_TEXT_LIMITS.title);
     if (!title) return null;
     return {
       title,
-      author: row['Author']?.trim() || undefined,
-      isbn: this.cleanIsbn(row['ISBN13']) ?? this.cleanIsbn(row['ISBN']),
-      publisher: row['Publisher']?.trim() || undefined,
+      author:
+        cleanImportText(row['Author'], IMPORT_TEXT_LIMITS.author) ?? undefined,
+      isbn: cleanImportIsbn(row['ISBN13']) ?? cleanImportIsbn(row['ISBN']),
+      publisher:
+        cleanImportText(row['Publisher'], IMPORT_TEXT_LIMITS.publisher) ??
+        undefined,
       publishedYear: this.parseYear(
         row['Year Published'] ?? row['Original Publication Year'],
       ),
@@ -144,26 +152,18 @@ export class BookshelfService {
   private parseStoryGraphRow(
     row: Record<string, string>,
   ): ParsedImportRow | null {
-    const title = row['Title']?.trim();
+    const title = cleanImportText(row['Title'], IMPORT_TEXT_LIMITS.title);
     if (!title) return null;
     return {
       title,
-      author: row['Authors']?.split(',')[0]?.trim() || undefined,
-      isbn: this.cleanIsbn(row['ISBN/UID']),
+      author:
+        cleanImportText(
+          row['Authors']?.split(',')[0],
+          IMPORT_TEXT_LIMITS.author,
+        ) ?? undefined,
+      isbn: cleanImportIsbn(row['ISBN/UID']),
       status: this.normalizeStatus(row['Read Status']),
     };
-  }
-
-  /** Goodreads înfășoară ISBN-urile într-un pseudo-formulă Excel (ex. `="0439023483"`), ca Excel/Sheets să nu le trunchieze ca numere. */
-  private cleanIsbn(raw: string | undefined): string | undefined {
-    if (!raw) return undefined;
-    const stripped = raw
-      .replace(/^="?/, '')
-      .replace(/"$/, '')
-      .replace(/[-\s]/g, '');
-    return /^[0-9Xx]{9,13}$/.test(stripped)
-      ? stripped.toUpperCase()
-      : undefined;
   }
 
   private normalizeStatus(raw: string | undefined): BookshelfStatus | null {
@@ -349,7 +349,7 @@ export class BookshelfService {
   /// validarea de mai sus, ca un procent trimis pentru o carte deja din catalog
   /// să fie acceptat chiar dacă userul n-a completat totalul manual.
   private async lookupPageCount(dto: AddOwnedBookDto) {
-    const isbn = this.cleanIsbn(dto.isbn);
+    const isbn = cleanImportIsbn(dto.isbn);
     const existing = isbn
       ? await this.prisma.book.findUnique({ where: { isbn } })
       : await this.catalogMatch.findByTitle(dto.title, dto.author);
@@ -369,7 +369,7 @@ export class BookshelfService {
     // `equals` exact pe titlu - „Stapanul Inelelor" nu găsea „Stăpânul
     // Inelelor" și crea o carte nouă, iar egalitatea fără index citea tot
     // catalogul.
-    const isbn = this.cleanIsbn(dto.isbn);
+    const isbn = cleanImportIsbn(dto.isbn);
     const existing = isbn
       ? await this.prisma.book.findUnique({ where: { isbn } })
       : await this.catalogMatch.findByTitle(dto.title, dto.author);

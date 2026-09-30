@@ -32,6 +32,11 @@ import { StoresService } from '../stores/stores.service';
 import { CatalogMatchService } from './catalog-match.service';
 import { isSuperAdmin } from '../common/utils/is-super-admin';
 import { PUBLICLY_VISIBLE_LISTING_OR } from '../common/constants/public-listings';
+import {
+  cleanImportIsbn,
+  cleanImportText,
+  IMPORT_TEXT_LIMITS,
+} from '../common/utils/csv-import';
 
 /// Unde ajunge un rând dintr-un CSV de import: în piață (anunț), pe raftul de
 /// lectură, doar la favorite - sau nicăieri, dacă raftul scris în fișier nu
@@ -77,6 +82,9 @@ const BOOK_CONDITIONS = ['NOUA', 'FOARTE_BUNA', 'BUNA', 'ACCEPTABILA'] as const;
   trebuie mutat pe o coadă de fundal.
 */
 const MAX_LISTING_IMPORT_ROWS = 5000;
+/// Cheia de idempotență a feed-urilor de stoc. Nu se taie: două sku-uri lungi
+/// trunchiate la fel ar actualiza același anunț.
+const MAX_IMPORT_SKU_LENGTH = 100;
 const MAX_PHOTOS_PER_LISTING = 10;
 // Storage-abuse guard: rough cap on total listing photos across a user's
 // whole library, well above what any real user would ever legitimately need
@@ -1002,8 +1010,12 @@ export class BooksService {
       if (processed > 0) onProgress?.(processed, rows.length);
       processed++;
       const sku = this.csvValue(row, 'sku');
-      const title = this.csvValue(row, 'title');
-      const label = title ?? sku ?? '(fără titlu)';
+      const title = cleanImportText(
+        this.csvValue(row, 'title'),
+        IMPORT_TEXT_LIMITS.title,
+      );
+      const label =
+        title ?? sku?.slice(0, MAX_IMPORT_SKU_LENGTH) ?? '(fără titlu)';
 
       // Raft/favorite INAINTE de orice logica de stoc: un rand de pe raftul de
       // lectura nu are sku/qty/price, deci nu trece niciodata prin syncStockRow.
@@ -1045,6 +1057,13 @@ export class BooksService {
         continue;
       }
 
+      if (sku && sku.length > MAX_IMPORT_SKU_LENGTH) {
+        failed.push({
+          title: label,
+          reason: `SKU prea lung (maxim ${MAX_IMPORT_SKU_LENGTH} de caractere)`,
+        });
+        continue;
+      }
       if (sku && seenSkus.has(sku)) {
         failed.push({ title: label, reason: `SKU duplicat în fișier: ${sku}` });
         continue;
@@ -1073,9 +1092,22 @@ export class BooksService {
         (BOOK_CONDITIONS as readonly string[]).includes(conditionRaw)
           ? (conditionRaw as BookCondition)
           : 'BUNA';
-      const language = this.csvValue(row, 'language');
-      const city = this.csvValue(row, 'city');
-      const description = this.csvValue(row, 'description');
+      // Limba e un nume scurt („ro", „Română"): o valoare mai lungă decât
+      // permite formularul nu e o limbă, deci o ignorăm în loc s-o tăiem.
+      const languageRaw = cleanImportText(this.csvValue(row, 'language'), 100);
+      const language =
+        languageRaw && languageRaw.length <= IMPORT_TEXT_LIMITS.language
+          ? languageRaw
+          : null;
+      const city = cleanImportText(
+        this.csvValue(row, 'city'),
+        IMPORT_TEXT_LIMITS.city,
+      );
+      const description = cleanImportText(
+        this.csvValue(row, 'description'),
+        IMPORT_TEXT_LIMITS.description,
+        { multiline: true },
+      );
 
       // Anunțul existent pentru acest sku - inclusiv unul șters, ca stocul
       // reapărut în feed să reînvie rândul vechi cu tot cu istoricul lui.
@@ -1105,26 +1137,43 @@ export class BooksService {
           continue;
         }
 
-        if (!title && !this.csvValue(row, 'isbn')) {
+        // Un ISBN invalid e tratat ca absent (rândul merge pe titlu), la fel ca
+        // pe raftul de lectură - până acum ajungea în catalog orice șir, de
+        // la `="..."`-ul Goodreads până la o formulă Excel.
+        const isbn =
+          cleanImportIsbn(this.csvValue(row, 'isbn13')) ??
+          cleanImportIsbn(this.csvValue(row, 'isbn'));
+        if (!title && !isbn) {
           failed.push({
             title: label,
-            reason: 'Lipsește și titlul, și ISBN-ul',
+            reason: this.csvValue(row, 'isbn')
+              ? 'ISBN invalid și niciun titlu'
+              : 'Lipsește și titlul, și ISBN-ul',
           });
           continue;
         }
 
+        // Mereu `silent`, nu doar pentru magazine: fără el, fiecare rând
+        // trimitea câte o notificare (și push) followerilor și până la 200 de
+        // useri din același oraș, cu titlul scris în CSV - un fișier de 5000 de
+        // rânduri devenea spam în masă cu textul ales de cine l-a urcat. XP-ul
+        // pierdut astfel se acordă o dată, după buclă.
         const userBook = await this.addToLibrary(
           targetUserId,
           {
             title: title ?? undefined,
-            author: this.csvValue(row, 'author') ?? undefined,
-            isbn: this.csvValue(row, 'isbn')?.replace(/[-\s]/g, '') ?? undefined,
+            author:
+              cleanImportText(
+                this.csvValue(row, 'author'),
+                IMPORT_TEXT_LIMITS.author,
+              ) ?? undefined,
+            isbn,
             condition,
             language: language ?? undefined,
             city: city ?? undefined,
             description: description ?? undefined,
           },
-          { silent: isStoreImport },
+          { silent: true },
         );
 
         await this.syncStockRow(userBook.id, {
@@ -1154,6 +1203,11 @@ export class BooksService {
               : 'Eroare necunoscută',
         });
       }
+    }
+
+    // Magazinele n-au primit niciodată XP pe listări (erau deja `silent`).
+    if (!isStoreImport && created.length > 0) {
+      await awardXp(this.prisma, targetUserId, XP_BOOK_LISTED * created.length);
     }
 
     onProgress?.(rows.length, rows.length);
@@ -1255,11 +1309,17 @@ export class BooksService {
       { kind: 'shelf' } | { kind: 'favorite' }
     >,
   ): Promise<string> {
-    const title = this.csvValue(row, 'title');
-    const author = this.csvValue(row, 'author');
+    const title = cleanImportText(
+      this.csvValue(row, 'title'),
+      IMPORT_TEXT_LIMITS.title,
+    );
+    const author = cleanImportText(
+      this.csvValue(row, 'author'),
+      IMPORT_TEXT_LIMITS.author,
+    );
     const isbn =
-      this.cleanImportIsbn(this.csvValue(row, 'isbn13')) ??
-      this.cleanImportIsbn(this.csvValue(row, 'isbn'));
+      cleanImportIsbn(this.csvValue(row, 'isbn13')) ??
+      cleanImportIsbn(this.csvValue(row, 'isbn'));
 
     // Rezolvarea cartii se face DOAR din ce scrie in CSV, fara findOrCreateBook:
     // acela cauta pe Google Books/Open Library la fiecare rand fara potrivire,
@@ -1290,7 +1350,11 @@ export class BooksService {
           isbn,
           title: title!,
           author: author ?? undefined,
-          publisher: this.csvValue(row, 'publisher') ?? undefined,
+          publisher:
+            cleanImportText(
+              this.csvValue(row, 'publisher'),
+              IMPORT_TEXT_LIMITS.publisher,
+            ) ?? undefined,
           publishedYear:
             this.parseImportYear(this.csvValue(row, 'year published')) ??
             this.parseImportYear(
@@ -1431,25 +1495,6 @@ export class BooksService {
     const key = Object.keys(row).find((k) => k.trim().toLowerCase() === column);
     const value = key ? row[key]?.trim() : undefined;
     return value ? value : null;
-  }
-
-  /**
-   * Goodreads infasoara ISBN-urile intr-un pseudo-formula Excel (`="0143039954"`),
-   * ca Excel/Sheets sa nu le trunchieze ca numere, iar o carte fara ISBN
-   * primeste `=""` - un sir NEGOL. Fara curatarea asta ajungeau in catalog
-   * ISBN-uri literale `="0143039954"`, iar toate randurile fara ISBN se
-   * dedublau intre ele pe acelasi `=""`, adica zeci de titluri diferite
-   * deveneau o singura carte.
-   */
-  private cleanImportIsbn(raw: string | null): string | undefined {
-    if (!raw) return undefined;
-    const stripped = raw
-      .replace(/^="?/, '')
-      .replace(/"$/, '')
-      .replace(/[-\s]/g, '');
-    return /^[0-9Xx]{9,13}$/.test(stripped)
-      ? stripped.toUpperCase()
-      : undefined;
   }
 
   private parseImportYear(raw: string | null): number | undefined {

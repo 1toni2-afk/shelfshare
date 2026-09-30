@@ -314,7 +314,9 @@ export class BooksController {
         ),
       );
     }
-    return this.booksService.importListingsCsv(userId!, file.buffer, store);
+    return this.importJobs.runExclusive(userId!, () =>
+      this.booksService.importListingsCsv(userId!, file.buffer, store),
+    );
   }
 
   @UseGuards(JwtAuthGuard)
