@@ -44,4 +44,11 @@ ingress:
   - hostname: runapp.shelfshare.ro
     service: http://localhost:4000
 
+  # Alt proiect: magazinul Prier (D:\Raul - Prier), next start pe 5970, pornit de
+  # task-ul "Prier Server". Tinut si aici din acelasi motiv ca runapp.
+  - hostname: prier.shop
+    service: http://localhost:5970
+  - hostname: www.prier.shop
+    service: http://localhost:5970
+
   - service: http_status:404
