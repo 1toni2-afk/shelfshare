@@ -1585,6 +1585,19 @@
             }
         }
     },
+    "adminDomainLabel": "Zile până expiră domeniul",
+    "adminDomainSubtitle": "shelfshare.ro · înregistrat {registered} · expiră {expires}",
+    "@adminDomainSubtitle": {
+        "placeholders": {
+            "registered": {
+                "type": "String"
+            },
+            "expires": {
+                "type": "String"
+            }
+        }
+    },
+    "adminDomainExpired": "Domeniul a expirat",
     "auctionTitle": "Licitație",
     "auctionCurrentPrice": "Preț curent",
     "auctionBidsCount": "oferte",

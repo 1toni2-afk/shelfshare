@@ -135,6 +135,8 @@ export function AdminScreen() {
           </div>
         )}
 
+        <DomainTile />
+
         <div className="overflow-hidden rounded-[16px] border border-border bg-card">
           {ADMIN_LINKS.map((link) => (
             <Link
@@ -172,6 +174,52 @@ function StatTile({ label, value, hint }: { label: string; value: unknown; hint?
       </p>
       <p className="text-xs text-muted-foreground">{label}</p>
       {hint && <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * Datele vin din panoul registrarului (ROTLD) - nu există un API de unde să le
+ * citim, deci la fiecare reînnoire se actualizează aici, de mână.
+ */
+const DOMAIN_REGISTERED = '2026-07-15';
+const DOMAIN_EXPIRES = '2027-07-15';
+const DOMAIN_WARN_DAYS = 60;
+
+function DomainTile() {
+  const { t, i18n } = useTranslation();
+  // Zile calendaristice, nu ore/24: altfel numărul sare la miezul nopții UTC,
+  // nu la cel local.
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const [y, m, d] = DOMAIN_EXPIRES.split('-').map(Number);
+  const daysLeft = Math.round((Date.UTC(y, m - 1, d) - todayUtc) / 86_400_000);
+
+  const formatDate = (iso: string) =>
+    new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+      new Date(`${iso}T00:00:00Z`),
+    );
+
+  const expired = daysLeft < 0;
+  const warn = expired || daysLeft <= DOMAIN_WARN_DAYS;
+
+  return (
+    <div
+      className={cn(
+        'mb-6 rounded-[16px] border bg-card p-4',
+        warn ? 'border-destructive' : 'border-border',
+      )}
+    >
+      <p className={cn('font-display text-2xl font-bold', warn && 'text-destructive')}>
+        {expired ? t('adminDomainExpired') : daysLeft}
+      </p>
+      <p className="text-xs text-muted-foreground">{t('adminDomainLabel')}</p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
+        {t('adminDomainSubtitle', {
+          registered: formatDate(DOMAIN_REGISTERED),
+          expires: formatDate(DOMAIN_EXPIRES),
+        })}
+      </p>
     </div>
   );
 }
