@@ -2,7 +2,7 @@
 # - minio/minio nu mai e publicat pe Docker Hub -> imagine chainguard re-tagata local
 #   (docker tag cgr.dev/chainguard/minio:latest minio/minio:latest); ruleaza ca root
 #   pentru ca volumul restaurat apartine root; healthcheck-ul `mc` nu exista in imagine.
-# - discul extern E: lipseste -> backup extern in D:/Backup ShelfShare.
+# - backup extern in E:/Backup ShelfShare (discul extern, ca pe masina veche).
 # Pornire: docker compose -f docker-compose.prod.yml -f docker-compose.restore.yml up -d
 services:
   minio:
@@ -16,4 +16,4 @@ services:
         required: true
   backup:
     volumes:
-      - "D:/Backup ShelfShare:/backups-external"
+      - "E:/Backup ShelfShare:/backups-external"
