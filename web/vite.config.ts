@@ -152,6 +152,12 @@ export default defineConfig(({ mode }) => {
       // Nu proxiem /api: aplicația vorbește cu backendul pe origine completă,
       // exact ca pe producție, deci CORS-ul e exersat și în dev.
       strictPort: true,
+      // Testul de pe telefon trece prin `tailscale serve`, care păstrează
+      // Host-ul original (sv-toni.<tailnet>.ts.net). Vite 6 refuză orice Host
+      // care nu e localhost („Blocked request. This host is not allowed."),
+      // deci tailnetul trebuie trecut explicit. Doar `.ts.net`, nu `true`:
+      // altfel dev serverul ar răspunde oricărui nume (DNS rebinding).
+      allowedHosts: ['.ts.net'],
     },
     build: {
       outDir: 'dist',

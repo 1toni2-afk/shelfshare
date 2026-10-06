@@ -1,0 +1,19 @@
+# Override pentru restaurarea pe masina noua (nu modifica docker-compose.prod.yml).
+# - minio/minio nu mai e publicat pe Docker Hub -> imagine chainguard re-tagata local
+#   (docker tag cgr.dev/chainguard/minio:latest minio/minio:latest); ruleaza ca root
+#   pentru ca volumul restaurat apartine root; healthcheck-ul `mc` nu exista in imagine.
+# - discul extern E: lipseste -> backup extern in D:/Backup ShelfShare.
+# Pornire: docker compose -f docker-compose.prod.yml -f docker-compose.restore.yml up -d
+services:
+  minio:
+    user: "0"
+    healthcheck:
+      disable: true
+  backend:
+    depends_on:
+      minio:
+        condition: service_started
+        required: true
+  backup:
+    volumes:
+      - "D:/Backup ShelfShare:/backups-external"

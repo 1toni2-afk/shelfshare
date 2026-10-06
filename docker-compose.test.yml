@@ -28,7 +28,9 @@
 #
 # Expunerea prin Tailscale (configurata cu `tailscale serve --bg`, persista
 # peste reboot):
-#   https://sv-toni.tail6e27d0.ts.net:8443  -> web  (127.0.0.1:5961)
+#   https://sv-toni.tail6e27d0.ts.net:8443  -> web dev React (localhost:5173,
+#                                              `npm run dev` in web/; vezi
+#                                              web/.env.development.local)
 #   https://sv-toni.tail6e27d0.ts.net:8444  -> API  (127.0.0.1:3999)
 #   https://sv-toni.tail6e27d0.ts.net:8445  -> MinIO (127.0.0.1:59000)
 # `-o build/web-test` e obligatoriu - `build/web` e ce servește producția pe

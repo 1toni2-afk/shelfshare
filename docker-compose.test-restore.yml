@@ -1,0 +1,11 @@
+# Override restaurare mediu de test (minio/minio nu mai e pe Docker Hub; vezi docker-compose.restore.yml).
+services:
+  minio:
+    user: "0"
+    healthcheck:
+      disable: true
+  backend:
+    depends_on:
+      minio:
+        condition: service_started
+        required: true
