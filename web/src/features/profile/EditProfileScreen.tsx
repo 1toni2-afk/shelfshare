@@ -7,7 +7,9 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import type { AppUser } from '@/types/models';
 import { profileKeys, profileRepository } from './profileRepository';
 import { Button, Field } from '@/components/ui';
+import { CityField } from '@/components/ui/CityField';
 import { Switch } from '@/components/ui/Switch';
+import { matchRomanianCity } from '@/lib/constants/romanianCities';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/features/auth/AuthProvider';
 
@@ -30,6 +32,7 @@ export function EditProfileScreen() {
   const [name, setName] = useState(user?.name ?? '');
   const [username, setUsername] = useState(user?.username ?? '');
   const [city, setCity] = useState(user?.city ?? '');
+  const [cityError, setCityError] = useState<string | null>(null);
   const [bio, setBio] = useState(user?.bio ?? '');
   const [nameVisible, setNameVisible] = useState(user?.nameVisible ?? true);
   const [showAcquisitionHistory, setShowAcquisitionHistory] = useState(
@@ -43,7 +46,7 @@ export function EditProfileScreen() {
         // literal, iar profilul ar afișa un oraș gol în loc să-l ascundă.
         name: name.trim() || null,
         username: username.trim() || null,
-        city: city.trim() || null,
+        city: matchRomanianCity(city),
         bio: bio.trim() || null,
         nameVisible,
         showAcquisitionHistory,
@@ -59,6 +62,10 @@ export function EditProfileScreen() {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (city.trim() && !matchRomanianCity(city)) {
+      setCityError(t('shareCityUnknown'));
+      return;
+    }
     save.mutate();
   }
 
@@ -91,12 +98,14 @@ export function EditProfileScreen() {
           hint={t(user?.username ? 'usernameLockedHint' : 'usernameChooseOnceHint')}
         />
 
-        <Field
+        <CityField
           label={t('profileCityLabel')}
-          name="city"
-          autoComplete="address-level2"
           value={city}
-          onChange={(event) => setCity(event.target.value)}
+          error={cityError}
+          onChange={(value) => {
+            setCity(value);
+            setCityError(null);
+          }}
         />
 
         <div className="flex flex-col gap-1.5">

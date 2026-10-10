@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { BrandMark } from '@/components/ui/BrandMark';
-import { api } from '@/lib/api/client';
+import { api, ApiError } from '@/lib/api/client';
+import { matchRomanianCity } from '@/lib/constants/romanianCities';
 import { profileRepository } from './profileRepository';
 import { Button, Field } from '@/components/ui';
+import { CityField } from '@/components/ui/CityField';
 import { Switch } from '@/components/ui/Switch';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from './../auth/AuthProvider';
@@ -105,9 +107,13 @@ const PACE_VALUES: Record<(typeof FREQUENCIES)[number], string> = {
  * de des citește. Port al pașilor esențiali din onboarding_flow_screen.dart -
  * selecția de genuri și chestionarul de lectură vin cu ecranul lor.
  *
- * Fiecare pas salvează CE POATE la final, într-un singur PATCH. În Flutter
+ * Restul pașilor se salvează la final, într-un singur PATCH. În Flutter
  * erau salvări intermediare, dar pe web un refresh la jumătatea fluxului ar
  * lăsa un profil completat pe jumătate, fără ca userul să știe.
+ *
+ * Excepție: numele și username-ul (obligatorii) se salvează chiar la primul
+ * pas. Nu avem un endpoint de „username disponibil", iar un username luat
+ * afla abia la final, ca eroare, după toți pașii.
  */
 export function OnboardingScreen() {
   const { t } = useTranslation();
@@ -120,9 +126,33 @@ export function OnboardingScreen() {
   const [username, setUsername] = useState(user?.username ?? '');
   const [nameVisible, setNameVisible] = useState(user?.nameVisible ?? true);
   const [city, setCity] = useState(user?.city ?? '');
+  const [cityError, setCityError] = useState<string | null>(null);
   const [purpose, setPurpose] = useState<string>('All');
   const [frequency, setFrequency] = useState<string>('Mid');
   const [error, setError] = useState<string | null>(null);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  // Odată salvat, username-ul nu se mai poate schimba (regulă de backend).
+  const usernameLocked = !!user?.username;
+
+  const saveIdentity = useMutation({
+    mutationFn: () =>
+      profileRepository.update({
+        name: name.trim(),
+        username: username.trim(),
+        nameVisible,
+      }),
+    onSuccess: (updated) => {
+      setUser(updated);
+      setStep(1);
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.status != null && error.status < 500) {
+        setUsernameError(error.message);
+      } else {
+        toast.show(t('onboardingGenericError'), 'danger');
+      }
+    },
+  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -130,7 +160,9 @@ export function OnboardingScreen() {
         name: name.trim() || null,
         username: username.trim() || null,
         nameVisible,
-        city: city.trim() || null,
+        // Forma canonică din listă („bucuresti" → „București"): backendul
+        // validează cu @IsIn, deci altă scriere ar fi respinsă.
+        city: matchRomanianCity(city),
       });
 
       /*
@@ -153,7 +185,54 @@ export function OnboardingScreen() {
       setUser(updated);
       void navigate('/');
     },
-    onError: () => toast.show(t('onboardingGenericError'), 'danger'),
+    // Mesajul backendului când e o eroare de validare (ex. username luat) -
+    // altfel omul vedea doar „Something went wrong" și nu avea ce corecta.
+    onError: (error) =>
+      toast.show(
+        error instanceof ApiError && error.status != null && error.status < 500
+          ? error.message
+          : t('onboardingGenericError'),
+        'danger',
+      ),
+  });
+
+  /*
+    „Skip" pe ultimul pas: plasă de siguranță ca nimeni să nu rămână blocat în
+    onboarding dacă salvarea normală pică. Totul e best-effort: profilul se
+    încearcă întreg, apoi doar cu numele (fără username/oraș, cele care pot fi
+    respinse), iar chestionarul fără ritmul de citire. Dacă și chestionarul
+    pică, marcăm onboardingul ca terminat local, cât să treacă de router în
+    sesiunea asta - la următoarea pornire îl va relua.
+  */
+  const skipLast = useMutation({
+    mutationFn: async () => {
+      const profile =
+        (await profileRepository
+          .update({
+            name: name.trim() || null,
+            username: username.trim() || null,
+            nameVisible,
+            city: matchRomanianCity(city),
+          })
+          .catch(() => null)) ??
+        (name.trim()
+          ? await profileRepository.update({ name: name.trim(), nameVisible }).catch(() => null)
+          : null);
+
+      const survey = await profileRepository
+        .saveReadingSurvey({ purpose: PURPOSE_VALUES[purpose as (typeof PURPOSES)[number]] })
+        .catch(() => null);
+
+      return {
+        ...user!,
+        ...profile,
+        readingSurveyCompletedAt: survey?.readingSurveyCompletedAt ?? new Date().toISOString(),
+      };
+    },
+    onSuccess: (updated) => {
+      setUser(updated);
+      void navigate('/');
+    },
   });
 
   const steps = [
@@ -178,10 +257,16 @@ export function OnboardingScreen() {
             name="username"
             autoComplete="username"
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            required
+            disabled={usernameLocked}
+            error={usernameError}
+            onChange={(event) => {
+              setUsername(event.target.value);
+              setUsernameError(null);
+            }}
             // Aici se alege username-ul, deci aici trebuie spus că e definitiv -
             // nu într-un mesaj de eroare, după ce omul încearcă să-l schimbe.
-            hint={t('usernameChooseOnceHint')}
+            hint={t(usernameLocked ? 'usernameLockedHint' : 'usernameChooseOnceHint')}
           />
           <Switch
             checked={nameVisible}
@@ -196,12 +281,14 @@ export function OnboardingScreen() {
       title: t('onboardingFlowLocationTitle'),
       subtitle: t('onboardingFlowLocationSubtitle'),
       body: (
-        <Field
+        <CityField
           label={t('profileCityLabel')}
-          name="city"
-          autoComplete="address-level2"
           value={city}
-          onChange={(event) => setCity(event.target.value)}
+          error={cityError}
+          onChange={(value) => {
+            setCity(value);
+            setCityError(null);
+          }}
         />
       ),
     },
@@ -241,10 +328,33 @@ export function OnboardingScreen() {
   const current = steps[step];
 
   function next() {
-    // Numele e singurul câmp obligatoriu - restul pot fi sărite.
-    if (step === 0 && !name.trim()) {
-      setError(t('commonRequired'));
+    // Numele și username-ul sunt obligatorii - restul pot fi sărite.
+    if (step === 0) {
+      let valid = true;
+      if (!name.trim()) {
+        setError(t('commonRequired'));
+        valid = false;
+      }
+      if (!username.trim()) {
+        setUsernameError(t('commonRequired'));
+        valid = false;
+      } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(username.trim())) {
+        // Aceeași regulă ca @Matches din UpdateProfileDto.
+        setUsernameError(t('onboardingUsernameFormatError'));
+        valid = false;
+      }
+      if (valid) saveIdentity.mutate();
       return;
+    }
+    // Orașul se verifică aici, nu abia la salvarea de la final: altfel o
+    // scriere necunoscută („Cluj") ieșea ca eroare generică pe ultimul pas.
+    if (step === 1 && city.trim()) {
+      const match = matchRomanianCity(city);
+      if (!match) {
+        setCityError(t('shareCityUnknown'));
+        return;
+      }
+      setCity(match);
     }
     if (isLast) save.mutate();
     else setStep((value) => value + 1);
@@ -274,11 +384,39 @@ export function OnboardingScreen() {
       {current.body}
 
       <div className="mt-8 flex flex-col gap-2">
-        <Button fullWidth loading={save.isPending} onClick={next}>
+        <Button
+          fullWidth
+          loading={save.isPending || saveIdentity.isPending}
+          disabled={skipLast.isPending}
+          onClick={next}
+        >
           {t(isLast ? 'onboardingFlowFinish' : 'commonContinue')}
         </Button>
-        {!isLast && (
-          <Button variant="text" fullWidth onClick={() => setStep((value) => value + 1)}>
+        {isLast && (
+          <Button
+            variant="text"
+            fullWidth
+            loading={skipLast.isPending}
+            disabled={save.isPending}
+            onClick={() => skipLast.mutate()}
+          >
+            {t('onboardingFlowSkip')}
+          </Button>
+        )}
+        {/* Primul pas (nume + username) e obligatoriu, deci fără Skip. */}
+        {!isLast && step > 0 && (
+          <Button
+            variant="text"
+            fullWidth
+            onClick={() => {
+              // Sărit = fără oraș, nu un oraș invalid care pică la final.
+              if (step === 1 && !matchRomanianCity(city)) {
+                setCity('');
+                setCityError(null);
+              }
+              setStep((value) => value + 1);
+            }}
+          >
             {t('onboardingFlowSkip')}
           </Button>
         )}
